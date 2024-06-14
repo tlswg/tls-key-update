@@ -1488,7 +1488,9 @@ in the generation of the application traffic secret.<a href="#section-6-5.2.1" c
 <p id="section-6-6">Once client_/server_application_traffic_secret_N+1 and its associated
 traffic keys have been computed, implementations SHOULD delete
 client_/server_application_traffic_secret_N and its associated
-traffic keys.<a href="#section-6-6" class="pilcrow">¶</a></p>
+traffic keys. Note: The client_/server_application_traffic_secret_N and
+its associated traffic keys can only be deleted after receiving the
+NewKeyUpdate message.<a href="#section-6-6" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="example">
