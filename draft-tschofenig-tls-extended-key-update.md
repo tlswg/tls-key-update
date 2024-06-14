@@ -333,7 +333,9 @@ in the generation of the application traffic secret.
 Once client_/server_application_traffic_secret_N+1 and its associated
 traffic keys have been computed, implementations SHOULD delete
 client_/server_application_traffic_secret_N and its associated
-traffic keys.
+traffic keys. Note: The client_/server_application_traffic_secret_N and
+its associated traffic keys can only be deleted after receiving the
+NewKeyUpdate message.
 
 # Example
 
