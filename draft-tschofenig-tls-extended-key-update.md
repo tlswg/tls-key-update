@@ -223,7 +223,7 @@ Exch | + key_share
                                                 {Certificate}  ^
                                           {CertificateVerify}  | Auth
                                                    {Finished}  v
-                               <--------           
+                               <--------
      ^ {Certificate}
 Auth | {CertificateVerify}
      v {Finished}              -------->
@@ -375,7 +375,7 @@ Exch | + key_share
                                                 {Certificate}  ^
                                           {CertificateVerify}  | Auth
                                                    {Finished}  v
-                               <--------           
+                               <--------
      ^ {Certificate
 Auth | {CertificateVerify}
      v {Finished}              -------->
