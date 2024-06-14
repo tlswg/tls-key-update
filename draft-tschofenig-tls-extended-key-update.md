@@ -224,11 +224,11 @@ Auth | {CertificateVerify}
      v {Finished}              -------->
        [Application Data]      <------->  [Application Data]
                                   ...
-       [ExtendedKeyUpdate]     -------->
-                               <--------  [ExtendedKeyUpdate]
+[ExtendedKeyUpdateRequest]     -------->
+                               <--------  [ExtendedKeyUpdateResponse]
                                   ...
-       [ExtendedKeyUpdate]     <-------
-                               -------->  [ExtendedKeyUpdate]
+            [NewKeyUpdate]     <-------
+                               -------->  [NewKeyUpdate]
                                   ...
        [Application Data]      <------->  [Application Data]
 ~~~
