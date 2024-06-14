@@ -1361,11 +1361,11 @@ Auth | {CertificateVerify}
      v {Finished}              --------&gt;
        [Application Data]      &lt;-------&gt;  [Application Data]
                                   ...
-       [ExtendedKeyUpdate]     --------&gt;
-                               &lt;--------  [ExtendedKeyUpdate]
+[ExtendedKeyUpdateRequest]     --------&gt;
+                               &lt;--------  [ExtendedKeyUpdateResponse]
                                   ...
-       [ExtendedKeyUpdate]     &lt;-------
-                               --------&gt;  [ExtendedKeyUpdate]
+            [NewKeyUpdate]     &lt;-------
+                               --------&gt;  [NewKeyUpdate]
                                   ...
        [Application Data]      &lt;-------&gt;  [Application Data]
 </pre>
