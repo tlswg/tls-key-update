@@ -2,7 +2,7 @@
 title: Extended Key Update for Transport Layer Security (TLS) 1.3
 
 abbrev: Extended Key Update for TLS
-docname: draft-tschofenig-tls-extended-key-update-02
+docname: draft-tschofenig-tls-extended-key-update-latest
 category: std
 
 ipr: trust200902
