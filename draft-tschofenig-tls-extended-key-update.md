@@ -52,8 +52,6 @@ normative:
 informative:
   RFC9325:
   RFC7296:
-  RFC9261:
-  RFC5246:
   RFC7624:
   I-D.connolly-tls-mlkem-key-agreement:
   I-D.ietf-tls-hybrid-design:
@@ -324,7 +322,7 @@ The next generation of application_traffic_secret is computed as follows:
 ~~~
 application_traffic_secret_N+1 =
     HKDF-Expand-Label(SK,
-                      "traffic up2", "", Hash.length)                   
+                      "traffic up2", "", Hash.length)
 ~~~
 
 There are two changes to the application_traffic_secret computation
