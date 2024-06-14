@@ -200,10 +200,7 @@ MUST terminate the connection with an "illegal_parameter" alert.
 First, support for the functionality in this specification
 is negotiated in the ClientHello and the EncryptedExtensions
 messages. Then, the ExtendedKeyUpdate exchange is sent to
-update the application traffic secrets. Send and receive
-keys are derived from independent traffic secrets, retaining the
-receive traffic secret does not threaten the forward secrecy of data
-sent before the sender changed keys.
+update the application traffic secrets.
 
 ~~~
        Client                                           Server
