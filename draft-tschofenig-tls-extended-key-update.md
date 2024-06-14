@@ -192,7 +192,7 @@ alert.
 The KeyShare entry in the ExtendedKeyUpdate message MUST be the same
 group mutually supported by the client and server during the initial
 handshake. The peers MUST NOT send a KeyShare Entry in the ExtendedKeyUpdate
-message that is not mutually supported by the client and server during 
+message that is not mutually supported by the client and server during
 the initial handshake. An implementation that receives any other value
 MUST terminate the connection with an "illegal_parameter" alert.
 
@@ -263,13 +263,13 @@ responder as follows:
 a key share. While an extended key update is in progress, the initiator
 MUST NOT initiate further key updates.
 
-2. On receipt of the ExtendedKeyUpdateRequest message, the responder 
+2. On receipt of the ExtendedKeyUpdateRequest message, the responder
 sends the ExtendedKeyUpdateResponse message. This message contains the
 key share of the responder. While an extended key update is in progress,
 the responder MUST NOT initiate further key updates.
 
 3. On receipt of the ExtendedKeyUpdateResponse message, the initiator
-is able to derive a secret key based on the exchanged key shares. 
+is able to derive a secret key based on the exchanged key shares.
 After sending a NewKeyUpdate message, the initiator MUST update its
 traffic keys and MUST send all its traffic using the next generation of keys.
 
@@ -420,7 +420,7 @@ When utilizing this extension it is important to understand the interaction
 with ticket-based resumption since resumption without the execution of
 a Diffie-Hellman exchange offering forward secrecy will potentially undo
 updates to the application traffic secret derivation, depending on when
-tickets have been exchanged. 
+tickets have been exchanged.
 
 # IANA Considerations
 
