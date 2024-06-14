@@ -6,8 +6,8 @@ docname: draft-tschofenig-tls-extended-key-update-latest
 category: std
 
 ipr: trust200902
-area: Security
-workgroup: TLS
+area: "Security"
+workgroup: "Transport Layer Security"
 keyword: Internet-Draft
 
 stand_alone: yes
