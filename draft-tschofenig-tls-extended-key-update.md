@@ -407,7 +407,8 @@ Hybrid key exchange refers to using multiple key exchange algorithms
 simultaneously and combining the result with the goal of providing
 security even if all but one of the component algorithms is broken.
 It is motivated by transition to post-quantum cryptography. TLS supports
-the hybrid key exchange based on the extension defined in
+the post-quantum key agreement via lattice-based key establishment
+mechanism (KEM)-based on the extension defined in
 {{I-D.connolly-tls-mlkem-key-agreement}}. PQC algorithms can also be
 exchanged in key shares, as described in {{I-D.ietf-tls-hybrid-design}}.
 
