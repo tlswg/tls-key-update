@@ -355,7 +355,7 @@ messages.
 2. Once the initial handshake is completed, a key update can be
 triggered.
 
-{{fig-key-update}} provides an overview of the exchange starting
+{{fig-key-update2}} provides an overview of the exchange starting
 with the initial negotiation followed by the key update.
 
 ~~~
@@ -389,7 +389,7 @@ Auth | {CertificateVerify}
  [NewKeyUpdate]                -------->
                                <-------- [NewKeyUpdate]
 ~~~
-{: #fig-key-update title="Extended Key Update Message Exchange."}
+{: #fig-key-update2 title="Extended Key Update Message Exchange."}
 
 #  DTLS 1.3 Considerations
 
