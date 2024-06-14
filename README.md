@@ -1,4 +1,4 @@
-# Internet-Draft Template Repository
+#  Extended Key Update for TLS/DTLS 1.3 
 
 Use this repository as a template if you want to start working on
 [IETF](https://www.ietf.org/) documents. [Click here to create a new repository using the
