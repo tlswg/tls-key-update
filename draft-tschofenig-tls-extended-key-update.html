@@ -1466,32 +1466,39 @@ desired security properties.<a href="#section-5-13" class="pilcrow">¶</a></p>
 <p id="section-6-1">The ExtendedKeyUpdate handshake message is used to indicate that
 the sender is updating its sending cryptographic keys.  This message can
 be sent by either endpoint after the Finished messages have been exchanged.<a href="#section-6-1" class="pilcrow">¶</a></p>
-<p id="section-6-2">The next generation of application_traffic_secret is computed as follows:<a href="#section-6-2" class="pilcrow">¶</a></p>
-<div class="alignLeft art-text artwork" id="section-6-3">
-<pre>
-application_traffic_secret_N+1 =
-    HKDF-Expand-Label(SK,
-                      "traffic up2", "", Hash.length)
-</pre><a href="#section-6-3" class="pilcrow">¶</a>
-</div>
-<p id="section-6-4">There are two changes to the application_traffic_secret computation
-described in <span>[<a href="#I-D.ietf-tls-rfc8446bis" class="cite xref">I-D.ietf-tls-rfc8446bis</a>]</span>, namely<a href="#section-6-4" class="pilcrow">¶</a></p>
+<p id="section-6-2">The design of the key derivation function for computing the next generation
+of application_traffic_secret is motivated by the desire to include<a href="#section-6-2" class="pilcrow">¶</a></p>
 <ul class="normal">
-<li class="normal" id="section-6-5.1">
-          <p id="section-6-5.1.1">the label is adjusted to distinguish it from the regular KeyUpdate
-message, and<a href="#section-6-5.1.1" class="pilcrow">¶</a></p>
+<li class="normal" id="section-6-3.1">
+          <p id="section-6-3.1.1">the old traffic secret as well as a secret derived from the DH
+exchange or from the hybrid key exchange,<a href="#section-6-3.1.1" class="pilcrow">¶</a></p>
 </li>
-        <li class="normal" id="section-6-5.2">
-          <p id="section-6-5.2.1">the SK value, which was derived between the two endpoints, is included
-in the generation of the application traffic secret.<a href="#section-6-5.2.1" class="pilcrow">¶</a></p>
+        <li class="normal" id="section-6-3.2">
+          <p id="section-6-3.2.1">the concatenation of the ExtendedKeyUpdateRequest and the
+ExtendedKeyUpdateResponse messages, which contain the key shares, and<a href="#section-6-3.2.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-6-3.3">
+          <p id="section-6-3.3.1">a new label string to distinguish it from the application traffic
+secret computation defined in <span>[<a href="#I-D.ietf-tls-rfc8446bis" class="cite xref">I-D.ietf-tls-rfc8446bis</a>]</span> for use with
+the regular KeyUpdate.<a href="#section-6-3.3.1" class="pilcrow">¶</a></p>
 </li>
       </ul>
-<p id="section-6-6">Once client_/server_application_traffic_secret_N+1 and its associated
+<div class="alignLeft art-text artwork" id="section-6-4">
+<pre>
+sk = HKDF-Extract(Transcript-Hash(KeyUpdateMessages), secret)
+
+application_traffic_secret_N+1 =
+    HKDF-Expand-Label(sk,
+                      "traffic up2", application_traffic_secret_N,
+                      Hash.length)
+</pre><a href="#section-6-4" class="pilcrow">¶</a>
+</div>
+<p id="section-6-5">Once client_/server_application_traffic_secret_N+1 and its associated
 traffic keys have been computed, implementations SHOULD delete
 client_/server_application_traffic_secret_N and its associated
 traffic keys. Note: The client_/server_application_traffic_secret_N and
 its associated traffic keys can only be deleted after receiving the
-NewKeyUpdate message.<a href="#section-6-6" class="pilcrow">¶</a></p>
+NewKeyUpdate message.<a href="#section-6-5" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="example">
