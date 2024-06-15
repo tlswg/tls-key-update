@@ -53,7 +53,6 @@ informative:
   RFC9325:
   RFC7296:
   RFC7624:
-  I-D.connolly-tls-mlkem-key-agreement:
   I-D.ietf-tls-hybrid-design:
   ANSSI-DAT-NT-003:
      author:
@@ -406,11 +405,13 @@ such out-of-epoch records.
 Hybrid key exchange refers to using multiple key exchange algorithms
 simultaneously and combining the result with the goal of providing
 security even if all but one of the component algorithms is broken.
-It is motivated by transition to post-quantum cryptography. TLS supports
-the post-quantum key agreement via lattice-based key establishment
-mechanism (KEM)-based on the extension defined in
-{{I-D.connolly-tls-mlkem-key-agreement}}. PQC algorithms can also be
-exchanged in key shares, as described in {{I-D.ietf-tls-hybrid-design}}.
+The transition to post-quantum cryptography motivates the introduction
+of hybrid key exchanges to TLS, as described in
+{{I-D.ietf-tls-hybrid-design}}. When the hybrid key exchange is used
+then the key_exchange field of a KeyShareEntry in the initial exchange
+is the concatenation of the key_exchange field for each of the algorithms.
+The same approach is then re-used in the extended key update when
+key shares are exchanged.
 
 #  Security Considerations
 
