@@ -252,8 +252,9 @@ key_exchange:  Key exchange information.  The contents of this field
   are determined by the specified group and its corresponding
   definition. The structures are defined in {{I-D.ietf-tls-rfc8446bis}}.
 
-The extended key update process is performed between the initiator and the
-responder as follows:
+The extended key update exchange is performed between the initiator and the
+responder whereby the initiator may be the TLS client or the TLS server. The
+exchange has the following steps:
 
 1. Initiator sends a ExtendedKeyUpdateRequest message, which contains
 a key share. While an extended key update is in progress, the initiator
