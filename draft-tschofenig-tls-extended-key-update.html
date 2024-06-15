@@ -1045,7 +1045,7 @@ svg :is([fill="white"], [fill^="#fff"]) {
 </tr></thead>
 <tfoot><tr>
 <td class="left">Tschofenig, et al.</td>
-<td class="center">Expires 16 December 2024</td>
+<td class="center">Expires 17 December 2024</td>
 <td class="right">[Page]</td>
 </tr></tfoot>
 </table>
@@ -1058,12 +1058,12 @@ svg :is([fill="white"], [fill^="#fff"]) {
 <dd class="internet-draft">draft-tschofenig-tls-extended-key-update-latest</dd>
 <dt class="label-published">Published:</dt>
 <dd class="published">
-<time datetime="2024-06-14" class="published">14 June 2024</time>
+<time datetime="2024-06-15" class="published">15 June 2024</time>
     </dd>
 <dt class="label-intended-status">Intended Status:</dt>
 <dd class="intended-status">Standards Track</dd>
 <dt class="label-expires">Expires:</dt>
-<dd class="expires"><time datetime="2024-12-16">16 December 2024</time></dd>
+<dd class="expires"><time datetime="2024-12-17">17 December 2024</time></dd>
 <dt class="label-authors">Authors:</dt>
 <dd class="authors">
 <div class="author">
@@ -1133,7 +1133,7 @@ version 1.3 leaving a gap in the feature set of TLS.<a href="#section-abstract-2
         time. It is inappropriate to use Internet-Drafts as reference
         material or to cite them other than as "work in progress."<a href="#section-boilerplate.1-3" class="pilcrow">¶</a></p>
 <p id="section-boilerplate.1-4">
-        This Internet-Draft will expire on 16 December 2024.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
+        This Internet-Draft will expire on 17 December 2024.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="copyright">
@@ -1580,11 +1580,13 @@ such out-of-epoch records.<a href="#section-8-2" class="pilcrow">¶</a></p>
 <p id="section-9-1">Hybrid key exchange refers to using multiple key exchange algorithms
 simultaneously and combining the result with the goal of providing
 security even if all but one of the component algorithms is broken.
-It is motivated by transition to post-quantum cryptography. TLS supports
-the post-quantum key agreement via lattice-based key establishment
-mechanism (KEM)-based on the extension defined in
-<span>[<a href="#I-D.connolly-tls-mlkem-key-agreement" class="cite xref">I-D.connolly-tls-mlkem-key-agreement</a>]</span>. PQC algorithms can also be
-exchanged in key shares, as described in <span>[<a href="#I-D.ietf-tls-hybrid-design" class="cite xref">I-D.ietf-tls-hybrid-design</a>]</span>.<a href="#section-9-1" class="pilcrow">¶</a></p>
+The transition to post-quantum cryptography motivates the introduction
+of hybrid key exchanges to TLS, as described in
+<span>[<a href="#I-D.ietf-tls-hybrid-design" class="cite xref">I-D.ietf-tls-hybrid-design</a>]</span>. When the hybrid key exchange is used
+then the key_exchange field of a KeyShareEntry in the initial exchange
+is the concatenation of the key_exchange field for each of the algorithms.
+The same approach is then re-used in the extended key update when
+key shares are exchanged.<a href="#section-9-1" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="security-considerations">
@@ -1683,10 +1685,6 @@ HandshakeType" registry <span>[<a href="#TLS-Ext-Registry" class="cite xref">TLS
 <dt id="ANSSI-DAT-NT-003">[ANSSI-DAT-NT-003]</dt>
         <dd>
 <span class="refAuthor">ANSSI</span>, <span class="refTitle">"Recommendations for securing networks with IPsec, Technical Report"</span>, <time datetime="2015-08" class="refDate">August 2015</time>, <span>&lt;<a href="https://www.ssi.gouv.fr/uploads/2015/09/NT_IPsec_EN.pdf">https://www.ssi.gouv.fr/uploads/2015/09/NT_IPsec_EN.pdf</a>&gt;</span>. </dd>
-<dd class="break"></dd>
-<dt id="I-D.connolly-tls-mlkem-key-agreement">[I-D.connolly-tls-mlkem-key-agreement]</dt>
-        <dd>
-<span class="refAuthor">Connolly, D.</span>, <span class="refTitle">"ML-KEM Post-Quantum Key Agreement for TLS 1.3"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-connolly-tls-mlkem-key-agreement-01</span>, <time datetime="2024-03-21" class="refDate">21 March 2024</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-connolly-tls-mlkem-key-agreement-01">https://datatracker.ietf.org/doc/html/draft-connolly-tls-mlkem-key-agreement-01</a>&gt;</span>. </dd>
 <dd class="break"></dd>
 <dt id="I-D.ietf-tls-hybrid-design">[I-D.ietf-tls-hybrid-design]</dt>
         <dd>
