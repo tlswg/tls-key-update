@@ -314,21 +314,25 @@ The ExtendedKeyUpdate handshake message is used to indicate that
 the sender is updating its sending cryptographic keys.  This message can
 be sent by either endpoint after the Finished messages have been exchanged.
 
-The next generation of application_traffic_secret is computed as follows:
+The design of the key derivation function for computing the next generation
+of application_traffic_secret is motivated by the desire to include
+
+* the old traffic secret as well as a secret derived from the DH
+exchange or from the hybrid key exchange,
+* the concatenation of the ExtendedKeyUpdateRequest and the
+ExtendedKeyUpdateResponse messages, which contain the key shares, and
+* a new label string to distinguish it from the application traffic
+secret computation defined in {{I-D.ietf-tls-rfc8446bis}} for use with
+the regular KeyUpdate.
 
 ~~~
+sk = HKDF-Extract(Transcript-Hash(KeyUpdateMessages), secret)
+
 application_traffic_secret_N+1 =
-    HKDF-Expand-Label(SK,
-                      "traffic up2", "", Hash.length)
+    HKDF-Expand-Label(sk,
+                      "traffic up2", application_traffic_secret_N,
+                      Hash.length)
 ~~~
-
-There are two changes to the application_traffic_secret computation
-described in {{I-D.ietf-tls-rfc8446bis}}, namely
-
-- the label is adjusted to distinguish it from the regular KeyUpdate
-message, and
-- the SK value, which was derived between the two endpoints, is included
-in the generation of the application traffic secret.
 
 Once client_/server_application_traffic_secret_N+1 and its associated
 traffic keys have been computed, implementations SHOULD delete
