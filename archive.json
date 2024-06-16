@@ -1,0 +1,103 @@
+{
+  "magic": "E!vIA5L86J2I",
+  "timestamp": "2024-06-16T01:20:17.495263+00:00",
+  "repo": "hannestschofenig/tls-key-update",
+  "labels": [
+    {
+      "name": "bug",
+      "description": "Something isn't working",
+      "color": "d73a4a"
+    },
+    {
+      "name": "documentation",
+      "description": "Improvements or additions to documentation",
+      "color": "0075ca"
+    },
+    {
+      "name": "duplicate",
+      "description": "This issue or pull request already exists",
+      "color": "cfd3d7"
+    },
+    {
+      "name": "enhancement",
+      "description": "New feature or request",
+      "color": "a2eeef"
+    },
+    {
+      "name": "good first issue",
+      "description": "Good for newcomers",
+      "color": "7057ff"
+    },
+    {
+      "name": "help wanted",
+      "description": "Extra attention is needed",
+      "color": "008672"
+    },
+    {
+      "name": "invalid",
+      "description": "This doesn't seem right",
+      "color": "e4e669"
+    },
+    {
+      "name": "question",
+      "description": "Further information is requested",
+      "color": "d876e3"
+    },
+    {
+      "name": "wontfix",
+      "description": "This will not be worked on",
+      "color": "ffffff"
+    }
+  ],
+  "issues": [
+    {
+      "number": 1,
+      "id": "I_kwDOMJPqLM6MOilY",
+      "title": "Tiru's Review Comments",
+      "url": "https://github.com/hannestschofenig/tls-key-update/issues/1",
+      "state": "CLOSED",
+      "author": "hannestschofenig",
+      "authorAssociation": "OWNER",
+      "assignees": [],
+      "labels": [],
+      "body": "1.  I can't parse the below line:\r\n\"Send and receive keys are derived from independent traffic secrets, retaining the receive traffic secret does not threaten the forward secrecy of data sent before the sender changed keys.\"\r\n\r\n2. The fig-key-update sequence diagram does not reflect the use of ExtendedKeyUpdateRequest, ExtendedKeyUpdateResponse and NewKeyUpdate.\r\n\r\n3. If implementations independently initiate the extended key update procedure, and they cross in flight, the result is that each side increments keys by two generations.\r\n\r\ncomment> Another way to handle the race condition is that ExtendedKeyUpdateRequest which has lower lexicographic order will be discarded by the TLS peer. This approach ensures that only one key update is processed, avoiding the need to compute the keys twice and thereby simplifying the process.\r\n\r\nAlternatively, a default policy where the server has a higher precedence and in case of a race condition the ExtendedKeyUpdateRequest  from the client would be discarded. \r\n\r\n4. Once client_/server_application_traffic_secret_N+1 and its associated\r\ntraffic keys have been computed, implementations SHOULD delete\r\nclient_/server_application_traffic_secret_N and its associated\r\ntraffic keys.\r\n\r\ncomment> The client_/server_application_traffic_secret_N and its associated traffic keys can only be deleted after receiving the NewKeyUpdate message. \r\n\r\n5.  I would modify the application_traffic_secret_N+1 as follows:\r\n\r\n sk = HKDF-Extract(Transcript-Hash(KeyUpdateMessages), secret) // secret derived from DH exchange or hybrid key exchange\r\n application_traffic_secret_N+1 =\r\n     Derive-Secret(sk,\"traffic upd 2\",\r\n                     application_traffic_secret_N)\r\n\r\nThe next generation of traffic keys is computed using the HKDF, as defined in [RFC5869], and its two components, HKDF-Extract and     HKDF-Expand, as recommended in Appendix F.1.1 of [I-D.ietf-tls-rfc8446bis]. It would also ensure that client_application_traffic_secret_N+1 and sever_application_traffic_secret_N+1 are different. It also uses application_traffic_secret_N to create a binding security property to the prior key. \r\n\r\n7. The step 4 discussed in \"Extended Key Update Message\" does not look complete to me.\r\n\r\n8. Remove the following line (it does not discuss hybrid key exchange, it only refers to use of ML-KEM):\r\n\"TLS supports the hybrid key exchange based on the extension defined in {{I-D.connolly-tls-mlkem-key-agreement}}\"",
+      "createdAt": "2024-06-14T06:27:56Z",
+      "updatedAt": "2024-06-15T10:17:48Z",
+      "closedAt": "2024-06-15T10:17:48Z",
+      "comments": []
+    },
+    {
+      "number": 2,
+      "id": "I_kwDOMJPqLM6MRMe8",
+      "title": "Handling Key Updates by both Peers",
+      "url": "https://github.com/hannestschofenig/tls-key-update/issues/2",
+      "state": "OPEN",
+      "author": "hannestschofenig",
+      "authorAssociation": "OWNER",
+      "assignees": [],
+      "labels": [],
+      "body": "\r\n> If implementations independently initiate the extended key update procedure, and they cross in flight, the result is that each side increments keys by two generations.\r\n\r\ncomment> Another way to handle the race condition is that ExtendedKeyUpdateRequest which has lower lexicographic order will be discarded by the TLS peer. This approach ensures that only one key update is processed, avoiding the need to compute the keys twice and thereby simplifying the process.\r\n\r\nAlternatively, a default policy where the server has a higher precedence and in case of a race condition the ExtendedKeyUpdateRequest from the client would be discarded.",
+      "createdAt": "2024-06-14T12:53:55Z",
+      "updatedAt": "2024-06-14T12:53:55Z",
+      "closedAt": null,
+      "comments": []
+    },
+    {
+      "number": 3,
+      "id": "I_kwDOMJPqLM6MRM7M",
+      "title": "Key Derivation",
+      "url": "https://github.com/hannestschofenig/tls-key-update/issues/3",
+      "state": "CLOSED",
+      "author": "hannestschofenig",
+      "authorAssociation": "OWNER",
+      "assignees": [],
+      "labels": [],
+      "body": "\r\nI would modify the application_traffic_secret_N+1 as follows:\r\n\r\nsk = HKDF-Extract(Transcript-Hash(KeyUpdateMessages), secret) // secret derived from DH exchange or hybrid key exchange\r\napplication_traffic_secret_N+1 =\r\nDerive-Secret(sk,\"traffic upd 2\",\r\napplication_traffic_secret_N)\r\n\r\nThe next generation of traffic keys is computed using the HKDF, as defined in [RFC5869], and its two components, HKDF-Extract and HKDF-Expand, as recommended in Appendix F.1.1 of [I-D.ietf-tls-rfc8446bis]. It would also ensure that client_application_traffic_secret_N+1 and sever_application_traffic_secret_N+1 are different. It also uses application_traffic_secret_N to create a binding security property to the prior key.",
+      "createdAt": "2024-06-14T12:54:55Z",
+      "updatedAt": "2024-06-15T10:17:58Z",
+      "closedAt": "2024-06-15T10:17:58Z",
+      "comments": []
+    }
+  ],
+  "pulls": []
+}
