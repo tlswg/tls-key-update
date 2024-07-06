@@ -1427,12 +1427,16 @@ and MUST update its sending keys.<a href="#section-5-9.4.1" class="pilcrow">¶</
 the old keys. Additionally, both sides MUST enforce that a NewKeyUpdate
 with the old key is received before accepting any messages encrypted
 with the new key.<a href="#section-5-10" class="pilcrow">¶</a></p>
-<p id="section-5-11">If implementations independently initiate the extended key update
-procedure, and they cross in flight, the result is that each side
-increments keys by two generations.<a href="#section-5-11" class="pilcrow">¶</a></p>
+<p id="section-5-11">If TLS peers independently initiate the extended key update
+procedure and the requests cross in flight, the ExtendedKeyUpdateRequest
+message with the lower lexicographic order for the key_exchange value
+in the KeyShareEntry will be discarded by the TLS peers. This approach prevents
+each side incrementing keys by two generations.<a href="#section-5-11" class="pilcrow">¶</a></p>
+<p id="section-5-12">Endpoints MAY handle an excessive number of ExtendedKeyUpdateRequest messages by
+terminating the connection using a "too_many_extendedkeyupdate_requested" alert (alert number TBD).<a href="#section-5-12" class="pilcrow">¶</a></p>
 <span id="name-handshake-structure"></span><div id="fig-handshake">
 <figure id="figure-2">
-        <div class="alignLeft art-text artwork" id="section-5-12.1">
+        <div class="alignLeft art-text artwork" id="section-5-13.1">
 <pre>
       struct {
           HandshakeType msg_type;    /* handshake type */
@@ -1457,9 +1461,9 @@ increments keys by two generations.<a href="#section-5-11" class="pilcrow">¶</a
 <a href="#name-handshake-structure" class="selfRef">Handshake Structure.</a>
         </figcaption></figure>
 </div>
-<p id="section-5-13">The ExtendedKeyUpdate and the KeyUpdates MAY be used in combination
+<p id="section-5-14">The ExtendedKeyUpdate and the KeyUpdates MAY be used in combination
 over the lifetime of a TLS communication session, depending on the
-desired security properties.<a href="#section-5-13" class="pilcrow">¶</a></p>
+desired security properties.<a href="#section-5-14" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="key_update">
@@ -1548,7 +1552,7 @@ Exch | + key_share
                                           {CertificateVerify}  | Auth
                                                    {Finished}  v
                                &lt;--------
-     ^ {Certificate
+     ^ {Certificate}
 Auth | {CertificateVerify}
      v {Finished}              --------&gt;
                                   ...
@@ -1619,42 +1623,44 @@ tickets have been exchanged.<a href="#section-10-2" class="pilcrow">¶</a></p>
       <h2 id="name-iana-considerations">
 <a href="#section-11" class="section-number selfRef">11. </a><a href="#name-iana-considerations" class="section-name selfRef">IANA Considerations</a>
       </h2>
-<p id="section-11-1">IANA is requested to add the following entry to the "TLS Flags"
-extension registry <span>[<a href="#TLS-Ext-Registry" class="cite xref">TLS-Ext-Registry</a>]</span>:<a href="#section-11-1" class="pilcrow">¶</a></p>
+<p id="section-11-1">IANA is requested to allocate value TBD for the "too_many_extendedkeyupdate_requested" alert
+in the "TLS Alerts" registry. The value for the "DTLS-OK" column is "Y".<a href="#section-11-1" class="pilcrow">¶</a></p>
+<p id="section-11-2">IANA is requested to add the following entry to the "TLS Flags"
+extension registry <span>[<a href="#TLS-Ext-Registry" class="cite xref">TLS-Ext-Registry</a>]</span>:<a href="#section-11-2" class="pilcrow">¶</a></p>
 <ul class="normal">
-<li class="normal" id="section-11-2.1">
-          <p id="section-11-2.1.1">Value: TBD1<a href="#section-11-2.1.1" class="pilcrow">¶</a></p>
+<li class="normal" id="section-11-3.1">
+          <p id="section-11-3.1.1">Value: TBD1<a href="#section-11-3.1.1" class="pilcrow">¶</a></p>
 </li>
-        <li class="normal" id="section-11-2.2">
-          <p id="section-11-2.2.1">Flag Name: extended_key_update<a href="#section-11-2.2.1" class="pilcrow">¶</a></p>
+        <li class="normal" id="section-11-3.2">
+          <p id="section-11-3.2.1">Flag Name: extended_key_update<a href="#section-11-3.2.1" class="pilcrow">¶</a></p>
 </li>
-        <li class="normal" id="section-11-2.3">
-          <p id="section-11-2.3.1">Messages: CH, EE<a href="#section-11-2.3.1" class="pilcrow">¶</a></p>
+        <li class="normal" id="section-11-3.3">
+          <p id="section-11-3.3.1">Messages: CH, EE<a href="#section-11-3.3.1" class="pilcrow">¶</a></p>
 </li>
-        <li class="normal" id="section-11-2.4">
-          <p id="section-11-2.4.1">Recommended: Y<a href="#section-11-2.4.1" class="pilcrow">¶</a></p>
+        <li class="normal" id="section-11-3.4">
+          <p id="section-11-3.4.1">Recommended: Y<a href="#section-11-3.4.1" class="pilcrow">¶</a></p>
 </li>
-        <li class="normal" id="section-11-2.5">
-          <p id="section-11-2.5.1">Reference: [This document]<a href="#section-11-2.5.1" class="pilcrow">¶</a></p>
+        <li class="normal" id="section-11-3.5">
+          <p id="section-11-3.5.1">Reference: [This document]<a href="#section-11-3.5.1" class="pilcrow">¶</a></p>
 </li>
       </ul>
-<p id="section-11-3">IANA is requested to add the following entry to the "TLS
-HandshakeType" registry <span>[<a href="#TLS-Ext-Registry" class="cite xref">TLS-Ext-Registry</a>]</span>:<a href="#section-11-3" class="pilcrow">¶</a></p>
+<p id="section-11-4">IANA is requested to add the following entry to the "TLS
+HandshakeType" registry <span>[<a href="#TLS-Ext-Registry" class="cite xref">TLS-Ext-Registry</a>]</span>:<a href="#section-11-4" class="pilcrow">¶</a></p>
 <ul class="normal">
-<li class="normal" id="section-11-4.1">
-          <p id="section-11-4.1.1">Value: TBD2<a href="#section-11-4.1.1" class="pilcrow">¶</a></p>
+<li class="normal" id="section-11-5.1">
+          <p id="section-11-5.1.1">Value: TBD2<a href="#section-11-5.1.1" class="pilcrow">¶</a></p>
 </li>
-        <li class="normal" id="section-11-4.2">
-          <p id="section-11-4.2.1">Description: extended_key_update<a href="#section-11-4.2.1" class="pilcrow">¶</a></p>
+        <li class="normal" id="section-11-5.2">
+          <p id="section-11-5.2.1">Description: extended_key_update<a href="#section-11-5.2.1" class="pilcrow">¶</a></p>
 </li>
-        <li class="normal" id="section-11-4.3">
-          <p id="section-11-4.3.1">DTLS-OK: Y<a href="#section-11-4.3.1" class="pilcrow">¶</a></p>
+        <li class="normal" id="section-11-5.3">
+          <p id="section-11-5.3.1">DTLS-OK: Y<a href="#section-11-5.3.1" class="pilcrow">¶</a></p>
 </li>
-        <li class="normal" id="section-11-4.4">
-          <p id="section-11-4.4.1">Reference: [This document]<a href="#section-11-4.4.1" class="pilcrow">¶</a></p>
+        <li class="normal" id="section-11-5.4">
+          <p id="section-11-5.4.1">Reference: [This document]<a href="#section-11-5.4.1" class="pilcrow">¶</a></p>
 </li>
-        <li class="normal" id="section-11-4.5">
-          <p id="section-11-4.5.1">Comment:<a href="#section-11-4.5.1" class="pilcrow">¶</a></p>
+        <li class="normal" id="section-11-5.5">
+          <p id="section-11-5.5.1">Comment:<a href="#section-11-5.5.1" class="pilcrow">¶</a></p>
 </li>
       </ul>
 </section>
