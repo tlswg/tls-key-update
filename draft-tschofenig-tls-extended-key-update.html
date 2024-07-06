@@ -9,6 +9,7 @@
 <meta content="Michael Tüxen" name="author">
 <meta content="Tirumaleswar Reddy" name="author">
 <meta content="Steffen Fries" name="author">
+<meta content="Yaroslav Rosomakho" name="author">
 <meta content="
        The Transport Layer Security (TLS) 1.3 specification offers a dedicated
 message to update cryptographic keys during the lifetime of an ongoing session.
@@ -25,11 +26,11 @@ RFC 5746 was developed as a fix. Renegotiation has, however, been removed from
 version 1.3 leaving a gap in the feature set of TLS. 
        This specification defines an extended key update that supports forward secrecy. 
     " name="description">
-<meta content="xml2rfc 3.21.0" name="generator">
+<meta content="xml2rfc 3.22.0" name="generator">
 <meta content="Internet-Draft" name="keyword">
 <meta content="draft-tschofenig-tls-extended-key-update-latest" name="ietf.draft">
 <!-- Generator version information:
-  xml2rfc 3.21.0
+  xml2rfc 3.22.0
     Python 3.12.3
     ConfigArgParse 1.7
     google-i18n-address 3.1.0
@@ -39,9 +40,8 @@ version 1.3 leaving a gap in the feature set of TLS.
     platformdirs 4.2.2
     pycountry 22.3.5
     PyYAML 6.0.1
-    requests 2.31.0
+    requests 2.32.3
     setuptools 69.5.1
-    six 1.16.0
     wcwidth 0.2.13
 -->
 <link href="draft-tschofenig-tls-extended-key-update.xml" rel="alternate" type="application/rfc+xml">
@@ -1041,11 +1041,11 @@ svg :is([fill="white"], [fill^="#fff"]) {
 <thead><tr>
 <td class="left">Internet-Draft</td>
 <td class="center">Extended Key Update for TLS</td>
-<td class="right">June 2024</td>
+<td class="right">July 2024</td>
 </tr></thead>
 <tfoot><tr>
 <td class="left">Tschofenig, et al.</td>
-<td class="center">Expires 17 December 2024</td>
+<td class="center">Expires 7 January 2025</td>
 <td class="right">[Page]</td>
 </tr></tfoot>
 </table>
@@ -1058,12 +1058,12 @@ svg :is([fill="white"], [fill^="#fff"]) {
 <dd class="internet-draft">draft-tschofenig-tls-extended-key-update-latest</dd>
 <dt class="label-published">Published:</dt>
 <dd class="published">
-<time datetime="2024-06-15" class="published">15 June 2024</time>
+<time datetime="2024-07-06" class="published">6 July 2024</time>
     </dd>
 <dt class="label-intended-status">Intended Status:</dt>
 <dd class="intended-status">Standards Track</dd>
 <dt class="label-expires">Expires:</dt>
-<dd class="expires"><time datetime="2024-12-17">17 December 2024</time></dd>
+<dd class="expires"><time datetime="2025-01-07">7 January 2025</time></dd>
 <dt class="label-authors">Authors:</dt>
 <dd class="authors">
 <div class="author">
@@ -1081,6 +1081,10 @@ svg :is([fill="white"], [fill^="#fff"]) {
 <div class="author">
       <div class="author-name">S. Fries</div>
 <div class="org">Siemens</div>
+</div>
+<div class="author">
+      <div class="author-name">Y. Rosomakho</div>
+<div class="org">Zscaler</div>
 </div>
 </dd>
 </dl>
@@ -1133,7 +1137,7 @@ version 1.3 leaving a gap in the feature set of TLS.<a href="#section-abstract-2
         time. It is inappropriate to use Internet-Drafts as reference
         material or to cite them other than as "work in progress."<a href="#section-boilerplate.1-3" class="pilcrow">¶</a></p>
 <p id="section-boilerplate.1-4">
-        This Internet-Draft will expire on 17 December 2024.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
+        This Internet-Draft will expire on 7 January 2025.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="copyright">
@@ -1802,6 +1806,14 @@ specification.<a href="#appendix-A-4" class="pilcrow">¶</a></p>
 <div class="email">
 <span>Email:</span>
 <a href="mailto:steffen.fries@siemens.com" class="email">steffen.fries@siemens.com</a>
+</div>
+</address>
+<address class="vcard">
+        <div dir="auto" class="left"><span class="fn nameRole">Yaroslav Rosomakho</span></div>
+<div dir="auto" class="left"><span class="org">Zscaler</span></div>
+<div class="email">
+<span>Email:</span>
+<a href="mailto:yrosomakho@zscaler.com" class="email">yrosomakho@zscaler.com</a>
 </div>
 </address>
 </section>
