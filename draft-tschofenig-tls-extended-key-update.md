@@ -6,6 +6,7 @@ docname: draft-tschofenig-tls-extended-key-update-latest
 category: std
 
 ipr: trust200902
+submissiontype: IETF
 area: "Security"
 workgroup: "Transport Layer Security"
 keyword: Internet-Draft
@@ -284,9 +285,14 @@ the old keys. Additionally, both sides MUST enforce that a NewKeyUpdate
 with the old key is received before accepting any messages encrypted
 with the new key.
 
-If implementations independently initiate the extended key update
-procedure, and they cross in flight, the result is that each side
-increments keys by two generations.
+If TLS peers independently initiate the extended key update
+procedure and the requests cross in flight, the ExtendedKeyUpdateRequest
+message with the lower lexicographic order for the key_exchange value
+in the KeyShareEntry will be discarded by the TLS peers. This approach prevents
+each side incrementing keys by two generations.
+
+Endpoints MAY handle an excessive number of ExtendedKeyUpdateRequest messages by
+terminating the connection using a "too_many_extendedkeyupdate_requested" alert (alert number TBD).
 
 ~~~
       struct {
@@ -382,7 +388,7 @@ Exch | + key_share
                                           {CertificateVerify}  | Auth
                                                    {Finished}  v
                                <--------
-     ^ {Certificate
+     ^ {Certificate}
 Auth | {CertificateVerify}
      v {Finished}              -------->
                                   ...
@@ -434,6 +440,9 @@ updates to the application traffic secret derivation, depending on when
 tickets have been exchanged.
 
 # IANA Considerations
+
+IANA is requested to allocate value TBD for the "too_many_extendedkeyupdate_requested" alert
+in the "TLS Alerts" registry. The value for the "DTLS-OK" column is "Y".
 
 IANA is requested to add the following entry to the "TLS Flags"
 extension registry {{TLS-Ext-Registry}}:
