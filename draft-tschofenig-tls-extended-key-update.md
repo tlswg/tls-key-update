@@ -76,7 +76,7 @@ informative:
      author:
         org: ACM
      title: "Keeping Up with the KEMs: Stronger Security Notions for KEMs and automated analysis of KEM-based protocols"
-     target: https://eprint.iacr.org/2023/1933.pdf 
+     target: https://eprint.iacr.org/2023/1933.pdf
      date: November 2023
 
 --- abstract
