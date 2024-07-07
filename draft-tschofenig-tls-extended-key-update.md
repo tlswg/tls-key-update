@@ -72,6 +72,12 @@ informative:
      title: Transport Layer Security (TLS) Extensions
      target: https://www.iana.org/assignments/tls-extensiontype-values
      date: November 2023
+  CDM23:
+     author:
+        org: ACM
+     title: "Keeping Up with the KEMs: Stronger Security Notions for KEMs and automated analysis of KEM-based protocols"
+     target: https://eprint.iacr.org/2023/1933.pdf 
+     date: November 2023
 
 --- abstract
 
@@ -331,7 +337,9 @@ of application_traffic_secret is motivated by the desire to include
 * the old traffic secret as well as a secret derived from the DH
 exchange or from the hybrid key exchange,
 * the concatenation of the ExtendedKeyUpdateRequest and the
-ExtendedKeyUpdateResponse messages, which contain the key shares, and
+ExtendedKeyUpdateResponse messages, which contain the key shares, binding
+the encapsulated shared secret ciphertext to IKM in case of hybrid key
+exchange, providing MAL-BIND-K-CT security (see {{CDM23}}), and
 * a new label string to distinguish it from the application traffic
 secret computation defined in {{I-D.ietf-tls-rfc8446bis}} for use with
 the regular KeyUpdate.
@@ -344,6 +352,9 @@ application_traffic_secret_N+1 =
                       "traffic up2", application_traffic_secret_N,
                       Hash.length)
 ~~~
+
+The traffic keys are re-derived from the client_/server_application_traffic_secret_N+1
+as described in Section 7.3 of {{I-D.ietf-tls-rfc8446bis}}.
 
 Once client_/server_application_traffic_secret_N+1 and its associated
 traffic keys have been computed, implementations SHOULD delete
