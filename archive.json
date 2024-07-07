@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2024-07-04T01:15:46.692449+00:00",
+  "timestamp": "2024-07-07T01:22:02.153707+00:00",
   "repo": "hannestschofenig/tls-key-update",
   "labels": [
     {
@@ -71,16 +71,24 @@
       "id": "I_kwDOMJPqLM6MRMe8",
       "title": "Handling Key Updates by both Peers",
       "url": "https://github.com/hannestschofenig/tls-key-update/issues/2",
-      "state": "OPEN",
+      "state": "CLOSED",
       "author": "hannestschofenig",
       "authorAssociation": "OWNER",
       "assignees": [],
       "labels": [],
       "body": "\r\n> If implementations independently initiate the extended key update procedure, and they cross in flight, the result is that each side increments keys by two generations.\r\n\r\ncomment> Another way to handle the race condition is that ExtendedKeyUpdateRequest which has lower lexicographic order will be discarded by the TLS peer. This approach ensures that only one key update is processed, avoiding the need to compute the keys twice and thereby simplifying the process.\r\n\r\nAlternatively, a default policy where the server has a higher precedence and in case of a race condition the ExtendedKeyUpdateRequest from the client would be discarded.",
       "createdAt": "2024-06-14T12:53:55Z",
-      "updatedAt": "2024-06-14T12:53:55Z",
-      "closedAt": null,
-      "comments": []
+      "updatedAt": "2024-07-06T14:17:12Z",
+      "closedAt": "2024-07-06T14:17:12Z",
+      "comments": [
+        {
+          "author": "stfries",
+          "authorAssociation": "COLLABORATOR",
+          "body": "I would be in favor with the alternative as it also aligns with the cipher suite negotiation. Here also the server has the last word in the selection.  ",
+          "createdAt": "2024-07-04T18:30:02Z",
+          "updatedAt": "2024-07-04T18:30:02Z"
+        }
+      ]
     },
     {
       "number": 3,
@@ -99,5 +107,112 @@
       "comments": []
     }
   ],
-  "pulls": []
+  "pulls": [
+    {
+      "number": 4,
+      "id": "PR_kwDOMJPqLM50eFLu",
+      "title": "Added Yaroslav",
+      "url": "https://github.com/hannestschofenig/tls-key-update/pull/4",
+      "state": "MERGED",
+      "author": "hannestschofenig",
+      "authorAssociation": "OWNER",
+      "assignees": [],
+      "labels": [],
+      "body": "",
+      "createdAt": "2024-07-04T18:23:11Z",
+      "updatedAt": "2024-07-06T08:16:10Z",
+      "baseRepository": "hannestschofenig/tls-key-update",
+      "baseRefName": "main",
+      "baseRefOid": "b39ead032117c5749ba065e717e2f17e815b47d5",
+      "headRepository": "hannestschofenig/tls-key-update",
+      "headRefName": "hannestschofenig-patch-1",
+      "headRefOid": "2104530cfa428aa084b4d3f0b8169db49a02d04d",
+      "closedAt": "2024-07-06T08:16:10Z",
+      "mergedAt": "2024-07-06T08:16:10Z",
+      "mergedBy": "tireddy2",
+      "mergeCommit": {
+        "oid": "960171f5bccb5e52080caa667c7b272088b6953c"
+      },
+      "comments": [
+        {
+          "author": "stfries",
+          "authorAssociation": "COLLABORATOR",
+          "body": "Fine with me. ",
+          "createdAt": "2024-07-04T18:31:35Z",
+          "updatedAt": "2024-07-04T18:31:35Z"
+        }
+      ],
+      "reviews": [
+        {
+          "id": "PRR_kwDOMJPqLM6AtacT",
+          "commit": {
+            "abbreviatedOid": "2104530"
+          },
+          "author": "stfries",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2024-07-04T18:33:19Z",
+          "updatedAt": "2024-07-04T18:33:19Z",
+          "comments": [
+            {
+              "originalPosition": 8,
+              "body": "Fine from my point of view ",
+              "createdAt": "2024-07-04T18:33:19Z",
+              "updatedAt": "2024-07-04T18:33:19Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM6AtahN",
+          "commit": {
+            "abbreviatedOid": "2104530"
+          },
+          "author": "stfries",
+          "authorAssociation": "COLLABORATOR",
+          "state": "APPROVED",
+          "body": "Fine from my point of view",
+          "createdAt": "2024-07-04T18:33:42Z",
+          "updatedAt": "2024-07-04T18:33:42Z",
+          "comments": []
+        }
+      ]
+    },
+    {
+      "number": 5,
+      "id": "PR_kwDOMJPqLM50lY6Y",
+      "title": "Address pending issues",
+      "url": "https://github.com/hannestschofenig/tls-key-update/pull/5",
+      "state": "MERGED",
+      "author": "tireddy2",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [],
+      "body": "updated draft to address https://github.com/hannestschofenig/tls-key-update/issues/2 and alert to handle or too many extended key update requests.",
+      "createdAt": "2024-07-06T08:51:38Z",
+      "updatedAt": "2024-07-06T14:17:01Z",
+      "baseRepository": "hannestschofenig/tls-key-update",
+      "baseRefName": "main",
+      "baseRefOid": "960171f5bccb5e52080caa667c7b272088b6953c",
+      "headRepository": "hannestschofenig/tls-key-update",
+      "headRefName": "tireddy2-patch-1",
+      "headRefOid": "1dd4bd0b0991fa0ecc0bfd9fce6ed9c429b47d32",
+      "closedAt": "2024-07-06T14:16:58Z",
+      "mergedAt": "2024-07-06T14:16:58Z",
+      "mergedBy": "hannestschofenig",
+      "mergeCommit": {
+        "oid": "38482e0dba20f1d25a12c6d810722ffef5cb3836"
+      },
+      "comments": [
+        {
+          "author": "hannestschofenig",
+          "authorAssociation": "OWNER",
+          "body": "Thanks, Tiru, for the PR!",
+          "createdAt": "2024-07-06T14:16:55Z",
+          "updatedAt": "2024-07-06T14:16:55Z"
+        }
+      ],
+      "reviews": []
+    }
+  ]
 }
