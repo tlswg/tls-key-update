@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2024-07-07T01:22:02.153707+00:00",
+  "timestamp": "2024-07-09T01:16:49.531622+00:00",
   "repo": "hannestschofenig/tls-key-update",
   "labels": [
     {
@@ -212,6 +212,34 @@
           "updatedAt": "2024-07-06T14:16:55Z"
         }
       ],
+      "reviews": []
+    },
+    {
+      "number": 6,
+      "id": "PR_kwDOMJPqLM50mzaf",
+      "title": "Update to \"Updating Traffic Secrets Section\"",
+      "url": "https://github.com/hannestschofenig/tls-key-update/pull/6",
+      "state": "MERGED",
+      "author": "tireddy2",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [],
+      "body": "",
+      "createdAt": "2024-07-07T06:40:35Z",
+      "updatedAt": "2024-07-08T13:48:30Z",
+      "baseRepository": "hannestschofenig/tls-key-update",
+      "baseRefName": "main",
+      "baseRefOid": "1b157281482bb37047d91538458412e311c2ac6f",
+      "headRepository": "hannestschofenig/tls-key-update",
+      "headRefName": "tireddy2-patch-1",
+      "headRefOid": "cba9433cbc57996a16493de714b18614027d3984",
+      "closedAt": "2024-07-08T13:48:27Z",
+      "mergedAt": "2024-07-08T13:48:27Z",
+      "mergedBy": "hannestschofenig",
+      "mergeCommit": {
+        "oid": "3f72764465d7c54830de0f119b42e2d5df4e1b1f"
+      },
+      "comments": [],
       "reviews": []
     }
   ]
