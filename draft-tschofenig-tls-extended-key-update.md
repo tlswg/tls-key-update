@@ -213,6 +213,9 @@ is negotiated in the ClientHello and the EncryptedExtensions
 messages. Then, the ExtendedKeyUpdate exchange is sent to
 update the application traffic secrets.
 
+The extended key update exchange is performed between the initiator and the
+responder whereby the initiator may be the TLS client or the TLS server.
+
 ~~~
        Client                                           Server
 
@@ -252,33 +255,64 @@ struct {
   KeyShareEntry key_share;
 } ExtendedKeyUpdateRequest;
 
+enum {
+  accepted(0),
+  rate_limited(1),
+  rejected(2),
+  clashed(3),
+  (255)
+} ExtendedKeyUpdateResponseStatus;
+
 struct {
-  KeyShareEntry key_share;
+  ExtendedKeyUpdateResponseStatus status;
+  select (ExtendedKeyUpdateResponse.status) {
+     case accepted: KeyShareEntry;
+  }
 } ExtendedKeyUpdateResponse;
 
 struct {
 } NewKeyUpdate;
 ~~~
 
-key_exchange:  Key exchange information.  The contents of this field
+key_share:  Key share information.  The contents of this field
   are determined by the specified group and its corresponding
   definition. The structures are defined in {{I-D.ietf-tls-rfc8446bis}}.
 
-The extended key update exchange is performed between the initiator and the
-responder whereby the initiator may be the TLS client or the TLS server. The
-exchange has the following steps:
+status:  Response to ExtendedKeyUpdateRequest. This status field allows
+  responder to decline Extended Key Update Request without terminating TLS
+  connection with a fatal Alert.
+
+There are three rejection reasons defined:
+
+1. `rate_limited`: request was declined temporarily as responder is too busy.
+Initiator SHOULD retry after a delay. Note that responder MAY apply an
+overall rate limit to extended key update that would not be specific to
+given TLS session. If initiator cannot proceed without immediate Extended
+Key Update it should terminate the connection with TLS alert
+"extended_key_update_required" (alert number TBD).
+
+2. `rejected`: request was declined permanently. Initiator MUST NOT retry and
+if it cannot proceed without Extended Key Update it should terminate the
+connection with alert "extended_key_update_required" (alert number TBD).
+
+3. `clashed`: request was declined because responder already initiated its own
+extended key update.
+
+The exchange has the following steps:
 
 1. Initiator sends a ExtendedKeyUpdateRequest message, which contains
 a key share. While an extended key update is in progress, the initiator
 MUST NOT initiate further key updates.
 
 2. On receipt of the ExtendedKeyUpdateRequest message, the responder
-sends the ExtendedKeyUpdateResponse message. This message contains the
-key share of the responder. While an extended key update is in progress,
+sends the ExtendedKeyUpdateResponse message. If the responder accepts the
+request, it sets the status to `accepted` and includes its own key share.
+If the responder declines the request, it sets the status accordingly and
+does not include the key share. While an extended key update is in progress,
 the responder MUST NOT initiate further key updates.
 
-3. On receipt of the ExtendedKeyUpdateResponse message, the initiator
-is able to derive a secret key based on the exchanged key shares.
+3. On receipt of the ExtendedKeyUpdateResponse message with `accepted` status,
+the initiator is able to derive a secret key based on the exchanged key shares.
 After sending a NewKeyUpdate message, the initiator MUST update its
 traffic keys and MUST send all its traffic using the next generation of keys.
 
@@ -294,11 +328,9 @@ with the new key.
 If TLS peers independently initiate the extended key update
 procedure and the requests cross in flight, the ExtendedKeyUpdateRequest
 message with the lower lexicographic order for the key_exchange value
-in the KeyShareEntry will be discarded by the TLS peers. This approach prevents
-each side incrementing keys by two generations.
-
-Endpoints MAY handle an excessive number of ExtendedKeyUpdateRequest messages by
-terminating the connection using a "too_many_extendedkeyupdate_requested" alert (alert number TBD).
+in the KeyShareEntry will be rejected by the responder using `clashed` status
+in ExtendedKeyUpdateResponse message. This approach prevents each side incrementing
+keys by two generations.
 
 ~~~
       struct {
