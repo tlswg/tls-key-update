@@ -60,6 +60,7 @@ informative:
   RFC7296:
   RFC7624:
   I-D.ietf-tls-hybrid-design:
+  I-D.ietf-tls-keylogfile:
   ANSSI-DAT-NT-003:
      author:
         org: ANSSI
@@ -439,6 +440,23 @@ then the key_exchange field of a KeyShareEntry in the initial exchange
 is the concatenation of the key_exchange field for each of the algorithms.
 The same approach is then re-used in the extended key update when
 key shares are exchanged.
+
+# SSLKEYLOGFILE update
+
+As Extended Key Update invalidates previous secrets, SSLKEYLOGFILE {{I-D.ietf-tls-keylogfile}} needs to
+be populated with new entries. Each completed Extended Key Update results
+in two additional secret labels in SSLKEYLOGFILE:
+
+1. `CLIENT_TRAFFIC_SECRET_N+1`: identified as client_application_traffic_secret_N+1 in the key schedule
+
+2. `SERVER_TRAFFIC_SECRET_N+1`: identified as server_application_traffic_secret_N+1 in the key schedule
+
+Similarly to other records in SSLKEYLOGFILE label is followed by 32-byte value
+of the Random field from the ClientHello message that established the TLS
+connection and corresponding secret encoded in hexadecimal.
+
+SSLKEYLOGFILE entries for Extended Key Update MUST NOT be produced if
+SSLKEYLOGFILE was not used for other secrets in the handshake.
 
 #  Security Considerations
 
