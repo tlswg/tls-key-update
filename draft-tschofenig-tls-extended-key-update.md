@@ -257,7 +257,7 @@ struct {
 
 enum {
   accepted(0),
-  rate_limited(1),
+  retry(1),
   rejected(2),
   clashed(3),
   (255)
@@ -266,7 +266,8 @@ enum {
 struct {
   ExtendedKeyUpdateResponseStatus status;
   select (ExtendedKeyUpdateResponse.status) {
-     case accepted: KeyShareEntry;
+     case accepted: KeyShareEntry key_share;
+     case retry: uint8 delay;
   }
 } ExtendedKeyUpdateResponse;
 
@@ -278,18 +279,20 @@ key_share:  Key share information.  The contents of this field
   are determined by the specified group and its corresponding
   definition. The structures are defined in {{I-D.ietf-tls-rfc8446bis}}.
 
-status:  Response to ExtendedKeyUpdateRequest. This status field allows
-  responder to decline Extended Key Update Request without terminating TLS
-  connection with a fatal Alert.
+status:  Response to ExtendedKeyUpdateRequest. This status field indicates
+  whether responder accepted or declined Extended Key Update Request.
+
+delay:  Delay in seconds for the initiator to retry the request.
 
 There are three rejection reasons defined:
 
-1. `rate_limited`: request was declined temporarily as responder is too busy.
-Initiator SHOULD retry after a delay. Note that responder MAY apply an
-overall rate limit to extended key update that would not be specific to
-given TLS session. If initiator cannot proceed without immediate Extended
-Key Update it should terminate the connection with TLS alert
-"extended_key_update_required" (alert number TBD).
+1. `retry`: request was declined temporarily as responder is too busy.
+In this case ExtendedKeyUpdateResponse contains delay in seconds for initiator
+to retry. Initiator MUST NOT retry within this interval and SHOULD retry after
+it lapsed. Note that responder MAY apply an overall rate limit to extended key
+update that would not be specific to given TLS session. If initiator cannot
+proceed without immediate Extended Key Update it should terminate the connection
+with TLS alert "extended_key_update_required" (alert number TBD).
 
 2. `rejected`: request was declined permanently. Initiator MUST NOT retry and
 if it cannot proceed without Extended Key Update it should terminate the
