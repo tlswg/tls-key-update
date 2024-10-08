@@ -1,7 +1,7 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2024-10-06T01:40:28.394733+00:00",
-  "repo": "hannestschofenig/tls-key-update",
+  "timestamp": "2024-10-08T01:35:01.810222+00:00",
+  "repo": "tlswg/tls-key-update",
   "labels": [
     {
       "name": "bug",
@@ -54,10 +54,10 @@
       "number": 1,
       "id": "I_kwDOMJPqLM6MOilY",
       "title": "Tiru's Review Comments",
-      "url": "https://github.com/hannestschofenig/tls-key-update/issues/1",
+      "url": "https://github.com/tlswg/tls-key-update/issues/1",
       "state": "CLOSED",
       "author": "hannestschofenig",
-      "authorAssociation": "OWNER",
+      "authorAssociation": "COLLABORATOR",
       "assignees": [],
       "labels": [],
       "body": "1.  I can't parse the below line:\r\n\"Send and receive keys are derived from independent traffic secrets, retaining the receive traffic secret does not threaten the forward secrecy of data sent before the sender changed keys.\"\r\n\r\n2. The fig-key-update sequence diagram does not reflect the use of ExtendedKeyUpdateRequest, ExtendedKeyUpdateResponse and NewKeyUpdate.\r\n\r\n3. If implementations independently initiate the extended key update procedure, and they cross in flight, the result is that each side increments keys by two generations.\r\n\r\ncomment> Another way to handle the race condition is that ExtendedKeyUpdateRequest which has lower lexicographic order will be discarded by the TLS peer. This approach ensures that only one key update is processed, avoiding the need to compute the keys twice and thereby simplifying the process.\r\n\r\nAlternatively, a default policy where the server has a higher precedence and in case of a race condition the ExtendedKeyUpdateRequest  from the client would be discarded. \r\n\r\n4. Once client_/server_application_traffic_secret_N+1 and its associated\r\ntraffic keys have been computed, implementations SHOULD delete\r\nclient_/server_application_traffic_secret_N and its associated\r\ntraffic keys.\r\n\r\ncomment> The client_/server_application_traffic_secret_N and its associated traffic keys can only be deleted after receiving the NewKeyUpdate message. \r\n\r\n5.  I would modify the application_traffic_secret_N+1 as follows:\r\n\r\n sk = HKDF-Extract(Transcript-Hash(KeyUpdateMessages), secret) // secret derived from DH exchange or hybrid key exchange\r\n application_traffic_secret_N+1 =\r\n     Derive-Secret(sk,\"traffic upd 2\",\r\n                     application_traffic_secret_N)\r\n\r\nThe next generation of traffic keys is computed using the HKDF, as defined in [RFC5869], and its two components, HKDF-Extract and     HKDF-Expand, as recommended in Appendix F.1.1 of [I-D.ietf-tls-rfc8446bis]. It would also ensure that client_application_traffic_secret_N+1 and sever_application_traffic_secret_N+1 are different. It also uses application_traffic_secret_N to create a binding security property to the prior key. \r\n\r\n7. The step 4 discussed in \"Extended Key Update Message\" does not look complete to me.\r\n\r\n8. Remove the following line (it does not discuss hybrid key exchange, it only refers to use of ML-KEM):\r\n\"TLS supports the hybrid key exchange based on the extension defined in {{I-D.connolly-tls-mlkem-key-agreement}}\"",
@@ -70,10 +70,10 @@
       "number": 2,
       "id": "I_kwDOMJPqLM6MRMe8",
       "title": "Handling Key Updates by both Peers",
-      "url": "https://github.com/hannestschofenig/tls-key-update/issues/2",
+      "url": "https://github.com/tlswg/tls-key-update/issues/2",
       "state": "CLOSED",
       "author": "hannestschofenig",
-      "authorAssociation": "OWNER",
+      "authorAssociation": "COLLABORATOR",
       "assignees": [],
       "labels": [],
       "body": "\r\n> If implementations independently initiate the extended key update procedure, and they cross in flight, the result is that each side increments keys by two generations.\r\n\r\ncomment> Another way to handle the race condition is that ExtendedKeyUpdateRequest which has lower lexicographic order will be discarded by the TLS peer. This approach ensures that only one key update is processed, avoiding the need to compute the keys twice and thereby simplifying the process.\r\n\r\nAlternatively, a default policy where the server has a higher precedence and in case of a race condition the ExtendedKeyUpdateRequest from the client would be discarded.",
@@ -94,10 +94,10 @@
       "number": 3,
       "id": "I_kwDOMJPqLM6MRM7M",
       "title": "Key Derivation",
-      "url": "https://github.com/hannestschofenig/tls-key-update/issues/3",
+      "url": "https://github.com/tlswg/tls-key-update/issues/3",
       "state": "CLOSED",
       "author": "hannestschofenig",
-      "authorAssociation": "OWNER",
+      "authorAssociation": "COLLABORATOR",
       "assignees": [],
       "labels": [],
       "body": "\r\nI would modify the application_traffic_secret_N+1 as follows:\r\n\r\nsk = HKDF-Extract(Transcript-Hash(KeyUpdateMessages), secret) // secret derived from DH exchange or hybrid key exchange\r\napplication_traffic_secret_N+1 =\r\nDerive-Secret(sk,\"traffic upd 2\",\r\napplication_traffic_secret_N)\r\n\r\nThe next generation of traffic keys is computed using the HKDF, as defined in [RFC5869], and its two components, HKDF-Extract and HKDF-Expand, as recommended in Appendix F.1.1 of [I-D.ietf-tls-rfc8446bis]. It would also ensure that client_application_traffic_secret_N+1 and sever_application_traffic_secret_N+1 are different. It also uses application_traffic_secret_N to create a binding security property to the prior key.",
@@ -112,19 +112,19 @@
       "number": 4,
       "id": "PR_kwDOMJPqLM50eFLu",
       "title": "Added Yaroslav",
-      "url": "https://github.com/hannestschofenig/tls-key-update/pull/4",
+      "url": "https://github.com/tlswg/tls-key-update/pull/4",
       "state": "MERGED",
       "author": "hannestschofenig",
-      "authorAssociation": "OWNER",
+      "authorAssociation": "COLLABORATOR",
       "assignees": [],
       "labels": [],
       "body": "",
       "createdAt": "2024-07-04T18:23:11Z",
       "updatedAt": "2024-07-06T08:16:10Z",
-      "baseRepository": "hannestschofenig/tls-key-update",
+      "baseRepository": "tlswg/tls-key-update",
       "baseRefName": "main",
       "baseRefOid": "b39ead032117c5749ba065e717e2f17e815b47d5",
-      "headRepository": "hannestschofenig/tls-key-update",
+      "headRepository": "tlswg/tls-key-update",
       "headRefName": "hannestschofenig-patch-1",
       "headRefOid": "2104530cfa428aa084b4d3f0b8169db49a02d04d",
       "closedAt": "2024-07-06T08:16:10Z",
@@ -182,7 +182,7 @@
       "number": 5,
       "id": "PR_kwDOMJPqLM50lY6Y",
       "title": "Address pending issues",
-      "url": "https://github.com/hannestschofenig/tls-key-update/pull/5",
+      "url": "https://github.com/tlswg/tls-key-update/pull/5",
       "state": "MERGED",
       "author": "tireddy2",
       "authorAssociation": "COLLABORATOR",
@@ -191,10 +191,10 @@
       "body": "updated draft to address https://github.com/hannestschofenig/tls-key-update/issues/2 and alert to handle or too many extended key update requests.",
       "createdAt": "2024-07-06T08:51:38Z",
       "updatedAt": "2024-07-06T14:17:01Z",
-      "baseRepository": "hannestschofenig/tls-key-update",
+      "baseRepository": "tlswg/tls-key-update",
       "baseRefName": "main",
       "baseRefOid": "960171f5bccb5e52080caa667c7b272088b6953c",
-      "headRepository": "hannestschofenig/tls-key-update",
+      "headRepository": "tlswg/tls-key-update",
       "headRefName": "tireddy2-patch-1",
       "headRefOid": "1dd4bd0b0991fa0ecc0bfd9fce6ed9c429b47d32",
       "closedAt": "2024-07-06T14:16:58Z",
@@ -206,7 +206,7 @@
       "comments": [
         {
           "author": "hannestschofenig",
-          "authorAssociation": "OWNER",
+          "authorAssociation": "COLLABORATOR",
           "body": "Thanks, Tiru, for the PR!",
           "createdAt": "2024-07-06T14:16:55Z",
           "updatedAt": "2024-07-06T14:16:55Z"
@@ -218,7 +218,7 @@
       "number": 6,
       "id": "PR_kwDOMJPqLM50mzaf",
       "title": "Update to \"Updating Traffic Secrets Section\"",
-      "url": "https://github.com/hannestschofenig/tls-key-update/pull/6",
+      "url": "https://github.com/tlswg/tls-key-update/pull/6",
       "state": "MERGED",
       "author": "tireddy2",
       "authorAssociation": "COLLABORATOR",
@@ -227,10 +227,10 @@
       "body": "",
       "createdAt": "2024-07-07T06:40:35Z",
       "updatedAt": "2024-07-08T13:48:30Z",
-      "baseRepository": "hannestschofenig/tls-key-update",
+      "baseRepository": "tlswg/tls-key-update",
       "baseRefName": "main",
       "baseRefOid": "1b157281482bb37047d91538458412e311c2ac6f",
-      "headRepository": "hannestschofenig/tls-key-update",
+      "headRepository": "tlswg/tls-key-update",
       "headRefName": "tireddy2-patch-1",
       "headRefOid": "cba9433cbc57996a16493de714b18614027d3984",
       "closedAt": "2024-07-08T13:48:27Z",
@@ -241,6 +241,147 @@
       },
       "comments": [],
       "reviews": []
+    },
+    {
+      "number": 7,
+      "id": "PR_kwDOMJPqLM59vUBy",
+      "title": "Added status for soft rejection of the request",
+      "url": "https://github.com/tlswg/tls-key-update/pull/7",
+      "state": "OPEN",
+      "author": "yaroslavros",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [],
+      "body": "As discussed, here is my suggestion for soft rejection of extended key update request.\r\n\r\nIt should be up to initiator to terminate the connection if it is not happy with the rejection instead of taking the risk of getting connection terminated by responder if it does not want to proceed.",
+      "createdAt": "2024-10-06T20:09:35Z",
+      "updatedAt": "2024-10-07T21:34:05Z",
+      "baseRepository": "tlswg/tls-key-update",
+      "baseRefName": "main",
+      "baseRefOid": "3f72764465d7c54830de0f119b42e2d5df4e1b1f",
+      "headRepository": "yaroslavros/tls-key-update",
+      "headRefName": "main",
+      "headRefOid": "5463696c1e6cae090623845d39563fa386f21c48",
+      "closedAt": null,
+      "mergedAt": null,
+      "mergedBy": null,
+      "mergeCommit": null,
+      "comments": [
+        {
+          "author": "yaroslavros",
+          "authorAssociation": "COLLABORATOR",
+          "body": "As suggested, updated with adding delay specification for retry status code and removed unnecessary alert reference.",
+          "createdAt": "2024-10-07T21:34:04Z",
+          "updatedAt": "2024-10-07T21:34:04Z"
+        }
+      ],
+      "reviews": [
+        {
+          "id": "PRR_kwDOMJPqLM6MLec2",
+          "commit": {
+            "abbreviatedOid": "9c920ba"
+          },
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2024-10-07T12:33:46Z",
+          "updatedAt": "2024-10-07T12:45:48Z",
+          "comments": [
+            {
+              "originalPosition": 44,
+              "body": "I think a fatal alert means both the peers will have to immediately close the connection (see https://www.ietf.org/archive/id/draft-ietf-tls-rfc8446bis-11.html#error-alerts). ",
+              "createdAt": "2024-10-07T12:33:46Z",
+              "updatedAt": "2024-10-07T12:45:48Z"
+            },
+            {
+              "originalPosition": 49,
+              "body": "What would be the delay time? It would be helpful if the responder could indicate the time after which the initiator can retry the extended key update.",
+              "createdAt": "2024-10-07T12:37:55Z",
+              "updatedAt": "2024-10-07T12:45:48Z"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "number": 8,
+      "id": "PR_kwDOMJPqLM59vWIZ",
+      "title": "Added relevant SSLKEYLOGFILE labels",
+      "url": "https://github.com/tlswg/tls-key-update/pull/8",
+      "state": "OPEN",
+      "author": "yaroslavros",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [],
+      "body": "In line with the SSLKEYLOGFILE spec.\r\nConveniently existing initial secret labels are already called \"CLIENT_TRAFFIC_SECRET_0\" and \"SERVER_TRAFFIC_SECRET_0\", so continuing numbering scheme seems to be no-brainer.",
+      "createdAt": "2024-10-06T20:37:55Z",
+      "updatedAt": "2024-10-07T21:22:45Z",
+      "baseRepository": "tlswg/tls-key-update",
+      "baseRefName": "main",
+      "baseRefOid": "3f72764465d7c54830de0f119b42e2d5df4e1b1f",
+      "headRepository": "yaroslavros/tls-key-update",
+      "headRefName": "sslkeylog",
+      "headRefOid": "e2329a5ca9142097a896a533cf777807431ff825",
+      "closedAt": null,
+      "mergedAt": null,
+      "mergedBy": null,
+      "mergeCommit": null,
+      "comments": [],
+      "reviews": [
+        {
+          "id": "PRR_kwDOMJPqLM6MLa79",
+          "commit": {
+            "abbreviatedOid": "e2329a5"
+          },
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2024-10-07T12:27:33Z",
+          "updatedAt": "2024-10-07T12:27:33Z",
+          "comments": [
+            {
+              "originalPosition": 28,
+              "body": "We may want to add the following text to this section : \r\nNote that even with knowledge of '_TRAFFIC_SECRET_N+1', none of the subsequent application data traffic secrets generated using extended key update can be derived.",
+              "createdAt": "2024-10-07T12:27:33Z",
+              "updatedAt": "2024-10-07T12:27:33Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM6MLbPP",
+          "commit": {
+            "abbreviatedOid": "e2329a5"
+          },
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "Rest of the changes look good to me. ",
+          "createdAt": "2024-10-07T12:28:05Z",
+          "updatedAt": "2024-10-07T12:28:05Z",
+          "comments": []
+        },
+        {
+          "id": "PRR_kwDOMJPqLM6MP0_c",
+          "commit": {
+            "abbreviatedOid": "e2329a5"
+          },
+          "author": "yaroslavros",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2024-10-07T21:22:45Z",
+          "updatedAt": "2024-10-07T21:22:45Z",
+          "comments": [
+            {
+              "originalPosition": 28,
+              "body": "I'm not sure if I fully understand this suggestion. `CLIENT_TRAFFIC_SECRET_N+1` and `SERVER_TRAFFIC_SECRET_N+1` would provide secrets to decrypt application data traffic right after the Extended Key Update.\r\nAre you referring to the fact that new set of SSLKEYLOG entries needs to be generated for each Extended Key Update?",
+              "createdAt": "2024-10-07T21:22:45Z",
+              "updatedAt": "2024-10-07T21:22:45Z"
+            }
+          ]
+        }
+      ]
     }
   ]
 }
