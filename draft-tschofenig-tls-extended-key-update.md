@@ -291,11 +291,11 @@ In this case ExtendedKeyUpdateResponse contains delay in seconds for initiator
 to retry. Initiator MUST NOT retry within this interval and SHOULD retry after
 it lapsed. Note that responder MAY apply an overall rate limit to extended key
 update that would not be specific to given TLS session. If initiator cannot
-proceed without immediate Extended Key Update it should terminate the connection
+proceed without immediate Extended Key Update it MUST terminate the connection
 with TLS alert "extended_key_update_required" (alert number TBD).
 
 2. `rejected`: request was declined permanently. Initiator MUST NOT retry and
-if it cannot proceed without Extended Key Update it should terminate the
+if it cannot proceed without Extended Key Update it MUST terminate the
 connection with alert "extended_key_update_required" (alert number TBD).
 
 3. `clashed`: request was declined because responder already initiated its own
