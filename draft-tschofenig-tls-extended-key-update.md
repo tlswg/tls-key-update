@@ -458,7 +458,7 @@ connection and corresponding secret encoded in hexadecimal.
 SSLKEYLOGFILE entries for Extended Key Update MUST NOT be produced if
 SSLKEYLOGFILE was not used for other secrets in the handshake.
 
-Note that each succesful Extended Key Update invalidates all previous SSLKEYLOGFILE secrets including
+Note that each successful Extended Key Update invalidates all previous SSLKEYLOGFILE secrets including
 past iterations of `CLIENT_TRAFFIC_SECRET_` and `SERVER_TRAFFIC_SECRET_`.
 
 #  Security Considerations
