@@ -26,22 +26,22 @@ RFC 5746 was developed as a fix. Renegotiation has, however, been removed from
 version 1.3 leaving a gap in the feature set of TLS. 
        This specification defines an extended key update that supports forward secrecy. 
     " name="description">
-<meta content="xml2rfc 3.22.0" name="generator">
+<meta content="xml2rfc 3.23.2" name="generator">
 <meta content="Internet-Draft" name="keyword">
 <meta content="draft-tschofenig-tls-extended-key-update-latest" name="ietf.draft">
 <!-- Generator version information:
-  xml2rfc 3.22.0
-    Python 3.12.3
+  xml2rfc 3.23.2
+    Python 3.12.7
     ConfigArgParse 1.7
-    google-i18n-address 3.1.0
+    google-i18n-address 3.1.1
     intervaltree 3.1.0
     Jinja2 3.1.4
     lxml 4.9.4
-    platformdirs 4.2.2
+    platformdirs 4.3.6
     pycountry 22.3.5
     PyYAML 6.0.1
     requests 2.32.3
-    setuptools 69.5.1
+    setuptools 70.3.0
     wcwidth 0.2.13
 -->
 <link href="draft-tschofenig-tls-extended-key-update.xml" rel="alternate" type="application/rfc+xml">
@@ -1041,11 +1041,11 @@ svg :is([fill="white"], [fill^="#fff"]) {
 <thead><tr>
 <td class="left">Internet-Draft</td>
 <td class="center">Extended Key Update for TLS</td>
-<td class="right">July 2024</td>
+<td class="right">October 2024</td>
 </tr></thead>
 <tfoot><tr>
 <td class="left">Tschofenig, et al.</td>
-<td class="center">Expires 9 January 2025</td>
+<td class="center">Expires 13 April 2025</td>
 <td class="right">[Page]</td>
 </tr></tfoot>
 </table>
@@ -1058,12 +1058,12 @@ svg :is([fill="white"], [fill^="#fff"]) {
 <dd class="internet-draft">draft-tschofenig-tls-extended-key-update-latest</dd>
 <dt class="label-published">Published:</dt>
 <dd class="published">
-<time datetime="2024-07-08" class="published">8 July 2024</time>
+<time datetime="2024-10-10" class="published">10 October 2024</time>
     </dd>
 <dt class="label-intended-status">Intended Status:</dt>
 <dd class="intended-status">Standards Track</dd>
 <dt class="label-expires">Expires:</dt>
-<dd class="expires"><time datetime="2025-01-09">9 January 2025</time></dd>
+<dd class="expires"><time datetime="2025-04-13">13 April 2025</time></dd>
 <dt class="label-authors">Authors:</dt>
 <dd class="authors">
 <div class="author">
@@ -1137,7 +1137,7 @@ version 1.3 leaving a gap in the feature set of TLS.<a href="#section-abstract-2
         time. It is inappropriate to use Internet-Drafts as reference
         material or to cite them other than as "work in progress."<a href="#section-boilerplate.1-3" class="pilcrow">¶</a></p>
 <p id="section-boilerplate.1-4">
-        This Internet-Draft will expire on 9 January 2025.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
+        This Internet-Draft will expire on 13 April 2025.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="copyright">
@@ -1194,27 +1194,30 @@ version 1.3 leaving a gap in the feature set of TLS.<a href="#section-abstract-2
             <p id="section-toc.1-1.9.1"><a href="#section-9" class="auto internal xref">9</a>.  <a href="#name-post-quantum-cryptogrphy-co" class="internal xref">Post-Quantum Cryptogrphy Considerations</a></p>
 </li>
           <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.10">
-            <p id="section-toc.1-1.10.1"><a href="#section-10" class="auto internal xref">10</a>. <a href="#name-security-considerations" class="internal xref">Security Considerations</a></p>
+            <p id="section-toc.1-1.10.1"><a href="#section-10" class="auto internal xref">10</a>. <a href="#name-sslkeylogfile-update" class="internal xref">SSLKEYLOGFILE update</a></p>
 </li>
           <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.11">
-            <p id="section-toc.1-1.11.1"><a href="#section-11" class="auto internal xref">11</a>. <a href="#name-iana-considerations" class="internal xref">IANA Considerations</a></p>
+            <p id="section-toc.1-1.11.1"><a href="#section-11" class="auto internal xref">11</a>. <a href="#name-security-considerations" class="internal xref">Security Considerations</a></p>
 </li>
           <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.12">
-            <p id="section-toc.1-1.12.1"><a href="#section-12" class="auto internal xref">12</a>. <a href="#name-references" class="internal xref">References</a></p>
-<ul class="compact toc ulBare ulEmpty">
-<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.12.2.1">
-                <p id="section-toc.1-1.12.2.1.1"><a href="#section-12.1" class="auto internal xref">12.1</a>.  <a href="#name-normative-references" class="internal xref">Normative References</a></p>
+            <p id="section-toc.1-1.12.1"><a href="#section-12" class="auto internal xref">12</a>. <a href="#name-iana-considerations" class="internal xref">IANA Considerations</a></p>
 </li>
-              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.12.2.2">
-                <p id="section-toc.1-1.12.2.2.1"><a href="#section-12.2" class="auto internal xref">12.2</a>.  <a href="#name-informative-references" class="internal xref">Informative References</a></p>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.13">
+            <p id="section-toc.1-1.13.1"><a href="#section-13" class="auto internal xref">13</a>. <a href="#name-references" class="internal xref">References</a></p>
+<ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.13.2.1">
+                <p id="section-toc.1-1.13.2.1.1"><a href="#section-13.1" class="auto internal xref">13.1</a>.  <a href="#name-normative-references" class="internal xref">Normative References</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.13.2.2">
+                <p id="section-toc.1-1.13.2.2.1"><a href="#section-13.2" class="auto internal xref">13.2</a>.  <a href="#name-informative-references" class="internal xref">Informative References</a></p>
 </li>
             </ul>
 </li>
-          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.13">
-            <p id="section-toc.1-1.13.1"><a href="#appendix-A" class="auto internal xref">Appendix A</a>.  <a href="#name-acknowledgments" class="internal xref">Acknowledgments</a></p>
-</li>
           <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.14">
-            <p id="section-toc.1-1.14.1"><a href="#appendix-B" class="auto internal xref"></a><a href="#name-authors-addresses" class="internal xref">Authors' Addresses</a></p>
+            <p id="section-toc.1-1.14.1"><a href="#appendix-A" class="auto internal xref">Appendix A</a>.  <a href="#name-acknowledgments" class="internal xref">Acknowledgments</a></p>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.15">
+            <p id="section-toc.1-1.15.1"><a href="#appendix-B" class="auto internal xref"></a><a href="#name-authors-addresses" class="internal xref">Authors' Addresses</a></p>
 </li>
         </ul>
 </nav>
@@ -1609,83 +1612,109 @@ The same approach is then re-used in the extended key update when
 key shares are exchanged.<a href="#section-9-1" class="pilcrow">¶</a></p>
 </section>
 </div>
-<div id="security-considerations">
+<div id="sslkeylogfile-update">
 <section id="section-10">
-      <h2 id="name-security-considerations">
-<a href="#section-10" class="section-number selfRef">10. </a><a href="#name-security-considerations" class="section-name selfRef">Security Considerations</a>
+      <h2 id="name-sslkeylogfile-update">
+<a href="#section-10" class="section-number selfRef">10. </a><a href="#name-sslkeylogfile-update" class="section-name selfRef">SSLKEYLOGFILE update</a>
       </h2>
-<p id="section-10-1">This entire document is about security.<a href="#section-10-1" class="pilcrow">¶</a></p>
-<p id="section-10-2">When utilizing this extension it is important to understand the interaction
+<p id="section-10-1">As Extended Key Update invalidates previous secrets, SSLKEYLOGFILE <span>[<a href="#I-D.ietf-tls-keylogfile" class="cite xref">I-D.ietf-tls-keylogfile</a>]</span> needs to
+be populated with new entries. Each completed Extended Key Update results
+in two additional secret labels in SSLKEYLOGFILE:<a href="#section-10-1" class="pilcrow">¶</a></p>
+<ol start="1" type="1" class="normal type-1" id="section-10-2">
+<li id="section-10-2.1">
+          <p id="section-10-2.1.1"><code>CLIENT_TRAFFIC_SECRET_N+1</code>: identified as client_application_traffic_secret_N+1 in the key schedule<a href="#section-10-2.1.1" class="pilcrow">¶</a></p>
+</li>
+        <li id="section-10-2.2">
+          <p id="section-10-2.2.1"><code>SERVER_TRAFFIC_SECRET_N+1</code>: identified as server_application_traffic_secret_N+1 in the key schedule<a href="#section-10-2.2.1" class="pilcrow">¶</a></p>
+</li>
+      </ol>
+<p id="section-10-3">Similarly to other records in SSLKEYLOGFILE label is followed by 32-byte value
+of the Random field from the ClientHello message that established the TLS
+connection and corresponding secret encoded in hexadecimal.<a href="#section-10-3" class="pilcrow">¶</a></p>
+<p id="section-10-4">SSLKEYLOGFILE entries for Extended Key Update MUST NOT be produced if
+SSLKEYLOGFILE was not used for other secrets in the handshake.<a href="#section-10-4" class="pilcrow">¶</a></p>
+<p id="section-10-5">Note that each successful Extended Key Update invalidates all previous SSLKEYLOGFILE secrets including
+past iterations of <code>CLIENT_TRAFFIC_SECRET_</code> and <code>SERVER_TRAFFIC_SECRET_</code>.<a href="#section-10-5" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="security-considerations">
+<section id="section-11">
+      <h2 id="name-security-considerations">
+<a href="#section-11" class="section-number selfRef">11. </a><a href="#name-security-considerations" class="section-name selfRef">Security Considerations</a>
+      </h2>
+<p id="section-11-1">This entire document is about security.<a href="#section-11-1" class="pilcrow">¶</a></p>
+<p id="section-11-2">When utilizing this extension it is important to understand the interaction
 with ticket-based resumption since resumption without the execution of
 a Diffie-Hellman exchange offering forward secrecy will potentially undo
 updates to the application traffic secret derivation, depending on when
-tickets have been exchanged.<a href="#section-10-2" class="pilcrow">¶</a></p>
+tickets have been exchanged.<a href="#section-11-2" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="iana-considerations">
-<section id="section-11">
+<section id="section-12">
       <h2 id="name-iana-considerations">
-<a href="#section-11" class="section-number selfRef">11. </a><a href="#name-iana-considerations" class="section-name selfRef">IANA Considerations</a>
+<a href="#section-12" class="section-number selfRef">12. </a><a href="#name-iana-considerations" class="section-name selfRef">IANA Considerations</a>
       </h2>
-<p id="section-11-1">IANA is requested to allocate value TBD for the "too_many_extendedkeyupdate_requested" alert
-in the "TLS Alerts" registry. The value for the "DTLS-OK" column is "Y".<a href="#section-11-1" class="pilcrow">¶</a></p>
-<p id="section-11-2">IANA is requested to add the following entry to the "TLS Flags"
-extension registry <span>[<a href="#TLS-Ext-Registry" class="cite xref">TLS-Ext-Registry</a>]</span>:<a href="#section-11-2" class="pilcrow">¶</a></p>
+<p id="section-12-1">IANA is requested to allocate value TBD for the "too_many_extendedkeyupdate_requested" alert
+in the "TLS Alerts" registry. The value for the "DTLS-OK" column is "Y".<a href="#section-12-1" class="pilcrow">¶</a></p>
+<p id="section-12-2">IANA is requested to add the following entry to the "TLS Flags"
+extension registry <span>[<a href="#TLS-Ext-Registry" class="cite xref">TLS-Ext-Registry</a>]</span>:<a href="#section-12-2" class="pilcrow">¶</a></p>
 <ul class="normal">
-<li class="normal" id="section-11-3.1">
-          <p id="section-11-3.1.1">Value: TBD1<a href="#section-11-3.1.1" class="pilcrow">¶</a></p>
+<li class="normal" id="section-12-3.1">
+          <p id="section-12-3.1.1">Value: TBD1<a href="#section-12-3.1.1" class="pilcrow">¶</a></p>
 </li>
-        <li class="normal" id="section-11-3.2">
-          <p id="section-11-3.2.1">Flag Name: extended_key_update<a href="#section-11-3.2.1" class="pilcrow">¶</a></p>
+        <li class="normal" id="section-12-3.2">
+          <p id="section-12-3.2.1">Flag Name: extended_key_update<a href="#section-12-3.2.1" class="pilcrow">¶</a></p>
 </li>
-        <li class="normal" id="section-11-3.3">
-          <p id="section-11-3.3.1">Messages: CH, EE<a href="#section-11-3.3.1" class="pilcrow">¶</a></p>
+        <li class="normal" id="section-12-3.3">
+          <p id="section-12-3.3.1">Messages: CH, EE<a href="#section-12-3.3.1" class="pilcrow">¶</a></p>
 </li>
-        <li class="normal" id="section-11-3.4">
-          <p id="section-11-3.4.1">Recommended: Y<a href="#section-11-3.4.1" class="pilcrow">¶</a></p>
+        <li class="normal" id="section-12-3.4">
+          <p id="section-12-3.4.1">Recommended: Y<a href="#section-12-3.4.1" class="pilcrow">¶</a></p>
 </li>
-        <li class="normal" id="section-11-3.5">
-          <p id="section-11-3.5.1">Reference: [This document]<a href="#section-11-3.5.1" class="pilcrow">¶</a></p>
+        <li class="normal" id="section-12-3.5">
+          <p id="section-12-3.5.1">Reference: [This document]<a href="#section-12-3.5.1" class="pilcrow">¶</a></p>
 </li>
       </ul>
-<p id="section-11-4">IANA is requested to add the following entry to the "TLS
-HandshakeType" registry <span>[<a href="#TLS-Ext-Registry" class="cite xref">TLS-Ext-Registry</a>]</span>:<a href="#section-11-4" class="pilcrow">¶</a></p>
+<p id="section-12-4">IANA is requested to add the following entry to the "TLS
+HandshakeType" registry <span>[<a href="#TLS-Ext-Registry" class="cite xref">TLS-Ext-Registry</a>]</span>:<a href="#section-12-4" class="pilcrow">¶</a></p>
 <ul class="normal">
-<li class="normal" id="section-11-5.1">
-          <p id="section-11-5.1.1">Value: TBD2<a href="#section-11-5.1.1" class="pilcrow">¶</a></p>
+<li class="normal" id="section-12-5.1">
+          <p id="section-12-5.1.1">Value: TBD2<a href="#section-12-5.1.1" class="pilcrow">¶</a></p>
 </li>
-        <li class="normal" id="section-11-5.2">
-          <p id="section-11-5.2.1">Description: extended_key_update<a href="#section-11-5.2.1" class="pilcrow">¶</a></p>
+        <li class="normal" id="section-12-5.2">
+          <p id="section-12-5.2.1">Description: extended_key_update<a href="#section-12-5.2.1" class="pilcrow">¶</a></p>
 </li>
-        <li class="normal" id="section-11-5.3">
-          <p id="section-11-5.3.1">DTLS-OK: Y<a href="#section-11-5.3.1" class="pilcrow">¶</a></p>
+        <li class="normal" id="section-12-5.3">
+          <p id="section-12-5.3.1">DTLS-OK: Y<a href="#section-12-5.3.1" class="pilcrow">¶</a></p>
 </li>
-        <li class="normal" id="section-11-5.4">
-          <p id="section-11-5.4.1">Reference: [This document]<a href="#section-11-5.4.1" class="pilcrow">¶</a></p>
+        <li class="normal" id="section-12-5.4">
+          <p id="section-12-5.4.1">Reference: [This document]<a href="#section-12-5.4.1" class="pilcrow">¶</a></p>
 </li>
-        <li class="normal" id="section-11-5.5">
-          <p id="section-11-5.5.1">Comment:<a href="#section-11-5.5.1" class="pilcrow">¶</a></p>
+        <li class="normal" id="section-12-5.5">
+          <p id="section-12-5.5.1">Comment:<a href="#section-12-5.5.1" class="pilcrow">¶</a></p>
 </li>
       </ul>
 </section>
 </div>
-<section id="section-12">
+<div id="sec-combined-references">
+<section id="section-13">
       <h2 id="name-references">
-<a href="#section-12" class="section-number selfRef">12. </a><a href="#name-references" class="section-name selfRef">References</a>
+<a href="#section-13" class="section-number selfRef">13. </a><a href="#name-references" class="section-name selfRef">References</a>
       </h2>
 <div id="sec-normative-references">
-<section id="section-12.1">
+<section id="section-13.1">
         <h3 id="name-normative-references">
-<a href="#section-12.1" class="section-number selfRef">12.1. </a><a href="#name-normative-references" class="section-name selfRef">Normative References</a>
+<a href="#section-13.1" class="section-number selfRef">13.1. </a><a href="#name-normative-references" class="section-name selfRef">Normative References</a>
         </h3>
 <dl class="references">
 <dt id="I-D.ietf-tls-rfc8446bis">[I-D.ietf-tls-rfc8446bis]</dt>
         <dd>
-<span class="refAuthor">Rescorla, E.</span>, <span class="refTitle">"The Transport Layer Security (TLS) Protocol Version 1.3"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-ietf-tls-rfc8446bis-10</span>, <time datetime="2024-03-03" class="refDate">3 March 2024</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-ietf-tls-rfc8446bis-10">https://datatracker.ietf.org/doc/html/draft-ietf-tls-rfc8446bis-10</a>&gt;</span>. </dd>
+<span class="refAuthor">Rescorla, E.</span>, <span class="refTitle">"The Transport Layer Security (TLS) Protocol Version 1.3"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-ietf-tls-rfc8446bis-11</span>, <time datetime="2024-09-14" class="refDate">14 September 2024</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-ietf-tls-rfc8446bis-11">https://datatracker.ietf.org/doc/html/draft-ietf-tls-rfc8446bis-11</a>&gt;</span>. </dd>
 <dd class="break"></dd>
 <dt id="I-D.ietf-tls-tlsflags">[I-D.ietf-tls-tlsflags]</dt>
         <dd>
-<span class="refAuthor">Nir, Y.</span>, <span class="refTitle">"A Flags Extension for TLS 1.3"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-ietf-tls-tlsflags-13</span>, <time datetime="2024-03-16" class="refDate">16 March 2024</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-ietf-tls-tlsflags-13">https://datatracker.ietf.org/doc/html/draft-ietf-tls-tlsflags-13</a>&gt;</span>. </dd>
+<span class="refAuthor">Nir, Y.</span>, <span class="refTitle">"A Flags Extension for TLS 1.3"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-ietf-tls-tlsflags-14</span>, <time datetime="2024-09-13" class="refDate">13 September 2024</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-ietf-tls-tlsflags-14">https://datatracker.ietf.org/doc/html/draft-ietf-tls-tlsflags-14</a>&gt;</span>. </dd>
 <dd class="break"></dd>
 <dt id="RFC2119">[RFC2119]</dt>
         <dd>
@@ -1699,9 +1728,9 @@ HandshakeType" registry <span>[<a href="#TLS-Ext-Registry" class="cite xref">TLS
 </section>
 </div>
 <div id="sec-informative-references">
-<section id="section-12.2">
+<section id="section-13.2">
         <h3 id="name-informative-references">
-<a href="#section-12.2" class="section-number selfRef">12.2. </a><a href="#name-informative-references" class="section-name selfRef">Informative References</a>
+<a href="#section-13.2" class="section-number selfRef">13.2. </a><a href="#name-informative-references" class="section-name selfRef">Informative References</a>
         </h3>
 <dl class="references">
 <dt id="ANSSI-DAT-NT-003">[ANSSI-DAT-NT-003]</dt>
@@ -1714,7 +1743,11 @@ HandshakeType" registry <span>[<a href="#TLS-Ext-Registry" class="cite xref">TLS
 <dd class="break"></dd>
 <dt id="I-D.ietf-tls-hybrid-design">[I-D.ietf-tls-hybrid-design]</dt>
         <dd>
-<span class="refAuthor">Stebila, D.</span>, <span class="refAuthor">Fluhrer, S.</span>, and <span class="refAuthor">S. Gueron</span>, <span class="refTitle">"Hybrid key exchange in TLS 1.3"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-ietf-tls-hybrid-design-10</span>, <time datetime="2024-04-05" class="refDate">5 April 2024</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-ietf-tls-hybrid-design-10">https://datatracker.ietf.org/doc/html/draft-ietf-tls-hybrid-design-10</a>&gt;</span>. </dd>
+<span class="refAuthor">Stebila, D.</span>, <span class="refAuthor">Fluhrer, S.</span>, and <span class="refAuthor">S. Gueron</span>, <span class="refTitle">"Hybrid key exchange in TLS 1.3"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-ietf-tls-hybrid-design-11</span>, <time datetime="2024-10-07" class="refDate">7 October 2024</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-ietf-tls-hybrid-design-11">https://datatracker.ietf.org/doc/html/draft-ietf-tls-hybrid-design-11</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="I-D.ietf-tls-keylogfile">[I-D.ietf-tls-keylogfile]</dt>
+        <dd>
+<span class="refAuthor">Thomson, M.</span>, <span class="refTitle">"The SSLKEYLOGFILE Format for TLS"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-ietf-tls-keylogfile-02</span>, <time datetime="2024-04-29" class="refDate">29 April 2024</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-ietf-tls-keylogfile-02">https://datatracker.ietf.org/doc/html/draft-ietf-tls-keylogfile-02</a>&gt;</span>. </dd>
 <dd class="break"></dd>
 <dt id="RFC7296">[RFC7296]</dt>
         <dd>
@@ -1736,6 +1769,7 @@ HandshakeType" registry <span>[<a href="#TLS-Ext-Registry" class="cite xref">TLS
 </section>
 </div>
 </section>
+</div>
 <div id="acknowledgments">
 <section id="appendix-A">
       <h2 id="name-acknowledgments">
