@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2024-10-08T01:35:01.810222+00:00",
+  "timestamp": "2024-10-10T01:27:08.548650+00:00",
   "repo": "tlswg/tls-key-update",
   "labels": [
     {
@@ -254,13 +254,13 @@
       "labels": [],
       "body": "As discussed, here is my suggestion for soft rejection of extended key update request.\r\n\r\nIt should be up to initiator to terminate the connection if it is not happy with the rejection instead of taking the risk of getting connection terminated by responder if it does not want to proceed.",
       "createdAt": "2024-10-06T20:09:35Z",
-      "updatedAt": "2024-10-07T21:34:05Z",
+      "updatedAt": "2024-10-09T16:43:35Z",
       "baseRepository": "tlswg/tls-key-update",
       "baseRefName": "main",
       "baseRefOid": "3f72764465d7c54830de0f119b42e2d5df4e1b1f",
       "headRepository": "yaroslavros/tls-key-update",
       "headRefName": "main",
-      "headRefOid": "5463696c1e6cae090623845d39563fa386f21c48",
+      "headRefOid": "d76ae0cc73a85acbf70afa68d36c08539fefcd24",
       "closedAt": null,
       "mergedAt": null,
       "mergedBy": null,
@@ -300,6 +300,46 @@
               "updatedAt": "2024-10-07T12:45:48Z"
             }
           ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM6MRr4n",
+          "commit": {
+            "abbreviatedOid": "5463696"
+          },
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2024-10-08T05:42:46Z",
+          "updatedAt": "2024-10-08T05:42:51Z",
+          "comments": [
+            {
+              "originalPosition": 45,
+              "body": "I suggest to replace \"should terminate\" with \"MUST terminate\". Rest of the changes look good to me. ",
+              "createdAt": "2024-10-08T05:42:46Z",
+              "updatedAt": "2024-10-08T05:42:51Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM6Mh21m",
+          "commit": {
+            "abbreviatedOid": "5463696"
+          },
+          "author": "yaroslavros",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2024-10-09T16:43:35Z",
+          "updatedAt": "2024-10-09T16:43:35Z",
+          "comments": [
+            {
+              "originalPosition": 45,
+              "body": "Good suggestions. Updated accordingly.",
+              "createdAt": "2024-10-09T16:43:35Z",
+              "updatedAt": "2024-10-09T16:43:35Z"
+            }
+          ]
         }
       ]
     },
@@ -315,13 +355,13 @@
       "labels": [],
       "body": "In line with the SSLKEYLOGFILE spec.\r\nConveniently existing initial secret labels are already called \"CLIENT_TRAFFIC_SECRET_0\" and \"SERVER_TRAFFIC_SECRET_0\", so continuing numbering scheme seems to be no-brainer.",
       "createdAt": "2024-10-06T20:37:55Z",
-      "updatedAt": "2024-10-07T21:22:45Z",
+      "updatedAt": "2024-10-09T16:42:14Z",
       "baseRepository": "tlswg/tls-key-update",
       "baseRefName": "main",
       "baseRefOid": "3f72764465d7c54830de0f119b42e2d5df4e1b1f",
       "headRepository": "yaroslavros/tls-key-update",
       "headRefName": "sslkeylog",
-      "headRefOid": "e2329a5ca9142097a896a533cf777807431ff825",
+      "headRefOid": "434b79f7fc228af731c816cd457af50fecf3f6ab",
       "closedAt": null,
       "mergedAt": null,
       "mergedBy": null,
@@ -378,6 +418,46 @@
               "body": "I'm not sure if I fully understand this suggestion. `CLIENT_TRAFFIC_SECRET_N+1` and `SERVER_TRAFFIC_SECRET_N+1` would provide secrets to decrypt application data traffic right after the Extended Key Update.\r\nAre you referring to the fact that new set of SSLKEYLOG entries needs to be generated for each Extended Key Update?",
               "createdAt": "2024-10-07T21:22:45Z",
               "updatedAt": "2024-10-07T21:22:45Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM6MRtWG",
+          "commit": {
+            "abbreviatedOid": "e2329a5"
+          },
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2024-10-08T05:45:04Z",
+          "updatedAt": "2024-10-08T05:45:04Z",
+          "comments": [
+            {
+              "originalPosition": 28,
+              "body": "Yes, I am referring that a new set of SSLKEYLOG entries need to be generated for each Extended Key Update.",
+              "createdAt": "2024-10-08T05:45:04Z",
+              "updatedAt": "2024-10-08T05:45:04Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM6Mh2OL",
+          "commit": {
+            "abbreviatedOid": "e2329a5"
+          },
+          "author": "yaroslavros",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2024-10-09T16:42:14Z",
+          "updatedAt": "2024-10-09T16:42:14Z",
+          "comments": [
+            {
+              "originalPosition": 28,
+              "body": "Addressed the suggestion with following wording:\r\n\r\nNote that each successful Extended Key Update invalidates all previous SSLKEYLOGFILE secrets including\r\npast iterations of `CLIENT_TRAFFIC_SECRET_` and `SERVER_TRAFFIC_SECRET_`.",
+              "createdAt": "2024-10-09T16:42:14Z",
+              "updatedAt": "2024-10-09T16:42:14Z"
             }
           ]
         }
