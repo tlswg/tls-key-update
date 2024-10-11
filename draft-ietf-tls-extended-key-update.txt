@@ -5,18 +5,18 @@
 Transport Layer Security                                   H. Tschofenig
 Internet-Draft                                                   Siemens
 Intended status: Standards Track                                M. Tüxen
-Expires: 13 April 2025                 Münster Univ. of Applied Sciences
+Expires: 14 April 2025                 Münster Univ. of Applied Sciences
                                                                 T. Reddy
                                                                    Nokia
                                                                 S. Fries
                                                                  Siemens
                                                             Y. Rosomakho
                                                                  Zscaler
-                                                         10 October 2024
+                                                         11 October 2024
 
 
        Extended Key Update for Transport Layer Security (TLS) 1.3
-            draft-tschofenig-tls-extended-key-update-latest
+               draft-ietf-tls-extended-key-update-latest
 
 Abstract
 
@@ -66,7 +66,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 13 April 2025.
+   This Internet-Draft will expire on 14 April 2025.
 
 Copyright Notice
 
