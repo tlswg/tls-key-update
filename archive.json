@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2024-10-10T01:27:08.548650+00:00",
+  "timestamp": "2024-10-13T01:39:55.275138+00:00",
   "repo": "tlswg/tls-key-update",
   "labels": [
     {
@@ -247,24 +247,26 @@
       "id": "PR_kwDOMJPqLM59vUBy",
       "title": "Added status for soft rejection of the request",
       "url": "https://github.com/tlswg/tls-key-update/pull/7",
-      "state": "OPEN",
+      "state": "MERGED",
       "author": "yaroslavros",
       "authorAssociation": "COLLABORATOR",
       "assignees": [],
       "labels": [],
       "body": "As discussed, here is my suggestion for soft rejection of extended key update request.\r\n\r\nIt should be up to initiator to terminate the connection if it is not happy with the rejection instead of taking the risk of getting connection terminated by responder if it does not want to proceed.",
       "createdAt": "2024-10-06T20:09:35Z",
-      "updatedAt": "2024-10-09T16:43:35Z",
+      "updatedAt": "2024-10-10T05:36:33Z",
       "baseRepository": "tlswg/tls-key-update",
       "baseRefName": "main",
       "baseRefOid": "3f72764465d7c54830de0f119b42e2d5df4e1b1f",
       "headRepository": "yaroslavros/tls-key-update",
       "headRefName": "main",
       "headRefOid": "d76ae0cc73a85acbf70afa68d36c08539fefcd24",
-      "closedAt": null,
-      "mergedAt": null,
-      "mergedBy": null,
-      "mergeCommit": null,
+      "closedAt": "2024-10-10T05:36:33Z",
+      "mergedAt": "2024-10-10T05:36:33Z",
+      "mergedBy": "tireddy2",
+      "mergeCommit": {
+        "oid": "a0b969d09eb9cfb77d98efd475bb04c8a6260c2e"
+      },
       "comments": [
         {
           "author": "yaroslavros",
@@ -348,24 +350,26 @@
       "id": "PR_kwDOMJPqLM59vWIZ",
       "title": "Added relevant SSLKEYLOGFILE labels",
       "url": "https://github.com/tlswg/tls-key-update/pull/8",
-      "state": "OPEN",
+      "state": "MERGED",
       "author": "yaroslavros",
       "authorAssociation": "COLLABORATOR",
       "assignees": [],
       "labels": [],
       "body": "In line with the SSLKEYLOGFILE spec.\r\nConveniently existing initial secret labels are already called \"CLIENT_TRAFFIC_SECRET_0\" and \"SERVER_TRAFFIC_SECRET_0\", so continuing numbering scheme seems to be no-brainer.",
       "createdAt": "2024-10-06T20:37:55Z",
-      "updatedAt": "2024-10-09T16:42:14Z",
+      "updatedAt": "2024-10-10T05:36:20Z",
       "baseRepository": "tlswg/tls-key-update",
       "baseRefName": "main",
       "baseRefOid": "3f72764465d7c54830de0f119b42e2d5df4e1b1f",
       "headRepository": "yaroslavros/tls-key-update",
       "headRefName": "sslkeylog",
       "headRefOid": "434b79f7fc228af731c816cd457af50fecf3f6ab",
-      "closedAt": null,
-      "mergedAt": null,
-      "mergedBy": null,
-      "mergeCommit": null,
+      "closedAt": "2024-10-10T05:36:20Z",
+      "mergedAt": "2024-10-10T05:36:20Z",
+      "mergedBy": "tireddy2",
+      "mergeCommit": {
+        "oid": "09e31f195ccb1f4ee5de1f92901af5b897dace0b"
+      },
       "comments": [],
       "reviews": [
         {
@@ -460,8 +464,47 @@
               "updatedAt": "2024-10-09T16:42:14Z"
             }
           ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM6Mm8s3",
+          "commit": {
+            "abbreviatedOid": "434b79f"
+          },
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "state": "APPROVED",
+          "body": "Update looks good to me. ",
+          "createdAt": "2024-10-10T05:35:46Z",
+          "updatedAt": "2024-10-10T05:35:46Z",
+          "comments": []
         }
       ]
+    },
+    {
+      "number": 9,
+      "id": "PR_kwDOMJPqLM5-VOFm",
+      "title": "Update draft-ietf-tls-extended-key-update.md",
+      "url": "https://github.com/tlswg/tls-key-update/pull/9",
+      "state": "OPEN",
+      "author": "stfries",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [],
+      "body": "- replaced \"key update \"by \"update of master keys\" in the introduction when referring to the negotiated keys with session renegotiation in TLS 1.2\r\n- addressed some smaller editorial nits",
+      "createdAt": "2024-10-11T11:23:38Z",
+      "updatedAt": "2024-10-11T11:23:38Z",
+      "baseRepository": "tlswg/tls-key-update",
+      "baseRefName": "main",
+      "baseRefOid": "f106aa116e27878e34a7a0c78b3cc1dd611ad68f",
+      "headRepository": "tlswg/tls-key-update",
+      "headRefName": "stfries-patch-1",
+      "headRefOid": "4d408e4e6083bffcdabc57ade4c722e196f3a0dc",
+      "closedAt": null,
+      "mergedAt": null,
+      "mergedBy": null,
+      "mergeCommit": null,
+      "comments": [],
+      "reviews": []
     }
   ]
 }
