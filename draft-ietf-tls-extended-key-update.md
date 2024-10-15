@@ -122,7 +122,7 @@ complexity, impacts performance and may lead to service interruption as well.
 Some deployments have used IPsec in the past to secure their communication protocol
 and have now decided to switch to TLS or DTLS instead. The requirement for updates of
 cryptographic keys for an existing session has become a requirement. For IPsec, US NIST,
-German BSI, and Frensch ANSSI recommend to re-run Diffie-Hellman exchanges frequently to provide forward
+German BSI, and French ANSSI recommend to re-run Diffie-Hellman exchanges frequently to provide forward
 secrecy and force attackers to perform a dynamic key extraction {{RFC7624}}. ANSSI
 writes "It is recommended to force the periodic renewal of the keys, e.g., every
 hour and every 100 GB of data, in order to limit the impact of a key compromise."
