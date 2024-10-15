@@ -110,7 +110,7 @@ update keys and initialization vectors has been added in TLS 1.3 {{I-D.ietf-tls-
 using the KeyUpdate message and it intended to (partially) replace renegotiation from earlier
 TLS versions. The renegotiation feature, while complex, offered additional
 functionality that is not supported with TLS 1.3 anymore, including the update
-keys with a Diffie-Hellman exchange during the lifetime of a session.
+of master keys with a Diffie-Hellman exchange during the lifetime of a session.
 
 There are use cases of TLS and DTLS where long-lived sessions are common. In those
 environments, such as industrial IoT and telecommunication networks, availability
@@ -121,8 +121,8 @@ complexity, impacts performance and may lead to service interruption as well.
 
 Some deployments have used IPsec in the past to secure their communication protocol
 and have now decided to switch to TLS or DTLS instead. The requirement for updates of
-cryptographic keys for an existing session has become a requirement. For IPsec, NIST,
-BSI, and ANSSI recommend to re-run Diffie-Hellman exchanges frequently to provide forward
+cryptographic keys for an existing session has become a requirement. For IPsec, US NIST,
+German BSI, and French ANSSI recommend to re-run Diffie-Hellman exchanges frequently to provide forward
 secrecy and force attackers to perform a dynamic key extraction {{RFC7624}}. ANSSI
 writes "It is recommended to force the periodic renewal of the keys, e.g., every
 hour and every 100 GB of data, in order to limit the impact of a key compromise."
@@ -187,7 +187,7 @@ ClientHello (CH) MUST be acknowledged in the EncryptedExtensions
 (EE), if the server also supports the functionality defined in this
 document and is configured to use it.
 
-If the "Extended_Key_Update" flag is not set, servers ignore any the
+If the "Extended_Key_Update" flag is not set, servers ignore any of the
 functionality specified in this document and applications that
 require perfect forward security will have to initiate a full
 handshake.
@@ -470,7 +470,7 @@ simultaneously and combining the result with the goal of providing
 security even if all but one of the component algorithms is broken.
 The transition to post-quantum cryptography motivates the introduction
 of hybrid key exchanges to TLS, as described in
-{{I-D.ietf-tls-hybrid-design}}. When the hybrid key exchange is used
+{{I-D.ietf-tls-hybrid-design}}. When the hybrid key exchange is used,
 then the key_exchange field of a KeyShareEntry in the initial exchange
 is the concatenation of the key_exchange field for each of the algorithms.
 The same approach is then re-used in the extended key update when
