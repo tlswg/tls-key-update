@@ -5,14 +5,14 @@
 Transport Layer Security                                   H. Tschofenig
 Internet-Draft                                                   Siemens
 Intended status: Standards Track                                M. Tüxen
-Expires: 14 April 2025                 Münster Univ. of Applied Sciences
+Expires: 18 April 2025                 Münster Univ. of Applied Sciences
                                                                 T. Reddy
                                                                    Nokia
                                                                 S. Fries
                                                                  Siemens
                                                             Y. Rosomakho
                                                                  Zscaler
-                                                         11 October 2024
+                                                         15 October 2024
 
 
        Extended Key Update for Transport Layer Security (TLS) 1.3
@@ -66,7 +66,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 14 April 2025.
+   This Internet-Draft will expire on 18 April 2025.
 
 Copyright Notice
 
@@ -129,7 +129,7 @@ Table of Contents
    communication protocol and have now decided to switch to TLS or DTLS
    instead.  The requirement for updates of cryptographic keys for an
    existing session has become a requirement.  For IPsec, US NIST,
-   German BSI, and Frensch ANSSI recommend to re-run Diffie-Hellman
+   German BSI, and French ANSSI recommend to re-run Diffie-Hellman
    exchanges frequently to provide forward secrecy and force attackers
    to perform a dynamic key extraction [RFC7624].  ANSSI writes "It is
    recommended to force the periodic renewal of the keys, e.g., every
