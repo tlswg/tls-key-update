@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2024-10-15T01:36:07.722248+00:00",
+  "timestamp": "2024-10-17T01:35:14.438035+00:00",
   "repo": "tlswg/tls-key-update",
   "labels": [
     {
@@ -485,26 +485,57 @@
       "id": "PR_kwDOMJPqLM5-VOFm",
       "title": "Update draft-ietf-tls-extended-key-update.md",
       "url": "https://github.com/tlswg/tls-key-update/pull/9",
-      "state": "OPEN",
+      "state": "MERGED",
       "author": "stfries",
       "authorAssociation": "COLLABORATOR",
       "assignees": [],
       "labels": [],
       "body": "- replaced \"key update \"by \"update of master keys\" in the introduction when referring to the negotiated keys with session renegotiation in TLS 1.2\r\n- addressed some smaller editorial nits",
       "createdAt": "2024-10-11T11:23:38Z",
-      "updatedAt": "2024-10-11T11:23:38Z",
+      "updatedAt": "2024-10-15T13:47:40Z",
       "baseRepository": "tlswg/tls-key-update",
       "baseRefName": "main",
       "baseRefOid": "f106aa116e27878e34a7a0c78b3cc1dd611ad68f",
       "headRepository": "tlswg/tls-key-update",
       "headRefName": "stfries-patch-1",
-      "headRefOid": "4d408e4e6083bffcdabc57ade4c722e196f3a0dc",
-      "closedAt": null,
-      "mergedAt": null,
-      "mergedBy": null,
-      "mergeCommit": null,
-      "comments": [],
-      "reviews": []
+      "headRefOid": "d00a088095aaea83f6ad95283644afcca7e51977",
+      "closedAt": "2024-10-15T13:47:27Z",
+      "mergedAt": "2024-10-15T13:47:27Z",
+      "mergedBy": "hannestschofenig",
+      "mergeCommit": {
+        "oid": "81c0d5106077e1479d21c447a50cb2437db5f8c7"
+      },
+      "comments": [
+        {
+          "author": "hannestschofenig",
+          "authorAssociation": "COLLABORATOR",
+          "body": "Thanks, Steffen.",
+          "createdAt": "2024-10-15T13:47:40Z",
+          "updatedAt": "2024-10-15T13:47:40Z"
+        }
+      ],
+      "reviews": [
+        {
+          "id": "PRR_kwDOMJPqLM6NOlZ_",
+          "commit": {
+            "abbreviatedOid": "4d408e4"
+          },
+          "author": "hannestschofenig",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2024-10-15T13:47:05Z",
+          "updatedAt": "2024-10-15T13:47:06Z",
+          "comments": [
+            {
+              "originalPosition": 16,
+              "body": "```suggestion\r\nGerman BSI, and French ANSSI recommend to re-run Diffie-Hellman exchanges frequently to provide forward\r\n```",
+              "createdAt": "2024-10-15T13:47:06Z",
+              "updatedAt": "2024-10-15T13:47:06Z"
+            }
+          ]
+        }
+      ]
     }
   ]
 }
