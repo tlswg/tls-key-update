@@ -496,6 +496,18 @@ SSLKEYLOGFILE was not used for other secrets in the handshake.
 Note that each successful Extended Key Update invalidates all previous SSLKEYLOGFILE secrets including
 past iterations of `CLIENT_TRAFFIC_SECRET_` and `SERVER_TRAFFIC_SECRET_`.
 
+# Exporter
+
+Protocols like DTLS-SRTP and DTLS-over-SCTP utilize TLS or DTLS for key establishment but repurpose 
+some of the keying material for their own purpose. These protocols use the TLS exporter defined in 
+Section 7.5 of {{I-D.ietf-tls-rfc8446bis}}.
+
+Once the Extended Key Update mechanism is complete, such protocols would need to use the newly 
+derived key to generate Exported Keying Material (EKM) to protect packets. The "sk" derived in the 
+{{key_update}} will be used as the "Secret" in the exporter function, defined in 
+Section 7.5 of {{I-D.ietf-tls-rfc8446bis}}, to generate EKM, ensuring that the exported keying material is 
+aligned with the updated security context.
+
 #  Security Considerations
 
 This entire document is about security.
