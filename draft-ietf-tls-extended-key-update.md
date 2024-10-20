@@ -520,7 +520,7 @@ tickets have been exchanged.
 
 # IANA Considerations
 
-IANA is requested to allocate value TBD for the "too_many_extendedkeyupdate_requested" alert
+IANA is requested to allocate value TBD for the "extended_key_update_required" alert
 in the "TLS Alerts" registry. The value for the "DTLS-OK" column is "Y".
 
 IANA is requested to add the following entry to the "TLS Flags"
