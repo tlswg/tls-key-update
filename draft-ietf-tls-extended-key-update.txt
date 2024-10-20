@@ -5,14 +5,14 @@
 Transport Layer Security                                   H. Tschofenig
 Internet-Draft                                                   Siemens
 Intended status: Standards Track                                M. Tüxen
-Expires: 18 April 2025                 Münster Univ. of Applied Sciences
+Expires: 23 April 2025                 Münster Univ. of Applied Sciences
                                                                 T. Reddy
                                                                    Nokia
                                                                 S. Fries
                                                                  Siemens
                                                             Y. Rosomakho
                                                                  Zscaler
-                                                         15 October 2024
+                                                         20 October 2024
 
 
        Extended Key Update for Transport Layer Security (TLS) 1.3
@@ -66,7 +66,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 18 April 2025.
+   This Internet-Draft will expire on 23 April 2025.
 
 Copyright Notice
 
@@ -94,11 +94,12 @@ Table of Contents
    8.  DTLS 1.3 Considerations
    9.  Post-Quantum Cryptogrphy Considerations
    10. SSLKEYLOGFILE update
-   11. Security Considerations
-   12. IANA Considerations
-   13. References
-     13.1.  Normative References
-     13.2.  Informative References
+   11. Exporter
+   12. Security Considerations
+   13. IANA Considerations
+   14. References
+     14.1.  Normative References
+     14.2.  Informative References
    Appendix A.  Acknowledgments
    Authors' Addresses
 
@@ -520,7 +521,22 @@ Table of Contents
    previous SSLKEYLOGFILE secrets including past iterations of
    CLIENT_TRAFFIC_SECRET_ and SERVER_TRAFFIC_SECRET_.
 
-11.  Security Considerations
+11.  Exporter
+
+   Protocols like DTLS-SRTP and DTLS-over-SCTP utilize TLS or DTLS for
+   key establishment but repurpose some of the keying material for their
+   own purpose.  These protocols use the TLS exporter defined in
+   Section 7.5 of [I-D.ietf-tls-rfc8446bis].
+
+   Once the Extended Key Update mechanism is complete, such protocols
+   would need to use the newly derived key to generate Exported Keying
+   Material (EKM) to protect packets.  The "sk" derived in the Section 6
+   will be used as the "Secret" in the exporter function, defined in
+   Section 7.5 of [I-D.ietf-tls-rfc8446bis], to generate EKM, ensuring
+   that the exported keying material is aligned with the updated
+   security context.
+
+12.  Security Considerations
 
    This entire document is about security.
 
@@ -530,7 +546,7 @@ Table of Contents
    potentially undo updates to the application traffic secret
    derivation, depending on when tickets have been exchanged.
 
-12.  IANA Considerations
+13.  IANA Considerations
 
    IANA is requested to allocate value TBD for the
    "too_many_extendedkeyupdate_requested" alert in the "TLS Alerts"
@@ -562,9 +578,9 @@ Table of Contents
 
    *  Comment:
 
-13.  References
+14.  References
 
-13.1.  Normative References
+14.1.  Normative References
 
    [I-D.ietf-tls-rfc8446bis]
               Rescorla, E., "The Transport Layer Security (TLS) Protocol
@@ -589,7 +605,7 @@ Table of Contents
               1.3", RFC 9147, DOI 10.17487/RFC9147, April 2022,
               <https://www.rfc-editor.org/rfc/rfc9147>.
 
-13.2.  Informative References
+14.2.  Informative References
 
    [ANSSI-DAT-NT-003]
               ANSSI, "Recommendations for securing networks with IPsec,
