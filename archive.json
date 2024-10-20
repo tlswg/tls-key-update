@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2024-10-17T01:35:14.438035+00:00",
+  "timestamp": "2024-10-20T01:41:45.739431+00:00",
   "repo": "tlswg/tls-key-update",
   "labels": [
     {
@@ -534,6 +534,46 @@
               "updatedAt": "2024-10-15T13:47:06Z"
             }
           ]
+        }
+      ]
+    },
+    {
+      "number": 10,
+      "id": "PR_kwDOMJPqLM5_GXUa",
+      "title": "Update to Exporter",
+      "url": "https://github.com/tlswg/tls-key-update/pull/10",
+      "state": "OPEN",
+      "author": "tireddy2",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [],
+      "body": "",
+      "createdAt": "2024-10-18T12:42:45Z",
+      "updatedAt": "2024-10-19T14:14:50Z",
+      "baseRepository": "tlswg/tls-key-update",
+      "baseRefName": "main",
+      "baseRefOid": "81c0d5106077e1479d21c447a50cb2437db5f8c7",
+      "headRepository": "tlswg/tls-key-update",
+      "headRefName": "tireddy2-patch-1",
+      "headRefOid": "d94e723f60d0e1582b21b9eb80fd826598fa5170",
+      "closedAt": null,
+      "mergedAt": null,
+      "mergedBy": null,
+      "mergeCommit": null,
+      "comments": [],
+      "reviews": [
+        {
+          "id": "PRR_kwDOMJPqLM6N1C6e",
+          "commit": {
+            "abbreviatedOid": "d94e723"
+          },
+          "author": "hannestschofenig",
+          "authorAssociation": "COLLABORATOR",
+          "state": "APPROVED",
+          "body": "Looks good to me.",
+          "createdAt": "2024-10-19T14:14:50Z",
+          "updatedAt": "2024-10-19T14:14:50Z",
+          "comments": []
         }
       ]
     }
