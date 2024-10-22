@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2024-10-20T01:41:45.739431+00:00",
+  "timestamp": "2024-10-22T01:36:23.607514+00:00",
   "repo": "tlswg/tls-key-update",
   "labels": [
     {
@@ -542,24 +542,26 @@
       "id": "PR_kwDOMJPqLM5_GXUa",
       "title": "Update to Exporter",
       "url": "https://github.com/tlswg/tls-key-update/pull/10",
-      "state": "OPEN",
+      "state": "MERGED",
       "author": "tireddy2",
       "authorAssociation": "COLLABORATOR",
       "assignees": [],
       "labels": [],
       "body": "",
       "createdAt": "2024-10-18T12:42:45Z",
-      "updatedAt": "2024-10-19T14:14:50Z",
+      "updatedAt": "2024-10-20T06:34:48Z",
       "baseRepository": "tlswg/tls-key-update",
       "baseRefName": "main",
       "baseRefOid": "81c0d5106077e1479d21c447a50cb2437db5f8c7",
       "headRepository": "tlswg/tls-key-update",
       "headRefName": "tireddy2-patch-1",
       "headRefOid": "d94e723f60d0e1582b21b9eb80fd826598fa5170",
-      "closedAt": null,
-      "mergedAt": null,
-      "mergedBy": null,
-      "mergeCommit": null,
+      "closedAt": "2024-10-20T06:34:48Z",
+      "mergedAt": "2024-10-20T06:34:48Z",
+      "mergedBy": "tireddy2",
+      "mergeCommit": {
+        "oid": "25d7fa4ba82adf0adcb7bdb3b63f1cadefd63a65"
+      },
       "comments": [],
       "reviews": [
         {
@@ -576,6 +578,34 @@
           "comments": []
         }
       ]
+    },
+    {
+      "number": 11,
+      "id": "PR_kwDOMJPqLM5_OuI9",
+      "title": "Updated IANA considerations to reflect new alert name",
+      "url": "https://github.com/tlswg/tls-key-update/pull/11",
+      "state": "MERGED",
+      "author": "yaroslavros",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [],
+      "body": "",
+      "createdAt": "2024-10-20T15:49:37Z",
+      "updatedAt": "2024-10-21T21:05:00Z",
+      "baseRepository": "tlswg/tls-key-update",
+      "baseRefName": "main",
+      "baseRefOid": "25d7fa4ba82adf0adcb7bdb3b63f1cadefd63a65",
+      "headRepository": "yaroslavros/tls-key-update",
+      "headRefName": "main",
+      "headRefOid": "6196462e769226acada11001320e7fe64865b3c6",
+      "closedAt": "2024-10-21T21:05:00Z",
+      "mergedAt": "2024-10-21T21:05:00Z",
+      "mergedBy": "yaroslavros",
+      "mergeCommit": {
+        "oid": "ade53c93e786f2005544ca525ae72ff97a213ba7"
+      },
+      "comments": [],
+      "reviews": []
     }
   ]
 }
