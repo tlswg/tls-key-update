@@ -11,35 +11,40 @@
 <meta content="Steffen Fries" name="author">
 <meta content="Yaroslav Rosomakho" name="author">
 <meta content="
-       The Transport Layer Security (TLS) 1.3 specification offers a dedicated
-message to update cryptographic keys during the lifetime of an ongoing session.
-The traffic secret and the initialization vector are updated directionally
-but the sender may trigger the recipient, via the request_update field,
-to transmit a key update message in the reverse direction. 
-       In environments where sessions are long-lived, such as industrial IoT or
-telecommunication networks, this key update alone is insufficient since
-forward secrecy is not offered via this mechanism. Earlier versions
-of TLS allowed the two peers to perform renegotiation, which is a handshake
-that establishes new cryptographic parameters for an existing session.
-When a security vulnerability with the renegotiation mechanism was discovered,
-RFC 5746 was developed as a fix. Renegotiation has, however, been removed from
-version 1.3 leaving a gap in the feature set of TLS. 
-       This specification defines an extended key update that supports forward secrecy. 
+       The Transport Layer Security (TLS) 1.3 specification provides forward secrecy
+by utilizing an ephemeral key exchange during the initial handshake. Forward
+secrecy ensures that even if an attacker later obtains a party's long-term private
+key, past encrypted sessions cannot be decrypted. This protects against adversaries
+who record encrypted conversations in the hope of decrypting them later. 
+       TLS 1.3 also includes a Key Update mechanism, allowing cryptographic keys to be
+refreshed during an ongoing session. However, this update does not establish new
+forward-secret key material. While this is generally not an issue for short-lived
+sessions, it can pose a security risk for long-lived connections, such as those in
+industrial IoT or telecommunication networks, where an attacker could compromise
+application traffic secrets after the initial handshake. 
+       Earlier versions of TLS supported renegotiation, a mechanism that allowed peers to
+establish new cryptographic parameters within an existing session. However, due to
+security vulnerabilities, the renegotiation mechanism was modified via RFC 5746 and
+later removed entirely in TLS 1.3, leaving a gap in TLS's ability to refresh
+cryptographic material securely. 
+       This specification introduces an extended key update mechanism that supports forward
+secrecy, forcing attackers to continuously exfiltrate key material throughout the
+session to decrypt the entire conversation. 
     " name="description">
-<meta content="xml2rfc 3.23.2" name="generator">
+<meta content="xml2rfc 3.27.0" name="generator">
 <meta content="Internet-Draft" name="keyword">
 <meta content="draft-ietf-tls-extended-key-update-latest" name="ietf.draft">
 <!-- Generator version information:
-  xml2rfc 3.23.2
-    Python 3.12.7
+  xml2rfc 3.27.0
+    Python 3.12.9
     ConfigArgParse 1.7
     google-i18n-address 3.1.1
     intervaltree 3.1.0
-    Jinja2 3.1.4
-    lxml 4.9.4
+    Jinja2 3.1.5
+    lxml 5.3.0
     platformdirs 4.3.6
-    pycountry 22.3.5
-    PyYAML 6.0.1
+    pycountry 24.6.1
+    PyYAML 6.0.2
     requests 2.32.3
     setuptools 70.3.0
     wcwidth 0.2.13
@@ -178,31 +183,6 @@ version 1.3 leaving a gap in the feature set of TLS.
 }
 
 @font-face {
-  font-family: 'Cabin Condensed';
-  font-style: normal;
-  font-weight: 600;
-  font-display: swap;
-  src: local('Cabin Condensed SemiBold'), local('CabinCondensed-SemiBold'), url('https://martinthomson.github.io/rfc-css/fonts/cabincondensed-semibold-vietnamese.woff2') format('woff2');
-  unicode-range: U+0102-0103, U+0110-0111, U+1EA0-1EF9, U+20AB;
-}
-@font-face {
-  font-family: 'Cabin Condensed';
-  font-style: normal;
-  font-weight: 600;
-  font-display: swap;
-  src: local('Cabin Condensed SemiBold'), local('CabinCondensed-SemiBold'), url('https://martinthomson.github.io/rfc-css/fonts/cabincondensed-semibold-latin-ext.woff2') format('woff2');
-  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
-}
-@font-face {
-  font-family: 'Cabin Condensed';
-  font-style: normal;
-  font-weight: 600;
-  font-display: swap;
-  src: local('Cabin Condensed SemiBold'), local('CabinCondensed-SemiBold'), url('https://martinthomson.github.io/rfc-css/fonts/cabincondensed-semibold-latin.woff2') format('woff2');
-  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
-}
-
-@font-face {
   font-family: 'Oxygen Mono';
   font-style: normal;
   font-weight: 400;
@@ -219,6 +199,77 @@ version 1.3 leaving a gap in the feature set of TLS.
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
 
+@font-face {
+  font-family: 'Sofia Sans Semi Condensed';
+  font-style: italic;
+  font-weight: 1 1000;
+  src: url('https://martinthomson.github.io/rfc-css/fonts/sofiasanssemicondensed-italic-cyrillic-ext.woff2') format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+@font-face {
+  font-family: 'Sofia Sans Semi Condensed';
+  font-style: italic;
+  font-weight: 1 1000;
+  src: url('https://martinthomson.github.io/rfc-css/fonts/sofiasanssemicondensed-italic-cyrillic.woff2') format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: 'Sofia Sans Semi Condensed';
+  font-style: italic;
+  font-weight: 1 1000;
+  src: url('https://martinthomson.github.io/rfc-css/fonts/sofiasanssemicondensed-italic-greek.woff2') format('woff2');
+  unicode-range: U+0370-0377, U+037A-037F, U+0384-038A, U+038C, U+038E-03A1, U+03A3-03FF;
+}
+@font-face {
+  font-family: 'Sofia Sans Semi Condensed';
+  font-style: italic;
+  font-weight: 1 1000;
+  src: url('https://martinthomson.github.io/rfc-css/fonts/sofiasanssemicondensed-italic-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Sofia Sans Semi Condensed';
+  font-style: italic;
+  font-weight: 1 1000;
+  src: url('https://martinthomson.github.io/rfc-css/fonts/sofiasanssemicondensed-italic-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Sofia Sans Semi Condensed';
+  font-style: normal;
+  font-weight: 1 1000;
+  src: url('https://martinthomson.github.io/rfc-css/fonts/sofiasanssemicondensed-regular-cyrillic-ext.woff2') format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+@font-face {
+  font-family: 'Sofia Sans Semi Condensed';
+  font-style: normal;
+  font-weight: 1 1000;
+  src: url('https://martinthomson.github.io/rfc-css/fonts/sofiasanssemicondensed-regular-cyrillic.woff2') format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: 'Sofia Sans Semi Condensed';
+  font-style: normal;
+  font-weight: 1 1000;
+  src: url('https://martinthomson.github.io/rfc-css/fonts/sofiasanssemicondensed-regular-greek.woff2') format('woff2');
+  unicode-range: U+0370-0377, U+037A-037F, U+0384-038A, U+038C, U+038E-03A1, U+03A3-03FF;
+}
+@font-face {
+  font-family: 'Sofia Sans Semi Condensed';
+  font-style: normal;
+  font-weight: 1 1000;
+  src: url('https://martinthomson.github.io/rfc-css/fonts/sofiasanssemicondensed-regular-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Sofia Sans Semi Condensed';
+  font-style: normal;
+  font-weight: 1 1000;
+  src: url('https://martinthomson.github.io/rfc-css/fonts/sofiasanssemicondensed-regular-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
 :root {
   color-scheme: light dark;
   --background-color: #fff;
@@ -231,6 +282,7 @@ version 1.3 leaving a gap in the feature set of TLS.
   --pilcrow-strong: #bbb;
   --small-font-size: 14.5px;
   --font-mono: 'Oxygen Mono', monospace;
+  --font-title: "Sofia Sans Semi Condensed", sans-serif;
   scrollbar-color: #bbb #eee;
 }
 body {
@@ -248,9 +300,15 @@ body {
 }
 
 /* headings */
+section {
+  clear: both;
+}
+.section-number {
+  padding-right: 0.5em;
+}
 h1, h2, h3, h4, h5, h6 {
-  font-family: "Cabin Condensed", sans-serif;
-  font-weight: 600;
+  font-family: var(--font-title);
+  font-weight: 680;
   margin: 0.8em 0 0.3em;
   font-size-adjust: 0.5;
   color: var(--title-color);
@@ -279,6 +337,7 @@ h4, h5, h6 {
 /* general structure */
 .author {
   padding-bottom: 0.3em;
+  vertical-align: top;
 }
 #abstract+p {
   font-size: 18px;
@@ -356,25 +415,26 @@ svg[font-family~="monospace" i], svg [font-family~="monospace" i] {
 ol, ul {
   padding: 0;
   margin: 0 0 0.5em 2em;
-}
-:is(ol, ul) :is(ol, ul) {
-  margin-left: 1em;
+  & :is(ol, ul) {
+    margin-left: 1em;
+  }
 }
 li {
   margin: 0 0 0.25em 0;
 }
-.ulCompact li {
-  margin: 0;
-}
 ul.empty, .ulEmpty {
   list-style-type: none;
-}
-ul.empty li, .ulEmpty li {
-  margin-top: 0.5em;
+  & li {
+    margin-top: 0.5em;
+  }
 }
 :is(ul, ol).compact, .ulCompact, .olCompact {
-  line-height: 1;
   margin: 0 0 0 2em;
+  & li {
+    margin: 0;
+    & :first-child { margin-top: 0; }
+    & :last-child { margin-bottom: 0; }
+  }
 }
 
 /* definition lists */
@@ -382,38 +442,39 @@ dl {
   clear: left;
   --indent: 3ch;
   /* --indent: attr(indent ch); not supported in any browser, but we can dream */
+  &.olPercent {
+    --indent: 5ch;
+    & > dt {
+      min-width: calc(var(--indent) - 2ch);
+    }
+  }
+  &.olPercent > dt {
+    float: none;
+  }
+
+  dl > dd > & {
+    margin-top: 0.5em;
+    margin-bottom: 0;
+  }
 }
-dl.olPercent {
-  --indent: 5ch;
-}
-dl > dt {
+dl:not(.dlNewline) > dt {
   float: left;
   margin-right: 2ch;
   min-width: 8ch;
-}
-dl.dlNewline > dt {
-  float: none;
 }
 dl > dd {
   margin-bottom: .8em;
   margin-left: var(--indent) !important; /* stupid element overrides */
   min-height: 2ex;
 }
-dl.olPercent > dt {
-  min-width: calc(var(--indent) - 2ch);
-}
 :is(dl.compact, .dlCompact) > dd {
   margin-bottom: 0;
-}
-:is(dl.compact, .dlCompact) > dd > :is(:first-child, .break:first-child + *) {
-  margin-top: 0;
-}
-:is(dl.compact, .dlCompact) > dd > :is(:last-child) {
-  margin-bottom: 0;
-}
-dl > dd > dl {
-  margin-top: 0.5em;
-  margin-bottom: 0;
+  & > :is(:first-child, .break:first-child + *) {
+    margin-top: 0;
+  }
+  & > :is(:last-child) {
+    margin-bottom: 0;
+  }
 }
 :is(dd, span).break {
   display: none;
@@ -477,6 +538,7 @@ figcaption, caption {
   font-style: italic;
   margin: 0.5em 1.5em;
   text-align: left;
+  caption-side: bottom;
 }
 @media screen {
   /* Auto-collapse boilerplate. */
@@ -494,7 +556,11 @@ figcaption, caption {
   }
   pre, svg {
     display: inline-block;
-    overflow-x: auto;
+    /* In the horizontal direction, sometimes people make over-sized figures.
+       Scrollbars for those is therefore necessary: auto adds them as necessary..
+       In the vertical direction, the line-height can combine with the font
+       asender/descender height to produce scrollbars: hidden avoids that. */
+    overflow: auto hidden;
   }
   pre {
     max-width: 100%;
@@ -531,6 +597,7 @@ cite {
 
 /* tables */
 table {
+  width: auto;
   max-width: 100%;
   margin: 0 0 1em;
   border-collapse: collapse;
@@ -545,6 +612,16 @@ table.center {
 table.left {
   margin-right: auto;
 }
+table .text-left {
+  text-align: left;
+}
+table .text-center {
+  text-align: center;
+}
+table .text-right {
+  text-align: right;
+}
+
 thead, tbody {
   border: 1px solid var(--line-color);
 }
@@ -575,9 +652,11 @@ a.pilcrow {
   margin-left: 3px;
   opacity: 0.2;
   user-select: none;
+  &[href] {
+    color: var(--pilcrow-weak);
+    &:hover { text-decoration: none; }
+  }
 }
-a.pilcrow[href] { color: var(--pilcrow-weak); }
-a.pilcrow[href]:hover { text-decoration: none; }
 @media not print {
   :hover > a.pilcrow {
     opacity: 1;
@@ -617,26 +696,28 @@ sub, sup {
   font-size: var(--small-font-size);
   line-height: 18px;
   --identifier-width: 15ch;
-}
-#identifiers dt {
-  width: var(--identifier-width);
-  min-width: var(--identifier-width);
-  clear: left;
-  float: left;
-  text-align: right;
-  margin-right: 1ch;
-}
-#identifiers dd {
-  margin: 0;
-  margin-left: calc(1em + var(--identifier-width)) !important;
-  min-width: 5em;
-}
-#identifiers .authors .author {
-  display: inline-block;
-  margin-right: 1.5em;
-}
-#identifiers .authors .org {
-  font-style: italic;
+  & dt {
+    width: var(--identifier-width);
+    min-width: var(--identifier-width);
+    clear: left;
+    float: left;
+    text-align: right;
+    margin-right: 1ch;
+  }
+  & dd {
+    margin: 0;
+    margin-left: calc(1em + var(--identifier-width)) !important;
+    min-width: 5em;
+  }
+  & .authors {
+    & .author {
+      display: inline-block;
+      margin-right: 1.5em;
+    }
+    & .org {
+      font-style: italic;
+    }
+  }
 }
 
 /* The prepared/rendered info at the very bottom of the page */
@@ -647,9 +728,6 @@ sub, sup {
   margin-top: 2em;
 }
 .docInfo .prepared {
-  float: left;
-}
-.docInfo .prepared {
   float: right;
 }
 
@@ -657,47 +735,48 @@ sub, sup {
 #toc {
   padding: 0.75em 0 2em 0;
   margin-bottom: 1em;
-}
-#toc nav ul {
-  margin: 0 0.5em 0 0;
-  padding: 0;
-  list-style: none;
-}
-#toc nav li {
-  line-height: 1.3em;
-  margin: 2px 0;
-  padding-left: 1.2em;
-  text-indent: -1.2em;
-}
-#toc a.xref {
-  white-space: normal;
-}
-/* references */
-.references dt {
-  text-align: right;
-  font-weight: bold;
-  min-width: 10ch;
-  margin-right: 1.5ch;
-}
-.references dt:target::before {
-  content: "⇒";
-  width: 15px;
-  margin: 0 10px 0 -25px;
-}
-.references dd {
-  margin-left: 12ch !important;
-  overflow: auto;
+
+  & nav {
+    & ul {
+      margin: 0 0.5em 0 0;
+      padding: 0;
+      list-style: none;
+    }
+    & li {
+      line-height: 1.3em;
+      margin: 2px 0;
+      padding-left: 1.2em;
+      text-indent: -1.2em;
+    }
+  }
+  & a.xref {
+    white-space: normal;
+  }
 }
 
-.refInstance {
-  margin-bottom: 1.25em;
+.references {
+  & > dt {
+    text-align: right;
+    font-weight: bold;
+    min-width: 10ch;
+    margin-right: 1.5ch;
+    &:target::before {
+      content: "⇒";
+      margin: 0 10px 0 -25px;
+    }
+  }
+  & > dd {
+    margin-left: 12ch !important;
+    overflow: visible;
+    & .refInstance {
+      margin-bottom: 0.8em;
+    }
+    & .ascii {
+      margin-bottom: 0.25em;
+    }
+  }
 }
 
-.references .ascii {
-  margin-bottom: 0.25em;
-}
-
-/* index */
 #rfc\.index\.index + ul {
   margin-left: 0;
 }
@@ -705,21 +784,33 @@ sub, sup {
 /* authors */
 address.vcard {
   font-style: normal;
-  margin: 1em 0;
+  max-width: 20em;
+  margin: 1em auto 1em 0;
+
+  & .nameRole {
+    font-weight: 700;
+    margin-left: 0;
+  }
+  & .label {
+    margin: 0.5em 0;
+  }
+  & .type {
+    display: none;
+  }
+  & .alternative-contact {
+    margin: 0.5em 0 0.25em 0;
+  }
+  & .non-ascii {
+    margin: 0 0 0 2em;
+  }
+  & div.left {
+    text-align: left;
+  }
+  & div.right {
+    text-align: right;
+  }
 }
-address.vcard .nameRole {
-  font-weight: 700;
-  margin-left: 0;
-}
-address.vcard .label {
-  margin: 0.5em 0;
-}
-address.vcard .type {
-  display: none;
-}
-.alternative-contact {
-  margin: 1.5em 0 1em;
-}
+
 hr.addr {
   border-top: 1px dashed;
   margin: 0;
@@ -741,6 +832,7 @@ hr.addr {
   }
 }
 
+/* Comments */
 .rfcEditorRemove p:first-of-type {
   font-style: italic;
 }
@@ -751,7 +843,31 @@ hr.addr {
 .crefSource {
   font-style: italic;
 }
-/* alternative layout for smaller screens */
+
+@media screen {
+  #toc nav {
+    font-family: var(--font-title);
+    font-weight: 360;
+    & > ul { margin-bottom: 2em; }
+    & ul {
+      margin: 0 0 0 4px;
+      & :is(p, li) {
+        margin: 2px 0;
+      }
+    }
+  }
+  #toc a.toplink {
+    float: right;
+  }
+}
+@media not screen {
+  #toc a.toplink {
+    display: none;
+  }
+}
+
+
+/* TOC layout for smaller screens */
 @media screen and (max-width: 929px) {
   #toc {
     position: fixed;
@@ -762,9 +878,6 @@ hr.addr {
     margin: 0;
     border-bottom: 1px solid #ccc;
     opacity: 0.6;
-  }
-  #toc.active {
-      opacity: 1;
   }
   #toc h2 {
     margin: 0;
@@ -777,17 +890,17 @@ hr.addr {
     background-color: #444;
     color: white;
     cursor: pointer;
-  }
-  #toc h2::before { /* css hamburger */
-    float: right;
-    position: relative;
-    width: 1em;
-    height: 1px;
-    left: -164px;
-    margin: 8px 0 0 0;
-    background: white none repeat scroll 0 0;
-    box-shadow: 0 4px 0 0 white, 0 8px 0 0 white;
-    content: "";
+    &::before { /* css hamburger */
+      float: right;
+      position: relative;
+      width: 1em;
+      height: 1px;
+      left: -164px;
+      margin: 8px 0 0 0;
+      background: white none repeat scroll 0 0;
+      box-shadow: 0 4px 0 0 white, 0 8px 0 0 white;
+      content: "";
+    }
   }
   #toc nav {
     display: none;
@@ -798,14 +911,13 @@ hr.addr {
     height: calc(100vh - 48px);
     border-left: 1px solid #ddd;
   }
-  #toc.active nav {
-    display: block;
+  #toc.active {
+    opacity: 1;
+    & nav { display: block; }
   }
   /* Make the collapsed ToC header render white on gray also when it's a link */
   #toc h2 a,
-  #toc h2 a:link,
-  #toc h2 a:focus,
-  #toc h2 a:hover,
+  #toc h2 a:is(:link, :focus, :hover),
   #toc a.toplink,
   #toc a.toplink:hover {
     color: white;
@@ -813,11 +925,11 @@ hr.addr {
     text-decoration: none;
   }
   #toc a.toplink {
-    margin-top: 2px;
+    margin: 2px 0.5em 0;
   }
 }
 
-/* alternative layout for wide screens */
+/* TOC layout for wide screens */
 @media screen and (min-width: 930px) {
   body {
     padding-right: 360px;
@@ -846,20 +958,12 @@ hr.addr {
     overscroll-behavior: contain;
     scrollbar-width: thin;
   }
-  #toc nav > ul  {
-    margin-bottom: 2em;
-  }
-  #toc ul {
-    margin: 0 0 0 4px;
-    font-size: var(--small-font-size);
-  }
-  #toc ul :is(p, li) {
-    margin: 2px 0;
-    line-height: 22px;
-  }
   img { /* future proofing */
     max-width: 100%;
     height: auto;
+  }
+  #toc a.toplink {
+    margin: 8px 0.5em 0;
   }
 }
 
@@ -902,9 +1006,6 @@ hr.addr {
   td {
     border-top: 1px solid #ddd;
   }
-  .toplink {
-    display: none;
-  }
 }
 
 @page :first {
@@ -927,82 +1028,6 @@ hr.addr {
   size: A4;
   margin-bottom: 45mm;
   padding-top: 20px;
-}
-
-/* Changes introduced to fix issues found during implementation */
-
-/* Separate body from document info even without intervening H1 */
-section {
-  clear: both;
-}
-
-/* Top align author divs, to avoid names without organization dropping level with org names */
-.author {
-  vertical-align: top;
-}
-
-/* Style section numbers with more space between number and title */
-.section-number {
-  padding-right: 0.5em;
-}
-
-/* Add styling for a link in the ToC that points to the top of the document */
-a.toplink {
-  float: right;
-  margin: 8px 0.5em 0;
-}
-
-/* Provide styling for table cell text alignment */
-table .text-left {
-  text-align: left;
-}
-table .text-center {
-  text-align: center;
-}
-table .text-right {
-  text-align: right;
-}
-
-/* Make the alternative author contact information look less like just another
-   author, and group it closer with the primary author contact information */
-.alternative-contact {
-  margin: 0.5em 0 0.25em 0;
-}
-address .non-ascii {
-  margin: 0 0 0 2em;
-}
-
-/* With it being possible to set tables with alignment
-  left, center, and right, { width: 100%; } does not make sense */
-table {
-  width: auto;
-}
-
-/* Avoid reference text that sits in a block with very wide left margin,
-   because of a long floating dt label.*/
-.references dd {
-  overflow: visible;
-}
-
-/* Control caption placement */
-caption {
-  caption-side: bottom;
-}
-
-/* Limit the width of the author address vcard, so names in right-to-left
-   script don't end up on the other side of the page. */
-
-address.vcard {
-  max-width: 20em;
-  margin-right: auto;
-}
-
-/* For address alignment dependent on LTR or RTL scripts */
-address div.left {
-  text-align: left;
-}
-address div.right {
-  text-align: right;
 }
 
 /* Dark mode. */
@@ -1041,11 +1066,11 @@ svg :is([fill="white"], [fill^="#fff"]) {
 <thead><tr>
 <td class="left">Internet-Draft</td>
 <td class="center">Extended Key Update for TLS</td>
-<td class="right">October 2024</td>
+<td class="right">February 2025</td>
 </tr></thead>
 <tfoot><tr>
 <td class="left">Tschofenig, et al.</td>
-<td class="center">Expires 18 April 2025</td>
+<td class="center">Expires 24 August 2025</td>
 <td class="right">[Page]</td>
 </tr></tfoot>
 </table>
@@ -1058,12 +1083,12 @@ svg :is([fill="white"], [fill^="#fff"]) {
 <dd class="internet-draft">draft-ietf-tls-extended-key-update-latest</dd>
 <dt class="label-published">Published:</dt>
 <dd class="published">
-<time datetime="2024-10-15" class="published">15 October 2024</time>
+<time datetime="2025-02-20" class="published">20 February 2025</time>
     </dd>
 <dt class="label-intended-status">Intended Status:</dt>
 <dd class="intended-status">Standards Track</dd>
 <dt class="label-expires">Expires:</dt>
-<dd class="expires"><time datetime="2025-04-18">18 April 2025</time></dd>
+<dd class="expires"><time datetime="2025-08-24">24 August 2025</time></dd>
 <dt class="label-authors">Authors:</dt>
 <dd class="authors">
 <div class="author">
@@ -1092,20 +1117,25 @@ svg :is([fill="white"], [fill^="#fff"]) {
 <h1 id="title">Extended Key Update for Transport Layer Security (TLS) 1.3</h1>
 <section id="section-abstract">
       <h2 id="abstract"><a href="#abstract" class="selfRef">Abstract</a></h2>
-<p id="section-abstract-1">The Transport Layer Security (TLS) 1.3 specification offers a dedicated
-message to update cryptographic keys during the lifetime of an ongoing session.
-The traffic secret and the initialization vector are updated directionally
-but the sender may trigger the recipient, via the request_update field,
-to transmit a key update message in the reverse direction.<a href="#section-abstract-1" class="pilcrow">¶</a></p>
-<p id="section-abstract-2">In environments where sessions are long-lived, such as industrial IoT or
-telecommunication networks, this key update alone is insufficient since
-forward secrecy is not offered via this mechanism. Earlier versions
-of TLS allowed the two peers to perform renegotiation, which is a handshake
-that establishes new cryptographic parameters for an existing session.
-When a security vulnerability with the renegotiation mechanism was discovered,
-RFC 5746 was developed as a fix. Renegotiation has, however, been removed from
-version 1.3 leaving a gap in the feature set of TLS.<a href="#section-abstract-2" class="pilcrow">¶</a></p>
-<p id="section-abstract-3">This specification defines an extended key update that supports forward secrecy.<a href="#section-abstract-3" class="pilcrow">¶</a></p>
+<p id="section-abstract-1">The Transport Layer Security (TLS) 1.3 specification provides forward secrecy
+by utilizing an ephemeral key exchange during the initial handshake. Forward
+secrecy ensures that even if an attacker later obtains a party's long-term private
+key, past encrypted sessions cannot be decrypted. This protects against adversaries
+who record encrypted conversations in the hope of decrypting them later.<a href="#section-abstract-1" class="pilcrow">¶</a></p>
+<p id="section-abstract-2">TLS 1.3 also includes a Key Update mechanism, allowing cryptographic keys to be
+refreshed during an ongoing session. However, this update does not establish new
+forward-secret key material. While this is generally not an issue for short-lived
+sessions, it can pose a security risk for long-lived connections, such as those in
+industrial IoT or telecommunication networks, where an attacker could compromise
+application traffic secrets after the initial handshake.<a href="#section-abstract-2" class="pilcrow">¶</a></p>
+<p id="section-abstract-3">Earlier versions of TLS supported renegotiation, a mechanism that allowed peers to
+establish new cryptographic parameters within an existing session. However, due to
+security vulnerabilities, the renegotiation mechanism was modified via RFC 5746 and
+later removed entirely in TLS 1.3, leaving a gap in TLS's ability to refresh
+cryptographic material securely.<a href="#section-abstract-3" class="pilcrow">¶</a></p>
+<p id="section-abstract-4">This specification introduces an extended key update mechanism that supports forward
+secrecy, forcing attackers to continuously exfiltrate key material throughout the
+session to decrypt the entire conversation.<a href="#section-abstract-4" class="pilcrow">¶</a></p>
 </section>
 <section class="note rfcEditorRemove" id="section-note.1">
       <h2 id="name-discussion-venues">
@@ -1137,7 +1167,7 @@ version 1.3 leaving a gap in the feature set of TLS.<a href="#section-abstract-2
         time. It is inappropriate to use Internet-Drafts as reference
         material or to cite them other than as "work in progress."<a href="#section-boilerplate.1-3" class="pilcrow">¶</a></p>
 <p id="section-boilerplate.1-4">
-        This Internet-Draft will expire on 18 April 2025.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
+        This Internet-Draft will expire on 24 August 2025.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="copyright">
@@ -1146,7 +1176,7 @@ version 1.3 leaving a gap in the feature set of TLS.<a href="#section-abstract-2
 <a href="#name-copyright-notice" class="section-name selfRef">Copyright Notice</a>
         </h2>
 <p id="section-boilerplate.2-1">
-            Copyright (c) 2024 IETF Trust and the persons identified as the
+            Copyright (c) 2025 IETF Trust and the persons identified as the
             document authors. All rights reserved.<a href="#section-boilerplate.2-1" class="pilcrow">¶</a></p>
 <p id="section-boilerplate.2-2">
             This document is subject to BCP 78 and the IETF Trust's Legal
@@ -1197,27 +1227,30 @@ version 1.3 leaving a gap in the feature set of TLS.<a href="#section-abstract-2
             <p id="section-toc.1-1.10.1"><a href="#section-10" class="auto internal xref">10</a>. <a href="#name-sslkeylogfile-update" class="internal xref">SSLKEYLOGFILE update</a></p>
 </li>
           <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.11">
-            <p id="section-toc.1-1.11.1"><a href="#section-11" class="auto internal xref">11</a>. <a href="#name-security-considerations" class="internal xref">Security Considerations</a></p>
+            <p id="section-toc.1-1.11.1"><a href="#section-11" class="auto internal xref">11</a>. <a href="#name-exporter" class="internal xref">Exporter</a></p>
 </li>
           <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.12">
-            <p id="section-toc.1-1.12.1"><a href="#section-12" class="auto internal xref">12</a>. <a href="#name-iana-considerations" class="internal xref">IANA Considerations</a></p>
+            <p id="section-toc.1-1.12.1"><a href="#section-12" class="auto internal xref">12</a>. <a href="#name-security-considerations" class="internal xref">Security Considerations</a></p>
 </li>
           <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.13">
-            <p id="section-toc.1-1.13.1"><a href="#section-13" class="auto internal xref">13</a>. <a href="#name-references" class="internal xref">References</a></p>
-<ul class="compact toc ulBare ulEmpty">
-<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.13.2.1">
-                <p id="section-toc.1-1.13.2.1.1"><a href="#section-13.1" class="auto internal xref">13.1</a>.  <a href="#name-normative-references" class="internal xref">Normative References</a></p>
+            <p id="section-toc.1-1.13.1"><a href="#section-13" class="auto internal xref">13</a>. <a href="#name-iana-considerations" class="internal xref">IANA Considerations</a></p>
 </li>
-              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.13.2.2">
-                <p id="section-toc.1-1.13.2.2.1"><a href="#section-13.2" class="auto internal xref">13.2</a>.  <a href="#name-informative-references" class="internal xref">Informative References</a></p>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.14">
+            <p id="section-toc.1-1.14.1"><a href="#section-14" class="auto internal xref">14</a>. <a href="#name-references" class="internal xref">References</a></p>
+<ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.14.2.1">
+                <p id="section-toc.1-1.14.2.1.1"><a href="#section-14.1" class="auto internal xref">14.1</a>.  <a href="#name-normative-references" class="internal xref">Normative References</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.14.2.2">
+                <p id="section-toc.1-1.14.2.2.1"><a href="#section-14.2" class="auto internal xref">14.2</a>.  <a href="#name-informative-references" class="internal xref">Informative References</a></p>
 </li>
             </ul>
 </li>
-          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.14">
-            <p id="section-toc.1-1.14.1"><a href="#appendix-A" class="auto internal xref">Appendix A</a>.  <a href="#name-acknowledgments" class="internal xref">Acknowledgments</a></p>
-</li>
           <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.15">
-            <p id="section-toc.1-1.15.1"><a href="#appendix-B" class="auto internal xref"></a><a href="#name-authors-addresses" class="internal xref">Authors' Addresses</a></p>
+            <p id="section-toc.1-1.15.1"><a href="#appendix-A" class="auto internal xref">Appendix A</a>.  <a href="#name-acknowledgments" class="internal xref">Acknowledgments</a></p>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.16">
+            <p id="section-toc.1-1.16.1"><a href="#appendix-B" class="auto internal xref"></a><a href="#name-authors-addresses" class="internal xref">Authors' Addresses</a></p>
 </li>
         </ul>
 </nav>
@@ -1245,14 +1278,14 @@ complexity, impacts performance and may lead to service interruption as well.<a 
 <p id="section-1-3">Some deployments have used IPsec in the past to secure their communication protocol
 and have now decided to switch to TLS or DTLS instead. The requirement for updates of
 cryptographic keys for an existing session has become a requirement. For IPsec, US NIST,
-German BSI, and French ANSSI recommend to re-run Diffie-Hellman exchanges frequently to provide forward
-secrecy and force attackers to perform a dynamic key extraction <span>[<a href="#RFC7624" class="cite xref">RFC7624</a>]</span>. ANSSI
-writes "It is recommended to force the periodic renewal of the keys, e.g., every
-hour and every 100 GB of data, in order to limit the impact of a key compromise."
-<span>[<a href="#ANSSI-DAT-NT-003" class="cite xref">ANSSI-DAT-NT-003</a>]</span>. While IPsec/IKEv2 <span>[<a href="#RFC7296" class="cite xref">RFC7296</a>]</span> offers the desired functionality,
-developers often decide to use TLS/DTLS to simplify integration with cloud-based
-environments.<a href="#section-1-3" class="pilcrow">¶</a></p>
-<p id="section-1-4">This specification defines a new, extended key update message supporting perfect
+German BSI, and French ANSSI recommend to re-run Diffie-Hellman exchanges frequently
+to provide forward secrecy and force attackers to perform a dynamic key extraction
+<span>[<a href="#RFC7624" class="cite xref">RFC7624</a>]</span>. ANSSI writes "It is recommended to force the periodic renewal of the
+keys, e.g., every hour and every 100 GB of data, in order to limit the impact of a
+key compromise." <span>[<a href="#ANSSI-DAT-NT-003" class="cite xref">ANSSI-DAT-NT-003</a>]</span>. While IPsec/IKEv2 <span>[<a href="#RFC7296" class="cite xref">RFC7296</a>]</span> offers the
+desired functionality, developers often decide to use TLS/DTLS to simplify
+integration with cloud-based environments.<a href="#section-1-3" class="pilcrow">¶</a></p>
+<p id="section-1-4">This specification defines a new, extended key update message supporting
 forward secrecy.  It does so by utilizing a Diffie-Hellman exchange using one of
 the groups negotiated during the initial exchange.  The support for this extension
 is signaled using the TLS flags extension mechanism.  The frequent re-running of
@@ -1674,80 +1707,95 @@ SSLKEYLOGFILE was not used for other secrets in the handshake.<a href="#section-
 past iterations of <code>CLIENT_TRAFFIC_SECRET_</code> and <code>SERVER_TRAFFIC_SECRET_</code>.<a href="#section-10-5" class="pilcrow">¶</a></p>
 </section>
 </div>
-<div id="security-considerations">
+<div id="exporter">
 <section id="section-11">
-      <h2 id="name-security-considerations">
-<a href="#section-11" class="section-number selfRef">11. </a><a href="#name-security-considerations" class="section-name selfRef">Security Considerations</a>
+      <h2 id="name-exporter">
+<a href="#section-11" class="section-number selfRef">11. </a><a href="#name-exporter" class="section-name selfRef">Exporter</a>
       </h2>
-<p id="section-11-1">This entire document is about security.<a href="#section-11-1" class="pilcrow">¶</a></p>
-<p id="section-11-2">When utilizing this extension it is important to understand the interaction
+<p id="section-11-1">Protocols like DTLS-SRTP and DTLS-over-SCTP utilize TLS or DTLS for key establishment but repurpose
+some of the keying material for their own purpose. These protocols use the TLS exporter defined in
+Section 7.5 of <span>[<a href="#I-D.ietf-tls-rfc8446bis" class="cite xref">I-D.ietf-tls-rfc8446bis</a>]</span>.<a href="#section-11-1" class="pilcrow">¶</a></p>
+<p id="section-11-2">Once the Extended Key Update mechanism is complete, such protocols would need to use the newly
+derived key to generate Exported Keying Material (EKM) to protect packets. The "sk" derived in the
+<a href="#key_update" class="auto internal xref">Section 6</a> will be used as the "Secret" in the exporter function, defined in
+Section 7.5 of <span>[<a href="#I-D.ietf-tls-rfc8446bis" class="cite xref">I-D.ietf-tls-rfc8446bis</a>]</span>, to generate EKM, ensuring that the exported keying material is
+aligned with the updated security context.<a href="#section-11-2" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="security-considerations">
+<section id="section-12">
+      <h2 id="name-security-considerations">
+<a href="#section-12" class="section-number selfRef">12. </a><a href="#name-security-considerations" class="section-name selfRef">Security Considerations</a>
+      </h2>
+<p id="section-12-1">This entire document is about security.<a href="#section-12-1" class="pilcrow">¶</a></p>
+<p id="section-12-2">When utilizing this extension it is important to understand the interaction
 with ticket-based resumption since resumption without the execution of
 a Diffie-Hellman exchange offering forward secrecy will potentially undo
 updates to the application traffic secret derivation, depending on when
-tickets have been exchanged.<a href="#section-11-2" class="pilcrow">¶</a></p>
+tickets have been exchanged.<a href="#section-12-2" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="iana-considerations">
-<section id="section-12">
+<section id="section-13">
       <h2 id="name-iana-considerations">
-<a href="#section-12" class="section-number selfRef">12. </a><a href="#name-iana-considerations" class="section-name selfRef">IANA Considerations</a>
+<a href="#section-13" class="section-number selfRef">13. </a><a href="#name-iana-considerations" class="section-name selfRef">IANA Considerations</a>
       </h2>
-<p id="section-12-1">IANA is requested to allocate value TBD for the "too_many_extendedkeyupdate_requested" alert
-in the "TLS Alerts" registry. The value for the "DTLS-OK" column is "Y".<a href="#section-12-1" class="pilcrow">¶</a></p>
-<p id="section-12-2">IANA is requested to add the following entry to the "TLS Flags"
-extension registry <span>[<a href="#TLS-Ext-Registry" class="cite xref">TLS-Ext-Registry</a>]</span>:<a href="#section-12-2" class="pilcrow">¶</a></p>
+<p id="section-13-1">IANA is requested to allocate value TBD for the "extended_key_update_required" alert
+in the "TLS Alerts" registry. The value for the "DTLS-OK" column is "Y".<a href="#section-13-1" class="pilcrow">¶</a></p>
+<p id="section-13-2">IANA is requested to add the following entry to the "TLS Flags"
+extension registry <span>[<a href="#TLS-Ext-Registry" class="cite xref">TLS-Ext-Registry</a>]</span>:<a href="#section-13-2" class="pilcrow">¶</a></p>
 <ul class="normal">
-<li class="normal" id="section-12-3.1">
-          <p id="section-12-3.1.1">Value: TBD1<a href="#section-12-3.1.1" class="pilcrow">¶</a></p>
+<li class="normal" id="section-13-3.1">
+          <p id="section-13-3.1.1">Value: TBD1<a href="#section-13-3.1.1" class="pilcrow">¶</a></p>
 </li>
-        <li class="normal" id="section-12-3.2">
-          <p id="section-12-3.2.1">Flag Name: extended_key_update<a href="#section-12-3.2.1" class="pilcrow">¶</a></p>
+        <li class="normal" id="section-13-3.2">
+          <p id="section-13-3.2.1">Flag Name: extended_key_update<a href="#section-13-3.2.1" class="pilcrow">¶</a></p>
 </li>
-        <li class="normal" id="section-12-3.3">
-          <p id="section-12-3.3.1">Messages: CH, EE<a href="#section-12-3.3.1" class="pilcrow">¶</a></p>
+        <li class="normal" id="section-13-3.3">
+          <p id="section-13-3.3.1">Messages: CH, EE<a href="#section-13-3.3.1" class="pilcrow">¶</a></p>
 </li>
-        <li class="normal" id="section-12-3.4">
-          <p id="section-12-3.4.1">Recommended: Y<a href="#section-12-3.4.1" class="pilcrow">¶</a></p>
+        <li class="normal" id="section-13-3.4">
+          <p id="section-13-3.4.1">Recommended: Y<a href="#section-13-3.4.1" class="pilcrow">¶</a></p>
 </li>
-        <li class="normal" id="section-12-3.5">
-          <p id="section-12-3.5.1">Reference: [This document]<a href="#section-12-3.5.1" class="pilcrow">¶</a></p>
+        <li class="normal" id="section-13-3.5">
+          <p id="section-13-3.5.1">Reference: [This document]<a href="#section-13-3.5.1" class="pilcrow">¶</a></p>
 </li>
       </ul>
-<p id="section-12-4">IANA is requested to add the following entry to the "TLS
-HandshakeType" registry <span>[<a href="#TLS-Ext-Registry" class="cite xref">TLS-Ext-Registry</a>]</span>:<a href="#section-12-4" class="pilcrow">¶</a></p>
+<p id="section-13-4">IANA is requested to add the following entry to the "TLS
+HandshakeType" registry <span>[<a href="#TLS-Ext-Registry" class="cite xref">TLS-Ext-Registry</a>]</span>:<a href="#section-13-4" class="pilcrow">¶</a></p>
 <ul class="normal">
-<li class="normal" id="section-12-5.1">
-          <p id="section-12-5.1.1">Value: TBD2<a href="#section-12-5.1.1" class="pilcrow">¶</a></p>
+<li class="normal" id="section-13-5.1">
+          <p id="section-13-5.1.1">Value: TBD2<a href="#section-13-5.1.1" class="pilcrow">¶</a></p>
 </li>
-        <li class="normal" id="section-12-5.2">
-          <p id="section-12-5.2.1">Description: extended_key_update<a href="#section-12-5.2.1" class="pilcrow">¶</a></p>
+        <li class="normal" id="section-13-5.2">
+          <p id="section-13-5.2.1">Description: extended_key_update<a href="#section-13-5.2.1" class="pilcrow">¶</a></p>
 </li>
-        <li class="normal" id="section-12-5.3">
-          <p id="section-12-5.3.1">DTLS-OK: Y<a href="#section-12-5.3.1" class="pilcrow">¶</a></p>
+        <li class="normal" id="section-13-5.3">
+          <p id="section-13-5.3.1">DTLS-OK: Y<a href="#section-13-5.3.1" class="pilcrow">¶</a></p>
 </li>
-        <li class="normal" id="section-12-5.4">
-          <p id="section-12-5.4.1">Reference: [This document]<a href="#section-12-5.4.1" class="pilcrow">¶</a></p>
+        <li class="normal" id="section-13-5.4">
+          <p id="section-13-5.4.1">Reference: [This document]<a href="#section-13-5.4.1" class="pilcrow">¶</a></p>
 </li>
-        <li class="normal" id="section-12-5.5">
-          <p id="section-12-5.5.1">Comment:<a href="#section-12-5.5.1" class="pilcrow">¶</a></p>
+        <li class="normal" id="section-13-5.5">
+          <p id="section-13-5.5.1">Comment:<a href="#section-13-5.5.1" class="pilcrow">¶</a></p>
 </li>
       </ul>
 </section>
 </div>
 <div id="sec-combined-references">
-<section id="section-13">
+<section id="section-14">
       <h2 id="name-references">
-<a href="#section-13" class="section-number selfRef">13. </a><a href="#name-references" class="section-name selfRef">References</a>
+<a href="#section-14" class="section-number selfRef">14. </a><a href="#name-references" class="section-name selfRef">References</a>
       </h2>
 <div id="sec-normative-references">
-<section id="section-13.1">
+<section id="section-14.1">
         <h3 id="name-normative-references">
-<a href="#section-13.1" class="section-number selfRef">13.1. </a><a href="#name-normative-references" class="section-name selfRef">Normative References</a>
+<a href="#section-14.1" class="section-number selfRef">14.1. </a><a href="#name-normative-references" class="section-name selfRef">Normative References</a>
         </h3>
 <dl class="references">
 <dt id="I-D.ietf-tls-rfc8446bis">[I-D.ietf-tls-rfc8446bis]</dt>
         <dd>
-<span class="refAuthor">Rescorla, E.</span>, <span class="refTitle">"The Transport Layer Security (TLS) Protocol Version 1.3"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-ietf-tls-rfc8446bis-11</span>, <time datetime="2024-09-14" class="refDate">14 September 2024</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-ietf-tls-rfc8446bis-11">https://datatracker.ietf.org/doc/html/draft-ietf-tls-rfc8446bis-11</a>&gt;</span>. </dd>
+<span class="refAuthor">Rescorla, E.</span>, <span class="refTitle">"The Transport Layer Security (TLS) Protocol Version 1.3"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-ietf-tls-rfc8446bis-12</span>, <time datetime="2025-02-17" class="refDate">17 February 2025</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-ietf-tls-rfc8446bis-12">https://datatracker.ietf.org/doc/html/draft-ietf-tls-rfc8446bis-12</a>&gt;</span>. </dd>
 <dd class="break"></dd>
 <dt id="I-D.ietf-tls-tlsflags">[I-D.ietf-tls-tlsflags]</dt>
         <dd>
@@ -1765,9 +1813,9 @@ HandshakeType" registry <span>[<a href="#TLS-Ext-Registry" class="cite xref">TLS
 </section>
 </div>
 <div id="sec-informative-references">
-<section id="section-13.2">
+<section id="section-14.2">
         <h3 id="name-informative-references">
-<a href="#section-13.2" class="section-number selfRef">13.2. </a><a href="#name-informative-references" class="section-name selfRef">Informative References</a>
+<a href="#section-14.2" class="section-number selfRef">14.2. </a><a href="#name-informative-references" class="section-name selfRef">Informative References</a>
         </h3>
 <dl class="references">
 <dt id="ANSSI-DAT-NT-003">[ANSSI-DAT-NT-003]</dt>
@@ -1780,11 +1828,11 @@ HandshakeType" registry <span>[<a href="#TLS-Ext-Registry" class="cite xref">TLS
 <dd class="break"></dd>
 <dt id="I-D.ietf-tls-hybrid-design">[I-D.ietf-tls-hybrid-design]</dt>
         <dd>
-<span class="refAuthor">Stebila, D.</span>, <span class="refAuthor">Fluhrer, S.</span>, and <span class="refAuthor">S. Gueron</span>, <span class="refTitle">"Hybrid key exchange in TLS 1.3"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-ietf-tls-hybrid-design-11</span>, <time datetime="2024-10-07" class="refDate">7 October 2024</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-ietf-tls-hybrid-design-11">https://datatracker.ietf.org/doc/html/draft-ietf-tls-hybrid-design-11</a>&gt;</span>. </dd>
+<span class="refAuthor">Stebila, D.</span>, <span class="refAuthor">Fluhrer, S.</span>, and <span class="refAuthor">S. Gueron</span>, <span class="refTitle">"Hybrid key exchange in TLS 1.3"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-ietf-tls-hybrid-design-12</span>, <time datetime="2025-01-14" class="refDate">14 January 2025</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-ietf-tls-hybrid-design-12">https://datatracker.ietf.org/doc/html/draft-ietf-tls-hybrid-design-12</a>&gt;</span>. </dd>
 <dd class="break"></dd>
 <dt id="I-D.ietf-tls-keylogfile">[I-D.ietf-tls-keylogfile]</dt>
         <dd>
-<span class="refAuthor">Thomson, M.</span>, <span class="refTitle">"The SSLKEYLOGFILE Format for TLS"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-ietf-tls-keylogfile-02</span>, <time datetime="2024-04-29" class="refDate">29 April 2024</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-ietf-tls-keylogfile-02">https://datatracker.ietf.org/doc/html/draft-ietf-tls-keylogfile-02</a>&gt;</span>. </dd>
+<span class="refAuthor">Thomson, M.</span>, <span class="refAuthor">Rosomakho, Y.</span>, and <span class="refAuthor">H. Tschofenig</span>, <span class="refTitle">"The SSLKEYLOGFILE Format for TLS"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-ietf-tls-keylogfile-03</span>, <time datetime="2025-02-04" class="refDate">4 February 2025</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-ietf-tls-keylogfile-03">https://datatracker.ietf.org/doc/html/draft-ietf-tls-keylogfile-03</a>&gt;</span>. </dd>
 <dd class="break"></dd>
 <dt id="RFC7296">[RFC7296]</dt>
         <dd>
@@ -1852,7 +1900,7 @@ Transport and Services Working Group (tsvwg) Gorry Fairhurst and
 Marten Seemann as well as the responsible area director Martin Duke.<a href="#appendix-A-3" class="pilcrow">¶</a></p>
 <p id="appendix-A-4">Finally, we would like to thank Martin Thomson, Ilari Liusvaara,
 Benjamin Kaduk, Scott Fluhrer, Dennis Jackson, David Benjamin,
-and Thom Wiggers for their review comments.<a href="#appendix-A-4" class="pilcrow">¶</a></p>
+Matthijs van Duin, and Thom Wiggers for their review comments.<a href="#appendix-A-4" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="authors-addresses">
