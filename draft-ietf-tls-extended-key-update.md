@@ -82,7 +82,7 @@ informative:
 
 --- abstract
 The Transport Layer Security (TLS) 1.3 specification provides forward secrecy
-by utilizing a Diffie-Hellman key exchange during the initial handshake. Forward
+by utilizing an ephemeral key exchange during the initial handshake. Forward
 secrecy ensures that even if an attacker later obtains a party's long-term private
 key, past encrypted sessions cannot be decrypted. This protects against adversaries
 who record encrypted conversations in the hope of decrypting them later.
