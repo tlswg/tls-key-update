@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2025-01-30T01:24:22.462411+00:00",
+  "timestamp": "2025-02-23T01:41:03.072995+00:00",
   "repo": "tlswg/tls-key-update",
   "labels": [
     {
@@ -606,6 +606,161 @@
       },
       "comments": [],
       "reviews": []
+    },
+    {
+      "number": 12,
+      "id": "PR_kwDOMJPqLM6LnBtV",
+      "title": "Updated Abstract",
+      "url": "https://github.com/tlswg/tls-key-update/pull/12",
+      "state": "OPEN",
+      "author": "hannestschofenig",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [],
+      "body": "Based on feedback from Matthijs van Duin I have updated the abstract to better describe the goal of this specification.",
+      "createdAt": "2025-02-18T14:44:36Z",
+      "updatedAt": "2025-02-20T18:59:08Z",
+      "baseRepository": "tlswg/tls-key-update",
+      "baseRefName": "main",
+      "baseRefOid": "4bbdbf85177394e500954d112bf66babc7380b04",
+      "headRepository": "tlswg/tls-key-update",
+      "headRefName": "hannestschofenig-patch-2",
+      "headRefOid": "bcda7159b19f3d36906596d7915087e57e2c8448",
+      "closedAt": null,
+      "mergedAt": null,
+      "mergedBy": null,
+      "mergeCommit": null,
+      "comments": [],
+      "reviews": [
+        {
+          "id": "PRR_kwDOMJPqLM6ctrPk",
+          "commit": {
+            "abbreviatedOid": "48402d2"
+          },
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "state": "APPROVED",
+          "body": "Rest of changes look good. ",
+          "createdAt": "2025-02-20T09:30:51Z",
+          "updatedAt": "2025-02-20T09:31:04Z",
+          "comments": [
+            {
+              "originalPosition": 22,
+              "body": "I suggest to replace \"Diffie-Hellman\" with \"ephemeral key exchange\"",
+              "createdAt": "2025-02-20T09:30:51Z",
+              "updatedAt": "2025-02-20T09:31:04Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM6cxZfZ",
+          "commit": {
+            "abbreviatedOid": "48402d2"
+          },
+          "author": "hannestschofenig",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-02-20T15:11:06Z",
+          "updatedAt": "2025-02-20T15:11:07Z",
+          "comments": [
+            {
+              "originalPosition": 22,
+              "body": "```suggestion\r\nby utilizing an ephemeral key exchange during the initial handshake. Forward\r\n```",
+              "createdAt": "2025-02-20T15:11:07Z",
+              "updatedAt": "2025-02-20T15:11:07Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM6czxKo",
+          "commit": {
+            "abbreviatedOid": "bcda715"
+          },
+          "author": "stfries",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "Changes look okay for me. I only added smaller proposal to enhance the statement regarding cryptographic parameter negotiation. \r\nI know, we do not provide that certificate update option in the ExtendedKeyUpdate, but I thought it would be good to point to that capability in TLS 1.2",
+          "createdAt": "2025-02-20T18:33:12Z",
+          "updatedAt": "2025-02-20T18:59:08Z",
+          "comments": [
+            {
+              "originalPosition": 35,
+              "body": "Maybe to add, session renegotiation did not only allow to establish new cryptographic parameter for the sesssion, it also allowed to utilized an updated long term credential (certificate). This adresses cases, were the initially used long term credential may have reached the validity end or may have been revoked in the meantime. \r\n\r\nProposal to change the sentence to:\r\nEarlier versions of TLS supported session renegotiation, a mechanism that allowed peers to\r\nestablish new cryptographic parameters within an existing session including the potential update of the initially utilized long term keys (certificates) with renewed credentials. ",
+              "createdAt": "2025-02-20T18:33:12Z",
+              "updatedAt": "2025-02-20T18:43:44Z"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "number": 13,
+      "id": "PR_kwDOMJPqLM6L6oVt",
+      "title": "Update archive.yml",
+      "url": "https://github.com/tlswg/tls-key-update/pull/13",
+      "state": "MERGED",
+      "author": "hannestschofenig",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [],
+      "body": "",
+      "createdAt": "2025-02-20T15:18:33Z",
+      "updatedAt": "2025-02-20T15:19:03Z",
+      "baseRepository": "tlswg/tls-key-update",
+      "baseRefName": "main",
+      "baseRefOid": "4bbdbf85177394e500954d112bf66babc7380b04",
+      "headRepository": "tlswg/tls-key-update",
+      "headRefName": "hannestschofenig-patch-3",
+      "headRefOid": "7d6efae315f45871e1814aed36f6e58b65c1fa42",
+      "closedAt": "2025-02-20T15:19:02Z",
+      "mergedAt": "2025-02-20T15:19:02Z",
+      "mergedBy": "hannestschofenig",
+      "mergeCommit": {
+        "oid": "1aacb292128df1676889ee6f6d829e258a05bc0f"
+      },
+      "comments": [],
+      "reviews": []
+    },
+    {
+      "number": 14,
+      "id": "PR_kwDOMJPqLM6L8eFF",
+      "title": "Review by Rifaat",
+      "url": "https://github.com/tlswg/tls-key-update/pull/14",
+      "state": "OPEN",
+      "author": "hannestschofenig",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [],
+      "body": "",
+      "createdAt": "2025-02-20T19:01:43Z",
+      "updatedAt": "2025-02-21T08:06:31Z",
+      "baseRepository": "tlswg/tls-key-update",
+      "baseRefName": "hannestschofenig-patch-2",
+      "baseRefOid": "bcda7159b19f3d36906596d7915087e57e2c8448",
+      "headRepository": "tlswg/tls-key-update",
+      "headRefName": "hannestschofenig-patch-4",
+      "headRefOid": "104b33d7a8a9d4baf50a9360dc97f8f32827a345",
+      "closedAt": null,
+      "mergedAt": null,
+      "mergedBy": null,
+      "mergeCommit": null,
+      "comments": [],
+      "reviews": [
+        {
+          "id": "PRR_kwDOMJPqLM6c5bnD",
+          "commit": {
+            "abbreviatedOid": "104b33d"
+          },
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "state": "APPROVED",
+          "body": "",
+          "createdAt": "2025-02-21T08:06:31Z",
+          "updatedAt": "2025-02-21T08:06:31Z",
+          "comments": []
+        }
+      ]
     }
   ]
 }
