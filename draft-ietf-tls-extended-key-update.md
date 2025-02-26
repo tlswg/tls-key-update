@@ -94,11 +94,12 @@ sessions, it can pose a security risk for long-lived connections, such as those 
 industrial IoT or telecommunication networks, where an attacker could compromise
 application traffic secrets after the initial handshake.
 
-Earlier versions of TLS supported renegotiation, a mechanism that allowed peers to
-establish new cryptographic parameters within an existing session. However, due to
-security vulnerabilities, the renegotiation mechanism was modified via RFC 5746 and
-later removed entirely in TLS 1.3, leaving a gap in TLS's ability to refresh
-cryptographic material securely.
+Earlier versions of TLS supported session renegotiation, a mechanism that allowed
+peers to establish new cryptographic parameters within an existing session. This
+included the ability to update the originally used long-term keys (certificates)
+with renewed credentials. However, due to security vulnerabilities, the renegotiation
+mechanism was modified via RFC 5746 and later removed entirely in TLS 1.3, leaving
+a gap in TLS's ability to refresh cryptographic material securely.
 
 This specification introduces an extended key update mechanism that supports forward
 secrecy, forcing attackers to continuously exfiltrate key material throughout the
