@@ -5,14 +5,14 @@
 Transport Layer Security                                   H. Tschofenig
 Internet-Draft                                                   Siemens
 Intended status: Standards Track                                M. Tüxen
-Expires: 24 August 2025                Münster Univ. of Applied Sciences
+Expires: 30 August 2025                Münster Univ. of Applied Sciences
                                                                 T. Reddy
                                                                    Nokia
                                                                 S. Fries
                                                                  Siemens
                                                             Y. Rosomakho
                                                                  Zscaler
-                                                        20 February 2025
+                                                        26 February 2025
 
 
        Extended Key Update for Transport Layer Security (TLS) 1.3
@@ -35,9 +35,11 @@ Abstract
    IoT or telecommunication networks, where an attacker could compromise
    application traffic secrets after the initial handshake.
 
-   Earlier versions of TLS supported renegotiation, a mechanism that
-   allowed peers to establish new cryptographic parameters within an
-   existing session.  However, due to security vulnerabilities, the
+   Earlier versions of TLS supported session renegotiation, a mechanism
+   that allowed peers to establish new cryptographic parameters within
+   an existing session.  This included the ability to update the
+   originally used long-term keys (certificates) with renewed
+   credentials.  However, due to security vulnerabilities, the
    renegotiation mechanism was modified via RFC 5746 and later removed
    entirely in TLS 1.3, leaving a gap in TLS's ability to refresh
    cryptographic material securely.
@@ -73,7 +75,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 24 August 2025.
+   This Internet-Draft will expire on 30 August 2025.
 
 Copyright Notice
 
