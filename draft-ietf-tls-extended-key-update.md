@@ -129,7 +129,7 @@ Some deployments have used IPsec in the past to secure their communication proto
 and have now decided to switch to TLS or DTLS instead. The requirement for updates of
 cryptographic keys for an existing session has become a requirement. For IPsec, US NIST,
 German BSI, and French ANSSI recommend to re-run Diffie-Hellman exchanges frequently
-to provide forward secrecy and force attackers to perform a dynamic key extraction
+to provide forward secrecy and force attackers to perform a dynamic key exfiltration
 {{RFC7624}}. ANSSI writes "It is recommended to force the periodic renewal of the
 keys, e.g., every hour and every 100 GB of data, in order to limit the impact of a
 key compromise." {{ANSSI-DAT-NT-003}}. While IPsec/IKEv2 {{RFC7296}} offers the
@@ -207,9 +207,9 @@ receive a ExtendedKeyUpdate message prior to receiving a Finished
 message MUST terminate the connection with an "unexpected_message"
 alert.
 
-The KeyShare entry in the ExtendedKeyUpdate message MUST be the same
+The KeyShareEntry in the ExtendedKeyUpdate message MUST be the same
 group mutually supported by the client and server during the initial
-handshake. The peers MUST NOT send a KeyShare Entry in the ExtendedKeyUpdate
+handshake. The peers MUST NOT send a KeyShareEntry in the ExtendedKeyUpdate
 message that is not mutually supported by the client and server during
 the initial handshake. An implementation that receives any other value
 MUST terminate the connection with an "illegal_parameter" alert.
@@ -325,8 +325,10 @@ the responder MUST NOT initiate further key updates.
 the initiator is able to derive a secret key based on the exchanged key shares.
 After sending a NewKeyUpdate message, the initiator MUST update its
 traffic keys and MUST send all its traffic using the next generation of keys.
+The NewKeyUpdate message is intentionally an empty structure that triggers
+the transition to new keying material.
 
-4. On receipt of the NewKeyUpdate message by the responder, it MUST update
+5. On receipt of the NewKeyUpdate message by the responder, it MUST update
 its receive keys. In response, the responder transmits a NewKeyUpdate message
 and MUST update its sending keys.
 
@@ -448,9 +450,9 @@ Auth | {CertificateVerify}
                               some time later
                                   ...
  [ExtendedKeyUpdateRequest]    -------->
-  (with KeyShare)
+  (with key_share)
                                <-------- [ExtendedKeyUpdateResponse]
-                                           (with KeyShare)
+                                           (with key_share)
  [NewKeyUpdate]                -------->
                                <-------- [NewKeyUpdate]
 ~~~
@@ -581,4 +583,4 @@ Marten Seemann as well as the responsible area director Martin Duke.
 
 Finally, we would like to thank Martin Thomson, Ilari Liusvaara,
 Benjamin Kaduk, Scott Fluhrer, Dennis Jackson, David Benjamin,
-Matthijs van Duin, and Thom Wiggers for their review comments.
+Matthijs van Duin, Rifaat Shekh-Yusef and Thom Wiggers for their review comments.
