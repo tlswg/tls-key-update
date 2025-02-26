@@ -81,23 +81,29 @@ informative:
      date: November 2023
 
 --- abstract
+The Transport Layer Security (TLS) 1.3 specification provides forward secrecy
+by utilizing an ephemeral key exchange during the initial handshake. Forward
+secrecy ensures that even if an attacker later obtains a party's long-term private
+key, past encrypted sessions cannot be decrypted. This protects against adversaries
+who record encrypted conversations in the hope of decrypting them later.
 
-The Transport Layer Security (TLS) 1.3 specification offers a dedicated
-message to update cryptographic keys during the lifetime of an ongoing session.
-The traffic secret and the initialization vector are updated directionally
-but the sender may trigger the recipient, via the request_update field,
-to transmit a key update message in the reverse direction.
+TLS 1.3 also includes a Key Update mechanism, allowing cryptographic keys to be
+refreshed during an ongoing session. However, this update does not establish new
+forward-secret key material. While this is generally not an issue for short-lived
+sessions, it can pose a security risk for long-lived connections, such as those in
+industrial IoT or telecommunication networks, where an attacker could compromise
+application traffic secrets after the initial handshake.
 
-In environments where sessions are long-lived, such as industrial IoT or
-telecommunication networks, this key update alone is insufficient since
-forward secrecy is not offered via this mechanism. Earlier versions
-of TLS allowed the two peers to perform renegotiation, which is a handshake
-that establishes new cryptographic parameters for an existing session.
-When a security vulnerability with the renegotiation mechanism was discovered,
-RFC 5746 was developed as a fix. Renegotiation has, however, been removed from
-version 1.3 leaving a gap in the feature set of TLS.
+Earlier versions of TLS supported session renegotiation, a mechanism that allowed
+peers to establish new cryptographic parameters within an existing session. This
+included the ability to update the originally used long-term keys (certificates)
+with renewed credentials. However, due to security vulnerabilities, the renegotiation
+mechanism was modified via RFC 5746 and later removed entirely in TLS 1.3, leaving
+a gap in TLS's ability to refresh cryptographic material securely.
 
-This specification defines an extended key update that supports forward secrecy.
+This specification introduces an extended key update mechanism that supports forward
+secrecy, forcing attackers to continuously exfiltrate key material throughout the
+session to decrypt the entire conversation.
 
 --- middle
 
@@ -122,15 +128,15 @@ complexity, impacts performance and may lead to service interruption as well.
 Some deployments have used IPsec in the past to secure their communication protocol
 and have now decided to switch to TLS or DTLS instead. The requirement for updates of
 cryptographic keys for an existing session has become a requirement. For IPsec, US NIST,
-German BSI, and French ANSSI recommend to re-run Diffie-Hellman exchanges frequently to provide forward
-secrecy and force attackers to perform a dynamic key extraction {{RFC7624}}. ANSSI
-writes "It is recommended to force the periodic renewal of the keys, e.g., every
-hour and every 100 GB of data, in order to limit the impact of a key compromise."
-{{ANSSI-DAT-NT-003}}. While IPsec/IKEv2 {{RFC7296}} offers the desired functionality,
-developers often decide to use TLS/DTLS to simplify integration with cloud-based
-environments.
+German BSI, and French ANSSI recommend to re-run Diffie-Hellman exchanges frequently
+to provide forward secrecy and force attackers to perform a dynamic key extraction
+{{RFC7624}}. ANSSI writes "It is recommended to force the periodic renewal of the
+keys, e.g., every hour and every 100 GB of data, in order to limit the impact of a
+key compromise." {{ANSSI-DAT-NT-003}}. While IPsec/IKEv2 {{RFC7296}} offers the
+desired functionality, developers often decide to use TLS/DTLS to simplify
+integration with cloud-based environments.
 
-This specification defines a new, extended key update message supporting perfect
+This specification defines a new, extended key update message supporting
 forward secrecy.  It does so by utilizing a Diffie-Hellman exchange using one of
 the groups negotiated during the initial exchange.  The support for this extension
 is signaled using the TLS flags extension mechanism.  The frequent re-running of
@@ -575,4 +581,4 @@ Marten Seemann as well as the responsible area director Martin Duke.
 
 Finally, we would like to thank Martin Thomson, Ilari Liusvaara,
 Benjamin Kaduk, Scott Fluhrer, Dennis Jackson, David Benjamin,
-and Thom Wiggers for their review comments.
+Matthijs van Duin, and Thom Wiggers for their review comments.
