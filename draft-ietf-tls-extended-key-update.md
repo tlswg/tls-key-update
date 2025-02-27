@@ -248,8 +248,8 @@ Auth | {CertificateVerify}
 [ExtendedKeyUpdateRequest]     -------->
                                <--------  [ExtendedKeyUpdateResponse]
                                   ...
-            [NewKeyUpdate]     <-------
-                               -------->  [NewKeyUpdate]
+            [NewKeyUpdate]     -------->
+                               <--------  [NewKeyUpdate]
                                   ...
        [Application Data]      <------->  [Application Data]
 ~~~
