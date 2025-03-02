@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2025-02-27T01:38:00.401970+00:00",
+  "timestamp": "2025-03-02T01:42:22.115642+00:00",
   "repo": "tlswg/tls-key-update",
   "labels": [
     {
@@ -765,6 +765,34 @@
           "comments": []
         }
       ]
+    },
+    {
+      "number": 15,
+      "id": "PR_kwDOMJPqLM6MwwMH",
+      "title": "Fix diagram",
+      "url": "https://github.com/tlswg/tls-key-update/pull/15",
+      "state": "MERGED",
+      "author": "hannestschofenig",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [],
+      "body": "Based on feedback from Rifaat",
+      "createdAt": "2025-02-27T08:45:38Z",
+      "updatedAt": "2025-02-27T09:52:53Z",
+      "baseRepository": "tlswg/tls-key-update",
+      "baseRefName": "main",
+      "baseRefOid": "8e3ee9cd8dec14fd93d98b07cae671f749706583",
+      "headRepository": "tlswg/tls-key-update",
+      "headRefName": "hannestschofenig-patch-2",
+      "headRefOid": "4378a7c64317944aec6e979b73b4b0ab5f3e46e1",
+      "closedAt": "2025-02-27T09:52:48Z",
+      "mergedAt": "2025-02-27T09:52:48Z",
+      "mergedBy": "hannestschofenig",
+      "mergeCommit": {
+        "oid": "f033ef6b8ea29b9a1893e81a8ddb5768ce81132a"
+      },
+      "comments": [],
+      "reviews": []
     }
   ]
 }
