@@ -471,7 +471,7 @@ record with an older epoch than the current one. They SHOULD attempt to
 process those records with that epoch but MAY opt to discard
 such out-of-epoch records.
 
-# Post-Quantum Cryptogrphy Considerations
+# Post-Quantum Cryptography Considerations
 
 Hybrid key exchange refers to using multiple key exchange algorithms
 simultaneously and combining the result with the goal of providing
