@@ -22,20 +22,21 @@ forward-secret key material. While this is generally not an issue for short-live
 sessions, it can pose a security risk for long-lived connections, such as those in
 industrial IoT or telecommunication networks, where an attacker could compromise
 application traffic secrets after the initial handshake. 
-       Earlier versions of TLS supported renegotiation, a mechanism that allowed peers to
-establish new cryptographic parameters within an existing session. However, due to
-security vulnerabilities, the renegotiation mechanism was modified via RFC 5746 and
-later removed entirely in TLS 1.3, leaving a gap in TLS's ability to refresh
-cryptographic material securely. 
+       Earlier versions of TLS supported session renegotiation, a mechanism that allowed
+peers to establish new cryptographic parameters within an existing session. This
+included the ability to update the originally used long-term keys (certificates)
+with renewed credentials. However, due to security vulnerabilities, the renegotiation
+mechanism was modified via RFC 5746 and later removed entirely in TLS 1.3, leaving
+a gap in TLS's ability to refresh cryptographic material securely. 
        This specification introduces an extended key update mechanism that supports forward
 secrecy, forcing attackers to continuously exfiltrate key material throughout the
 session to decrypt the entire conversation. 
     " name="description">
-<meta content="xml2rfc 3.27.0" name="generator">
+<meta content="xml2rfc 3.28.0" name="generator">
 <meta content="Internet-Draft" name="keyword">
 <meta content="draft-ietf-tls-extended-key-update-latest" name="ietf.draft">
 <!-- Generator version information:
-  xml2rfc 3.27.0
+  xml2rfc 3.28.0
     Python 3.12.9
     ConfigArgParse 1.7
     google-i18n-address 3.1.1
@@ -1066,11 +1067,11 @@ svg :is([fill="white"], [fill^="#fff"]) {
 <thead><tr>
 <td class="left">Internet-Draft</td>
 <td class="center">Extended Key Update for TLS</td>
-<td class="right">February 2025</td>
+<td class="right">March 2025</td>
 </tr></thead>
 <tfoot><tr>
 <td class="left">Tschofenig, et al.</td>
-<td class="center">Expires 24 August 2025</td>
+<td class="center">Expires 17 September 2025</td>
 <td class="right">[Page]</td>
 </tr></tfoot>
 </table>
@@ -1083,12 +1084,12 @@ svg :is([fill="white"], [fill^="#fff"]) {
 <dd class="internet-draft">draft-ietf-tls-extended-key-update-latest</dd>
 <dt class="label-published">Published:</dt>
 <dd class="published">
-<time datetime="2025-02-20" class="published">20 February 2025</time>
+<time datetime="2025-03-16" class="published">16 March 2025</time>
     </dd>
 <dt class="label-intended-status">Intended Status:</dt>
 <dd class="intended-status">Standards Track</dd>
 <dt class="label-expires">Expires:</dt>
-<dd class="expires"><time datetime="2025-08-24">24 August 2025</time></dd>
+<dd class="expires"><time datetime="2025-09-17">17 September 2025</time></dd>
 <dt class="label-authors">Authors:</dt>
 <dd class="authors">
 <div class="author">
@@ -1128,11 +1129,12 @@ forward-secret key material. While this is generally not an issue for short-live
 sessions, it can pose a security risk for long-lived connections, such as those in
 industrial IoT or telecommunication networks, where an attacker could compromise
 application traffic secrets after the initial handshake.<a href="#section-abstract-2" class="pilcrow">¶</a></p>
-<p id="section-abstract-3">Earlier versions of TLS supported renegotiation, a mechanism that allowed peers to
-establish new cryptographic parameters within an existing session. However, due to
-security vulnerabilities, the renegotiation mechanism was modified via RFC 5746 and
-later removed entirely in TLS 1.3, leaving a gap in TLS's ability to refresh
-cryptographic material securely.<a href="#section-abstract-3" class="pilcrow">¶</a></p>
+<p id="section-abstract-3">Earlier versions of TLS supported session renegotiation, a mechanism that allowed
+peers to establish new cryptographic parameters within an existing session. This
+included the ability to update the originally used long-term keys (certificates)
+with renewed credentials. However, due to security vulnerabilities, the renegotiation
+mechanism was modified via RFC 5746 and later removed entirely in TLS 1.3, leaving
+a gap in TLS's ability to refresh cryptographic material securely.<a href="#section-abstract-3" class="pilcrow">¶</a></p>
 <p id="section-abstract-4">This specification introduces an extended key update mechanism that supports forward
 secrecy, forcing attackers to continuously exfiltrate key material throughout the
 session to decrypt the entire conversation.<a href="#section-abstract-4" class="pilcrow">¶</a></p>
@@ -1167,7 +1169,7 @@ session to decrypt the entire conversation.<a href="#section-abstract-4" class="
         time. It is inappropriate to use Internet-Drafts as reference
         material or to cite them other than as "work in progress."<a href="#section-boilerplate.1-3" class="pilcrow">¶</a></p>
 <p id="section-boilerplate.1-4">
-        This Internet-Draft will expire on 24 August 2025.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
+        This Internet-Draft will expire on 17 September 2025.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="copyright">
@@ -1406,8 +1408,8 @@ Auth | {CertificateVerify}
 [ExtendedKeyUpdateRequest]     --------&gt;
                                &lt;--------  [ExtendedKeyUpdateResponse]
                                   ...
-            [NewKeyUpdate]     &lt;-------
-                               --------&gt;  [NewKeyUpdate]
+            [NewKeyUpdate]     --------&gt;
+                               &lt;--------  [NewKeyUpdate]
                                   ...
        [Application Data]      &lt;-------&gt;  [Application Data]
 </pre>
@@ -1488,8 +1490,6 @@ the responder MUST NOT initiate further key updates.<a href="#section-5-14.2.1" 
         <li id="section-5-14.3">
           <p id="section-5-14.3.1">On receipt of the ExtendedKeyUpdateResponse message with <code>accepted</code> status,
 the initiator is able to derive a secret key based on the exchanged key shares.
-After sending a NewKeyUpdate message, the initiator MUST update its
-traffic keys and MUST send all its traffic using the next generation of keys.
 The NewKeyUpdate message is intentionally an empty structure that triggers
 the transition to new keying material.<a href="#section-5-14.3.1" class="pilcrow">¶</a></p>
 </li>
@@ -1498,9 +1498,14 @@ the transition to new keying material.<a href="#section-5-14.3.1" class="pilcrow
 its receive keys. In response, the responder transmits a NewKeyUpdate message
 and MUST update its sending keys.<a href="#section-5-14.4.1" class="pilcrow">¶</a></p>
 </li>
+        <li id="section-5-14.5">
+          <p id="section-5-14.5.1">After receiving the NewKeyUpdate message from the responder, the initiator
+MUST update its traffic keys and MUST send all its traffic using the next
+generation of keys.<a href="#section-5-14.5.1" class="pilcrow">¶</a></p>
+</li>
       </ol>
 <p id="section-5-15">Both sender and receiver MUST encrypt their NewKeyUpdate messages with
-the old keys. Additionally, both sides MUST enforce that a NewKeyUpdate
+the old keys. Both sides MUST ensure that the NewKeyUpdate encrypted
 with the old key is received before accepting any messages encrypted
 with the new key.<a href="#section-5-15" class="pilcrow">¶</a></p>
 <p id="section-5-16">If TLS peers independently initiate the extended key update
