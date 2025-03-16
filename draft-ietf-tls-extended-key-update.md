@@ -323,8 +323,6 @@ the responder MUST NOT initiate further key updates.
 
 3. On receipt of the ExtendedKeyUpdateResponse message with `accepted` status,
 the initiator is able to derive a secret key based on the exchanged key shares.
-After sending a NewKeyUpdate message, the initiator MUST update its
-traffic keys and MUST send all its traffic using the next generation of keys.
 The NewKeyUpdate message is intentionally an empty structure that triggers
 the transition to new keying material.
 
@@ -332,8 +330,12 @@ the transition to new keying material.
 its receive keys. In response, the responder transmits a NewKeyUpdate message
 and MUST update its sending keys.
 
+6. After receiving the NewKeyUpdate message from the responder, the initiator
+MUST update its traffic keys and MUST send all its traffic using the next
+generation of keys.
+
 Both sender and receiver MUST encrypt their NewKeyUpdate messages with
-the old keys. Additionally, both sides MUST enforce that a NewKeyUpdate
+the old keys. Both sides MUST ensure that the NewKeyUpdate encrypted
 with the old key is received before accepting any messages encrypted
 with the new key.
 
