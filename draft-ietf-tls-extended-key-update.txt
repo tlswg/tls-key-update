@@ -5,14 +5,14 @@
 Transport Layer Security                                   H. Tschofenig
 Internet-Draft                                                   Siemens
 Intended status: Standards Track                                M. Tüxen
-Expires: 31 August 2025                Münster Univ. of Applied Sciences
+Expires: 20 October 2025               Münster Univ. of Applied Sciences
                                                                 T. Reddy
                                                                    Nokia
                                                                 S. Fries
                                                                  Siemens
                                                             Y. Rosomakho
                                                                  Zscaler
-                                                        27 February 2025
+                                                           18 April 2025
 
 
        Extended Key Update for Transport Layer Security (TLS) 1.3
@@ -75,7 +75,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 31 August 2025.
+   This Internet-Draft will expire on 20 October 2025.
 
 Copyright Notice
 
@@ -101,7 +101,7 @@ Table of Contents
    6.  Updating Traffic Secrets
    7.  Example
    8.  DTLS 1.3 Considerations
-   9.  Post-Quantum Cryptogrphy Considerations
+   9.  Post-Quantum Cryptography Considerations
    10. SSLKEYLOGFILE update
    11. Exporter
    12. Security Considerations
@@ -493,7 +493,7 @@ Table of Contents
    to process those records with that epoch but MAY opt to discard such
    out-of-epoch records.
 
-9.  Post-Quantum Cryptogrphy Considerations
+9.  Post-Quantum Cryptography Considerations
 
    Hybrid key exchange refers to using multiple key exchange algorithms
    simultaneously and combining the result with the goal of providing
@@ -601,9 +601,9 @@ Table of Contents
 
    [I-D.ietf-tls-tlsflags]
               Nir, Y., "A Flags Extension for TLS 1.3", Work in
-              Progress, Internet-Draft, draft-ietf-tls-tlsflags-14, 13
-              September 2024, <https://datatracker.ietf.org/doc/html/
-              draft-ietf-tls-tlsflags-14>.
+              Progress, Internet-Draft, draft-ietf-tls-tlsflags-15, 15
+              March 2025, <https://datatracker.ietf.org/doc/html/draft-
+              ietf-tls-tlsflags-15>.
 
    [RFC2119]  Bradner, S., "Key words for use in RFCs to Indicate
               Requirement Levels", BCP 14, RFC 2119,
@@ -636,9 +636,9 @@ Table of Contents
    [I-D.ietf-tls-keylogfile]
               Thomson, M., Rosomakho, Y., and H. Tschofenig, "The
               SSLKEYLOGFILE Format for TLS", Work in Progress, Internet-
-              Draft, draft-ietf-tls-keylogfile-03, 4 February 2025,
+              Draft, draft-ietf-tls-keylogfile-04, 11 April 2025,
               <https://datatracker.ietf.org/doc/html/draft-ietf-tls-
-              keylogfile-03>.
+              keylogfile-04>.
 
    [RFC7296]  Kaufman, C., Hoffman, P., Nir, Y., Eronen, P., and T.
               Kivinen, "Internet Key Exchange Protocol Version 2
