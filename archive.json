@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2025-04-29T01:47:32.856722+00:00",
+  "timestamp": "2025-05-01T01:55:40.655466+00:00",
   "repo": "tlswg/tls-key-update",
   "labels": [
     {
@@ -134,7 +134,7 @@
       "labels": [],
       "body": "Working on the implementation I was wondering whether it would make sense to use a different key hierarchy. Here is what the TLS RFC specifies for the application traffic secrets, the exporter master secret and the resumption master secrets.\n\n>              |\n>              v\n>    0 -> HKDF-Extract = Master Secret\n>              |\n>              +-----> Derive-Secret(., \"c ap traffic\",\n>              |                     ClientHello...server Finished)\n>              |                     = client_application_traffic_secret_0\n>              |\n>              +-----> Derive-Secret(., \"s ap traffic\",\n>              |                     ClientHello...server Finished)\n>              |                     = server_application_traffic_secret_0\n>              |\n>              +-----> Derive-Secret(., \"exp master\",\n>              |                     ClientHello...server Finished)\n>              |                     = exporter_master_secret\n>              |\n>              +-----> Derive-Secret(., \"res master\",\n>                                    ClientHello...client Finished)\n>                                    = resumption_master_secret\n\nCurrently, draft version -04 uses the current application traffic secret and also computes a new exporter secret based on the following key hierarchy. The resumption_master_secret so far is left untouched.\n\nQuestion: \n1) Should also say something about the resumption master secret update?\n2) Should we recompute the master secret instead?",
       "createdAt": "2025-04-26T19:21:49Z",
-      "updatedAt": "2025-04-27T09:40:18Z",
+      "updatedAt": "2025-04-29T15:25:45Z",
       "closedAt": null,
       "comments": [
         {
@@ -143,6 +143,13 @@
           "body": "Can this actually change the exporter or resumption secrets? The whole KeyUpdate arrangement (original or extended) is very fundamentally per-direction, and these secrets are not per-direction. \n\nTo put it another way, how exactly would an application using an exporter reliably export the same secret on the two peers, against a background of all possible in-flight extended key update states?",
           "createdAt": "2025-04-27T09:40:17Z",
           "updatedAt": "2025-04-27T09:40:17Z"
+        },
+        {
+          "author": "yaroslavros",
+          "authorAssociation": "COLLABORATOR",
+          "body": "> Can this actually change the exporter or resumption secrets? The whole KeyUpdate arrangement (original or extended) is very fundamentally per-direction, and these secrets are not per-direction.\n\nUnlike traditional KeyUpdate, Extended KeyUpdate is fundamentally bidirectional as it performs a fresh key exchange.\n\n> To put it another way, how exactly would an application using an exporter reliably export the same secret on the two peers, against a background of all possible in-flight extended key update states?\n\nApplication would need to be informed that exporter secret has changed.\n\n> Should also say something about the resumption master secret update?\n> Should we recompute the master secret instead?\n\nYes, I believe we should derive new resumption master secret to deliver on post-compromise security promise.\n\n\n",
+          "createdAt": "2025-04-29T15:25:45Z",
+          "updatedAt": "2025-04-29T15:25:45Z"
         }
       ]
     }
