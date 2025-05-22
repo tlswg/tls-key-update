@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2025-05-01T01:55:40.655466+00:00",
+  "timestamp": "2025-05-22T01:49:42.607069+00:00",
   "repo": "tlswg/tls-key-update",
   "labels": [
     {
@@ -150,6 +150,94 @@
           "body": "> Can this actually change the exporter or resumption secrets? The whole KeyUpdate arrangement (original or extended) is very fundamentally per-direction, and these secrets are not per-direction.\n\nUnlike traditional KeyUpdate, Extended KeyUpdate is fundamentally bidirectional as it performs a fresh key exchange.\n\n> To put it another way, how exactly would an application using an exporter reliably export the same secret on the two peers, against a background of all possible in-flight extended key update states?\n\nApplication would need to be informed that exporter secret has changed.\n\n> Should also say something about the resumption master secret update?\n> Should we recompute the master secret instead?\n\nYes, I believe we should derive new resumption master secret to deliver on post-compromise security promise.\n\n\n",
           "createdAt": "2025-04-29T15:25:45Z",
           "updatedAt": "2025-04-29T15:25:45Z"
+        }
+      ]
+    },
+    {
+      "number": 21,
+      "id": "I_kwDOMJPqLM63ncQQ",
+      "title": "Update IANA Consideration Section",
+      "url": "https://github.com/tlswg/tls-key-update/issues/21",
+      "state": "OPEN",
+      "author": "hannestschofenig",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [],
+      "body": "Not all messages are registered:\n- NewKeyUpdate\n- ExtendedKeyUpdateRequest\n- ExtendedKeyUpdateResponseStatus",
+      "createdAt": "2025-05-21T15:09:14Z",
+      "updatedAt": "2025-05-21T15:09:14Z",
+      "closedAt": null,
+      "comments": []
+    },
+    {
+      "number": 22,
+      "id": "I_kwDOMJPqLM63n5gO",
+      "title": "Extended Key Update replaces regular Key Update",
+      "url": "https://github.com/tlswg/tls-key-update/issues/22",
+      "state": "OPEN",
+      "author": "hannestschofenig",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [],
+      "body": "Add text in the document.",
+      "createdAt": "2025-05-21T15:41:34Z",
+      "updatedAt": "2025-05-21T15:41:34Z",
+      "closedAt": null,
+      "comments": []
+    },
+    {
+      "number": 23,
+      "id": "I_kwDOMJPqLM63n7H_",
+      "title": "Describe epoch handling in DTLS",
+      "url": "https://github.com/tlswg/tls-key-update/issues/23",
+      "state": "OPEN",
+      "author": "hannestschofenig",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [],
+      "body": "Section 8 is quite short and does not cover this topic in detail",
+      "createdAt": "2025-05-21T15:43:11Z",
+      "updatedAt": "2025-05-21T15:43:11Z",
+      "closedAt": null,
+      "comments": []
+    },
+    {
+      "number": 24,
+      "id": "I_kwDOMJPqLM63n82D",
+      "title": "Add ACK to final NewKeyUpdate for DTLS",
+      "url": "https://github.com/tlswg/tls-key-update/issues/24",
+      "state": "OPEN",
+      "author": "hannestschofenig",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [],
+      "body": "",
+      "createdAt": "2025-05-21T15:45:50Z",
+      "updatedAt": "2025-05-21T15:45:50Z",
+      "closedAt": null,
+      "comments": []
+    },
+    {
+      "number": 25,
+      "id": "I_kwDOMJPqLM63oBjA",
+      "title": "Add annotation to figures identifying the utilized key",
+      "url": "https://github.com/tlswg/tls-key-update/issues/25",
+      "state": "OPEN",
+      "author": "hannestschofenig",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [],
+      "body": "",
+      "createdAt": "2025-05-21T15:52:55Z",
+      "updatedAt": "2025-05-21T15:55:37Z",
+      "closedAt": null,
+      "comments": [
+        {
+          "author": "hannestschofenig",
+          "authorAssociation": "COLLABORATOR",
+          "body": "Add:\n\n>    +  Indicates noteworthy extensions sent in the\n> \t  previously noted message.\n> \n>    *  Indicates optional or situation-dependent\n> \t  messages/extensions that are not always sent.\n> \n>    () Indicates messages protected using keys\n> \t  derived from a client_early_traffic_secret.\n> \n>    {} Indicates messages protected using keys\n> \t  derived from a [sender]_handshake_traffic_secret.\n> \n>    [] Indicates messages protected using keys\n> \t  derived from [sender]_application_traffic_secret_N.\n",
+          "createdAt": "2025-05-21T15:54:41Z",
+          "updatedAt": "2025-05-21T15:55:35Z"
         }
       ]
     }
