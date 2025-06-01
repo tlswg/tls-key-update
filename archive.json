@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2025-05-22T01:49:42.607069+00:00",
+  "timestamp": "2025-06-01T02:08:43.372210+00:00",
   "repo": "tlswg/tls-key-update",
   "labels": [
     {
@@ -181,9 +181,17 @@
       "labels": [],
       "body": "Add text in the document.",
       "createdAt": "2025-05-21T15:41:34Z",
-      "updatedAt": "2025-05-21T15:41:34Z",
+      "updatedAt": "2025-05-30T14:03:36Z",
       "closedAt": null,
-      "comments": []
+      "comments": [
+        {
+          "author": "stfries",
+          "authorAssociation": "COLLABORATOR",
+          "body": "Is that feasible / necessary? The Key Update as contained should be suitable for many connections, which are not long lasting to update the exisiting session key. Requiring support for extended key update in each case may increase processing effort even though the connection is not long lived.",
+          "createdAt": "2025-05-30T14:03:35Z",
+          "updatedAt": "2025-05-30T14:03:35Z"
+        }
+      ]
     },
     {
       "number": 23,
@@ -238,6 +246,30 @@
           "body": "Add:\n\n>    +  Indicates noteworthy extensions sent in the\n> \t  previously noted message.\n> \n>    *  Indicates optional or situation-dependent\n> \t  messages/extensions that are not always sent.\n> \n>    () Indicates messages protected using keys\n> \t  derived from a client_early_traffic_secret.\n> \n>    {} Indicates messages protected using keys\n> \t  derived from a [sender]_handshake_traffic_secret.\n> \n>    [] Indicates messages protected using keys\n> \t  derived from [sender]_application_traffic_secret_N.\n",
           "createdAt": "2025-05-21T15:54:41Z",
           "updatedAt": "2025-05-21T15:55:35Z"
+        }
+      ]
+    },
+    {
+      "number": 26,
+      "id": "I_kwDOMJPqLM641bLv",
+      "title": "Term \"Forward Secrecy\" is confusing",
+      "url": "https://github.com/tlswg/tls-key-update/issues/26",
+      "state": "OPEN",
+      "author": "hannestschofenig",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [],
+      "body": "Rewrite introduction to better explain the security objective",
+      "createdAt": "2025-05-29T17:33:54Z",
+      "updatedAt": "2025-05-30T13:59:17Z",
+      "closedAt": null,
+      "comments": [
+        {
+          "author": "stfries",
+          "authorAssociation": "COLLABORATOR",
+          "body": "Hm, I actually find the text not confusing actuall. In addition to what is stated there, we may also refer to [RFC 4949](https://datatracker.ietf.org/doc/html/rfc4949) for this term to avoid redefining it and mke people aware, that there has been already a dicussion on the terminology.\n",
+          "createdAt": "2025-05-30T13:59:16Z",
+          "updatedAt": "2025-05-30T13:59:16Z"
         }
       ]
     }
