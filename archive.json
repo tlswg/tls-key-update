@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2025-06-01T02:08:43.372210+00:00",
+  "timestamp": "2025-06-03T01:52:50.682760+00:00",
   "repo": "tlswg/tls-key-update",
   "labels": [
     {
@@ -272,6 +272,22 @@
           "updatedAt": "2025-05-30T13:59:16Z"
         }
       ]
+    },
+    {
+      "number": 27,
+      "id": "I_kwDOMJPqLM65PVfR",
+      "title": "Missing references in introduction",
+      "url": "https://github.com/tlswg/tls-key-update/issues/27",
+      "state": "OPEN",
+      "author": "muhammad-usama-sardar",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [],
+      "body": "> For IPsec, US NIST, German BSI, and French ANSSI recommend to re-run Diffie-Hellman exchanges frequently to provide forward secrecy and force attackers to perform a dynamic key exfiltration [[RFC7624](https://tlswg.org/tls-key-update/draft-ietf-tls-extended-key-update.html#RFC7624)].\n\nThe mentioned reference RFC 7624 does not mention US NIST, German BSI, and French ANSSI. So this claim needs to be justified by corresponding references from US NIST, German BSI and French ANSSI. \n\nThe reference for French ANSSI is given in the next sentence, but references for US NIST and German BSI are missing. ",
+      "createdAt": "2025-06-01T20:23:44Z",
+      "updatedAt": "2025-06-01T20:23:44Z",
+      "closedAt": null,
+      "comments": []
     }
   ],
   "pulls": [
