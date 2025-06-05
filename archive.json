@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2025-06-03T01:52:50.682760+00:00",
+  "timestamp": "2025-06-05T01:51:40.766280+00:00",
   "repo": "tlswg/tls-key-update",
   "labels": [
     {
@@ -181,7 +181,7 @@
       "labels": [],
       "body": "Add text in the document.",
       "createdAt": "2025-05-21T15:41:34Z",
-      "updatedAt": "2025-05-30T14:03:36Z",
+      "updatedAt": "2025-06-03T17:23:40Z",
       "closedAt": null,
       "comments": [
         {
@@ -190,6 +190,20 @@
           "body": "Is that feasible / necessary? The Key Update as contained should be suitable for many connections, which are not long lasting to update the exisiting session key. Requiring support for extended key update in each case may increase processing effort even though the connection is not long lived.",
           "createdAt": "2025-05-30T14:03:35Z",
           "updatedAt": "2025-05-30T14:03:35Z"
+        },
+        {
+          "author": "hannestschofenig",
+          "authorAssociation": "COLLABORATOR",
+          "body": "Michael added that we need text to describe how a party behaves when the peer misbehaves and transits a regular Key Update",
+          "createdAt": "2025-06-03T17:22:10Z",
+          "updatedAt": "2025-06-03T17:22:10Z"
+        },
+        {
+          "author": "hannestschofenig",
+          "authorAssociation": "COLLABORATOR",
+          "body": "Assumption: Key Update and Extended Key Update can be both used simultaneously",
+          "createdAt": "2025-06-03T17:23:39Z",
+          "updatedAt": "2025-06-03T17:23:39Z"
         }
       ]
     },
@@ -261,7 +275,7 @@
       "labels": [],
       "body": "Rewrite introduction to better explain the security objective",
       "createdAt": "2025-05-29T17:33:54Z",
-      "updatedAt": "2025-05-30T13:59:17Z",
+      "updatedAt": "2025-06-03T17:55:27Z",
       "closedAt": null,
       "comments": [
         {
@@ -270,6 +284,27 @@
           "body": "Hm, I actually find the text not confusing actuall. In addition to what is stated there, we may also refer to [RFC 4949](https://datatracker.ietf.org/doc/html/rfc4949) for this term to avoid redefining it and mke people aware, that there has been already a dicussion on the terminology.\n",
           "createdAt": "2025-05-30T13:59:16Z",
           "updatedAt": "2025-05-30T13:59:16Z"
+        },
+        {
+          "author": "hannestschofenig",
+          "authorAssociation": "COLLABORATOR",
+          "body": "Yaroslav suggests \"Intra-Session Forward Secrecy\" ",
+          "createdAt": "2025-06-03T17:52:11Z",
+          "updatedAt": "2025-06-03T17:52:11Z"
+        },
+        {
+          "author": "hannestschofenig",
+          "authorAssociation": "COLLABORATOR",
+          "body": "The paper on \"On Post-Compromise Security\" talks about long-term secrets getting exposed, which is not what we are not focusing on.",
+          "createdAt": "2025-06-03T17:53:27Z",
+          "updatedAt": "2025-06-03T17:53:27Z"
+        },
+        {
+          "author": "hannestschofenig",
+          "authorAssociation": "COLLABORATOR",
+          "body": "When using extended key update an attacker has to perform a dynamic key exfiltration attack. See definition of dynamic key exfiltration in https://datatracker.ietf.org/doc/html/rfc7624\n",
+          "createdAt": "2025-06-03T17:55:26Z",
+          "updatedAt": "2025-06-03T17:55:26Z"
         }
       ]
     },
