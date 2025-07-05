@@ -11,43 +11,36 @@
 <meta content="Steffen Fries" name="author">
 <meta content="Yaroslav Rosomakho" name="author">
 <meta content="
-       The Transport Layer Security (TLS) 1.3 specification provides forward secrecy
-by utilizing an ephemeral key exchange during the initial handshake. Forward
-secrecy ensures that even if an attacker later obtains a party's long-term private
-key, past encrypted sessions cannot be decrypted. This protects against adversaries
-who record encrypted conversations in the hope of decrypting them later. 
-       TLS 1.3 also includes a Key Update mechanism, allowing cryptographic keys to be
-refreshed during an ongoing session. However, this update does not establish new
-forward-secret key material. While this is generally not an issue for short-lived
-sessions, it can pose a security risk for long-lived connections, such as those in
-industrial IoT or telecommunication networks, where an attacker could compromise
-application traffic secrets after the initial handshake. 
-       Earlier versions of TLS supported session renegotiation, a mechanism that allowed
-peers to establish new cryptographic parameters within an existing session. This
-included the ability to update the originally used long-term keys (certificates)
-with renewed credentials. However, due to security vulnerabilities, the renegotiation
-mechanism was modified via RFC 5746 and later removed entirely in TLS 1.3, leaving
-a gap in TLS's ability to refresh cryptographic material securely. 
-       This specification introduces an extended key update mechanism that supports forward
-secrecy, forcing attackers to continuously exfiltrate key material throughout the
-session to decrypt the entire conversation. 
+       TLS 1.3 ensures forward secrecy by performing an ephemeral Diffie-Hellman key exchange
+during the initial handshake, protecting past communications even if a party's
+long-term keys are later compromised. While the built-in KeyUpdate mechanism allows
+traffic keys to be refreshed during a session, it does not introduce new forward-secret
+key material. This limitation can pose a security risk in long-lived sessions, such as
+those found in industrial IoT or telecommunications environments. 
+       To address this, this specification defines an extended key update mechanism that
+performs a fresh Diffie-Hellman exchange within an active session, thereby
+re-establishing forward secrecy beyond the initial handshake. By forcing attackers
+to exfiltrate new key material repeatedly, this approach mitigates the risks
+associated with static key compromise. Regular renewal of session keys helps
+contain the impact of such compromises. The extension is applicable to both TLS 1.3
+and DTLS 1.3. 
     " name="description">
-<meta content="xml2rfc 3.28.1" name="generator">
+<meta content="xml2rfc 3.29.0" name="generator">
 <meta content="Internet-Draft" name="keyword">
 <meta content="draft-ietf-tls-extended-key-update-latest" name="ietf.draft">
 <!-- Generator version information:
-  xml2rfc 3.28.1
-    Python 3.12.10
+  xml2rfc 3.29.0
+    Python 3.12.11
     ConfigArgParse 1.7
     google-i18n-address 3.1.1
     intervaltree 3.1.0
     Jinja2 3.1.6
-    lxml 5.3.0
+    lxml 5.3.1
     platformdirs 4.3.8
     pycountry 24.6.1
     PyYAML 6.0.2
-    requests 2.32.3
-    setuptools 70.3.0
+    requests 2.32.4
+    setuptools 80.9.0
     wcwidth 0.2.13
 -->
 <link href="draft-ietf-tls-extended-key-update.xml" rel="alternate" type="application/rfc+xml">
@@ -1067,11 +1060,11 @@ svg :is([fill="white"], [fill^="#fff"]) {
 <thead><tr>
 <td class="left">Internet-Draft</td>
 <td class="center">Extended Key Update for TLS</td>
-<td class="right">May 2025</td>
+<td class="right">July 2025</td>
 </tr></thead>
 <tfoot><tr>
 <td class="left">Tschofenig, et al.</td>
-<td class="center">Expires 22 November 2025</td>
+<td class="center">Expires 6 January 2026</td>
 <td class="right">[Page]</td>
 </tr></tfoot>
 </table>
@@ -1084,12 +1077,12 @@ svg :is([fill="white"], [fill^="#fff"]) {
 <dd class="internet-draft">draft-ietf-tls-extended-key-update-latest</dd>
 <dt class="label-published">Published:</dt>
 <dd class="published">
-<time datetime="2025-05-21" class="published">21 May 2025</time>
+<time datetime="2025-07-05" class="published">5 July 2025</time>
     </dd>
 <dt class="label-intended-status">Intended Status:</dt>
 <dd class="intended-status">Standards Track</dd>
 <dt class="label-expires">Expires:</dt>
-<dd class="expires"><time datetime="2025-11-22">22 November 2025</time></dd>
+<dd class="expires"><time datetime="2026-01-06">6 January 2026</time></dd>
 <dt class="label-authors">Authors:</dt>
 <dd class="authors">
 <div class="author">
@@ -1118,26 +1111,19 @@ svg :is([fill="white"], [fill^="#fff"]) {
 <h1 id="title">Extended Key Update for Transport Layer Security (TLS) 1.3</h1>
 <section id="section-abstract">
       <h2 id="abstract"><a href="#abstract" class="selfRef">Abstract</a></h2>
-<p id="section-abstract-1">The Transport Layer Security (TLS) 1.3 specification provides forward secrecy
-by utilizing an ephemeral key exchange during the initial handshake. Forward
-secrecy ensures that even if an attacker later obtains a party's long-term private
-key, past encrypted sessions cannot be decrypted. This protects against adversaries
-who record encrypted conversations in the hope of decrypting them later.<a href="#section-abstract-1" class="pilcrow">¶</a></p>
-<p id="section-abstract-2">TLS 1.3 also includes a Key Update mechanism, allowing cryptographic keys to be
-refreshed during an ongoing session. However, this update does not establish new
-forward-secret key material. While this is generally not an issue for short-lived
-sessions, it can pose a security risk for long-lived connections, such as those in
-industrial IoT or telecommunication networks, where an attacker could compromise
-application traffic secrets after the initial handshake.<a href="#section-abstract-2" class="pilcrow">¶</a></p>
-<p id="section-abstract-3">Earlier versions of TLS supported session renegotiation, a mechanism that allowed
-peers to establish new cryptographic parameters within an existing session. This
-included the ability to update the originally used long-term keys (certificates)
-with renewed credentials. However, due to security vulnerabilities, the renegotiation
-mechanism was modified via RFC 5746 and later removed entirely in TLS 1.3, leaving
-a gap in TLS's ability to refresh cryptographic material securely.<a href="#section-abstract-3" class="pilcrow">¶</a></p>
-<p id="section-abstract-4">This specification introduces an extended key update mechanism that supports forward
-secrecy, forcing attackers to continuously exfiltrate key material throughout the
-session to decrypt the entire conversation.<a href="#section-abstract-4" class="pilcrow">¶</a></p>
+<p id="section-abstract-1">TLS 1.3 ensures forward secrecy by performing an ephemeral Diffie-Hellman key exchange
+during the initial handshake, protecting past communications even if a party's
+long-term keys are later compromised. While the built-in KeyUpdate mechanism allows
+traffic keys to be refreshed during a session, it does not introduce new forward-secret
+key material. This limitation can pose a security risk in long-lived sessions, such as
+those found in industrial IoT or telecommunications environments.<a href="#section-abstract-1" class="pilcrow">¶</a></p>
+<p id="section-abstract-2">To address this, this specification defines an extended key update mechanism that
+performs a fresh Diffie-Hellman exchange within an active session, thereby
+re-establishing forward secrecy beyond the initial handshake. By forcing attackers
+to exfiltrate new key material repeatedly, this approach mitigates the risks
+associated with static key compromise. Regular renewal of session keys helps
+contain the impact of such compromises. The extension is applicable to both TLS 1.3
+and DTLS 1.3.<a href="#section-abstract-2" class="pilcrow">¶</a></p>
 </section>
 <section class="note rfcEditorRemove" id="section-note.1">
       <h2 id="name-discussion-venues">
@@ -1169,7 +1155,7 @@ session to decrypt the entire conversation.<a href="#section-abstract-4" class="
         time. It is inappropriate to use Internet-Drafts as reference
         material or to cite them other than as "work in progress."<a href="#section-boilerplate.1-3" class="pilcrow">¶</a></p>
 <p id="section-boilerplate.1-4">
-        This Internet-Draft will expire on 22 November 2025.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
+        This Internet-Draft will expire on 6 January 2026.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="copyright">
@@ -1834,11 +1820,11 @@ HandshakeType" registry <span>[<a href="#TLS-Ext-Registry" class="cite xref">TLS
 <dd class="break"></dd>
 <dt id="I-D.ietf-tls-hybrid-design">[I-D.ietf-tls-hybrid-design]</dt>
         <dd>
-<span class="refAuthor">Stebila, D.</span>, <span class="refAuthor">Fluhrer, S.</span>, and <span class="refAuthor">S. Gueron</span>, <span class="refTitle">"Hybrid key exchange in TLS 1.3"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-ietf-tls-hybrid-design-12</span>, <time datetime="2025-01-14" class="refDate">14 January 2025</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-ietf-tls-hybrid-design-12">https://datatracker.ietf.org/doc/html/draft-ietf-tls-hybrid-design-12</a>&gt;</span>. </dd>
+<span class="refAuthor">Stebila, D.</span>, <span class="refAuthor">Fluhrer, S.</span>, and <span class="refAuthor">S. Gueron</span>, <span class="refTitle">"Hybrid key exchange in TLS 1.3"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-ietf-tls-hybrid-design-13</span>, <time datetime="2025-06-17" class="refDate">17 June 2025</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-ietf-tls-hybrid-design-13">https://datatracker.ietf.org/doc/html/draft-ietf-tls-hybrid-design-13</a>&gt;</span>. </dd>
 <dd class="break"></dd>
 <dt id="I-D.ietf-tls-keylogfile">[I-D.ietf-tls-keylogfile]</dt>
         <dd>
-<span class="refAuthor">Thomson, M.</span>, <span class="refAuthor">Rosomakho, Y.</span>, and <span class="refAuthor">H. Tschofenig</span>, <span class="refTitle">"The SSLKEYLOGFILE Format for TLS"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-ietf-tls-keylogfile-04</span>, <time datetime="2025-04-11" class="refDate">11 April 2025</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-ietf-tls-keylogfile-04">https://datatracker.ietf.org/doc/html/draft-ietf-tls-keylogfile-04</a>&gt;</span>. </dd>
+<span class="refAuthor">Thomson, M.</span>, <span class="refAuthor">Rosomakho, Y.</span>, and <span class="refAuthor">H. Tschofenig</span>, <span class="refTitle">"The SSLKEYLOGFILE Format for TLS"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-ietf-tls-keylogfile-05</span>, <time datetime="2025-06-09" class="refDate">9 June 2025</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-ietf-tls-keylogfile-05">https://datatracker.ietf.org/doc/html/draft-ietf-tls-keylogfile-05</a>&gt;</span>. </dd>
 <dd class="break"></dd>
 <dt id="RFC7296">[RFC7296]</dt>
         <dd>
