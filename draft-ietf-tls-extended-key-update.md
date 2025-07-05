@@ -61,6 +61,7 @@ informative:
   RFC7624:
   I-D.ietf-tls-hybrid-design:
   I-D.ietf-tls-keylogfile:
+  RFC5746:
   ANSSI-DAT-NT-003:
      author:
         org: ANSSI
