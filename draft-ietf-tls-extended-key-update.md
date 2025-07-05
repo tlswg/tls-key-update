@@ -181,6 +181,10 @@ If the client and server agree to use the extended key update mechanism,
 the standard key update MUST NOT be used. In this case, the extended
 key update fully replaces the standard key update functionality.
 
+Implementations that receive a classic KeyUpdate message after successfully
+negotiating the Extended Key Update functionality MUST terminate the
+connection with an "unexpected_message" alert.
+
 # Extended Key Update Message {#ext-key-update}
 
 The ExtendedKeyUpdate handshake message is used to indicate an update
