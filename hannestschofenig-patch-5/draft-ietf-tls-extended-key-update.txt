@@ -84,70 +84,78 @@ Table of Contents
 
    1.  Introduction
    2.  Terminology and Requirements Language
-   3.  Key Exfiltration and Forward Secrecy
-   4.  Negotiating the Extended Key Update
-   5.  Extended Key Update Message
-   6.  Updating Traffic Secrets
-   7.  Example
-   8.  DTLS 1.3 Considerations
-   9.  Post-Quantum Cryptography Considerations
-   10. SSLKEYLOGFILE update
-   11. Exporter
-   12. Security Considerations
-   13. IANA Considerations
-   14. References
-     14.1.  Normative References
-     14.2.  Informative References
+   3.  Negotiating the Extended Key Update
+   4.  Extended Key Update Message
+   5.  Updating Traffic Secrets
+   6.  Example
+   7.  DTLS 1.3 Considerations
+   8.  Post-Quantum Cryptography Considerations
+   9.  SSLKEYLOGFILE update
+   10. Exporter
+   11. Security Considerations
+   12. IANA Considerations
+   13. References
+     13.1.  Normative References
+     13.2.  Informative References
    Appendix A.  Acknowledgments
    Authors' Addresses
 
 1.  Introduction
 
-   The features of TLS and DTLS have changed over the years and while
-   newer versions optimized the protocol and at the same time enhanced
-   features (often with the help of extensions) some functionality was
-   removed without replacement.  The ability to update keys and
-   initialization vectors has been added in TLS 1.3
-   [I-D.ietf-tls-rfc8446bis] using the KeyUpdate message and it intended
-   to (partially) replace renegotiation from earlier TLS versions.  The
-   renegotiation feature, while complex, offered additional
-   functionality that is not supported with TLS 1.3 anymore, including
-   the update of master keys with a Diffie-Hellman exchange during the
-   lifetime of a session.
+   The Transport Layer Security (TLS) 1.3 protocol provides forward
+   secrecy by using an ephemeral Diffie-Hellman (DHE) key exchange
+   during the initial handshake.  This ensures that encrypted
+   communication remains confidential even if an attacker later obtains
+   a party's long-term private key, protecting against passive
+   adversaries who record encrypted traffic for later decryption.
 
-   There are use cases of TLS and DTLS where long-lived sessions are
-   common.  In those environments, such as industrial IoT and
-   telecommunication networks, availability is important and an
-   interruption of the communication due to periodic session resumptions
-   is not an option.  Re-running a handshake with (EC)DHE and switching
-   from the old to the new session may be a solution for some
-   applications but introduces complexity, impacts performance and may
-   lead to service interruption as well.
+   TLS 1.3 also includes a KeyUpdate mechanism that allows traffic keys
+   to be refreshed during an established session.  However, this
+   mechanism does not introduce new forward-secret key material, as it
+   applies only a key derivation function to the previous application
+   traffic secret as input.  While this design is generally sufficient
+   for short-lived connections, it may present security limitations in
+   scenarios where sessions persist for extended periods, such as in
+   industrial IoT or telecommunications systems, where continuous
+   availability is critical and session renegotiation or resumption is
+   impractical.
 
-   Some deployments have used IPsec in the past to secure their
-   communication protocol and have now decided to switch to TLS or DTLS
-   instead.  The requirement for updates of cryptographic keys for an
-   existing session has become a requirement.  For IPsec, US NIST,
-   German BSI, and French ANSSI recommend to re-run Diffie-Hellman
-   exchanges frequently to provide forward secrecy and force attackers
-   to perform a dynamic key exfiltration [RFC7624].  ANSSI writes "It is
-   recommended to force the periodic renewal of the keys, e.g., every
-   hour and every 100 GB of data, in order to limit the impact of a key
-   compromise."  [ANSSI-DAT-NT-003].  While IPsec/IKEv2 [RFC7296] offers
-   the desired functionality, developers often decide to use TLS/DTLS to
-   simplify integration with cloud-based environments.
+   Earlier versions of TLS supported session renegotiation, which
+   allowed peers to negotiate fresh keying material, including
+   performing new Diffie-Hellman exchanges during the session lifetime.
+   Due to protocol complexity and known vulnerabilities, renegotiation
+   was first restricted by [RFC5746] and ultimately removed in TLS 1.3.
+   While the KeyUpdate message was introduced to offer limited rekeying
+   functionality, it does not fulfill the same cryptographic role as
+   renegotiation and cannot refresh long-term secrets or derive new
+   secrets from fresh DHE input.
 
-   This specification defines a new, extended key update message
-   supporting forward secrecy.  It does so by utilizing a Diffie-Hellman
-   exchange using one of the groups negotiated during the initial
-   exchange.  The support for this extension is signaled using the TLS
-   flags extension mechanism.  The frequent re-running of extended key
-   update forces an attacker to do dynamic key exfiltration.
+   Security guidance from national agencies, such as ANSSI (France),
+   recommends the periodic renewal of cryptographic keys during long-
+   lived sessions to limit the impact of key compromise.  This approach
+   encourage designs designs that force an attacker to perform dynamic
+   key exfiltration, as defined in [RFC7624].  Dynamic key exfiltration
+   refers to attack scenarios where an adversary must repeatedly extract
+   fresh keying material to maintain access to protected data,
+   increasing operational cost and risk for the attacker.  In contrast,
+   static key exfiltration, where a long-term secret is extracted once
+   and reused, poses a greater long-term threat, especially when session
+   keys are not refreshed with forward-secret input.
 
-   This specification is applicable to both TLS 1.3
-   [I-D.ietf-tls-rfc8446bis] and DTLS 1.3 [RFC9147].  Throughout the
-   specification we do not distinguish between these two protocols
-   unless necessary for better understanding.
+   This specification defines a TLS extension that introduces an
+   extended key update mechanism.  Unlike the standard key update, this
+   mechanism allows peers to perform a fresh Diffie-Hellman exchange
+   within an active session using one of the groups negotiated during
+   the initial handshake.  By periodically rerunning (EC)DHE, this
+   extension enables the derivation of new traffic secrets that are
+   independent of prior key material.  As noted in Appendix F of
+   [I-D.ietf-tls-rfc8446bis], this approach mitigates the risk of static
+   key exfiltration and shifts the attacker burden toward dynamic key
+   exfiltration.
+
+   The proposed extension is applicable to both TLS 1.3 and DTLS 1.3.
+   For clarity, the term "TLS" is used throughout this document to refer
+   to both protocols unless otherwise specified.
 
 2.  Terminology and Requirements Language
 
@@ -157,35 +165,10 @@ Table of Contents
 
    To distinguish the key update procedure defined in
    [I-D.ietf-tls-rfc8446bis] from the key update procedure specified in
-   this document, we use the terms "key update" and "extended key
-   update", respectively.
+   this document, we use the terms "standard key update" and "extended
+   key update", respectively.
 
-3.  Key Exfiltration and Forward Secrecy
-
-   [RFC9325] provides a good summary of what (perfect) forward secrecy
-   is and how it relates to the TLS protocol.  In summary, it says:
-
-   "Forward secrecy (also called "perfect forward secrecy" or "PFS") is
-   a defense against an attacker who records encrypted conversations
-   where the session keys are only encrypted with the communicating
-   parties' long-term keys.  Should the attacker be able to obtain these
-   long-term keys at some point later in time, the session keys and thus
-   the entire conversation could be decrypted."
-
-   Appendix F of [I-D.ietf-tls-rfc8446bis] goes into details of
-   explaining the security properties of the TLS 1.3 protocol and notes
-   "... forward secrecy without rerunning (EC)DHE does not stop an
-   attacker from doing static key exfiltration".  It concludes with a
-   recommendation by saying: "Frequently rerunning (EC)DHE forces an
-   attacker to do dynamic key exfiltration (or content exfiltration)."
-   The terms static and dynamic key exfiltration are defined in
-   [RFC7624].  Dynamic key exfiltration, refers to attacks in which the
-   collaborator delivers keying material to the attacker frequently,
-   e.g., on a per-session basis.  Static key exfiltration means that the
-   transfer of keys happens once or rarely and that the transferred key
-   is typically long-lived.
-
-4.  Negotiating the Extended Key Update
+3.  Negotiating the Extended Key Update
 
    Client and servers use the TLS flags extension
    [I-D.ietf-tls-tlsflags] to indicate support for the functionality
@@ -203,7 +186,12 @@ Table of Contents
    require perfect forward security will have to initiate a full
    handshake.
 
-5.  Extended Key Update Message
+   If the client and server agree to use the extended key update
+   mechanism, the standard key update MUST NOT be used.  In this case,
+   the extended key update fully replaces the standard key update
+   functionality.
+
+4.  Extended Key Update Message
 
    The ExtendedKeyUpdate handshake message is used to indicate an update
    of cryptographic keys.  This key update process can be sent by either
@@ -378,7 +366,7 @@ Table of Contents
    over the lifetime of a TLS communication session, depending on the
    desired security properties.
 
-6.  Updating Traffic Secrets
+5.  Updating Traffic Secrets
 
    The ExtendedKeyUpdate handshake message is used to indicate that the
    sender is updating its sending cryptographic keys.  This message can
@@ -420,7 +408,7 @@ Table of Contents
    and its associated traffic keys can only be deleted after receiving
    the NewKeyUpdate message.
 
-7.  Example
+6.  Example
 
    Figure 1 shows the interaction between a TLS 1.3 client and server
    graphically.  This section shows an example message exchange where a
@@ -470,7 +458,7 @@ Table of Contents
 
             Figure 3: Extended Key Update Message Exchange.
 
-8.  DTLS 1.3 Considerations
+7.  DTLS 1.3 Considerations
 
    Due to the possibility of a NewKeyUpdate message being lost and
    thereby preventing the sender of the NewKeyUpdate message from
@@ -483,7 +471,7 @@ Table of Contents
    to process those records with that epoch but MAY opt to discard such
    out-of-epoch records.
 
-9.  Post-Quantum Cryptography Considerations
+8.  Post-Quantum Cryptography Considerations
 
    Hybrid key exchange refers to using multiple key exchange algorithms
    simultaneously and combining the result with the goal of providing
@@ -496,7 +484,7 @@ Table of Contents
    the algorithms.  The same approach is then re-used in the extended
    key update when key shares are exchanged.
 
-10.  SSLKEYLOGFILE update
+9.  SSLKEYLOGFILE update
 
    As Extended Key Update invalidates previous secrets, SSLKEYLOGFILE
    [I-D.ietf-tls-keylogfile] needs to be populated with new entries.
@@ -521,7 +509,7 @@ Table of Contents
    previous SSLKEYLOGFILE secrets including past iterations of
    CLIENT_TRAFFIC_SECRET_ and SERVER_TRAFFIC_SECRET_.
 
-11.  Exporter
+10.  Exporter
 
    Protocols like DTLS-SRTP and DTLS-over-SCTP utilize TLS or DTLS for
    key establishment but repurpose some of the keying material for their
@@ -530,13 +518,13 @@ Table of Contents
 
    Once the Extended Key Update mechanism is complete, such protocols
    would need to use the newly derived key to generate Exported Keying
-   Material (EKM) to protect packets.  The "sk" derived in the Section 6
+   Material (EKM) to protect packets.  The "sk" derived in the Section 5
    will be used as the "Secret" in the exporter function, defined in
    Section 7.5 of [I-D.ietf-tls-rfc8446bis], to generate EKM, ensuring
    that the exported keying material is aligned with the updated
    security context.
 
-12.  Security Considerations
+11.  Security Considerations
 
    This entire document is about security.
 
@@ -546,7 +534,7 @@ Table of Contents
    potentially undo updates to the application traffic secret
    derivation, depending on when tickets have been exchanged.
 
-13.  IANA Considerations
+12.  IANA Considerations
 
    IANA is requested to allocate value TBD for the
    "extended_key_update_required" alert in the "TLS Alerts" registry.
@@ -578,9 +566,9 @@ Table of Contents
 
    *  Comment:
 
-14.  References
+13.  References
 
-14.1.  Normative References
+13.1.  Normative References
 
    [I-D.ietf-tls-rfc8446bis]
               Rescorla, E., "The Transport Layer Security (TLS) Protocol
@@ -605,7 +593,7 @@ Table of Contents
               1.3", RFC 9147, DOI 10.17487/RFC9147, April 2022,
               <https://www.rfc-editor.org/rfc/rfc9147>.
 
-14.2.  Informative References
+13.2.  Informative References
 
    [ANSSI-DAT-NT-003]
               ANSSI, "Recommendations for securing networks with IPsec,
@@ -629,6 +617,11 @@ Table of Contents
               Draft, draft-ietf-tls-keylogfile-05, 9 June 2025,
               <https://datatracker.ietf.org/doc/html/draft-ietf-tls-
               keylogfile-05>.
+
+   [RFC5746]  Rescorla, E., Ray, M., Dispensa, S., and N. Oskov,
+              "Transport Layer Security (TLS) Renegotiation Indication
+              Extension", RFC 5746, DOI 10.17487/RFC5746, February 2010,
+              <https://www.rfc-editor.org/rfc/rfc5746>.
 
    [RFC7296]  Kaufman, C., Hoffman, P., Nir, Y., Eronen, P., and T.
               Kivinen, "Internet Key Exchange Protocol Version 2
