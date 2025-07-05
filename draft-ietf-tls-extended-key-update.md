@@ -463,37 +463,42 @@ is the concatenation of the key_exchange field for each of the algorithms.
 The same approach is then re-used in the extended key update when
 key shares are exchanged.
 
-# SSLKEYLOGFILE update
+# SSLKEYLOGFILE Update
 
-As Extended Key Update invalidates previous secrets, SSLKEYLOGFILE {{I-D.ietf-tls-keylogfile}} needs to
-be populated with new entries. Each completed Extended Key Update results
-in two additional secret labels in SSLKEYLOGFILE:
+As a successful extended key update exchange invalidates previous secrets,
+SSLKEYLOGFILE {{I-D.ietf-tls-keylogfile}} needs to be populated with new
+entries. As a result, two additional secret labels are utilized in the
+SSLKEYLOGFILE:
 
-1. `CLIENT_TRAFFIC_SECRET_N+1`: identified as client_application_traffic_secret_N+1 in the key schedule
+1. `CLIENT_TRAFFIC_SECRET_N+1`: identifies the client_application_traffic_secret_N+1 in the key schedule
 
-2. `SERVER_TRAFFIC_SECRET_N+1`: identified as server_application_traffic_secret_N+1 in the key schedule
+2. `SERVER_TRAFFIC_SECRET_N+1`: identifies the server_application_traffic_secret_N+1 in the key schedule
 
-Similarly to other records in SSLKEYLOGFILE label is followed by 32-byte value
-of the Random field from the ClientHello message that established the TLS
-connection and corresponding secret encoded in hexadecimal.
+Similar to other entries in the SSLKEYLOGFILE, the label is followed by the
+32-byte value of the Random field from the ClientHello message that
+established the TLS connection, and the corresponding secret encoded in
+hexadecimal.
 
-SSLKEYLOGFILE entries for Extended Key Update MUST NOT be produced if
+SSLKEYLOGFILE entries for the extended key update MUST NOT be produced if
 SSLKEYLOGFILE was not used for other secrets in the handshake.
 
-Note that each successful Extended Key Update invalidates all previous SSLKEYLOGFILE secrets including
-past iterations of `CLIENT_TRAFFIC_SECRET_` and `SERVER_TRAFFIC_SECRET_`.
+Note that each successful Extended Key Update invalidates all previous SSLKEYLOGFILE
+secrets including past iterations of `CLIENT_TRAFFIC_SECRET_` and
+`SERVER_TRAFFIC_SECRET_`.
 
 # Exporter
 
-Protocols like DTLS-SRTP and DTLS-over-SCTP utilize TLS or DTLS for key establishment but repurpose
-some of the keying material for their own purpose. These protocols use the TLS exporter defined in
-Section 7.5 of {{I-D.ietf-tls-rfc8446bis}}.
+Protocols such as DTLS-SRTP and DTLS-over-SCTP use TLS or DTLS for key
+establishment but extract specific parts of the derived keying material
+for their own use. They achieve this using the TLS exporter mechanism
+defined in Section 7.5 of {{I-D.ietf-tls-rfc8446bis}}.
 
-Once the Extended Key Update mechanism is complete, such protocols would need to use the newly
-derived key to generate Exported Keying Material (EKM) to protect packets. The "sk" derived in the
-{{key_update}} will be used as the "Secret" in the exporter function, defined in
-Section 7.5 of {{I-D.ietf-tls-rfc8446bis}}, to generate EKM, ensuring that the exported keying material is
-aligned with the updated security context.
+After the extended key update exchange is completed, such protocols
+need to regenerate Exported Keying Material (EKM) based on the updated
+keying context. The sk value derived during the {{key_update}} process
+is used as the "Secret" input to the exporter function, ensuring that
+the EKM reflects the most recent cryptographic state and can be used
+to protect subsequent packets.
 
 #  Security Considerations
 
