@@ -191,6 +191,10 @@ Table of Contents
    the extended key update fully replaces the standard key update
    functionality.
 
+   Implementations that receive a classic KeyUpdate message after
+   successfully negotiating the Extended Key Update functionality MUST
+   terminate the connection with an "unexpected_message" alert.
+
 4.  Extended Key Update Message
 
    The ExtendedKeyUpdate handshake message is used to indicate an update

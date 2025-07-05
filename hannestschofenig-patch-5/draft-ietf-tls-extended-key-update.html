@@ -1322,6 +1322,9 @@ handshake.<a href="#section-3-3" class="pilcrow">¶</a></p>
 <p id="section-3-4">If the client and server agree to use the extended key update mechanism,
 the standard key update MUST NOT be used. In this case, the extended
 key update fully replaces the standard key update functionality.<a href="#section-3-4" class="pilcrow">¶</a></p>
+<p id="section-3-5">Implementations that receive a classic KeyUpdate message after successfully
+negotiating the Extended Key Update functionality MUST terminate the
+connection with an "unexpected_message" alert.<a href="#section-3-5" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="ext-key-update">
