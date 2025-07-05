@@ -136,7 +136,7 @@ where a long-term secret is extracted once and reused, poses a greater long-term
 threat, especially when session keys are not refreshed with forward-secret input.
 
 This specification defines a TLS extension that introduces an extended key update
-mechanism. Unlike the standard KeyUpdate, this mechanism allows peers to perform a
+mechanism. Unlike the standard key update, this mechanism allows peers to perform a
 fresh Diffie-Hellman exchange within an active session using one of the groups
 negotiated during the initial handshake. By periodically rerunning (EC)DHE, this
 extension enables the derivation of new traffic secrets that are independent of
@@ -156,7 +156,8 @@ document are to be interpreted as described in RFC 2119 {{RFC2119}}.
 
 To distinguish the key update procedure defined in {{I-D.ietf-tls-rfc8446bis}}
 from the key update procedure specified in this document, we use the terms
-"key update" and "extended key update", respectively.
+"standard key update" and "extended key update", respectively.
+
 
 # Negotiating the Extended Key Update
 
@@ -175,6 +176,10 @@ If the "Extended_Key_Update" flag is not set, servers ignore any of the
 functionality specified in this document and applications that
 require perfect forward security will have to initiate a full
 handshake.
+
+If the client and server agree to use the extended key update mechanism,
+the standard key update MUST NOT be used. In this case, the extended
+key update fully replaces the standard key update functionality.
 
 # Extended Key Update Message {#ext-key-update}
 
