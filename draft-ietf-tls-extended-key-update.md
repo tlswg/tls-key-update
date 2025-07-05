@@ -350,41 +350,74 @@ desired security properties.
 
 # Updating Traffic Secrets {#key_update}
 
-The ExtendedKeyUpdate handshake message is used to indicate that
-the sender is updating its sending cryptographic keys.  This message can
-be sent by either endpoint after the Finished messages have been exchanged.
+When the extended key update message exchange is completed both peers
+have successfully updated their application traffic secrets. The
+key derivation function described in this document is used to perform
+this update.
 
 The design of the key derivation function for computing the next generation
 of application_traffic_secret is motivated by the desire to include
 
-* the old traffic secret as well as a secret derived from the DH
-exchange or from the hybrid key exchange,
+* a secret derived from the (EC)DHE exchange (or from the hybrid key exchange
+/ PQ-KEM exchange),
+* a secret that allows the new key exchange to be cryptographally bind
+the previously established secret to the newly derived secret,
 * the concatenation of the ExtendedKeyUpdateRequest and the
 ExtendedKeyUpdateResponse messages, which contain the key shares, binding
 the encapsulated shared secret ciphertext to IKM in case of hybrid key
 exchange, providing MAL-BIND-K-CT security (see {{CDM23}}), and
-* a new label string to distinguish it from the application traffic
-secret computation defined in {{I-D.ietf-tls-rfc8446bis}} for use with
-the regular KeyUpdate.
+* new label strings to distinguish it from the key derivation used in
+TLS 1.3.
+
+The following diagram shows the key derivation hierarchy.
 
 ~~~
-sk = HKDF-Extract(Transcript-Hash(KeyUpdateMessages), secret)
-
-application_traffic_secret_N+1 =
-    HKDF-Expand-Label(sk,
-                      "traffic up2", application_traffic_secret_N,
-                      Hash.length)
+       Master Secret N
+             |
+             v
+       Derive-Secret(., "key derived", "")
+             |
+             v
+ (EC)DHE -> HKDF-Extract = Master Secret N+1
+             |
+             +-----> Derive-Secret(., "c ap traffic2",
+             |                     ExtendedKeyUpdateRequest ||
+             |                     ExtendedKeyUpdateResponse)
+             |                     = client_application_traffic_secret_N+1
+             |
+             +-----> Derive-Secret(., "s ap traffic2",
+             |                     ExtendedKeyUpdateRequest ||
+             |                     ExtendedKeyUpdateResponse)
+             |                     = server_application_traffic_secret_N+1
+             |
+             +-----> Derive-Secret(., "exp master2",
+             |                     ExtendedKeyUpdateRequest ||
+             |                     ExtendedKeyUpdateResponse)
+             |                     = exporter_master_secret_N+1
+             |
+             +-----> Derive-Secret(., "res master2",
+             |                     ExtendedKeyUpdateRequest ||
+             |                     ExtendedKeyUpdateResponse))
+                                   = resumption_master_secret_N+1
 ~~~
 
-The traffic keys are re-derived from the client_/server_application_traffic_secret_N+1
-as described in Section 7.3 of {{I-D.ietf-tls-rfc8446bis}}.
+During the initial handshake the Master Secret is generated, see
+{{Section 7.1 of I-D.ietf-tls-rfc8446bis}}. Since the Master Secret
+is discarded during the key derivation procedure, a derived value is
+stored. This value then serves as input to another key derivation step
+that takes the (EC)DHE-established value as a second parameter into
+account.
+
+The traffic keys are re-derived from client_application_traffic_secret_N+1
+and server_application_traffic_secret_N+1, as described in
+{{Section 7.3 of I-D.ietf-tls-rfc8446bis}}.
 
 Once client_/server_application_traffic_secret_N+1 and its associated
 traffic keys have been computed, implementations SHOULD delete
 client_/server_application_traffic_secret_N and its associated
-traffic keys. Note: The client_/server_application_traffic_secret_N and
-its associated traffic keys can only be deleted after receiving the
-NewKeyUpdate message.
+traffic keys as soon as possible. Note: The
+client_/server_application_traffic_secret_N and its associated
+traffic keys can only be deleted after receiving the NewKeyUpdate message.
 
 # Example
 
