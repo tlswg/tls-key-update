@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2025-06-05T01:51:40.766280+00:00",
+  "timestamp": "2025-07-06T02:03:05.872119+00:00",
   "repo": "tlswg/tls-key-update",
   "labels": [
     {
@@ -134,7 +134,7 @@
       "labels": [],
       "body": "Working on the implementation I was wondering whether it would make sense to use a different key hierarchy. Here is what the TLS RFC specifies for the application traffic secrets, the exporter master secret and the resumption master secrets.\n\n>              |\n>              v\n>    0 -> HKDF-Extract = Master Secret\n>              |\n>              +-----> Derive-Secret(., \"c ap traffic\",\n>              |                     ClientHello...server Finished)\n>              |                     = client_application_traffic_secret_0\n>              |\n>              +-----> Derive-Secret(., \"s ap traffic\",\n>              |                     ClientHello...server Finished)\n>              |                     = server_application_traffic_secret_0\n>              |\n>              +-----> Derive-Secret(., \"exp master\",\n>              |                     ClientHello...server Finished)\n>              |                     = exporter_master_secret\n>              |\n>              +-----> Derive-Secret(., \"res master\",\n>                                    ClientHello...client Finished)\n>                                    = resumption_master_secret\n\nCurrently, draft version -04 uses the current application traffic secret and also computes a new exporter secret based on the following key hierarchy. The resumption_master_secret so far is left untouched.\n\nQuestion: \n1) Should also say something about the resumption master secret update?\n2) Should we recompute the master secret instead?",
       "createdAt": "2025-04-26T19:21:49Z",
-      "updatedAt": "2025-04-29T15:25:45Z",
+      "updatedAt": "2025-07-05T17:12:45Z",
       "closedAt": null,
       "comments": [
         {
@@ -150,6 +150,20 @@
           "body": "> Can this actually change the exporter or resumption secrets? The whole KeyUpdate arrangement (original or extended) is very fundamentally per-direction, and these secrets are not per-direction.\n\nUnlike traditional KeyUpdate, Extended KeyUpdate is fundamentally bidirectional as it performs a fresh key exchange.\n\n> To put it another way, how exactly would an application using an exporter reliably export the same secret on the two peers, against a background of all possible in-flight extended key update states?\n\nApplication would need to be informed that exporter secret has changed.\n\n> Should also say something about the resumption master secret update?\n> Should we recompute the master secret instead?\n\nYes, I believe we should derive new resumption master secret to deliver on post-compromise security promise.\n\n\n",
           "createdAt": "2025-04-29T15:25:45Z",
           "updatedAt": "2025-04-29T15:25:45Z"
+        },
+        {
+          "author": "hannestschofenig",
+          "authorAssociation": "COLLABORATOR",
+          "body": "PR https://github.com/tlswg/tls-key-update/pull/33 contains a proposal for a new key derivation procedure.",
+          "createdAt": "2025-07-05T16:40:43Z",
+          "updatedAt": "2025-07-05T16:40:43Z"
+        },
+        {
+          "author": "ctz",
+          "authorAssociation": "NONE",
+          "body": "I think significant work is needed to describe:\n\n\n- How exporters now work, and how/whether peers can no longer actually agree on the same exporter output at all times in the connection's life. This is quite a big change to the meaning of exporters. It would also be good to include examples of how you see the exporter interfaces of TLS libraries changing as a result. eg, are we introducing key epochs here? How does [this](https://pkg.go.dev/crypto/tls#ConnectionState.ExportKeyingMaterial) or [this](https://learn.microsoft.com/en-us/windows/win32/seccng/sslexportkeyingmaterial) look like after this change?\n\n- How and whether tickets work across extended key updates. I guess once the resumption secret is rolled, then we can send a new batch of tickets using the new keys, but if the previously-sent tickets are still accepted then this RFC doesn't really meet its goal (since that resumption would \"rewind\" the session keying back to the compromised ones). One option would be to require stateful resumption, with all the deployment difficulties that come with it. Note we can't just say \"clients must delete previously-received tickets after an extended key update\", because the threat model here is that the peers have failed to keep secrets.",
+          "createdAt": "2025-07-05T17:12:45Z",
+          "updatedAt": "2025-07-05T17:12:45Z"
         }
       ]
     },
@@ -165,9 +179,17 @@
       "labels": [],
       "body": "Not all messages are registered:\n- NewKeyUpdate\n- ExtendedKeyUpdateRequest\n- ExtendedKeyUpdateResponseStatus",
       "createdAt": "2025-05-21T15:09:14Z",
-      "updatedAt": "2025-05-21T15:09:14Z",
+      "updatedAt": "2025-07-05T15:13:04Z",
       "closedAt": null,
-      "comments": []
+      "comments": [
+        {
+          "author": "hannestschofenig",
+          "authorAssociation": "COLLABORATOR",
+          "body": "Here is the relevant PR: https://github.com/tlswg/tls-key-update/pull/31\n",
+          "createdAt": "2025-07-05T15:13:04Z",
+          "updatedAt": "2025-07-05T15:13:04Z"
+        }
+      ]
     },
     {
       "number": 22,
@@ -181,7 +203,7 @@
       "labels": [],
       "body": "Add text in the document.",
       "createdAt": "2025-05-21T15:41:34Z",
-      "updatedAt": "2025-06-03T17:23:40Z",
+      "updatedAt": "2025-07-05T14:41:51Z",
       "closedAt": null,
       "comments": [
         {
@@ -204,6 +226,13 @@
           "body": "Assumption: Key Update and Extended Key Update can be both used simultaneously",
           "createdAt": "2025-06-03T17:23:39Z",
           "updatedAt": "2025-06-03T17:23:39Z"
+        },
+        {
+          "author": "hannestschofenig",
+          "authorAssociation": "COLLABORATOR",
+          "body": "PR https://github.com/tlswg/tls-key-update/pull/30/ says that the extended key update, when negotiated, replaces the regular key update. ",
+          "createdAt": "2025-07-05T14:41:51Z",
+          "updatedAt": "2025-07-05T14:41:51Z"
         }
       ]
     },
@@ -268,15 +297,15 @@
       "id": "I_kwDOMJPqLM641bLv",
       "title": "Term \"Forward Secrecy\" is confusing",
       "url": "https://github.com/tlswg/tls-key-update/issues/26",
-      "state": "OPEN",
+      "state": "CLOSED",
       "author": "hannestschofenig",
       "authorAssociation": "COLLABORATOR",
       "assignees": [],
       "labels": [],
       "body": "Rewrite introduction to better explain the security objective",
       "createdAt": "2025-05-29T17:33:54Z",
-      "updatedAt": "2025-06-03T17:55:27Z",
-      "closedAt": null,
+      "updatedAt": "2025-07-05T14:34:50Z",
+      "closedAt": "2025-07-05T14:34:50Z",
       "comments": [
         {
           "author": "stfries",
@@ -305,6 +334,13 @@
           "body": "When using extended key update an attacker has to perform a dynamic key exfiltration attack. See definition of dynamic key exfiltration in https://datatracker.ietf.org/doc/html/rfc7624\n",
           "createdAt": "2025-06-03T17:55:26Z",
           "updatedAt": "2025-06-03T17:55:26Z"
+        },
+        {
+          "author": "hannestschofenig",
+          "authorAssociation": "COLLABORATOR",
+          "body": "Changed the text in the introduction (see https://github.com/tlswg/tls-key-update/pull/29) and the abstract (see https://github.com/tlswg/tls-key-update/pull/28) to focus on the dynamic key exfiltration topic.\n\nPCS does not appear to be the right term for what we are looking at.",
+          "createdAt": "2025-07-05T14:29:09Z",
+          "updatedAt": "2025-07-05T14:29:09Z"
         }
       ]
     },
@@ -313,16 +349,24 @@
       "id": "I_kwDOMJPqLM65PVfR",
       "title": "Missing references in introduction",
       "url": "https://github.com/tlswg/tls-key-update/issues/27",
-      "state": "OPEN",
+      "state": "CLOSED",
       "author": "muhammad-usama-sardar",
       "authorAssociation": "COLLABORATOR",
       "assignees": [],
       "labels": [],
       "body": "> For IPsec, US NIST, German BSI, and French ANSSI recommend to re-run Diffie-Hellman exchanges frequently to provide forward secrecy and force attackers to perform a dynamic key exfiltration [[RFC7624](https://tlswg.org/tls-key-update/draft-ietf-tls-extended-key-update.html#RFC7624)].\n\nThe mentioned reference RFC 7624 does not mention US NIST, German BSI, and French ANSSI. So this claim needs to be justified by corresponding references from US NIST, German BSI and French ANSSI. \n\nThe reference for French ANSSI is given in the next sentence, but references for US NIST and German BSI are missing. ",
       "createdAt": "2025-06-01T20:23:44Z",
-      "updatedAt": "2025-06-01T20:23:44Z",
-      "closedAt": null,
-      "comments": []
+      "updatedAt": "2025-07-05T14:34:40Z",
+      "closedAt": "2025-07-05T14:34:40Z",
+      "comments": [
+        {
+          "author": "hannestschofenig",
+          "authorAssociation": "COLLABORATOR",
+          "body": "Rewrote the introduction in https://github.com/tlswg/tls-key-update/pull/29 and included only the reference to ANSSI. It is just an example and we do not have to be exhaustive.",
+          "createdAt": "2025-07-05T14:27:45Z",
+          "updatedAt": "2025-07-05T14:27:45Z"
+        }
+      ]
     }
   ],
   "pulls": [
@@ -1114,6 +1158,194 @@
           "updatedAt": "2025-04-18T11:51:16Z"
         }
       ],
+      "reviews": []
+    },
+    {
+      "number": 28,
+      "id": "PR_kwDOMJPqLM6djXbe",
+      "title": "New Abstract",
+      "url": "https://github.com/tlswg/tls-key-update/pull/28",
+      "state": "MERGED",
+      "author": "hannestschofenig",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [],
+      "body": "",
+      "createdAt": "2025-07-05T12:22:57Z",
+      "updatedAt": "2025-07-05T14:33:52Z",
+      "baseRepository": "tlswg/tls-key-update",
+      "baseRefName": "main",
+      "baseRefOid": "47fabe0e58146b18e303ece4ffddc357327ead0f",
+      "headRepository": "tlswg/tls-key-update",
+      "headRefName": "hannestschofenig-patch-5",
+      "headRefOid": "044c16c8fb1b35a350e989a4e08e80b6f50ced8a",
+      "closedAt": "2025-07-05T14:33:49Z",
+      "mergedAt": "2025-07-05T14:33:49Z",
+      "mergedBy": "hannestschofenig",
+      "mergeCommit": {
+        "oid": "cffaaefb88eadfd1a50f0e3c7e9f14a624f7dc93"
+      },
+      "comments": [],
+      "reviews": [
+        {
+          "id": "PRR_kwDOMJPqLM6yN9lh",
+          "commit": {
+            "abbreviatedOid": "044c16c"
+          },
+          "author": "tuexen",
+          "authorAssociation": "COLLABORATOR",
+          "state": "APPROVED",
+          "body": "",
+          "createdAt": "2025-07-05T12:50:21Z",
+          "updatedAt": "2025-07-05T12:50:21Z",
+          "comments": []
+        }
+      ]
+    },
+    {
+      "number": 29,
+      "id": "PR_kwDOMJPqLM6djcB1",
+      "title": "Updated \"Introduction\" and removed \" Key Exfiltration and Forward Sec\u2026",
+      "url": "https://github.com/tlswg/tls-key-update/pull/29",
+      "state": "MERGED",
+      "author": "hannestschofenig",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [],
+      "body": "\u2026recy\" Section",
+      "createdAt": "2025-07-05T12:47:52Z",
+      "updatedAt": "2025-07-05T14:34:31Z",
+      "baseRepository": "tlswg/tls-key-update",
+      "baseRefName": "main",
+      "baseRefOid": "47fabe0e58146b18e303ece4ffddc357327ead0f",
+      "headRepository": "tlswg/tls-key-update",
+      "headRefName": "hannestschofenig-patch-6",
+      "headRefOid": "7dd407d510ac424a1c55dda2dc335e7e42df8b12",
+      "closedAt": "2025-07-05T14:34:29Z",
+      "mergedAt": "2025-07-05T14:34:29Z",
+      "mergedBy": "hannestschofenig",
+      "mergeCommit": {
+        "oid": "face47eaae1b2f80b048a39ed5ba65cdda9a99a2"
+      },
+      "comments": [],
+      "reviews": [
+        {
+          "id": "PRR_kwDOMJPqLM6yN9oI",
+          "commit": {
+            "abbreviatedOid": "08c0613"
+          },
+          "author": "tuexen",
+          "authorAssociation": "COLLABORATOR",
+          "state": "APPROVED",
+          "body": "",
+          "createdAt": "2025-07-05T12:50:57Z",
+          "updatedAt": "2025-07-05T12:50:57Z",
+          "comments": []
+        }
+      ]
+    },
+    {
+      "number": 30,
+      "id": "PR_kwDOMJPqLM6dj4hz",
+      "title": "Extended Key Update replaces the Standard Key Update",
+      "url": "https://github.com/tlswg/tls-key-update/pull/30",
+      "state": "OPEN",
+      "author": "hannestschofenig",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [],
+      "body": "",
+      "createdAt": "2025-07-05T14:39:30Z",
+      "updatedAt": "2025-07-05T14:44:23Z",
+      "baseRepository": "tlswg/tls-key-update",
+      "baseRefName": "main",
+      "baseRefOid": "face47eaae1b2f80b048a39ed5ba65cdda9a99a2",
+      "headRepository": "tlswg/tls-key-update",
+      "headRefName": "hannestschofenig-patch-5",
+      "headRefOid": "790fa2fc915fd36e3085594a798edb04934aad46",
+      "closedAt": null,
+      "mergedAt": null,
+      "mergedBy": null,
+      "mergeCommit": null,
+      "comments": [],
+      "reviews": []
+    },
+    {
+      "number": 31,
+      "id": "PR_kwDOMJPqLM6dj_yn",
+      "title": "Correcting the Message Registration",
+      "url": "https://github.com/tlswg/tls-key-update/pull/31",
+      "state": "OPEN",
+      "author": "hannestschofenig",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [],
+      "body": "... and clarifying text throughout the draft.",
+      "createdAt": "2025-07-05T15:12:42Z",
+      "updatedAt": "2025-07-05T15:12:43Z",
+      "baseRepository": "tlswg/tls-key-update",
+      "baseRefName": "main",
+      "baseRefOid": "face47eaae1b2f80b048a39ed5ba65cdda9a99a2",
+      "headRepository": "tlswg/tls-key-update",
+      "headRefName": "hannestschofenig-patch-6",
+      "headRefOid": "b8b8670e92630fa451fb013e47381ccf6d54182b",
+      "closedAt": null,
+      "mergedAt": null,
+      "mergedBy": null,
+      "mergeCommit": null,
+      "comments": [],
+      "reviews": []
+    },
+    {
+      "number": 32,
+      "id": "PR_kwDOMJPqLM6dkIsL",
+      "title": "Updated text in \"SSLKEYLOGFILE Update\" and \"Exporter\"",
+      "url": "https://github.com/tlswg/tls-key-update/pull/32",
+      "state": "OPEN",
+      "author": "hannestschofenig",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [],
+      "body": "",
+      "createdAt": "2025-07-05T15:52:27Z",
+      "updatedAt": "2025-07-05T19:05:45Z",
+      "baseRepository": "tlswg/tls-key-update",
+      "baseRefName": "main",
+      "baseRefOid": "face47eaae1b2f80b048a39ed5ba65cdda9a99a2",
+      "headRepository": "tlswg/tls-key-update",
+      "headRefName": "hannestschofenig-patch-7",
+      "headRefOid": "af50ed66cc0ed1465714478aa90bf06eaeccb27d",
+      "closedAt": null,
+      "mergedAt": null,
+      "mergedBy": null,
+      "mergeCommit": null,
+      "comments": [],
+      "reviews": []
+    },
+    {
+      "number": 33,
+      "id": "PR_kwDOMJPqLM6dkYyj",
+      "title": "Update to the Key Derivation",
+      "url": "https://github.com/tlswg/tls-key-update/pull/33",
+      "state": "OPEN",
+      "author": "hannestschofenig",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [],
+      "body": "",
+      "createdAt": "2025-07-05T16:39:49Z",
+      "updatedAt": "2025-07-05T19:05:55Z",
+      "baseRepository": "tlswg/tls-key-update",
+      "baseRefName": "main",
+      "baseRefOid": "face47eaae1b2f80b048a39ed5ba65cdda9a99a2",
+      "headRepository": "tlswg/tls-key-update",
+      "headRefName": "hannestschofenig-patch-8",
+      "headRefOid": "c18dc90d159d2dee6511ee8f9f82f15ddc62963d",
+      "closedAt": null,
+      "mergedAt": null,
+      "mergedBy": null,
+      "mergeCommit": null,
+      "comments": [],
       "reviews": []
     }
   ]
