@@ -381,24 +381,24 @@ The following diagram shows the key derivation hierarchy.
  (EC)DHE -> HKDF-Extract = Master Secret N+1
              |
              +-----> Derive-Secret(., "c ap traffic2",
-             |                     ExtendedKeyUpdateRequest ||
-             |                     ExtendedKeyUpdateResponse)
-             |                     = client_application_traffic_secret_N+1
+             |                ExtendedKeyUpdateRequest ||
+             |                ExtendedKeyUpdateResponse)
+             |                = client_application_traffic_secret_N+1
              |
              +-----> Derive-Secret(., "s ap traffic2",
-             |                     ExtendedKeyUpdateRequest ||
-             |                     ExtendedKeyUpdateResponse)
-             |                     = server_application_traffic_secret_N+1
+             |                ExtendedKeyUpdateRequest ||
+             |                ExtendedKeyUpdateResponse)
+             |                = server_application_traffic_secret_N+1
              |
              +-----> Derive-Secret(., "exp master2",
-             |                     ExtendedKeyUpdateRequest ||
-             |                     ExtendedKeyUpdateResponse)
-             |                     = exporter_master_secret_N+1
+             |                ExtendedKeyUpdateRequest ||
+             |                ExtendedKeyUpdateResponse)
+             |                = exporter_master_secret_N+1
              |
              +-----> Derive-Secret(., "res master2",
-             |                     ExtendedKeyUpdateRequest ||
-             |                     ExtendedKeyUpdateResponse))
-                                   = resumption_master_secret_N+1
+             |                ExtendedKeyUpdateRequest ||
+             |                ExtendedKeyUpdateResponse))
+                              = resumption_master_secret_N+1
 ~~~
 
 During the initial handshake the Master Secret is generated, see
@@ -418,6 +418,15 @@ client_/server_application_traffic_secret_N and its associated
 traffic keys as soon as possible. Note: The
 client_/server_application_traffic_secret_N and its associated
 traffic keys can only be deleted after receiving the NewKeyUpdate message.
+
+When using this extension, it is important to consider its interaction with
+ticket-based session resumption. If resumption occurs without a new (EC)DH
+exchange that provides forward secrecy, an attacker could potentially revert
+the security context to an earlier state, thereby negating the benefits of
+the extended key update. To preserve the security guarantees provided by key
+updates, endpoints MUST either invalidate any session tickets issued prior
+to the key update or ensure that resumption always involves a fresh (EC)DH
+exchange.
 
 # Example
 
@@ -520,23 +529,17 @@ past iterations of `CLIENT_TRAFFIC_SECRET_` and `SERVER_TRAFFIC_SECRET_`.
 
 Protocols like DTLS-SRTP and DTLS-over-SCTP utilize TLS or DTLS for key establishment but repurpose
 some of the keying material for their own purpose. These protocols use the TLS exporter defined in
-Section 7.5 of {{I-D.ietf-tls-rfc8446bis}}.
+{{Section 7.5 of I-D.ietf-tls-rfc8446bis}}.
 
 Once the Extended Key Update mechanism is complete, such protocols would need to use the newly
 derived key to generate Exported Keying Material (EKM) to protect packets. The "sk" derived in the
 {{key_update}} will be used as the "Secret" in the exporter function, defined in
-Section 7.5 of {{I-D.ietf-tls-rfc8446bis}}, to generate EKM, ensuring that the exported keying material is
-aligned with the updated security context.
+{{Section 7.5 of I-D.ietf-tls-rfc8446bis}}, to generate EKM, ensuring that the exported keying
+material is aligned with the updated security context.
 
 #  Security Considerations
 
 This entire document is about security.
-
-When utilizing this extension it is important to understand the interaction
-with ticket-based resumption since resumption without the execution of
-a Diffie-Hellman exchange offering forward secrecy will potentially undo
-updates to the application traffic secret derivation, depending on when
-tickets have been exchanged.
 
 # IANA Considerations
 
