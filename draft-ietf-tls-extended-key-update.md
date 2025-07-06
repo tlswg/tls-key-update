@@ -562,4 +562,4 @@ Marten Seemann as well as the responsible area director Martin Duke.
 
 Finally, we would like to thank Martin Thomson, Ilari Liusvaara,
 Benjamin Kaduk, Scott Fluhrer, Dennis Jackson, David Benjamin,
-Matthijs van Duin, Rifaat Shekh-Yusef and Thom Wiggers for their review comments.
+Matthijs van Duin, Rifaat Shekh-Yusef, Joe Birr-Pixton and Thom Wiggers for their review comments.
