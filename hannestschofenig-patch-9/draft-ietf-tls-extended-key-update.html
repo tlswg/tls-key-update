@@ -1,0 +1,1937 @@
+<!DOCTYPE html>
+<html lang="en" class="Internet-Draft">
+<head>
+<meta charset="utf-8">
+<meta content="Common,Latin" name="scripts">
+<meta content="initial-scale=1.0" name="viewport">
+<title>Extended Key Update for Transport Layer Security (TLS) 1.3</title>
+<meta content="Hannes Tschofenig" name="author">
+<meta content="Michael Tüxen" name="author">
+<meta content="Tirumaleswar Reddy" name="author">
+<meta content="Steffen Fries" name="author">
+<meta content="Yaroslav Rosomakho" name="author">
+<meta content="
+       TLS 1.3 ensures forward secrecy by performing an ephemeral Diffie-Hellman key exchange
+during the initial handshake, protecting past communications even if a party's
+long-term keys are later compromised. While the built-in KeyUpdate mechanism allows
+traffic keys to be refreshed during a session, it does not introduce new forward-secret
+key material. This limitation can pose a security risk in long-lived sessions, such as
+those found in industrial IoT or telecommunications environments. 
+       To address this, this specification defines an extended key update mechanism that
+performs a fresh Diffie-Hellman exchange within an active session, thereby
+re-establishing forward secrecy beyond the initial handshake. By forcing attackers
+to exfiltrate new key material repeatedly, this approach mitigates the risks
+associated with static key compromise. Regular renewal of session keys helps
+contain the impact of such compromises. The extension is applicable to both TLS 1.3
+and DTLS 1.3. 
+    " name="description">
+<meta content="xml2rfc 3.29.0" name="generator">
+<meta content="Internet-Draft" name="keyword">
+<meta content="draft-ietf-tls-extended-key-update-latest" name="ietf.draft">
+<!-- Generator version information:
+  xml2rfc 3.29.0
+    Python 3.12.11
+    ConfigArgParse 1.7
+    google-i18n-address 3.1.1
+    intervaltree 3.1.0
+    Jinja2 3.1.6
+    lxml 5.3.1
+    platformdirs 4.3.8
+    pycountry 24.6.1
+    PyYAML 6.0.2
+    requests 2.32.4
+    setuptools 80.9.0
+    wcwidth 0.2.13
+-->
+<link href="draft-ietf-tls-extended-key-update.xml" rel="alternate" type="application/rfc+xml">
+<link href="#copyright" rel="license">
+<style type="text/css">@font-face {
+  font-family: 'Lora';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Italic'), local('Lora-Italic'), url('https://martinthomson.github.io/rfc-css/fonts/lora-italic-cyrillic-ext.woff2') format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C88, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Italic'), local('Lora-Italic'), url('https://martinthomson.github.io/rfc-css/fonts/lora-italic-cyrillic-ext.woff2') format('woff2');
+  unicode-range: U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Italic'), local('Lora-Italic'), url('https://martinthomson.github.io/rfc-css/fonts/lora-italic-vietnamese.woff2') format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+1EA0-1EF9, U+20AB;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Italic'), local('Lora-Italic'), url('https://martinthomson.github.io/rfc-css/fonts/lora-italic-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+@font-face {
+  font-family: 'Lora';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Italic'), local('Lora-Italic'), url('https://martinthomson.github.io/rfc-css/fonts/lora-italic-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Regular'), local('Lora-Regular'), url('https://martinthomson.github.io/rfc-css/fonts/lora-regular-cyrillic-ext.woff2') format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C88, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Regular'), local('Lora-Regular'), url('https://martinthomson.github.io/rfc-css/fonts/lora-regular-cyrillic.woff2') format('woff2');
+  unicode-range: U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Regular'), local('Lora-Regular'), url('https://martinthomson.github.io/rfc-css/fonts/lora-regular-vietnamese.woff2') format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+1EA0-1EF9, U+20AB;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Regular'), local('Lora-Regular'), url('https://martinthomson.github.io/rfc-css/fonts/lora-regular-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Regular'), local('Lora-Regular'), url('https://martinthomson.github.io/rfc-css/fonts/lora-regular-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: local('Lora Bold'), local('Lora-Bold'), url('https://martinthomson.github.io/rfc-css/fonts/lora-bold-cyrillic-ext.woff2') format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C88, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: local('Lora Bold'), local('Lora-Bold'), url('https://martinthomson.github.io/rfc-css/fonts/lora-bold-cyrillic.woff2') format('woff2');
+  unicode-range: U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: local('Lora Bold'), local('Lora-Bold'), url('https://martinthomson.github.io/rfc-css/fonts/lora-bold-vietnamese.woff2') format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+1EA0-1EF9, U+20AB;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: local('Lora Bold'), local('Lora-Bold'), url('https://martinthomson.github.io/rfc-css/fonts/lora-bold-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: local('Lora Bold'), local('Lora-Bold'), url('https://martinthomson.github.io/rfc-css/fonts/lora-bold-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: local('Lora SemiBold'), local('Lora-SemiBold'), url('https://martinthomson.github.io/rfc-css/fonts/lora-semibold-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Oxygen Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Oxygen Mono'), local('OxygenMono-Regular'), url('https://martinthomson.github.io/rfc-css/fonts/oxygenmono-regular-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Oxygen Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Oxygen Mono'), local('OxygenMono-Regular'), url('https://martinthomson.github.io/rfc-css/fonts/oxygenmono-regular-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Sofia Sans Semi Condensed';
+  font-style: italic;
+  font-weight: 1 1000;
+  src: url('https://martinthomson.github.io/rfc-css/fonts/sofiasanssemicondensed-italic-cyrillic-ext.woff2') format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+@font-face {
+  font-family: 'Sofia Sans Semi Condensed';
+  font-style: italic;
+  font-weight: 1 1000;
+  src: url('https://martinthomson.github.io/rfc-css/fonts/sofiasanssemicondensed-italic-cyrillic.woff2') format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: 'Sofia Sans Semi Condensed';
+  font-style: italic;
+  font-weight: 1 1000;
+  src: url('https://martinthomson.github.io/rfc-css/fonts/sofiasanssemicondensed-italic-greek.woff2') format('woff2');
+  unicode-range: U+0370-0377, U+037A-037F, U+0384-038A, U+038C, U+038E-03A1, U+03A3-03FF;
+}
+@font-face {
+  font-family: 'Sofia Sans Semi Condensed';
+  font-style: italic;
+  font-weight: 1 1000;
+  src: url('https://martinthomson.github.io/rfc-css/fonts/sofiasanssemicondensed-italic-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Sofia Sans Semi Condensed';
+  font-style: italic;
+  font-weight: 1 1000;
+  src: url('https://martinthomson.github.io/rfc-css/fonts/sofiasanssemicondensed-italic-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Sofia Sans Semi Condensed';
+  font-style: normal;
+  font-weight: 1 1000;
+  src: url('https://martinthomson.github.io/rfc-css/fonts/sofiasanssemicondensed-regular-cyrillic-ext.woff2') format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+@font-face {
+  font-family: 'Sofia Sans Semi Condensed';
+  font-style: normal;
+  font-weight: 1 1000;
+  src: url('https://martinthomson.github.io/rfc-css/fonts/sofiasanssemicondensed-regular-cyrillic.woff2') format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: 'Sofia Sans Semi Condensed';
+  font-style: normal;
+  font-weight: 1 1000;
+  src: url('https://martinthomson.github.io/rfc-css/fonts/sofiasanssemicondensed-regular-greek.woff2') format('woff2');
+  unicode-range: U+0370-0377, U+037A-037F, U+0384-038A, U+038C, U+038E-03A1, U+03A3-03FF;
+}
+@font-face {
+  font-family: 'Sofia Sans Semi Condensed';
+  font-style: normal;
+  font-weight: 1 1000;
+  src: url('https://martinthomson.github.io/rfc-css/fonts/sofiasanssemicondensed-regular-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Sofia Sans Semi Condensed';
+  font-style: normal;
+  font-weight: 1 1000;
+  src: url('https://martinthomson.github.io/rfc-css/fonts/sofiasanssemicondensed-regular-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+:root {
+  color-scheme: light dark;
+  --background-color: #fff;
+  --text-color: #222;
+  --title-color: #191919;
+  --link-color: #2a6496;
+  --highlight-color: #f9f9f9;
+  --line-color: #eee;
+  --pilcrow-weak: #ddd;
+  --pilcrow-strong: #bbb;
+  --small-font-size: 14.5px;
+  --font-mono: 'Oxygen Mono', monospace;
+  --font-title: "Sofia Sans Semi Condensed", sans-serif;
+  scrollbar-color: #bbb #eee;
+}
+body {
+  max-width: 600px;
+  margin: 75px auto;
+  padding: 0 5px;
+  color: var(--text-color);
+  background-color: var(--background-color);
+  font: 16px/22px "Lora", serif;
+  scroll-behavior: smooth;
+}
+
+.ears {
+  display: none;
+}
+
+/* headings */
+section {
+  clear: both;
+}
+.section-number {
+  padding-right: 0.5em;
+}
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-title);
+  font-weight: 680;
+  margin: 0.8em 0 0.3em;
+  font-size-adjust: 0.5;
+  color: var(--title-color);
+}
+h1#title {
+  font-size: 32px;
+  line-height: 40px;
+  clear: both;
+}
+h1#title, h1#rfcnum {
+  margin: 1.5em 0 0.2em;
+}
+h1#rfcnum + h1#title {
+  margin: 0.2em 0;
+}
+
+h1, h2, h3 {
+  font-size: 22px;
+  line-height: 27px;
+}
+h4, h5, h6 {
+  font-size: 20px;
+  line-height: 24px;
+}
+
+/* general structure */
+.author {
+  padding-bottom: 0.3em;
+  vertical-align: top;
+}
+#abstract+p {
+  font-size: 18px;
+  line-height: 24px;
+}
+#abstract+p code, #abstract+p samp, #abstract+p tt {
+  font-size: 16px;
+  line-height: 0;
+}
+
+p {
+  padding: 0;
+  margin: 0.5em 0;
+  text-align: left;
+}
+div {
+  margin: 0;
+}
+.alignRight.art-text {
+  background-color: var(--highlight-color);
+  border: 1px solid var(--line-color);
+  border-radius: 3px;
+  padding: 0.5em 1em 0;
+  margin-bottom: 0.5em;
+}
+.alignRight.art-text pre {
+  padding: 0;
+  width: auto;
+}
+.alignRight {
+  margin: 1em 0;
+}
+.alignRight > *:first-child {
+  border: none;
+  margin: 0;
+  float: right;
+  clear: both;
+}
+.alignRight > *:nth-child(2) {
+  clear: both;
+  display: block;
+  border: none;
+}
+svg {
+  display: block;
+}
+/* font-family isn't space-separated, but =~ will have to do */
+svg[font-family~="monospace" i], svg [font-family~="monospace" i] {
+  font-family: var(--font-mono);
+}
+.alignCenter.art-text {
+  background-color: var(--highlight-color);
+  border: 1px solid var(--line-color);
+  border-radius: 3px;
+  padding: 0.5em 1em 0;
+  margin-bottom: 0.5em;
+}
+.alignCenter.art-text pre {
+  padding: 0;
+  width: auto;
+}
+.alignCenter {
+  margin: 1em 0;
+}
+.alignCenter > *:first-child {
+  border: none;
+  /* this isn't optimal, but it's an existence proof.  PrinceXML doesn't
+     support flexbox yet.
+  */
+  display: table;
+  margin: 0 auto;
+}
+
+/* lists */
+ol, ul {
+  padding: 0;
+  margin: 0 0 0.5em 2em;
+  & :is(ol, ul) {
+    margin-left: 1em;
+  }
+}
+li {
+  margin: 0 0 0.25em 0;
+}
+ul.empty, .ulEmpty {
+  list-style-type: none;
+  & li {
+    margin-top: 0.5em;
+  }
+}
+:is(ul, ol).compact, .ulCompact, .olCompact {
+  margin: 0 0 0 2em;
+  & li {
+    margin: 0;
+    & :first-child { margin-top: 0; }
+    & :last-child { margin-bottom: 0; }
+  }
+}
+
+/* definition lists */
+dl {
+  clear: left;
+  --indent: 3ch;
+  /* --indent: attr(indent ch); not supported in any browser, but we can dream */
+  &.olPercent {
+    --indent: 5ch;
+    & > dt {
+      min-width: calc(var(--indent) - 2ch);
+    }
+  }
+  &.olPercent > dt {
+    float: none;
+  }
+
+  dl > dd > & {
+    margin-top: 0.5em;
+    margin-bottom: 0;
+  }
+}
+dl:not(.dlNewline) > dt {
+  float: left;
+  margin-right: 2ch;
+  min-width: 8ch;
+}
+dl > dd {
+  margin-bottom: .8em;
+  margin-left: var(--indent) !important; /* stupid element overrides */
+  min-height: 2ex;
+}
+:is(dl.compact, .dlCompact) > dd {
+  margin-bottom: 0;
+  & > :is(:first-child, .break:first-child + *) {
+    margin-top: 0;
+  }
+  & > :is(:last-child) {
+    margin-bottom: 0;
+  }
+}
+:is(dd, span).break {
+  display: none;
+}
+
+/* links */
+a, a[href].selfRef:hover {
+  text-decoration: none;
+}
+a[href] {
+  color: var(--link-color);
+}
+a[href].selfRef, .iref + a[href].internal {
+  color: var(--text-color);
+}
+a[href]:hover {
+  text-decoration: underline;
+}
+a[href].selfRef:hover {
+  background-color: var(--highlight-color);
+}
+a.xref:is(.cite, .auto), :is(#status-of-memo, #copyright) a {
+  white-space: nowrap;
+}
+
+/* Figures */
+tt, code, pre {
+  background-color: var(--highlight-color);
+  font: 14px/22px var(--font-mono);
+}
+tt, code {
+  /* changing the font for inline elements leads to different ascender
+     and descender heights; as we want to retain baseline alignment,
+     remove leading to avoid altering the final height of lines
+     note: this fails if these blocks take an entire line,
+     a different solution would be great */
+  line-height: 0;
+}
+:is(h1, h2, h3, h4, h5, h6) :is(tt, code) {
+  font-size: 84%;
+}
+pre {
+  border: 1px solid var(--line-color);
+  font-size: 13.5px;
+  line-height: 16px;
+  letter-spacing: -0.2px;
+  margin: 5px;
+  padding: 5px;
+}
+img {
+  max-width: 100%;
+}
+figure {
+  margin: 0.5em 0;
+  padding: 0;
+}
+figure blockquote {
+  margin: 0.8em 0.4em 0.4em;
+}
+figcaption, caption {
+  font-style: italic;
+  margin: 0.5em 1.5em;
+  text-align: left;
+  caption-side: bottom;
+}
+@media screen {
+  /* Auto-collapse boilerplate. */
+  :is(#status-of-memo, #copyright) p {
+    margin: -2px 0;
+    max-height: 0;
+    transition: max-height 2s ease, margin 0.5s ease 0.5s;
+    overflow: hidden;
+  }
+  :is(#status-of-memo, #copyright):hover p,
+  :is(#status-of-memo, #copyright) h2:target ~ p {
+    margin: 0.5em 0;
+    max-height: 500px;
+    overflow: auto;
+  }
+  pre, svg {
+    display: inline-block;
+    /* In the horizontal direction, sometimes people make over-sized figures.
+       Scrollbars for those is therefore necessary: auto adds them as necessary..
+       In the vertical direction, the line-height can combine with the font
+       asender/descender height to produce scrollbars: hidden avoids that. */
+    overflow: auto hidden;
+  }
+  pre {
+    max-width: 100%;
+    width: calc(100% - 22px - 1em);
+  }
+  svg {
+    max-width: calc(100% - 22px - 1em);
+  }
+  figure pre {
+    display: block;
+    width: calc(100% - 25px);
+  }
+  :is(pre, svg) + .pilcrow {
+    display: inline-block;
+    vertical-align: text-bottom;
+    padding-bottom: 8px;
+  }
+}
+
+/* aside, blockquote */
+aside, blockquote {
+  margin-left: 0;
+  padding: 0 2em;
+  font-style: italic;
+}
+blockquote {
+  margin: 1em 0;
+}
+cite {
+  display: block;
+  text-align: right;
+  font-style: italic;
+}
+
+/* tables */
+table {
+  width: auto;
+  max-width: 100%;
+  margin: 0 0 1em;
+  border-collapse: collapse;
+}
+table.right {
+  margin-left: auto;
+}
+table.center {
+  margin-left: auto;
+  margin-right: auto;
+}
+table.left {
+  margin-right: auto;
+}
+table .text-left {
+  text-align: left;
+}
+table .text-center {
+  text-align: center;
+}
+table .text-right {
+  text-align: right;
+}
+
+thead, tbody {
+  border: 1px solid var(--line-color);
+}
+th, td {
+  text-align: left;
+  vertical-align: top;
+  padding: 5px 10px;
+}
+th {
+  background-color: var(--line-color);
+}
+:is(tr:nth-child(2n), thead+tbody > tr:nth-child(2n+1)) > td {
+  background-color: var(--background-color);
+}
+:is(tr:nth-child(2n+1), thead+tbody > tr:nth-child(2n)) > td {
+  background-color: var(--highlight-color);
+}
+table caption {
+  margin: 0;
+  padding: 3px 0 3px 1em;
+}
+table p {
+  margin: 0;
+}
+
+/* pilcrow */
+a.pilcrow {
+  margin-left: 3px;
+  opacity: 0.2;
+  user-select: none;
+  &[href] {
+    color: var(--pilcrow-weak);
+    &:hover { text-decoration: none; }
+  }
+}
+@media not print {
+  :hover > a.pilcrow {
+    opacity: 1;
+  }
+  a.pilcrow[href]:hover {
+    color: var(--pilcrow-strong);
+    background-color: transparent;
+  }
+}
+@media print {
+  a.pilcrow {
+    display: none;
+  }
+}
+
+/* misc */
+hr {
+  border: 0;
+  border-top: 1px solid var(--line-color);
+}
+.bcp14 {
+  font-variant: small-caps;
+  font-weight: 600;
+  font-size: var(--small-font-size);
+}
+.role {
+  font-variant: all-small-caps;
+}
+sub, sup {
+  line-height: 1;
+  font-size: 80%;
+}
+
+/* info block */
+#identifiers {
+  margin: 0;
+  font-size: var(--small-font-size);
+  line-height: 18px;
+  --identifier-width: 15ch;
+  & dt {
+    width: var(--identifier-width);
+    min-width: var(--identifier-width);
+    clear: left;
+    float: left;
+    text-align: right;
+    margin-right: 1ch;
+  }
+  & dd {
+    margin: 0;
+    margin-left: calc(1em + var(--identifier-width)) !important;
+    min-width: 5em;
+  }
+  & .authors {
+    & .author {
+      display: inline-block;
+      margin-right: 1.5em;
+    }
+    & .org {
+      font-style: italic;
+    }
+  }
+}
+
+/* The prepared/rendered info at the very bottom of the page */
+.docInfo {
+  color: #999;
+  font-size: 0.9em;
+  font-style: italic;
+  margin-top: 2em;
+}
+.docInfo .prepared {
+  float: right;
+}
+
+/* table of contents */
+#toc {
+  padding: 0.75em 0 2em 0;
+  margin-bottom: 1em;
+
+  & nav {
+    & ul {
+      margin: 0 0.5em 0 0;
+      padding: 0;
+      list-style: none;
+    }
+    & li {
+      line-height: 1.3em;
+      margin: 2px 0;
+      padding-left: 1.2em;
+      text-indent: -1.2em;
+    }
+  }
+  & a.xref {
+    white-space: normal;
+  }
+}
+
+.references {
+  & > dt {
+    text-align: right;
+    font-weight: bold;
+    min-width: 10ch;
+    margin-right: 1.5ch;
+    &:target::before {
+      content: "⇒";
+      margin: 0 10px 0 -25px;
+    }
+  }
+  & > dd {
+    margin-left: 12ch !important;
+    overflow: visible;
+    & .refInstance {
+      margin-bottom: 0.8em;
+    }
+    & .ascii {
+      margin-bottom: 0.25em;
+    }
+  }
+}
+
+#rfc\.index\.index + ul {
+  margin-left: 0;
+}
+
+/* authors */
+address.vcard {
+  font-style: normal;
+  max-width: 20em;
+  margin: 1em auto 1em 0;
+
+  & .nameRole {
+    font-weight: 700;
+    margin-left: 0;
+  }
+  & .label {
+    margin: 0.5em 0;
+  }
+  & .type {
+    display: none;
+  }
+  & .alternative-contact {
+    margin: 0.5em 0 0.25em 0;
+  }
+  & .non-ascii {
+    margin: 0 0 0 2em;
+  }
+  & div.left {
+    text-align: left;
+  }
+  & div.right {
+    text-align: right;
+  }
+}
+
+hr.addr {
+  border-top: 1px dashed;
+  margin: 0;
+  color: #ddd;
+  max-width: calc(100% - 16px);
+}
+@media (min-width: 500px) {
+  #authors-addresses > section {
+    column-count: 2;
+    column-gap: 20px;
+  }
+  #authors-addresses > section > h2 {
+    column-span: all;
+  }
+  /* hack for break-inside: avoid-column */
+  #authors-addresses address {
+    display: inline-block;
+    break-inside: avoid-column;
+  }
+}
+
+/* Comments */
+.rfcEditorRemove p:first-of-type {
+  font-style: italic;
+}
+.cref {
+  background-color: rgba(249, 232, 105, 0.3);
+  padding: 2px 4px;
+}
+.crefSource {
+  font-style: italic;
+}
+
+@media screen {
+  #toc nav {
+    font-family: var(--font-title);
+    font-weight: 360;
+    & > ul { margin-bottom: 2em; }
+    & ul {
+      margin: 0 0 0 4px;
+      & :is(p, li) {
+        margin: 2px 0;
+      }
+    }
+  }
+  #toc a.toplink {
+    float: right;
+  }
+}
+@media not screen {
+  #toc a.toplink {
+    display: none;
+  }
+}
+
+
+/* TOC layout for smaller screens */
+@media screen and (max-width: 929px) {
+  #toc {
+    position: fixed;
+    z-index: 2;
+    top: 0;
+    right: 0;
+    padding: 1px 0 0 0;
+    margin: 0;
+    border-bottom: 1px solid #ccc;
+    opacity: 0.6;
+  }
+  #toc h2 {
+    margin: 0;
+    padding: 2px 0 2px 6px;
+    padding-right: 1em;
+    font-size: 18px;
+    line-height: 24px;
+    min-width: 190px;
+    text-align: right;
+    background-color: #444;
+    color: white;
+    cursor: pointer;
+    &::before { /* css hamburger */
+      float: right;
+      position: relative;
+      width: 1em;
+      height: 1px;
+      left: -164px;
+      margin: 8px 0 0 0;
+      background: white none repeat scroll 0 0;
+      box-shadow: 0 4px 0 0 white, 0 8px 0 0 white;
+      content: "";
+    }
+  }
+  #toc nav {
+    display: none;
+    background-color: var(--background-color);
+    padding: 0.5em 1em 1em;
+    overflow: auto;
+    overscroll-behavior: contain;
+    height: calc(100vh - 48px);
+    border-left: 1px solid #ddd;
+  }
+  #toc.active {
+    opacity: 1;
+    & nav { display: block; }
+  }
+  /* Make the collapsed ToC header render white on gray also when it's a link */
+  #toc h2 a,
+  #toc h2 a:is(:link, :focus, :hover),
+  #toc a.toplink,
+  #toc a.toplink:hover {
+    color: white;
+    background-color: #444;
+    text-decoration: none;
+  }
+  #toc a.toplink {
+    margin: 2px 0.5em 0;
+  }
+}
+
+/* TOC layout for wide screens */
+@media screen and (min-width: 930px) {
+  body {
+    padding-right: 360px;
+    padding-right: calc(min(180px + 20%, 500px));
+  }
+  #toc {
+    position: fixed;
+    bottom: 0;
+    right: 0;
+    right: calc(50vw - 480px);
+    width: 312px;
+    margin: 0;
+    padding: 0;
+    z-index: 1;
+  }
+  #toc h2 {
+    margin: 0;
+    padding: 0.25em 1em 1em 0;
+  }
+  #toc nav {
+    display: block;
+    height: calc(90vh - 84px);
+    bottom: 0;
+    padding: 0.5em 0 2em;
+    overflow: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+  }
+  img { /* future proofing */
+    max-width: 100%;
+    height: auto;
+  }
+  #toc a.toplink {
+    margin: 8px 0.5em 0;
+  }
+}
+
+/* pagination */
+@media print {
+  body {
+    width: 100%;
+  }
+  p {
+    orphans: 3;
+    widows: 3;
+  }
+  #n-copyright-notice {
+    border-bottom: none;
+  }
+  #toc, #n-introduction {
+    page-break-before: always;
+  }
+  #toc {
+    border-top: none;
+    padding-top: 0;
+  }
+  figure, pre, .vcard {
+    page-break-inside: avoid;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    page-break-after: avoid;
+  }
+  :is(h2, h3, h4, h5, h6)+*, dd {
+    page-break-before: avoid;
+  }
+  pre {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    font-size: 10pt;
+  }
+  table {
+    border: 1px solid #ddd;
+  }
+  td {
+    border-top: 1px solid #ddd;
+  }
+}
+
+@page :first {
+  padding-top: 0;
+  @top-left {
+    content: normal;
+    border: none;
+  }
+  @top-center {
+    content: normal;
+    border: none;
+  }
+  @top-right {
+    content: normal;
+    border: none;
+  }
+}
+
+@page {
+  size: A4;
+  margin-bottom: 45mm;
+  padding-top: 20px;
+}
+
+/* Dark mode. */
+@media (prefers-color-scheme: dark) {
+:root {
+  --background-color: #121212;
+  --text-color: #f0f0f0;
+  --title-color: #fff;
+  --link-color: #4da4f0;
+  --highlight-color: #282828;
+  --line-color: #444;
+  --pilcrow-weak: #444;
+  --pilcrow-strong: #666;
+  scrollbar-color: #777 #333;
+}
+}
+
+/* SVG Trick: a prefix match works because only black and white are allowed */
+svg :is([stroke="black"], [stroke^="#000"]) {
+  stroke: var(--text-color);
+}
+svg :is([stroke="white"], [stroke^="#fff"]) {
+  stroke: var(--background-color);
+}
+svg :is([fill="black"], [fill^="#000"], :not([fill])) {
+  fill: var(--text-color);
+}
+svg :is([fill="white"], [fill^="#fff"]) {
+  fill: var(--background-color);
+}
+</style>
+
+</head>
+<body class="xml2rfc">
+<table class="ears">
+<thead><tr>
+<td class="left">Internet-Draft</td>
+<td class="center">Extended Key Update for TLS</td>
+<td class="right">July 2025</td>
+</tr></thead>
+<tfoot><tr>
+<td class="left">Tschofenig, et al.</td>
+<td class="center">Expires 7 January 2026</td>
+<td class="right">[Page]</td>
+</tr></tfoot>
+</table>
+<div id="external-metadata" class="document-information"></div>
+<div id="internal-metadata" class="document-information">
+<dl id="identifiers">
+<dt class="label-workgroup">Workgroup:</dt>
+<dd class="workgroup">Transport Layer Security</dd>
+<dt class="label-internet-draft">Internet-Draft:</dt>
+<dd class="internet-draft">draft-ietf-tls-extended-key-update-latest</dd>
+<dt class="label-published">Published:</dt>
+<dd class="published">
+<time datetime="2025-07-06" class="published">6 July 2025</time>
+    </dd>
+<dt class="label-intended-status">Intended Status:</dt>
+<dd class="intended-status">Standards Track</dd>
+<dt class="label-expires">Expires:</dt>
+<dd class="expires"><time datetime="2026-01-07">7 January 2026</time></dd>
+<dt class="label-authors">Authors:</dt>
+<dd class="authors">
+<div class="author">
+      <div class="author-name">H. Tschofenig</div>
+<div class="org">Siemens</div>
+</div>
+<div class="author">
+      <div class="author-name">M. Tüxen</div>
+<div class="org">Münster Univ. of Applied Sciences</div>
+</div>
+<div class="author">
+      <div class="author-name">T. Reddy</div>
+<div class="org">Nokia</div>
+</div>
+<div class="author">
+      <div class="author-name">S. Fries</div>
+<div class="org">Siemens</div>
+</div>
+<div class="author">
+      <div class="author-name">Y. Rosomakho</div>
+<div class="org">Zscaler</div>
+</div>
+</dd>
+</dl>
+</div>
+<h1 id="title">Extended Key Update for Transport Layer Security (TLS) 1.3</h1>
+<section id="section-abstract">
+      <h2 id="abstract"><a href="#abstract" class="selfRef">Abstract</a></h2>
+<p id="section-abstract-1">TLS 1.3 ensures forward secrecy by performing an ephemeral Diffie-Hellman key exchange
+during the initial handshake, protecting past communications even if a party's
+long-term keys are later compromised. While the built-in KeyUpdate mechanism allows
+traffic keys to be refreshed during a session, it does not introduce new forward-secret
+key material. This limitation can pose a security risk in long-lived sessions, such as
+those found in industrial IoT or telecommunications environments.<a href="#section-abstract-1" class="pilcrow">¶</a></p>
+<p id="section-abstract-2">To address this, this specification defines an extended key update mechanism that
+performs a fresh Diffie-Hellman exchange within an active session, thereby
+re-establishing forward secrecy beyond the initial handshake. By forcing attackers
+to exfiltrate new key material repeatedly, this approach mitigates the risks
+associated with static key compromise. Regular renewal of session keys helps
+contain the impact of such compromises. The extension is applicable to both TLS 1.3
+and DTLS 1.3.<a href="#section-abstract-2" class="pilcrow">¶</a></p>
+</section>
+<section class="note rfcEditorRemove" id="section-note.1">
+      <h2 id="name-discussion-venues">
+<a href="#name-discussion-venues" class="section-name selfRef">Discussion Venues</a>
+      </h2>
+<p id="section-note.1-1">This note is to be removed before publishing as an RFC.<a href="#section-note.1-1" class="pilcrow">¶</a></p>
+<p id="section-note.1-2">Discussion of this document takes place on the
+    Transport Layer Security Working Group mailing list (tls@ietf.org),
+    which is archived at <span><a href="https://mailarchive.ietf.org/arch/browse/tls/">https://mailarchive.ietf.org/arch/browse/tls/</a></span>.<a href="#section-note.1-2" class="pilcrow">¶</a></p>
+<p id="section-note.1-3">Source for this draft and an issue tracker can be found at
+    <span><a href="https://github.com/hannestschofenig/tls-key-update">https://github.com/hannestschofenig/tls-key-update</a></span>.<a href="#section-note.1-3" class="pilcrow">¶</a></p>
+</section>
+<div id="status-of-memo">
+<section id="section-boilerplate.1">
+        <h2 id="name-status-of-this-memo">
+<a href="#name-status-of-this-memo" class="section-name selfRef">Status of This Memo</a>
+        </h2>
+<p id="section-boilerplate.1-1">
+        This Internet-Draft is submitted in full conformance with the
+        provisions of BCP 78 and BCP 79.<a href="#section-boilerplate.1-1" class="pilcrow">¶</a></p>
+<p id="section-boilerplate.1-2">
+        Internet-Drafts are working documents of the Internet Engineering Task
+        Force (IETF). Note that other groups may also distribute working
+        documents as Internet-Drafts. The list of current Internet-Drafts is
+        at <span><a href="https://datatracker.ietf.org/drafts/current/">https://datatracker.ietf.org/drafts/current/</a></span>.<a href="#section-boilerplate.1-2" class="pilcrow">¶</a></p>
+<p id="section-boilerplate.1-3">
+        Internet-Drafts are draft documents valid for a maximum of six months
+        and may be updated, replaced, or obsoleted by other documents at any
+        time. It is inappropriate to use Internet-Drafts as reference
+        material or to cite them other than as "work in progress."<a href="#section-boilerplate.1-3" class="pilcrow">¶</a></p>
+<p id="section-boilerplate.1-4">
+        This Internet-Draft will expire on 7 January 2026.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="copyright">
+<section id="section-boilerplate.2">
+        <h2 id="name-copyright-notice">
+<a href="#name-copyright-notice" class="section-name selfRef">Copyright Notice</a>
+        </h2>
+<p id="section-boilerplate.2-1">
+            Copyright (c) 2025 IETF Trust and the persons identified as the
+            document authors. All rights reserved.<a href="#section-boilerplate.2-1" class="pilcrow">¶</a></p>
+<p id="section-boilerplate.2-2">
+            This document is subject to BCP 78 and the IETF Trust's Legal
+            Provisions Relating to IETF Documents
+            (<span><a href="https://trustee.ietf.org/license-info">https://trustee.ietf.org/license-info</a></span>) in effect on the date of
+            publication of this document. Please review these documents
+            carefully, as they describe your rights and restrictions with
+            respect to this document. Code Components extracted from this
+            document must include Revised BSD License text as described in
+            Section 4.e of the Trust Legal Provisions and are provided without
+            warranty as described in the Revised BSD License.<a href="#section-boilerplate.2-2" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="toc">
+<section id="section-toc.1">
+        <a href="#" onclick="scroll(0,0)" class="toplink">▲</a><h2 id="name-table-of-contents">
+<a href="#name-table-of-contents" class="section-name selfRef">Table of Contents</a>
+        </h2>
+<nav class="toc"><ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.1">
+            <p id="section-toc.1-1.1.1" class="keepWithNext"><a href="#section-1" class="auto internal xref">1</a>.  <a href="#name-introduction" class="internal xref">Introduction</a></p>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.2">
+            <p id="section-toc.1-1.2.1" class="keepWithNext"><a href="#section-2" class="auto internal xref">2</a>.  <a href="#name-terminology-and-requirement" class="internal xref">Terminology and Requirements Language</a></p>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.3">
+            <p id="section-toc.1-1.3.1" class="keepWithNext"><a href="#section-3" class="auto internal xref">3</a>.  <a href="#name-negotiating-the-extended-ke" class="internal xref">Negotiating the Extended Key Update</a></p>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.4">
+            <p id="section-toc.1-1.4.1"><a href="#section-4" class="auto internal xref">4</a>.  <a href="#name-extended-key-update-message" class="internal xref">Extended Key Update Message</a></p>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.5">
+            <p id="section-toc.1-1.5.1"><a href="#section-5" class="auto internal xref">5</a>.  <a href="#name-updating-traffic-secrets" class="internal xref">Updating Traffic Secrets</a></p>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.6">
+            <p id="section-toc.1-1.6.1"><a href="#section-6" class="auto internal xref">6</a>.  <a href="#name-example" class="internal xref">Example</a></p>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.7">
+            <p id="section-toc.1-1.7.1"><a href="#section-7" class="auto internal xref">7</a>.  <a href="#name-dtls-13-considerations" class="internal xref">DTLS 1.3 Considerations</a></p>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.8">
+            <p id="section-toc.1-1.8.1"><a href="#section-8" class="auto internal xref">8</a>.  <a href="#name-post-quantum-cryptography-c" class="internal xref">Post-Quantum Cryptography Considerations</a></p>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.9">
+            <p id="section-toc.1-1.9.1"><a href="#section-9" class="auto internal xref">9</a>.  <a href="#name-sslkeylogfile-update" class="internal xref">SSLKEYLOGFILE update</a></p>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.10">
+            <p id="section-toc.1-1.10.1"><a href="#section-10" class="auto internal xref">10</a>. <a href="#name-exporter" class="internal xref">Exporter</a></p>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.11">
+            <p id="section-toc.1-1.11.1"><a href="#section-11" class="auto internal xref">11</a>. <a href="#name-security-considerations" class="internal xref">Security Considerations</a></p>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.12">
+            <p id="section-toc.1-1.12.1"><a href="#section-12" class="auto internal xref">12</a>. <a href="#name-iana-considerations" class="internal xref">IANA Considerations</a></p>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.13">
+            <p id="section-toc.1-1.13.1"><a href="#section-13" class="auto internal xref">13</a>. <a href="#name-references" class="internal xref">References</a></p>
+<ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.13.2.1">
+                <p id="section-toc.1-1.13.2.1.1"><a href="#section-13.1" class="auto internal xref">13.1</a>.  <a href="#name-normative-references" class="internal xref">Normative References</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.13.2.2">
+                <p id="section-toc.1-1.13.2.2.1"><a href="#section-13.2" class="auto internal xref">13.2</a>.  <a href="#name-informative-references" class="internal xref">Informative References</a></p>
+</li>
+            </ul>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.14">
+            <p id="section-toc.1-1.14.1"><a href="#appendix-A" class="auto internal xref">Appendix A</a>.  <a href="#name-acknowledgments" class="internal xref">Acknowledgments</a></p>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.15">
+            <p id="section-toc.1-1.15.1"><a href="#appendix-B" class="auto internal xref"></a><a href="#name-authors-addresses" class="internal xref">Authors' Addresses</a></p>
+</li>
+        </ul>
+</nav>
+</section>
+</div>
+<div id="introduction">
+<section id="section-1">
+      <h2 id="name-introduction">
+<a href="#section-1" class="section-number selfRef">1. </a><a href="#name-introduction" class="section-name selfRef">Introduction</a>
+      </h2>
+<p id="section-1-1">The Transport Layer Security (TLS) 1.3 protocol provides forward secrecy by using
+an ephemeral Diffie-Hellman (DHE) key exchange during the initial handshake. This
+ensures that encrypted communication remains confidential even if an attacker
+later obtains a party's long-term private key, protecting against passive adversaries
+who record encrypted traffic for later decryption.<a href="#section-1-1" class="pilcrow">¶</a></p>
+<p id="section-1-2">TLS 1.3 also includes a KeyUpdate mechanism that allows traffic keys to be refreshed
+during an established session. However, this mechanism does not introduce new
+forward-secret key material, as it applies only a key derivation function to the
+previous application traffic secret as input. While this design is generally sufficient
+for short-lived connections, it may present security limitations in scenarios where
+sessions persist for extended periods, such as in industrial IoT or telecommunications
+systems, where continuous availability is critical and session renegotiation or resumption
+is impractical.<a href="#section-1-2" class="pilcrow">¶</a></p>
+<p id="section-1-3">Earlier versions of TLS supported session renegotiation, which allowed peers to negotiate
+fresh keying material, including performing new Diffie-Hellman exchanges during the
+session lifetime. Due to protocol complexity and known vulnerabilities, renegotiation
+was first restricted by <span>[<a href="#RFC5746" class="cite xref">RFC5746</a>]</span> and ultimately removed in TLS 1.3. While the
+KeyUpdate message was introduced to offer limited rekeying functionality, it does
+not fulfill the same cryptographic role as renegotiation and cannot refresh
+long-term secrets or derive new secrets from fresh DHE input.<a href="#section-1-3" class="pilcrow">¶</a></p>
+<p id="section-1-4">Security guidance from national agencies, such as ANSSI (France), recommends the
+periodic renewal of cryptographic keys during long-lived sessions to limit the
+impact of key compromise. This approach encourage designs designs that force an
+attacker to perform dynamic key exfiltration, as defined in <span>[<a href="#RFC7624" class="cite xref">RFC7624</a>]</span>. Dynamic
+key exfiltration refers to attack scenarios where an adversary must repeatedly
+extract fresh keying material to maintain access to protected data, increasing
+operational cost and risk for the attacker. In contrast, static key exfiltration,
+where a long-term secret is extracted once and reused, poses a greater long-term
+threat, especially when session keys are not refreshed with forward-secret input.<a href="#section-1-4" class="pilcrow">¶</a></p>
+<p id="section-1-5">This specification defines a TLS extension that introduces an extended key update
+mechanism. Unlike the standard KeyUpdate, this mechanism allows peers to perform a
+fresh Diffie-Hellman exchange within an active session using one of the groups
+negotiated during the initial handshake. By periodically rerunning (EC)DHE, this
+extension enables the derivation of new traffic secrets that are independent of
+prior key material. As noted in Appendix F of <span>[<a href="#I-D.ietf-tls-rfc8446bis" class="cite xref">I-D.ietf-tls-rfc8446bis</a>]</span>, this
+approach mitigates the risk of static key exfiltration and shifts the attacker
+burden toward dynamic key exfiltration.<a href="#section-1-5" class="pilcrow">¶</a></p>
+<p id="section-1-6">The proposed extension is applicable to both TLS 1.3 and DTLS 1.3. For clarity,
+the term "TLS" is used throughout this document to refer to both protocols unless
+otherwise specified.<a href="#section-1-6" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="terminology-and-requirements-language">
+<section id="section-2">
+      <h2 id="name-terminology-and-requirement">
+<a href="#section-2" class="section-number selfRef">2. </a><a href="#name-terminology-and-requirement" class="section-name selfRef">Terminology and Requirements Language</a>
+      </h2>
+<p id="section-2-1">The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT",
+"SHOULD", "SHOULD NOT", "RECOMMENDED", "MAY", and "OPTIONAL" in this
+document are to be interpreted as described in RFC 2119 <span>[<a href="#RFC2119" class="cite xref">RFC2119</a>]</span>.<a href="#section-2-1" class="pilcrow">¶</a></p>
+<p id="section-2-2">To distinguish the key update procedure defined in <span>[<a href="#I-D.ietf-tls-rfc8446bis" class="cite xref">I-D.ietf-tls-rfc8446bis</a>]</span>
+from the key update procedure specified in this document, we use the terms
+"key update" and "extended key update", respectively.<a href="#section-2-2" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="negotiating-the-extended-key-update">
+<section id="section-3">
+      <h2 id="name-negotiating-the-extended-ke">
+<a href="#section-3" class="section-number selfRef">3. </a><a href="#name-negotiating-the-extended-ke" class="section-name selfRef">Negotiating the Extended Key Update</a>
+      </h2>
+<p id="section-3-1">Client and servers use the TLS flags extension
+<span>[<a href="#I-D.ietf-tls-tlsflags" class="cite xref">I-D.ietf-tls-tlsflags</a>]</span> to indicate support for the functionality
+defined in this document.  We call this the "extended_key_update"
+extension and the corresponding flag is called "Extended_Key_Update"
+flag.<a href="#section-3-1" class="pilcrow">¶</a></p>
+<p id="section-3-2">The "Extended_Key_Update" flag proposed by the client in the
+ClientHello (CH) MUST be acknowledged in the EncryptedExtensions
+(EE), if the server also supports the functionality defined in this
+document and is configured to use it.<a href="#section-3-2" class="pilcrow">¶</a></p>
+<p id="section-3-3">If the "Extended_Key_Update" flag is not set, servers ignore any of the
+functionality specified in this document and applications that
+require perfect forward security will have to initiate a full
+handshake.<a href="#section-3-3" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="ext-key-update">
+<section id="section-4">
+      <h2 id="name-extended-key-update-message">
+<a href="#section-4" class="section-number selfRef">4. </a><a href="#name-extended-key-update-message" class="section-name selfRef">Extended Key Update Message</a>
+      </h2>
+<p id="section-4-1">The ExtendedKeyUpdate handshake message is used to indicate an update
+of cryptographic keys. This key update process can be sent by either
+peer after it has sent a Finished message.  Implementations that
+receive a ExtendedKeyUpdate message prior to receiving a Finished
+message MUST terminate the connection with an "unexpected_message"
+alert.<a href="#section-4-1" class="pilcrow">¶</a></p>
+<p id="section-4-2">The KeyShareEntry in the ExtendedKeyUpdate message MUST be the same
+group mutually supported by the client and server during the initial
+handshake. The peers MUST NOT send a KeyShareEntry in the ExtendedKeyUpdate
+message that is not mutually supported by the client and server during
+the initial handshake. An implementation that receives any other value
+MUST terminate the connection with an "illegal_parameter" alert.<a href="#section-4-2" class="pilcrow">¶</a></p>
+<p id="section-4-3"><a href="#fig-key-update" class="auto internal xref">Figure 1</a> shows the interaction graphically.
+First, support for the functionality in this specification
+is negotiated in the ClientHello and the EncryptedExtensions
+messages. Then, the ExtendedKeyUpdate exchange is sent to
+update the application traffic secrets.<a href="#section-4-3" class="pilcrow">¶</a></p>
+<p id="section-4-4">The extended key update exchange is performed between the initiator and the
+responder whereby the initiator may be the TLS client or the TLS server.<a href="#section-4-4" class="pilcrow">¶</a></p>
+<span id="name-extended-key-update-message-"></span><div id="fig-key-update">
+<figure id="figure-1">
+        <div class="alignLeft art-text artwork" id="section-4-5.1">
+<pre>
+       Client                                           Server
+
+Key  ^ ClientHello
+Exch | + key_share
+     | + signature_algorithms
+     v + Extended_Key_Update       --------&gt;
+                                                  ServerHello  ^ Key
+                                                  + key_share  | Exch
+                                                               v
+                                        {EncryptedExtensions   ^ Server
+                                       + Extended_Key_Update}  | Params
+                                         {CertificateRequest}  v
+                                                {Certificate}  ^
+                                          {CertificateVerify}  | Auth
+                                                   {Finished}  v
+                               &lt;--------
+     ^ {Certificate}
+Auth | {CertificateVerify}
+     v {Finished}              --------&gt;
+       [Application Data]      &lt;-------&gt;  [Application Data]
+                                  ...
+[ExtendedKeyUpdateRequest]     --------&gt;
+                               &lt;--------  [ExtendedKeyUpdateResponse]
+            [NewKeyUpdate]     --------&gt;
+                               &lt;--------  [NewKeyUpdate]
+                                  ...
+       [Application Data]      &lt;-------&gt;  [Application Data]
+</pre>
+</div>
+<figcaption><a href="#figure-1" class="selfRef">Figure 1</a>:
+<a href="#name-extended-key-update-message-" class="selfRef">Extended Key Update Message Exchange.</a>
+        </figcaption></figure>
+</div>
+<p id="section-4-6">The structure of the ExtendedKeyUpdate message is shown below.<a href="#section-4-6" class="pilcrow">¶</a></p>
+<div class="alignLeft art-text artwork" id="section-4-7">
+<pre>
+struct {
+  KeyShareEntry key_share;
+} ExtendedKeyUpdateRequest;
+
+enum {
+  accepted(0),
+  retry(1),
+  rejected(2),
+  clashed(3),
+  (255)
+} ExtendedKeyUpdateResponseStatus;
+
+struct {
+  ExtendedKeyUpdateResponseStatus status;
+  select (ExtendedKeyUpdateResponse.status) {
+     case accepted: KeyShareEntry key_share;
+     case retry: uint8 delay;
+  }
+} ExtendedKeyUpdateResponse;
+
+struct {
+} NewKeyUpdate;
+</pre><a href="#section-4-7" class="pilcrow">¶</a>
+</div>
+<p id="section-4-8">key_share:  Key share information.  The contents of this field
+  are determined by the specified group and its corresponding
+  definition. The structures are defined in <span>[<a href="#I-D.ietf-tls-rfc8446bis" class="cite xref">I-D.ietf-tls-rfc8446bis</a>]</span>.<a href="#section-4-8" class="pilcrow">¶</a></p>
+<p id="section-4-9">status:  Response to ExtendedKeyUpdateRequest. This status field indicates
+  whether responder accepted or declined Extended Key Update Request.<a href="#section-4-9" class="pilcrow">¶</a></p>
+<p id="section-4-10">delay:  Delay in seconds for the initiator to retry the request.<a href="#section-4-10" class="pilcrow">¶</a></p>
+<p id="section-4-11">There are three rejection reasons defined:<a href="#section-4-11" class="pilcrow">¶</a></p>
+<ol start="1" type="1" class="normal type-1" id="section-4-12">
+<li id="section-4-12.1">
+          <p id="section-4-12.1.1"><code>retry</code>: request was declined temporarily as responder is too busy.
+In this case ExtendedKeyUpdateResponse contains delay in seconds for initiator
+to retry. Initiator MUST NOT retry within this interval and SHOULD retry after
+it lapsed. Note that responder MAY apply an overall rate limit to extended key
+update that would not be specific to given TLS session. If initiator cannot
+proceed without immediate Extended Key Update it MUST terminate the connection
+with TLS alert "extended_key_update_required" (alert number TBD).<a href="#section-4-12.1.1" class="pilcrow">¶</a></p>
+</li>
+        <li id="section-4-12.2">
+          <p id="section-4-12.2.1"><code>rejected</code>: request was declined permanently. Initiator MUST NOT retry and
+if it cannot proceed without Extended Key Update it MUST terminate the
+connection with alert "extended_key_update_required" (alert number TBD).<a href="#section-4-12.2.1" class="pilcrow">¶</a></p>
+</li>
+        <li id="section-4-12.3">
+          <p id="section-4-12.3.1"><code>clashed</code>: request was declined because responder already initiated its own
+extended key update.<a href="#section-4-12.3.1" class="pilcrow">¶</a></p>
+</li>
+      </ol>
+<p id="section-4-13">The exchange has the following steps:<a href="#section-4-13" class="pilcrow">¶</a></p>
+<ol start="1" type="1" class="normal type-1" id="section-4-14">
+<li id="section-4-14.1">
+          <p id="section-4-14.1.1">Initiator sends a ExtendedKeyUpdateRequest message, which contains
+a key share. While an extended key update is in progress, the initiator
+MUST NOT initiate further key updates.<a href="#section-4-14.1.1" class="pilcrow">¶</a></p>
+</li>
+        <li id="section-4-14.2">
+          <p id="section-4-14.2.1">On receipt of the ExtendedKeyUpdateRequest message, the responder
+sends the ExtendedKeyUpdateResponse message. If the responder accepts the
+request, it sets the status to <code>accepted</code> and includes its own key share.
+If the responder declines the request, it sets the status accordingly and
+does not include the key share. While an extended key update is in progress,
+the responder MUST NOT initiate further key updates.<a href="#section-4-14.2.1" class="pilcrow">¶</a></p>
+</li>
+        <li id="section-4-14.3">
+          <p id="section-4-14.3.1">On receipt of the ExtendedKeyUpdateResponse message with <code>accepted</code> status,
+the initiator is able to derive a secret key based on the exchanged key shares.
+The NewKeyUpdate message is intentionally an empty structure that triggers
+the transition to new keying material.<a href="#section-4-14.3.1" class="pilcrow">¶</a></p>
+</li>
+        <li id="section-4-14.4">
+          <p id="section-4-14.4.1">On receipt of the NewKeyUpdate message by the responder, it MUST update
+its receive keys. In response, the responder transmits a NewKeyUpdate message
+and MUST update its sending keys.<a href="#section-4-14.4.1" class="pilcrow">¶</a></p>
+</li>
+        <li id="section-4-14.5">
+          <p id="section-4-14.5.1">After receiving the NewKeyUpdate message from the responder, the initiator
+MUST update its traffic keys and MUST send all its traffic using the next
+generation of keys.<a href="#section-4-14.5.1" class="pilcrow">¶</a></p>
+</li>
+      </ol>
+<p id="section-4-15">Both sender and receiver MUST encrypt their NewKeyUpdate messages with
+the old keys. Both sides MUST ensure that the NewKeyUpdate encrypted
+with the old key is received before accepting any messages encrypted
+with the new key.<a href="#section-4-15" class="pilcrow">¶</a></p>
+<p id="section-4-16">If TLS peers independently initiate the extended key update
+procedure and the requests cross in flight, the ExtendedKeyUpdateRequest
+message with the lower lexicographic order for the key_exchange value
+in the KeyShareEntry will be rejected by the responder using <code>clashed</code> status
+in ExtendedKeyUpdateResponse message. This approach prevents each side incrementing
+keys by two generations.<a href="#section-4-16" class="pilcrow">¶</a></p>
+<span id="name-handshake-structure"></span><div id="fig-handshake">
+<figure id="figure-2">
+        <div class="alignLeft art-text artwork" id="section-4-17.1">
+<pre>
+      struct {
+          HandshakeType msg_type;    /* handshake type */
+          uint24 length;             /* bytes in message */
+          select (Handshake.msg_type) {
+              case client_hello:          ClientHello;
+              case server_hello:          ServerHello;
+              case end_of_early_data:     EndOfEarlyData;
+              case encrypted_extensions:  EncryptedExtensions;
+              case certificate_request:   CertificateRequest;
+              case certificate:           Certificate;
+              case certificate_verify:    CertificateVerify;
+              case finished:              Finished;
+              case new_session_ticket:    NewSessionTicket;
+              case key_update:            KeyUpdate;
+              case extended_key_update:   ExtendedKeyUpdate;
+          };
+      } Handshake;
+</pre>
+</div>
+<figcaption><a href="#figure-2" class="selfRef">Figure 2</a>:
+<a href="#name-handshake-structure" class="selfRef">Handshake Structure.</a>
+        </figcaption></figure>
+</div>
+<p id="section-4-18">The ExtendedKeyUpdate and the KeyUpdates MAY be used in combination
+over the lifetime of a TLS communication session, depending on the
+desired security properties.<a href="#section-4-18" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="key_update">
+<section id="section-5">
+      <h2 id="name-updating-traffic-secrets">
+<a href="#section-5" class="section-number selfRef">5. </a><a href="#name-updating-traffic-secrets" class="section-name selfRef">Updating Traffic Secrets</a>
+      </h2>
+<p id="section-5-1">The ExtendedKeyUpdate handshake message is used to indicate that
+the sender is updating its sending cryptographic keys.  This message can
+be sent by either endpoint after the Finished messages have been exchanged.<a href="#section-5-1" class="pilcrow">¶</a></p>
+<p id="section-5-2">The design of the key derivation function for computing the next generation
+of application_traffic_secret is motivated by the desire to include<a href="#section-5-2" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-5-3.1">
+          <p id="section-5-3.1.1">the old traffic secret as well as a secret derived from the DH
+exchange or from the hybrid key exchange,<a href="#section-5-3.1.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-5-3.2">
+          <p id="section-5-3.2.1">the concatenation of the ExtendedKeyUpdateRequest and the
+ExtendedKeyUpdateResponse messages, which contain the key shares, binding
+the encapsulated shared secret ciphertext to IKM in case of hybrid key
+exchange, providing MAL-BIND-K-CT security (see <span>[<a href="#CDM23" class="cite xref">CDM23</a>]</span>), and<a href="#section-5-3.2.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-5-3.3">
+          <p id="section-5-3.3.1">a new label string to distinguish it from the application traffic
+secret computation defined in <span>[<a href="#I-D.ietf-tls-rfc8446bis" class="cite xref">I-D.ietf-tls-rfc8446bis</a>]</span> for use with
+the regular KeyUpdate.<a href="#section-5-3.3.1" class="pilcrow">¶</a></p>
+</li>
+      </ul>
+<div class="alignLeft art-text artwork" id="section-5-4">
+<pre>
+sk = HKDF-Extract(Transcript-Hash(KeyUpdateMessages), secret)
+
+application_traffic_secret_N+1 =
+    HKDF-Expand-Label(sk,
+                      "traffic up2", application_traffic_secret_N,
+                      Hash.length)
+</pre><a href="#section-5-4" class="pilcrow">¶</a>
+</div>
+<p id="section-5-5">The traffic keys are re-derived from the client_/server_application_traffic_secret_N+1
+as described in Section 7.3 of <span>[<a href="#I-D.ietf-tls-rfc8446bis" class="cite xref">I-D.ietf-tls-rfc8446bis</a>]</span>.<a href="#section-5-5" class="pilcrow">¶</a></p>
+<p id="section-5-6">Once client_/server_application_traffic_secret_N+1 and its associated
+traffic keys have been computed, implementations SHOULD delete
+client_/server_application_traffic_secret_N and its associated
+traffic keys. Note: The client_/server_application_traffic_secret_N and
+its associated traffic keys can only be deleted after receiving the
+NewKeyUpdate message.<a href="#section-5-6" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="example">
+<section id="section-6">
+      <h2 id="name-example">
+<a href="#section-6" class="section-number selfRef">6. </a><a href="#name-example" class="section-name selfRef">Example</a>
+      </h2>
+<p id="section-6-1"><a href="#fig-key-update" class="auto internal xref">Figure 1</a> shows the interaction between a TLS 1.3 client
+and server graphically. This section shows an example message exchange
+where a client updates its sending keys.<a href="#section-6-1" class="pilcrow">¶</a></p>
+<p id="section-6-2">There are two phases:<a href="#section-6-2" class="pilcrow">¶</a></p>
+<ol start="1" type="1" class="normal type-1" id="section-6-3">
+<li id="section-6-3.1">
+          <p id="section-6-3.1.1">The support for the functionality in this specification
+is negotiated in the ClientHello and the EncryptedExtensions
+messages.<a href="#section-6-3.1.1" class="pilcrow">¶</a></p>
+</li>
+        <li id="section-6-3.2">
+          <p id="section-6-3.2.1">Once the initial handshake is completed, a key update can be
+triggered.<a href="#section-6-3.2.1" class="pilcrow">¶</a></p>
+</li>
+      </ol>
+<p id="section-6-4"><a href="#fig-key-update2" class="auto internal xref">Figure 3</a> provides an overview of the exchange starting
+with the initial negotiation followed by the key update.<a href="#section-6-4" class="pilcrow">¶</a></p>
+<span id="name-extended-key-update-message-e"></span><div id="fig-key-update2">
+<figure id="figure-3">
+        <div class="alignLeft art-text artwork" id="section-6-5.1">
+<pre>
+       Client                                           Server
+
+Key  ^ ClientHello
+Exch | + key_share
+     | + signature_algorithms
+     v + extended_key_update
+                             --------&gt;
+                                                  ServerHello  ^ Key
+                                                  + key_share  | Exch
+                                                               v
+                                        {EncryptedExtensions   ^ Server
+                                       + extended_key_update}  | Params
+                                         {CertificateRequest}  v
+                                                {Certificate}  ^
+                                          {CertificateVerify}  | Auth
+                                                   {Finished}  v
+                               &lt;--------
+     ^ {Certificate}
+Auth | {CertificateVerify}
+     v {Finished}              --------&gt;
+                                  ...
+                              some time later
+                                  ...
+ [ExtendedKeyUpdateRequest]    --------&gt;
+  (with key_share)
+                               &lt;-------- [ExtendedKeyUpdateResponse]
+                                           (with key_share)
+ [NewKeyUpdate]                --------&gt;
+                               &lt;-------- [NewKeyUpdate]
+</pre>
+</div>
+<figcaption><a href="#figure-3" class="selfRef">Figure 3</a>:
+<a href="#name-extended-key-update-message-e" class="selfRef">Extended Key Update Message Exchange.</a>
+        </figcaption></figure>
+</div>
+</section>
+</div>
+<div id="dtls-13-considerations">
+<section id="section-7">
+      <h2 id="name-dtls-13-considerations">
+<a href="#section-7" class="section-number selfRef">7. </a><a href="#name-dtls-13-considerations" class="section-name selfRef">DTLS 1.3 Considerations</a>
+      </h2>
+<p id="section-7-1">Due to the possibility of a NewKeyUpdate message being lost and
+thereby preventing the sender of the NewKeyUpdate message
+from updating its keying material, receivers MUST retain the
+pre-update keying material until receipt and successful decryption
+of a message using the new keys.<a href="#section-7-1" class="pilcrow">¶</a></p>
+<p id="section-7-2">Due to loss and/or reordering, DTLS 1.3 implementations may receive a
+record with an older epoch than the current one. They SHOULD attempt to
+process those records with that epoch but MAY opt to discard
+such out-of-epoch records.<a href="#section-7-2" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="post-quantum-cryptography-considerations">
+<section id="section-8">
+      <h2 id="name-post-quantum-cryptography-c">
+<a href="#section-8" class="section-number selfRef">8. </a><a href="#name-post-quantum-cryptography-c" class="section-name selfRef">Post-Quantum Cryptography Considerations</a>
+      </h2>
+<p id="section-8-1">Hybrid key exchange refers to using multiple key exchange algorithms
+simultaneously and combining the result with the goal of providing
+security even if all but one of the component algorithms is broken.
+The transition to post-quantum cryptography motivates the introduction
+of hybrid key exchanges to TLS, as described in
+<span>[<a href="#I-D.ietf-tls-hybrid-design" class="cite xref">I-D.ietf-tls-hybrid-design</a>]</span>. When the hybrid key exchange is used,
+then the key_exchange field of a KeyShareEntry in the initial exchange
+is the concatenation of the key_exchange field for each of the algorithms.
+The same approach is then re-used in the extended key update when
+key shares are exchanged.<a href="#section-8-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="sslkeylogfile-update">
+<section id="section-9">
+      <h2 id="name-sslkeylogfile-update">
+<a href="#section-9" class="section-number selfRef">9. </a><a href="#name-sslkeylogfile-update" class="section-name selfRef">SSLKEYLOGFILE update</a>
+      </h2>
+<p id="section-9-1">As Extended Key Update invalidates previous secrets, SSLKEYLOGFILE <span>[<a href="#I-D.ietf-tls-keylogfile" class="cite xref">I-D.ietf-tls-keylogfile</a>]</span> needs to
+be populated with new entries. Each completed Extended Key Update results
+in two additional secret labels in SSLKEYLOGFILE:<a href="#section-9-1" class="pilcrow">¶</a></p>
+<ol start="1" type="1" class="normal type-1" id="section-9-2">
+<li id="section-9-2.1">
+          <p id="section-9-2.1.1"><code>CLIENT_TRAFFIC_SECRET_N+1</code>: identified as client_application_traffic_secret_N+1 in the key schedule<a href="#section-9-2.1.1" class="pilcrow">¶</a></p>
+</li>
+        <li id="section-9-2.2">
+          <p id="section-9-2.2.1"><code>SERVER_TRAFFIC_SECRET_N+1</code>: identified as server_application_traffic_secret_N+1 in the key schedule<a href="#section-9-2.2.1" class="pilcrow">¶</a></p>
+</li>
+      </ol>
+<p id="section-9-3">Similarly to other records in SSLKEYLOGFILE label is followed by 32-byte value
+of the Random field from the ClientHello message that established the TLS
+connection and corresponding secret encoded in hexadecimal.<a href="#section-9-3" class="pilcrow">¶</a></p>
+<p id="section-9-4">SSLKEYLOGFILE entries for Extended Key Update MUST NOT be produced if
+SSLKEYLOGFILE was not used for other secrets in the handshake.<a href="#section-9-4" class="pilcrow">¶</a></p>
+<p id="section-9-5">Note that each successful Extended Key Update invalidates all previous SSLKEYLOGFILE secrets including
+past iterations of <code>CLIENT_TRAFFIC_SECRET_</code> and <code>SERVER_TRAFFIC_SECRET_</code>.<a href="#section-9-5" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="exporter">
+<section id="section-10">
+      <h2 id="name-exporter">
+<a href="#section-10" class="section-number selfRef">10. </a><a href="#name-exporter" class="section-name selfRef">Exporter</a>
+      </h2>
+<p id="section-10-1">Protocols like DTLS-SRTP and DTLS-over-SCTP utilize TLS or DTLS for key establishment but repurpose
+some of the keying material for their own purpose. These protocols use the TLS exporter defined in
+Section 7.5 of <span>[<a href="#I-D.ietf-tls-rfc8446bis" class="cite xref">I-D.ietf-tls-rfc8446bis</a>]</span>.<a href="#section-10-1" class="pilcrow">¶</a></p>
+<p id="section-10-2">Once the Extended Key Update mechanism is complete, such protocols would need to use the newly
+derived key to generate Exported Keying Material (EKM) to protect packets. The "sk" derived in the
+<a href="#key_update" class="auto internal xref">Section 5</a> will be used as the "Secret" in the exporter function, defined in
+Section 7.5 of <span>[<a href="#I-D.ietf-tls-rfc8446bis" class="cite xref">I-D.ietf-tls-rfc8446bis</a>]</span>, to generate EKM, ensuring that the exported keying material is
+aligned with the updated security context.<a href="#section-10-2" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="security-considerations">
+<section id="section-11">
+      <h2 id="name-security-considerations">
+<a href="#section-11" class="section-number selfRef">11. </a><a href="#name-security-considerations" class="section-name selfRef">Security Considerations</a>
+      </h2>
+<p id="section-11-1">This entire document is about security.<a href="#section-11-1" class="pilcrow">¶</a></p>
+<p id="section-11-2">When utilizing this extension it is important to understand the interaction
+with ticket-based resumption since resumption without the execution of
+a Diffie-Hellman exchange offering forward secrecy will potentially undo
+updates to the application traffic secret derivation, depending on when
+tickets have been exchanged.<a href="#section-11-2" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="iana-considerations">
+<section id="section-12">
+      <h2 id="name-iana-considerations">
+<a href="#section-12" class="section-number selfRef">12. </a><a href="#name-iana-considerations" class="section-name selfRef">IANA Considerations</a>
+      </h2>
+<p id="section-12-1">IANA is requested to allocate value TBD for the "extended_key_update_required" alert
+in the "TLS Alerts" registry. The value for the "DTLS-OK" column is "Y".<a href="#section-12-1" class="pilcrow">¶</a></p>
+<p id="section-12-2">IANA is requested to add the following entry to the "TLS Flags"
+extension registry <span>[<a href="#TLS-Ext-Registry" class="cite xref">TLS-Ext-Registry</a>]</span>:<a href="#section-12-2" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-12-3.1">
+          <p id="section-12-3.1.1">Value: TBD1<a href="#section-12-3.1.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-12-3.2">
+          <p id="section-12-3.2.1">Flag Name: extended_key_update<a href="#section-12-3.2.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-12-3.3">
+          <p id="section-12-3.3.1">Messages: CH, EE<a href="#section-12-3.3.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-12-3.4">
+          <p id="section-12-3.4.1">Recommended: Y<a href="#section-12-3.4.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-12-3.5">
+          <p id="section-12-3.5.1">Reference: [This document]<a href="#section-12-3.5.1" class="pilcrow">¶</a></p>
+</li>
+      </ul>
+<p id="section-12-4">IANA is requested to add the following entry to the "TLS
+HandshakeType" registry <span>[<a href="#TLS-Ext-Registry" class="cite xref">TLS-Ext-Registry</a>]</span>:<a href="#section-12-4" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-12-5.1">
+          <p id="section-12-5.1.1">Value: TBD2<a href="#section-12-5.1.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-12-5.2">
+          <p id="section-12-5.2.1">Description: extended_key_update<a href="#section-12-5.2.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-12-5.3">
+          <p id="section-12-5.3.1">DTLS-OK: Y<a href="#section-12-5.3.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-12-5.4">
+          <p id="section-12-5.4.1">Reference: [This document]<a href="#section-12-5.4.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-12-5.5">
+          <p id="section-12-5.5.1">Comment:<a href="#section-12-5.5.1" class="pilcrow">¶</a></p>
+</li>
+      </ul>
+</section>
+</div>
+<div id="sec-combined-references">
+<section id="section-13">
+      <h2 id="name-references">
+<a href="#section-13" class="section-number selfRef">13. </a><a href="#name-references" class="section-name selfRef">References</a>
+      </h2>
+<div id="sec-normative-references">
+<section id="section-13.1">
+        <h3 id="name-normative-references">
+<a href="#section-13.1" class="section-number selfRef">13.1. </a><a href="#name-normative-references" class="section-name selfRef">Normative References</a>
+        </h3>
+<dl class="references">
+<dt id="I-D.ietf-tls-rfc8446bis">[I-D.ietf-tls-rfc8446bis]</dt>
+        <dd>
+<span class="refAuthor">Rescorla, E.</span>, <span class="refTitle">"The Transport Layer Security (TLS) Protocol Version 1.3"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-ietf-tls-rfc8446bis-12</span>, <time datetime="2025-02-17" class="refDate">17 February 2025</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-ietf-tls-rfc8446bis-12">https://datatracker.ietf.org/doc/html/draft-ietf-tls-rfc8446bis-12</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="I-D.ietf-tls-tlsflags">[I-D.ietf-tls-tlsflags]</dt>
+        <dd>
+<span class="refAuthor">Nir, Y.</span>, <span class="refTitle">"A Flags Extension for TLS 1.3"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-ietf-tls-tlsflags-15</span>, <time datetime="2025-03-15" class="refDate">15 March 2025</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-ietf-tls-tlsflags-15">https://datatracker.ietf.org/doc/html/draft-ietf-tls-tlsflags-15</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC2119">[RFC2119]</dt>
+        <dd>
+<span class="refAuthor">Bradner, S.</span>, <span class="refTitle">"Key words for use in RFCs to Indicate Requirement Levels"</span>, <span class="seriesInfo">BCP 14</span>, <span class="seriesInfo">RFC 2119</span>, <span class="seriesInfo">DOI 10.17487/RFC2119</span>, <time datetime="1997-03" class="refDate">March 1997</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc2119">https://www.rfc-editor.org/rfc/rfc2119</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC9147">[RFC9147]</dt>
+      <dd>
+<span class="refAuthor">Rescorla, E.</span>, <span class="refAuthor">Tschofenig, H.</span>, and <span class="refAuthor">N. Modadugu</span>, <span class="refTitle">"The Datagram Transport Layer Security (DTLS) Protocol Version 1.3"</span>, <span class="seriesInfo">RFC 9147</span>, <span class="seriesInfo">DOI 10.17487/RFC9147</span>, <time datetime="2022-04" class="refDate">April 2022</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc9147">https://www.rfc-editor.org/rfc/rfc9147</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+</dl>
+</section>
+</div>
+<div id="sec-informative-references">
+<section id="section-13.2">
+        <h3 id="name-informative-references">
+<a href="#section-13.2" class="section-number selfRef">13.2. </a><a href="#name-informative-references" class="section-name selfRef">Informative References</a>
+        </h3>
+<dl class="references">
+<dt id="ANSSI-DAT-NT-003">[ANSSI-DAT-NT-003]</dt>
+        <dd>
+<span class="refAuthor">ANSSI</span>, <span class="refTitle">"Recommendations for securing networks with IPsec, Technical Report"</span>, <time datetime="2015-08" class="refDate">August 2015</time>, <span>&lt;<a href="https://www.ssi.gouv.fr/uploads/2015/09/NT_IPsec_EN.pdf">https://www.ssi.gouv.fr/uploads/2015/09/NT_IPsec_EN.pdf</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="CDM23">[CDM23]</dt>
+        <dd>
+<span class="refAuthor">ACM</span>, <span class="refTitle">"Keeping Up with the KEMs: Stronger Security Notions for KEMs and automated analysis of KEM-based protocols"</span>, <time datetime="2023-11" class="refDate">November 2023</time>, <span>&lt;<a href="https://eprint.iacr.org/2023/1933.pdf">https://eprint.iacr.org/2023/1933.pdf</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="I-D.ietf-tls-hybrid-design">[I-D.ietf-tls-hybrid-design]</dt>
+        <dd>
+<span class="refAuthor">Stebila, D.</span>, <span class="refAuthor">Fluhrer, S.</span>, and <span class="refAuthor">S. Gueron</span>, <span class="refTitle">"Hybrid key exchange in TLS 1.3"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-ietf-tls-hybrid-design-13</span>, <time datetime="2025-06-17" class="refDate">17 June 2025</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-ietf-tls-hybrid-design-13">https://datatracker.ietf.org/doc/html/draft-ietf-tls-hybrid-design-13</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="I-D.ietf-tls-keylogfile">[I-D.ietf-tls-keylogfile]</dt>
+        <dd>
+<span class="refAuthor">Thomson, M.</span>, <span class="refAuthor">Rosomakho, Y.</span>, and <span class="refAuthor">H. Tschofenig</span>, <span class="refTitle">"The SSLKEYLOGFILE Format for TLS"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-ietf-tls-keylogfile-05</span>, <time datetime="2025-06-09" class="refDate">9 June 2025</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-ietf-tls-keylogfile-05">https://datatracker.ietf.org/doc/html/draft-ietf-tls-keylogfile-05</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC5746">[RFC5746]</dt>
+        <dd>
+<span class="refAuthor">Rescorla, E.</span>, <span class="refAuthor">Ray, M.</span>, <span class="refAuthor">Dispensa, S.</span>, and <span class="refAuthor">N. Oskov</span>, <span class="refTitle">"Transport Layer Security (TLS) Renegotiation Indication Extension"</span>, <span class="seriesInfo">RFC 5746</span>, <span class="seriesInfo">DOI 10.17487/RFC5746</span>, <time datetime="2010-02" class="refDate">February 2010</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc5746">https://www.rfc-editor.org/rfc/rfc5746</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC7296">[RFC7296]</dt>
+        <dd>
+<span class="refAuthor">Kaufman, C.</span>, <span class="refAuthor">Hoffman, P.</span>, <span class="refAuthor">Nir, Y.</span>, <span class="refAuthor">Eronen, P.</span>, and <span class="refAuthor">T. Kivinen</span>, <span class="refTitle">"Internet Key Exchange Protocol Version 2 (IKEv2)"</span>, <span class="seriesInfo">STD 79</span>, <span class="seriesInfo">RFC 7296</span>, <span class="seriesInfo">DOI 10.17487/RFC7296</span>, <time datetime="2014-10" class="refDate">October 2014</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc7296">https://www.rfc-editor.org/rfc/rfc7296</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC7624">[RFC7624]</dt>
+        <dd>
+<span class="refAuthor">Barnes, R.</span>, <span class="refAuthor">Schneier, B.</span>, <span class="refAuthor">Jennings, C.</span>, <span class="refAuthor">Hardie, T.</span>, <span class="refAuthor">Trammell, B.</span>, <span class="refAuthor">Huitema, C.</span>, and <span class="refAuthor">D. Borkmann</span>, <span class="refTitle">"Confidentiality in the Face of Pervasive Surveillance: A Threat Model and Problem Statement"</span>, <span class="seriesInfo">RFC 7624</span>, <span class="seriesInfo">DOI 10.17487/RFC7624</span>, <time datetime="2015-08" class="refDate">August 2015</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc7624">https://www.rfc-editor.org/rfc/rfc7624</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC9325">[RFC9325]</dt>
+        <dd>
+<span class="refAuthor">Sheffer, Y.</span>, <span class="refAuthor">Saint-Andre, P.</span>, and <span class="refAuthor">T. Fossati</span>, <span class="refTitle">"Recommendations for Secure Use of Transport Layer Security (TLS) and Datagram Transport Layer Security (DTLS)"</span>, <span class="seriesInfo">BCP 195</span>, <span class="seriesInfo">RFC 9325</span>, <span class="seriesInfo">DOI 10.17487/RFC9325</span>, <time datetime="2022-11" class="refDate">November 2022</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc9325">https://www.rfc-editor.org/rfc/rfc9325</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="TLS-Ext-Registry">[TLS-Ext-Registry]</dt>
+      <dd>
+<span class="refAuthor">IANA</span>, <span class="refTitle">"Transport Layer Security (TLS) Extensions"</span>, <time datetime="2023-11" class="refDate">November 2023</time>, <span>&lt;<a href="https://www.iana.org/assignments/tls-extensiontype-values">https://www.iana.org/assignments/tls-extensiontype-values</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+</dl>
+</section>
+</div>
+</section>
+</div>
+<div id="acknowledgments">
+<section id="appendix-A">
+      <h2 id="name-acknowledgments">
+<a href="#appendix-A" class="section-number selfRef">Appendix A. </a><a href="#name-acknowledgments" class="section-name selfRef">Acknowledgments</a>
+      </h2>
+<p id="appendix-A-1">We would like to thank the members of the "TSVWG DTLS for SCTP
+Requirements Design Team" for their discussion. The members, in
+no particular order, were:<a href="#appendix-A-1" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="appendix-A-2.1">
+          <p id="appendix-A-2.1.1">Marcelo Ricardo Leitner<a href="#appendix-A-2.1.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="appendix-A-2.2">
+          <p id="appendix-A-2.2.1">Zaheduzzaman Sarker<a href="#appendix-A-2.2.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="appendix-A-2.3">
+          <p id="appendix-A-2.3.1">Magnus Westerlund<a href="#appendix-A-2.3.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="appendix-A-2.4">
+          <p id="appendix-A-2.4.1">John Mattsson<a href="#appendix-A-2.4.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="appendix-A-2.5">
+          <p id="appendix-A-2.5.1">Claudio Porfiri<a href="#appendix-A-2.5.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="appendix-A-2.6">
+          <p id="appendix-A-2.6.1">Xin Long<a href="#appendix-A-2.6.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="appendix-A-2.7">
+          <p id="appendix-A-2.7.1">Michael Tüxen<a href="#appendix-A-2.7.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="appendix-A-2.8">
+          <p id="appendix-A-2.8.1">Hannes Tschofenig<a href="#appendix-A-2.8.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="appendix-A-2.9">
+          <p id="appendix-A-2.9.1">K Tirumaleswar Reddy<a href="#appendix-A-2.9.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="appendix-A-2.10">
+          <p id="appendix-A-2.10.1">Bertrand Rault<a href="#appendix-A-2.10.1" class="pilcrow">¶</a></p>
+</li>
+      </ul>
+<p id="appendix-A-3">Additionally, we would like to thank the chairs of the
+Transport and Services Working Group (tsvwg) Gorry Fairhurst and
+Marten Seemann as well as the responsible area director Martin Duke.<a href="#appendix-A-3" class="pilcrow">¶</a></p>
+<p id="appendix-A-4">Finally, we would like to thank Martin Thomson, Ilari Liusvaara,
+Benjamin Kaduk, Scott Fluhrer, Dennis Jackson, David Benjamin,
+Matthijs van Duin, Rifaat Shekh-Yusef, Joe Birr-Pixton and Thom Wiggers for their review comments.<a href="#appendix-A-4" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="authors-addresses">
+<section id="appendix-B">
+      <h2 id="name-authors-addresses">
+<a href="#name-authors-addresses" class="section-name selfRef">Authors' Addresses</a>
+      </h2>
+<address class="vcard">
+        <div dir="auto" class="left"><span class="fn nameRole">Hannes Tschofenig</span></div>
+<div dir="auto" class="left"><span class="org">Siemens</span></div>
+<div class="email">
+<span>Email:</span>
+<a href="mailto:hannes.tschofenig@gmx.net" class="email">hannes.tschofenig@gmx.net</a>
+</div>
+</address>
+<address class="vcard">
+        <div dir="auto" class="left"><span class="fn nameRole">Michael Tüxen</span></div>
+<div dir="auto" class="left"><span class="org">Münster Univ. of Applied Sciences</span></div>
+<div class="email">
+<span>Email:</span>
+<a href="mailto:tuexen@fh-muenster.de" class="email">tuexen@fh-muenster.de</a>
+</div>
+</address>
+<address class="vcard">
+        <div dir="auto" class="left"><span class="fn nameRole">Tirumaleswar Reddy</span></div>
+<div dir="auto" class="left"><span class="org">Nokia</span></div>
+<div class="email">
+<span>Email:</span>
+<a href="mailto:kondtir@gmail.com" class="email">kondtir@gmail.com</a>
+</div>
+</address>
+<address class="vcard">
+        <div dir="auto" class="left"><span class="fn nameRole">Steffen Fries</span></div>
+<div dir="auto" class="left"><span class="org">Siemens</span></div>
+<div class="email">
+<span>Email:</span>
+<a href="mailto:steffen.fries@siemens.com" class="email">steffen.fries@siemens.com</a>
+</div>
+</address>
+<address class="vcard">
+        <div dir="auto" class="left"><span class="fn nameRole">Yaroslav Rosomakho</span></div>
+<div dir="auto" class="left"><span class="org">Zscaler</span></div>
+<div class="email">
+<span>Email:</span>
+<a href="mailto:yrosomakho@zscaler.com" class="email">yrosomakho@zscaler.com</a>
+</div>
+</address>
+</section>
+</div>
+<script>const toc = document.getElementById("toc");
+toc.querySelector("h2").addEventListener("click", e => {
+  toc.classList.toggle("active");
+});
+toc.querySelector("nav").addEventListener("click", e => {
+  toc.classList.remove("active");
+});
+</script>
+</body>
+</html>
