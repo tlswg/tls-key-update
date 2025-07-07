@@ -428,6 +428,10 @@ updates, endpoints MUST either invalidate any session tickets issued prior
 to the key update or ensure that resumption always involves a fresh (EC)DH
 exchange.
 
+If session tickets cannot be stored securely, developers SHOULD consider
+disabling ticket-based resumption in their deployments. While this approach
+may impact performance, it provides improved security properties.
+
 # Example
 
 {{fig-key-update}} shows the interaction between a TLS 1.3 client
