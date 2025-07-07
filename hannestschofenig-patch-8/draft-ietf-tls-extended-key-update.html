@@ -1194,7 +1194,7 @@ and DTLS 1.3.<a href="#section-abstract-2" class="pilcrow">¶</a></p>
             <p id="section-toc.1-1.3.1" class="keepWithNext"><a href="#section-3" class="auto internal xref">3</a>.  <a href="#name-negotiating-the-extended-ke" class="internal xref">Negotiating the Extended Key Update</a></p>
 </li>
           <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.4">
-            <p id="section-toc.1-1.4.1"><a href="#section-4" class="auto internal xref">4</a>.  <a href="#name-extended-key-update-message" class="internal xref">Extended Key Update Message</a></p>
+            <p id="section-toc.1-1.4.1"><a href="#section-4" class="auto internal xref">4</a>.  <a href="#name-extended-key-update-message" class="internal xref">Extended Key Update Messages</a></p>
 </li>
           <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.5">
             <p id="section-toc.1-1.5.1"><a href="#section-5" class="auto internal xref">5</a>.  <a href="#name-updating-traffic-secrets" class="internal xref">Updating Traffic Secrets</a></p>
@@ -1209,7 +1209,7 @@ and DTLS 1.3.<a href="#section-abstract-2" class="pilcrow">¶</a></p>
             <p id="section-toc.1-1.8.1"><a href="#section-8" class="auto internal xref">8</a>.  <a href="#name-post-quantum-cryptography-c" class="internal xref">Post-Quantum Cryptography Considerations</a></p>
 </li>
           <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.9">
-            <p id="section-toc.1-1.9.1"><a href="#section-9" class="auto internal xref">9</a>.  <a href="#name-sslkeylogfile-update" class="internal xref">SSLKEYLOGFILE update</a></p>
+            <p id="section-toc.1-1.9.1"><a href="#section-9" class="auto internal xref">9</a>.  <a href="#name-sslkeylogfile-update" class="internal xref">SSLKEYLOGFILE Update</a></p>
 </li>
           <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.10">
             <p id="section-toc.1-1.10.1"><a href="#section-10" class="auto internal xref">10</a>. <a href="#name-exporter" class="internal xref">Exporter</a></p>
@@ -1219,6 +1219,28 @@ and DTLS 1.3.<a href="#section-abstract-2" class="pilcrow">¶</a></p>
 </li>
           <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.12">
             <p id="section-toc.1-1.12.1"><a href="#section-12" class="auto internal xref">12</a>. <a href="#name-iana-considerations" class="internal xref">IANA Considerations</a></p>
+<ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.12.2.1">
+                <p id="section-toc.1-1.12.2.1.1"><a href="#section-12.1" class="auto internal xref">12.1</a>.  <a href="#name-tls-alerts" class="internal xref">TLS Alerts</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.12.2.2">
+                <p id="section-toc.1-1.12.2.2.1"><a href="#section-12.2" class="auto internal xref">12.2</a>.  <a href="#name-tls-flags" class="internal xref">TLS Flags</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.12.2.3">
+                <p id="section-toc.1-1.12.2.3.1"><a href="#section-12.3" class="auto internal xref">12.3</a>.  <a href="#name-tls-handshaketype" class="internal xref">TLS HandshakeType</a></p>
+<ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.12.2.3.2.1">
+                    <p id="section-toc.1-1.12.2.3.2.1.1"><a href="#section-12.3.1" class="auto internal xref">12.3.1</a>.  <a href="#name-extended_key_update_request" class="internal xref"><code>extended_key_update_request</code> Message</a></p>
+</li>
+                  <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.12.2.3.2.2">
+                    <p id="section-toc.1-1.12.2.3.2.2.1"><a href="#section-12.3.2" class="auto internal xref">12.3.2</a>.  <a href="#name-extended_key_update_respons" class="internal xref"><code>extended_key_update_response</code> Message</a></p>
+</li>
+                  <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.12.2.3.2.3">
+                    <p id="section-toc.1-1.12.2.3.2.3.1"><a href="#section-12.3.3" class="auto internal xref">12.3.3</a>.  <a href="#name-new_key_update-message" class="internal xref"><code>new_key_update</code> Message</a></p>
+</li>
+                </ul>
+</li>
+            </ul>
 </li>
           <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.13">
             <p id="section-toc.1-1.13.1"><a href="#section-13" class="auto internal xref">13</a>. <a href="#name-references" class="internal xref">References</a></p>
@@ -1276,7 +1298,7 @@ operational cost and risk for the attacker. In contrast, static key exfiltration
 where a long-term secret is extracted once and reused, poses a greater long-term
 threat, especially when session keys are not refreshed with forward-secret input.<a href="#section-1-4" class="pilcrow">¶</a></p>
 <p id="section-1-5">This specification defines a TLS extension that introduces an extended key update
-mechanism. Unlike the standard KeyUpdate, this mechanism allows peers to perform a
+mechanism. Unlike the standard key update, this mechanism allows peers to perform a
 fresh Diffie-Hellman exchange within an active session using one of the groups
 negotiated during the initial handshake. By periodically rerunning (EC)DHE, this
 extension enables the derivation of new traffic secrets that are independent of
@@ -1298,7 +1320,7 @@ otherwise specified.<a href="#section-1-6" class="pilcrow">¶</a></p>
 document are to be interpreted as described in RFC 2119 <span>[<a href="#RFC2119" class="cite xref">RFC2119</a>]</span>.<a href="#section-2-1" class="pilcrow">¶</a></p>
 <p id="section-2-2">To distinguish the key update procedure defined in <span>[<a href="#I-D.ietf-tls-rfc8446bis" class="cite xref">I-D.ietf-tls-rfc8446bis</a>]</span>
 from the key update procedure specified in this document, we use the terms
-"key update" and "extended key update", respectively.<a href="#section-2-2" class="pilcrow">¶</a></p>
+"standard key update" and "extended key update", respectively.<a href="#section-2-2" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="negotiating-the-extended-key-update">
@@ -1324,30 +1346,36 @@ handshake.<a href="#section-3-3" class="pilcrow">¶</a></p>
 <div id="ext-key-update">
 <section id="section-4">
       <h2 id="name-extended-key-update-message">
-<a href="#section-4" class="section-number selfRef">4. </a><a href="#name-extended-key-update-message" class="section-name selfRef">Extended Key Update Message</a>
+<a href="#section-4" class="section-number selfRef">4. </a><a href="#name-extended-key-update-message" class="section-name selfRef">Extended Key Update Messages</a>
       </h2>
-<p id="section-4-1">The ExtendedKeyUpdate handshake message is used to indicate an update
+<p id="section-4-1">=======
+If the client and server agree to use the extended key update mechanism,
+the standard key update MUST NOT be used. In this case, the extended
+key update fully replaces the standard key update functionality.<a href="#section-4-1" class="pilcrow">¶</a></p>
+<p id="section-4-2">Implementations that receive a classic KeyUpdate message after successfully
+negotiating the Extended Key Update functionality MUST terminate the
+connection with an "unexpected_message" alert.<a href="#section-4-2" class="pilcrow">¶</a></p>
+<p id="section-4-3">The extended key update handshake message exchange used to perform an update
 of cryptographic keys. This key update process can be sent by either
 peer after it has sent a Finished message.  Implementations that
-receive a ExtendedKeyUpdate message prior to receiving a Finished
+receive a ExtendedKeyUpdateRequest message prior to receiving a Finished
 message MUST terminate the connection with an "unexpected_message"
-alert.<a href="#section-4-1" class="pilcrow">¶</a></p>
-<p id="section-4-2">The KeyShareEntry in the ExtendedKeyUpdate message MUST be the same
-group mutually supported by the client and server during the initial
-handshake. The peers MUST NOT send a KeyShareEntry in the ExtendedKeyUpdate
-message that is not mutually supported by the client and server during
-the initial handshake. An implementation that receives any other value
-MUST terminate the connection with an "illegal_parameter" alert.<a href="#section-4-2" class="pilcrow">¶</a></p>
-<p id="section-4-3"><a href="#fig-key-update" class="auto internal xref">Figure 1</a> shows the interaction graphically.
+alert.<a href="#section-4-3" class="pilcrow">¶</a></p>
+<p id="section-4-4">The KeyShareEntry in the ExtendedKeyUpdateRequest message and in the
+ExtendedKeyUpdateResponse message MUST be the same
+algorithm mutually supported by the client and server during the initial
+handshake. An implementation that receives an algorithm not previously
+negotiated MUST terminate the connection with an "illegal_parameter" alert.<a href="#section-4-4" class="pilcrow">¶</a></p>
+<p id="section-4-5"><a href="#fig-key-update" class="auto internal xref">Figure 1</a> shows the interaction graphically.
 First, support for the functionality in this specification
 is negotiated in the ClientHello and the EncryptedExtensions
 messages. Then, the ExtendedKeyUpdate exchange is sent to
-update the application traffic secrets.<a href="#section-4-3" class="pilcrow">¶</a></p>
-<p id="section-4-4">The extended key update exchange is performed between the initiator and the
-responder whereby the initiator may be the TLS client or the TLS server.<a href="#section-4-4" class="pilcrow">¶</a></p>
+update the application traffic secrets.<a href="#section-4-5" class="pilcrow">¶</a></p>
+<p id="section-4-6">The extended key update exchange is performed between the initiator and the
+responder whereby the initiator may be the TLS client or the TLS server.<a href="#section-4-6" class="pilcrow">¶</a></p>
 <span id="name-extended-key-update-message-"></span><div id="fig-key-update">
 <figure id="figure-1">
-        <div class="alignLeft art-text artwork" id="section-4-5.1">
+        <div class="alignLeft art-text artwork" id="section-4-7.1">
 <pre>
        Client                                           Server
 
@@ -1382,8 +1410,8 @@ Auth | {CertificateVerify}
 <a href="#name-extended-key-update-message-" class="selfRef">Extended Key Update Message Exchange.</a>
         </figcaption></figure>
 </div>
-<p id="section-4-6">The structure of the ExtendedKeyUpdate message is shown below.<a href="#section-4-6" class="pilcrow">¶</a></p>
-<div class="alignLeft art-text artwork" id="section-4-7">
+<p id="section-4-8">The structure of the ExtendedKeyUpdate message is shown below.<a href="#section-4-8" class="pilcrow">¶</a></p>
+<div class="alignLeft art-text artwork" id="section-4-9">
 <pre>
 struct {
   KeyShareEntry key_share;
@@ -1407,80 +1435,80 @@ struct {
 
 struct {
 } NewKeyUpdate;
-</pre><a href="#section-4-7" class="pilcrow">¶</a>
+</pre><a href="#section-4-9" class="pilcrow">¶</a>
 </div>
-<p id="section-4-8">key_share:  Key share information.  The contents of this field
+<p id="section-4-10">key_share:  Key share information.  The contents of this field
   are determined by the specified group and its corresponding
-  definition. The structures are defined in <span>[<a href="#I-D.ietf-tls-rfc8446bis" class="cite xref">I-D.ietf-tls-rfc8446bis</a>]</span>.<a href="#section-4-8" class="pilcrow">¶</a></p>
-<p id="section-4-9">status:  Response to ExtendedKeyUpdateRequest. This status field indicates
-  whether responder accepted or declined Extended Key Update Request.<a href="#section-4-9" class="pilcrow">¶</a></p>
-<p id="section-4-10">delay:  Delay in seconds for the initiator to retry the request.<a href="#section-4-10" class="pilcrow">¶</a></p>
-<p id="section-4-11">There are three rejection reasons defined:<a href="#section-4-11" class="pilcrow">¶</a></p>
-<ol start="1" type="1" class="normal type-1" id="section-4-12">
-<li id="section-4-12.1">
-          <p id="section-4-12.1.1"><code>retry</code>: request was declined temporarily as responder is too busy.
+  definition. The structures are defined in <span>[<a href="#I-D.ietf-tls-rfc8446bis" class="cite xref">I-D.ietf-tls-rfc8446bis</a>]</span>.<a href="#section-4-10" class="pilcrow">¶</a></p>
+<p id="section-4-11">status:  Response to ExtendedKeyUpdateRequest. This status field indicates
+  whether responder accepted or declined Extended Key Update Request.<a href="#section-4-11" class="pilcrow">¶</a></p>
+<p id="section-4-12">delay:  Delay in seconds for the initiator to retry the request.<a href="#section-4-12" class="pilcrow">¶</a></p>
+<p id="section-4-13">There are three rejection reasons defined:<a href="#section-4-13" class="pilcrow">¶</a></p>
+<ol start="1" type="1" class="normal type-1" id="section-4-14">
+<li id="section-4-14.1">
+          <p id="section-4-14.1.1"><code>retry</code>: request was declined temporarily as responder is too busy.
 In this case ExtendedKeyUpdateResponse contains delay in seconds for initiator
 to retry. Initiator MUST NOT retry within this interval and SHOULD retry after
 it lapsed. Note that responder MAY apply an overall rate limit to extended key
 update that would not be specific to given TLS session. If initiator cannot
 proceed without immediate Extended Key Update it MUST terminate the connection
-with TLS alert "extended_key_update_required" (alert number TBD).<a href="#section-4-12.1.1" class="pilcrow">¶</a></p>
-</li>
-        <li id="section-4-12.2">
-          <p id="section-4-12.2.1"><code>rejected</code>: request was declined permanently. Initiator MUST NOT retry and
-if it cannot proceed without Extended Key Update it MUST terminate the
-connection with alert "extended_key_update_required" (alert number TBD).<a href="#section-4-12.2.1" class="pilcrow">¶</a></p>
-</li>
-        <li id="section-4-12.3">
-          <p id="section-4-12.3.1"><code>clashed</code>: request was declined because responder already initiated its own
-extended key update.<a href="#section-4-12.3.1" class="pilcrow">¶</a></p>
-</li>
-      </ol>
-<p id="section-4-13">The exchange has the following steps:<a href="#section-4-13" class="pilcrow">¶</a></p>
-<ol start="1" type="1" class="normal type-1" id="section-4-14">
-<li id="section-4-14.1">
-          <p id="section-4-14.1.1">Initiator sends a ExtendedKeyUpdateRequest message, which contains
-a key share. While an extended key update is in progress, the initiator
-MUST NOT initiate further key updates.<a href="#section-4-14.1.1" class="pilcrow">¶</a></p>
+with TLS alert "extended_key_update_required" (alert number TBD).<a href="#section-4-14.1.1" class="pilcrow">¶</a></p>
 </li>
         <li id="section-4-14.2">
-          <p id="section-4-14.2.1">On receipt of the ExtendedKeyUpdateRequest message, the responder
+          <p id="section-4-14.2.1"><code>rejected</code>: request was declined permanently. Initiator MUST NOT retry and
+if it cannot proceed without Extended Key Update it MUST terminate the
+connection with alert "extended_key_update_required" (alert number TBD).<a href="#section-4-14.2.1" class="pilcrow">¶</a></p>
+</li>
+        <li id="section-4-14.3">
+          <p id="section-4-14.3.1"><code>clashed</code>: request was declined because responder already initiated its own
+extended key update.<a href="#section-4-14.3.1" class="pilcrow">¶</a></p>
+</li>
+      </ol>
+<p id="section-4-15">The exchange has the following steps:<a href="#section-4-15" class="pilcrow">¶</a></p>
+<ol start="1" type="1" class="normal type-1" id="section-4-16">
+<li id="section-4-16.1">
+          <p id="section-4-16.1.1">Initiator sends a ExtendedKeyUpdateRequest message, which contains
+a key share. While an extended key update is in progress, the initiator
+MUST NOT initiate further key updates.<a href="#section-4-16.1.1" class="pilcrow">¶</a></p>
+</li>
+        <li id="section-4-16.2">
+          <p id="section-4-16.2.1">On receipt of the ExtendedKeyUpdateRequest message, the responder
 sends the ExtendedKeyUpdateResponse message. If the responder accepts the
 request, it sets the status to <code>accepted</code> and includes its own key share.
 If the responder declines the request, it sets the status accordingly and
 does not include the key share. While an extended key update is in progress,
-the responder MUST NOT initiate further key updates.<a href="#section-4-14.2.1" class="pilcrow">¶</a></p>
+the responder MUST NOT initiate further key updates.<a href="#section-4-16.2.1" class="pilcrow">¶</a></p>
 </li>
-        <li id="section-4-14.3">
-          <p id="section-4-14.3.1">On receipt of the ExtendedKeyUpdateResponse message with <code>accepted</code> status,
+        <li id="section-4-16.3">
+          <p id="section-4-16.3.1">On receipt of the ExtendedKeyUpdateResponse message with <code>accepted</code> status,
 the initiator is able to derive a secret key based on the exchanged key shares.
 The NewKeyUpdate message is intentionally an empty structure that triggers
-the transition to new keying material.<a href="#section-4-14.3.1" class="pilcrow">¶</a></p>
+the transition to new keying material.<a href="#section-4-16.3.1" class="pilcrow">¶</a></p>
 </li>
-        <li id="section-4-14.4">
-          <p id="section-4-14.4.1">On receipt of the NewKeyUpdate message by the responder, it MUST update
+        <li id="section-4-16.4">
+          <p id="section-4-16.4.1">On receipt of the NewKeyUpdate message by the responder, it MUST update
 its receive keys. In response, the responder transmits a NewKeyUpdate message
-and MUST update its sending keys.<a href="#section-4-14.4.1" class="pilcrow">¶</a></p>
+and MUST update its sending keys.<a href="#section-4-16.4.1" class="pilcrow">¶</a></p>
 </li>
-        <li id="section-4-14.5">
-          <p id="section-4-14.5.1">After receiving the NewKeyUpdate message from the responder, the initiator
+        <li id="section-4-16.5">
+          <p id="section-4-16.5.1">After receiving the NewKeyUpdate message from the responder, the initiator
 MUST update its traffic keys and MUST send all its traffic using the next
-generation of keys.<a href="#section-4-14.5.1" class="pilcrow">¶</a></p>
+generation of keys.<a href="#section-4-16.5.1" class="pilcrow">¶</a></p>
 </li>
       </ol>
-<p id="section-4-15">Both sender and receiver MUST encrypt their NewKeyUpdate messages with
+<p id="section-4-17">Both sender and receiver MUST encrypt their NewKeyUpdate messages with
 the old keys. Both sides MUST ensure that the NewKeyUpdate encrypted
 with the old key is received before accepting any messages encrypted
-with the new key.<a href="#section-4-15" class="pilcrow">¶</a></p>
-<p id="section-4-16">If TLS peers independently initiate the extended key update
+with the new key.<a href="#section-4-17" class="pilcrow">¶</a></p>
+<p id="section-4-18">If TLS peers independently initiate the extended key update
 procedure and the requests cross in flight, the ExtendedKeyUpdateRequest
 message with the lower lexicographic order for the key_exchange value
 in the KeyShareEntry will be rejected by the responder using <code>clashed</code> status
 in ExtendedKeyUpdateResponse message. This approach prevents each side incrementing
-keys by two generations.<a href="#section-4-16" class="pilcrow">¶</a></p>
+keys by two generations.<a href="#section-4-18" class="pilcrow">¶</a></p>
 <span id="name-handshake-structure"></span><div id="fig-handshake">
 <figure id="figure-2">
-        <div class="alignLeft art-text artwork" id="section-4-17.1">
+        <div class="alignLeft art-text artwork" id="section-4-19.1">
 <pre>
       struct {
           HandshakeType msg_type;    /* handshake type */
@@ -1505,9 +1533,6 @@ keys by two generations.<a href="#section-4-16" class="pilcrow">¶</a></p>
 <a href="#name-handshake-structure" class="selfRef">Handshake Structure.</a>
         </figcaption></figure>
 </div>
-<p id="section-4-18">The ExtendedKeyUpdate and the KeyUpdates MAY be used in combination
-over the lifetime of a TLS communication session, depending on the
-desired security properties.<a href="#section-4-18" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="key_update">
@@ -1700,26 +1725,29 @@ key shares are exchanged.<a href="#section-8-1" class="pilcrow">¶</a></p>
 <div id="sslkeylogfile-update">
 <section id="section-9">
       <h2 id="name-sslkeylogfile-update">
-<a href="#section-9" class="section-number selfRef">9. </a><a href="#name-sslkeylogfile-update" class="section-name selfRef">SSLKEYLOGFILE update</a>
+<a href="#section-9" class="section-number selfRef">9. </a><a href="#name-sslkeylogfile-update" class="section-name selfRef">SSLKEYLOGFILE Update</a>
       </h2>
-<p id="section-9-1">As Extended Key Update invalidates previous secrets, SSLKEYLOGFILE <span>[<a href="#I-D.ietf-tls-keylogfile" class="cite xref">I-D.ietf-tls-keylogfile</a>]</span> needs to
-be populated with new entries. Each completed Extended Key Update results
-in two additional secret labels in SSLKEYLOGFILE:<a href="#section-9-1" class="pilcrow">¶</a></p>
+<p id="section-9-1">As a successful extended key update exchange invalidates previous secrets,
+SSLKEYLOGFILE <span>[<a href="#I-D.ietf-tls-keylogfile" class="cite xref">I-D.ietf-tls-keylogfile</a>]</span> needs to be populated with new
+entries. As a result, two additional secret labels are utilized in the
+SSLKEYLOGFILE:<a href="#section-9-1" class="pilcrow">¶</a></p>
 <ol start="1" type="1" class="normal type-1" id="section-9-2">
 <li id="section-9-2.1">
-          <p id="section-9-2.1.1"><code>CLIENT_TRAFFIC_SECRET_N+1</code>: identified as client_application_traffic_secret_N+1 in the key schedule<a href="#section-9-2.1.1" class="pilcrow">¶</a></p>
+          <p id="section-9-2.1.1"><code>CLIENT_TRAFFIC_SECRET_N+1</code>: identifies the client_application_traffic_secret_N+1 in the key schedule<a href="#section-9-2.1.1" class="pilcrow">¶</a></p>
 </li>
         <li id="section-9-2.2">
-          <p id="section-9-2.2.1"><code>SERVER_TRAFFIC_SECRET_N+1</code>: identified as server_application_traffic_secret_N+1 in the key schedule<a href="#section-9-2.2.1" class="pilcrow">¶</a></p>
+          <p id="section-9-2.2.1"><code>SERVER_TRAFFIC_SECRET_N+1</code>: identifies the server_application_traffic_secret_N+1 in the key schedule<a href="#section-9-2.2.1" class="pilcrow">¶</a></p>
 </li>
       </ol>
-<p id="section-9-3">Similarly to other records in SSLKEYLOGFILE label is followed by 32-byte value
-of the Random field from the ClientHello message that established the TLS
-connection and corresponding secret encoded in hexadecimal.<a href="#section-9-3" class="pilcrow">¶</a></p>
-<p id="section-9-4">SSLKEYLOGFILE entries for Extended Key Update MUST NOT be produced if
+<p id="section-9-3">Similar to other entries in the SSLKEYLOGFILE, the label is followed by the
+32-byte value of the Random field from the ClientHello message that
+established the TLS connection, and the corresponding secret encoded in
+hexadecimal.<a href="#section-9-3" class="pilcrow">¶</a></p>
+<p id="section-9-4">SSLKEYLOGFILE entries for the extended key update MUST NOT be produced if
 SSLKEYLOGFILE was not used for other secrets in the handshake.<a href="#section-9-4" class="pilcrow">¶</a></p>
-<p id="section-9-5">Note that each successful Extended Key Update invalidates all previous SSLKEYLOGFILE secrets including
-past iterations of <code>CLIENT_TRAFFIC_SECRET_</code> and <code>SERVER_TRAFFIC_SECRET_</code>.<a href="#section-9-5" class="pilcrow">¶</a></p>
+<p id="section-9-5">Note that each successful Extended Key Update invalidates all previous SSLKEYLOGFILE
+secrets including past iterations of <code>CLIENT_TRAFFIC_SECRET_</code> and
+<code>SERVER_TRAFFIC_SECRET_</code>.<a href="#section-9-5" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="exporter">
@@ -1750,46 +1778,122 @@ material is aligned with the updated security context.<a href="#section-10-2" cl
       <h2 id="name-iana-considerations">
 <a href="#section-12" class="section-number selfRef">12. </a><a href="#name-iana-considerations" class="section-name selfRef">IANA Considerations</a>
       </h2>
-<p id="section-12-1">IANA is requested to allocate value TBD for the "extended_key_update_required" alert
-in the "TLS Alerts" registry. The value for the "DTLS-OK" column is "Y".<a href="#section-12-1" class="pilcrow">¶</a></p>
-<p id="section-12-2">IANA is requested to add the following entry to the "TLS Flags"
-extension registry <span>[<a href="#TLS-Ext-Registry" class="cite xref">TLS-Ext-Registry</a>]</span>:<a href="#section-12-2" class="pilcrow">¶</a></p>
+<div id="tls-alerts">
+<section id="section-12.1">
+        <h3 id="name-tls-alerts">
+<a href="#section-12.1" class="section-number selfRef">12.1. </a><a href="#name-tls-alerts" class="section-name selfRef">TLS Alerts</a>
+        </h3>
+<p id="section-12.1-1">IANA is requested to allocate value TBD for the "extended_key_update_required" alert
+in the "TLS Alerts" registry. The value for the "DTLS-OK" column is "Y".<a href="#section-12.1-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="tls-flags">
+<section id="section-12.2">
+        <h3 id="name-tls-flags">
+<a href="#section-12.2" class="section-number selfRef">12.2. </a><a href="#name-tls-flags" class="section-name selfRef">TLS Flags</a>
+        </h3>
+<p id="section-12.2-1">IANA is requested to add the following entry to the "TLS Flags"
+extension registry <span>[<a href="#TLS-Ext-Registry" class="cite xref">TLS-Ext-Registry</a>]</span>:<a href="#section-12.2-1" class="pilcrow">¶</a></p>
 <ul class="normal">
-<li class="normal" id="section-12-3.1">
-          <p id="section-12-3.1.1">Value: TBD1<a href="#section-12-3.1.1" class="pilcrow">¶</a></p>
+<li class="normal" id="section-12.2-2.1">
+            <p id="section-12.2-2.1.1">Value: TBD1<a href="#section-12.2-2.1.1" class="pilcrow">¶</a></p>
 </li>
-        <li class="normal" id="section-12-3.2">
-          <p id="section-12-3.2.1">Flag Name: extended_key_update<a href="#section-12-3.2.1" class="pilcrow">¶</a></p>
+          <li class="normal" id="section-12.2-2.2">
+            <p id="section-12.2-2.2.1">Flag Name: extended_key_update<a href="#section-12.2-2.2.1" class="pilcrow">¶</a></p>
 </li>
-        <li class="normal" id="section-12-3.3">
-          <p id="section-12-3.3.1">Messages: CH, EE<a href="#section-12-3.3.1" class="pilcrow">¶</a></p>
+          <li class="normal" id="section-12.2-2.3">
+            <p id="section-12.2-2.3.1">Messages: CH, EE<a href="#section-12.2-2.3.1" class="pilcrow">¶</a></p>
 </li>
-        <li class="normal" id="section-12-3.4">
-          <p id="section-12-3.4.1">Recommended: Y<a href="#section-12-3.4.1" class="pilcrow">¶</a></p>
+          <li class="normal" id="section-12.2-2.4">
+            <p id="section-12.2-2.4.1">Recommended: Y<a href="#section-12.2-2.4.1" class="pilcrow">¶</a></p>
 </li>
-        <li class="normal" id="section-12-3.5">
-          <p id="section-12-3.5.1">Reference: [This document]<a href="#section-12-3.5.1" class="pilcrow">¶</a></p>
+          <li class="normal" id="section-12.2-2.5">
+            <p id="section-12.2-2.5.1">Reference: [This document]<a href="#section-12.2-2.5.1" class="pilcrow">¶</a></p>
 </li>
-      </ul>
-<p id="section-12-4">IANA is requested to add the following entry to the "TLS
-HandshakeType" registry <span>[<a href="#TLS-Ext-Registry" class="cite xref">TLS-Ext-Registry</a>]</span>:<a href="#section-12-4" class="pilcrow">¶</a></p>
+        </ul>
+</section>
+</div>
+<div id="tls-handshaketype">
+<section id="section-12.3">
+        <h3 id="name-tls-handshaketype">
+<a href="#section-12.3" class="section-number selfRef">12.3. </a><a href="#name-tls-handshaketype" class="section-name selfRef">TLS HandshakeType</a>
+        </h3>
+<p id="section-12.3-1">IANA is requested to add the following entries to the "TLS
+HandshakeType" registry <span>[<a href="#TLS-Ext-Registry" class="cite xref">TLS-Ext-Registry</a>]</span>.<a href="#section-12.3-1" class="pilcrow">¶</a></p>
+<div id="extendedkeyupdaterequest-message">
+<section id="section-12.3.1">
+          <h4 id="name-extended_key_update_request">
+<a href="#section-12.3.1" class="section-number selfRef">12.3.1. </a><a href="#name-extended_key_update_request" class="section-name selfRef"><code>extended_key_update_request</code> Message</a>
+          </h4>
 <ul class="normal">
-<li class="normal" id="section-12-5.1">
-          <p id="section-12-5.1.1">Value: TBD2<a href="#section-12-5.1.1" class="pilcrow">¶</a></p>
+<li class="normal" id="section-12.3.1-1.1">
+              <p id="section-12.3.1-1.1.1">Value: TBD2<a href="#section-12.3.1-1.1.1" class="pilcrow">¶</a></p>
 </li>
-        <li class="normal" id="section-12-5.2">
-          <p id="section-12-5.2.1">Description: extended_key_update<a href="#section-12-5.2.1" class="pilcrow">¶</a></p>
+            <li class="normal" id="section-12.3.1-1.2">
+              <p id="section-12.3.1-1.2.1">Description: extended_key_update<a href="#section-12.3.1-1.2.1" class="pilcrow">¶</a></p>
 </li>
-        <li class="normal" id="section-12-5.3">
-          <p id="section-12-5.3.1">DTLS-OK: Y<a href="#section-12-5.3.1" class="pilcrow">¶</a></p>
+            <li class="normal" id="section-12.3.1-1.3">
+              <p id="section-12.3.1-1.3.1">DTLS-OK: Y<a href="#section-12.3.1-1.3.1" class="pilcrow">¶</a></p>
 </li>
-        <li class="normal" id="section-12-5.4">
-          <p id="section-12-5.4.1">Reference: [This document]<a href="#section-12-5.4.1" class="pilcrow">¶</a></p>
+            <li class="normal" id="section-12.3.1-1.4">
+              <p id="section-12.3.1-1.4.1">Reference: [This document]<a href="#section-12.3.1-1.4.1" class="pilcrow">¶</a></p>
 </li>
-        <li class="normal" id="section-12-5.5">
-          <p id="section-12-5.5.1">Comment:<a href="#section-12-5.5.1" class="pilcrow">¶</a></p>
+            <li class="normal" id="section-12.3.1-1.5">
+              <p id="section-12.3.1-1.5.1">Comment:<a href="#section-12.3.1-1.5.1" class="pilcrow">¶</a></p>
 </li>
-      </ul>
+          </ul>
+</section>
+</div>
+<div id="extendedkeyupdateresponse-message">
+<section id="section-12.3.2">
+          <h4 id="name-extended_key_update_respons">
+<a href="#section-12.3.2" class="section-number selfRef">12.3.2. </a><a href="#name-extended_key_update_respons" class="section-name selfRef"><code>extended_key_update_response</code> Message</a>
+          </h4>
+<ul class="normal">
+<li class="normal" id="section-12.3.2-1.1">
+              <p id="section-12.3.2-1.1.1">Value: TBD3<a href="#section-12.3.2-1.1.1" class="pilcrow">¶</a></p>
+</li>
+            <li class="normal" id="section-12.3.2-1.2">
+              <p id="section-12.3.2-1.2.1">Description: extended_key_update_response<a href="#section-12.3.2-1.2.1" class="pilcrow">¶</a></p>
+</li>
+            <li class="normal" id="section-12.3.2-1.3">
+              <p id="section-12.3.2-1.3.1">DTLS-OK: Y<a href="#section-12.3.2-1.3.1" class="pilcrow">¶</a></p>
+</li>
+            <li class="normal" id="section-12.3.2-1.4">
+              <p id="section-12.3.2-1.4.1">Reference: [This document]<a href="#section-12.3.2-1.4.1" class="pilcrow">¶</a></p>
+</li>
+            <li class="normal" id="section-12.3.2-1.5">
+              <p id="section-12.3.2-1.5.1">Comment:<a href="#section-12.3.2-1.5.1" class="pilcrow">¶</a></p>
+</li>
+          </ul>
+</section>
+</div>
+<div id="newkeyupdate-message">
+<section id="section-12.3.3">
+          <h4 id="name-new_key_update-message">
+<a href="#section-12.3.3" class="section-number selfRef">12.3.3. </a><a href="#name-new_key_update-message" class="section-name selfRef"><code>new_key_update</code> Message</a>
+          </h4>
+<ul class="normal">
+<li class="normal" id="section-12.3.3-1.1">
+              <p id="section-12.3.3-1.1.1">Value: TBD3<a href="#section-12.3.3-1.1.1" class="pilcrow">¶</a></p>
+</li>
+            <li class="normal" id="section-12.3.3-1.2">
+              <p id="section-12.3.3-1.2.1">Description: new_key_update<a href="#section-12.3.3-1.2.1" class="pilcrow">¶</a></p>
+</li>
+            <li class="normal" id="section-12.3.3-1.3">
+              <p id="section-12.3.3-1.3.1">DTLS-OK: Y<a href="#section-12.3.3-1.3.1" class="pilcrow">¶</a></p>
+</li>
+            <li class="normal" id="section-12.3.3-1.4">
+              <p id="section-12.3.3-1.4.1">Reference: [This document]<a href="#section-12.3.3-1.4.1" class="pilcrow">¶</a></p>
+</li>
+            <li class="normal" id="section-12.3.3-1.5">
+              <p id="section-12.3.3-1.5.1">Comment:<a href="#section-12.3.3-1.5.1" class="pilcrow">¶</a></p>
+</li>
+          </ul>
+</section>
+</div>
+</section>
+</div>
 </section>
 </div>
 <div id="sec-combined-references">
@@ -1914,7 +2018,7 @@ Transport and Services Working Group (tsvwg) Gorry Fairhurst and
 Marten Seemann as well as the responsible area director Martin Duke.<a href="#appendix-A-3" class="pilcrow">¶</a></p>
 <p id="appendix-A-4">Finally, we would like to thank Martin Thomson, Ilari Liusvaara,
 Benjamin Kaduk, Scott Fluhrer, Dennis Jackson, David Benjamin,
-Matthijs van Duin, Rifaat Shekh-Yusef and Thom Wiggers for their review comments.<a href="#appendix-A-4" class="pilcrow">¶</a></p>
+Matthijs van Duin, Rifaat Shekh-Yusef, Joe Birr-Pixton and Thom Wiggers for their review comments.<a href="#appendix-A-4" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="authors-addresses">
