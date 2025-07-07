@@ -215,12 +215,12 @@ responder whereby the initiator may be the TLS client or the TLS server.
 Key  ^ ClientHello
 Exch | + key_share
      | + signature_algorithms
-     v + Extended_Key_Update       -------->
+     v + extended_key_update       -------->
                                                   ServerHello  ^ Key
                                                   + key_share  | Exch
                                                                v
                                         {EncryptedExtensions   ^ Server
-                                       + Extended_Key_Update}  | Params
+                                       + extended_key_update}  | Params
                                          {CertificateRequest}  v
                                                 {Certificate}  ^
                                           {CertificateVerify}  | Auth
@@ -229,14 +229,32 @@ Exch | + key_share
      ^ {Certificate}
 Auth | {CertificateVerify}
      v {Finished}              -------->
-       [Application Data]      <------->  [Application Data]
+       [Application Data]N     <------->  [Application Data]N
                                   ...
-[ExtendedKeyUpdateRequest]     -------->
-                               <--------  [ExtendedKeyUpdateResponse]
-            [NewKeyUpdate]     -------->
-                               <--------  [NewKeyUpdate]
+[ExtendedKeyUpdateRequest]N    -------->
+                               <--------  [ExtendedKeyUpdateResponse]N
+            [NewKeyUpdate]N    -------->
+                               <--------  [NewKeyUpdate]N
                                   ...
-       [Application Data]      <------->  [Application Data]
+       [Application Data]N+1   <------->  [Application Data]N+1
+
+Legend:
+
+        Indicates noteworthy extensions sent in the
+        previously noted message.
+
+-       Indicates optional or situation-dependent
+        messages/extensions that are not always sent.
+
+    () Indicates messages protected using keys
+    derived from a client_early_traffic_secret.
+
+    {} Indicates messages protected using keys
+    derived from a [sender]_handshake_traffic_secret.
+
+    []N Indicates messages protected using keys
+    derived from [sender]_application_traffic_secret_N.
+
 ~~~
 {: #fig-key-update title="Extended Key Update Message Exchange."}
 
@@ -478,10 +496,10 @@ Auth | {CertificateVerify}
                                   ...
                               some time later
                                   ...
- [ExtendedKeyUpdateRequest]    -------->
-  (with key_share)
-                               <-------- [ExtendedKeyUpdateResponse]
-                                           (with key_share)
+ [ExtendedKeyUpdateRequest     -------->
+  (with key_share)]
+                               <-------- [ExtendedKeyUpdateResponse
+                                           (with key_share)]
  [NewKeyUpdate]                -------->
                                <-------- [NewKeyUpdate]
 ~~~
@@ -556,8 +574,8 @@ This entire document is about security.
 
 ## TLS Alerts
 
-IANA is requested to allocate value TBD for the "extended_key_update_required" alert
-in the "TLS Alerts" registry. The value for the "DTLS-OK" column is "Y".
+IANA is requested to allocate value TBD for the "extended_key_update_required"
+alert in the "TLS Alerts" registry. The value for the "DTLS-OK" column is "Y".
 
 ## TLS Flags
 
@@ -565,19 +583,15 @@ IANA is requested to add the following entry to the "TLS Flags"
 extension registry {{TLS-Ext-Registry}}:
 
 *  Value: TBD1
-
 *  Flag Name: extended_key_update
-
 *  Messages: CH, EE
-
 *  Recommended: Y
-
 *  Reference: [This document]
 
 ## TLS HandshakeType
 
-IANA is requested to add the following entries to the "TLS
-HandshakeType" registry {{TLS-Ext-Registry}}.
+IANA is requested to add the following entries to the "TLS HandshakeType"
+registry {{TLS-Ext-Registry}}.
 
 ### `extended_key_update_request` Message
 
