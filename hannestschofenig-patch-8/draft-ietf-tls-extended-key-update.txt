@@ -5,14 +5,14 @@
 Transport Layer Security                                   H. Tschofenig
 Internet-Draft                                                   Siemens
 Intended status: Standards Track                                M. Tüxen
-Expires: 7 January 2026                Münster Univ. of Applied Sciences
+Expires: 8 January 2026                Münster Univ. of Applied Sciences
                                                                 T. Reddy
                                                                    Nokia
                                                                 S. Fries
                                                                  Siemens
                                                             Y. Rosomakho
                                                                  Zscaler
-                                                             6 July 2025
+                                                             7 July 2025
 
 
        Extended Key Update for Transport Layer Security (TLS) 1.3
@@ -64,7 +64,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 7 January 2026.
+   This Internet-Draft will expire on 8 January 2026.
 
 Copyright Notice
 
@@ -446,6 +446,11 @@ Table of Contents
    endpoints MUST either invalidate any session tickets issued prior to
    the key update or ensure that resumption always involves a fresh
    (EC)DH exchange.
+
+   If session tickets cannot be stored securely, developers SHOULD
+   consider disabling ticket-based resumption in their deployments.
+   While this approach may impact performance, it provides improved
+   security properties.
 
 6.  Example
 
