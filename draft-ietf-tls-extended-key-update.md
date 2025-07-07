@@ -177,6 +177,8 @@ functionality specified in this document and applications that
 require perfect forward security will have to initiate a full
 handshake.
 
+# Extended Key Update Messages {#ext-key-update}
+=======
 If the client and server agree to use the extended key update mechanism,
 the standard key update MUST NOT be used. In this case, the extended
 key update fully replaces the standard key update functionality.
@@ -185,21 +187,18 @@ Implementations that receive a classic KeyUpdate message after successfully
 negotiating the Extended Key Update functionality MUST terminate the
 connection with an "unexpected_message" alert.
 
-# Extended Key Update Message {#ext-key-update}
-
-The ExtendedKeyUpdate handshake message is used to indicate an update
+The extended key update handshake message exchange used to perform an update
 of cryptographic keys. This key update process can be sent by either
 peer after it has sent a Finished message.  Implementations that
-receive a ExtendedKeyUpdate message prior to receiving a Finished
+receive a ExtendedKeyUpdateRequest message prior to receiving a Finished
 message MUST terminate the connection with an "unexpected_message"
 alert.
 
-The KeyShareEntry in the ExtendedKeyUpdate message MUST be the same
-group mutually supported by the client and server during the initial
-handshake. The peers MUST NOT send a KeyShareEntry in the ExtendedKeyUpdate
-message that is not mutually supported by the client and server during
-the initial handshake. An implementation that receives any other value
-MUST terminate the connection with an "illegal_parameter" alert.
+The KeyShareEntry in the ExtendedKeyUpdateRequest message and in the
+ExtendedKeyUpdateResponse message MUST be the same
+algorithm mutually supported by the client and server during the initial
+handshake. An implementation that receives an algorithm not previously
+negotiated MUST terminate the connection with an "illegal_parameter" alert.
 
 {{fig-key-update}} shows the interaction graphically.
 First, support for the functionality in this specification
@@ -352,10 +351,6 @@ keys by two generations.
       } Handshake;
 ~~~
 {: #fig-handshake title="Handshake Structure."}
-
-The ExtendedKeyUpdate and the KeyUpdates MAY be used in combination
-over the lifetime of a TLS communication session, depending on the
-desired security properties.
 
 # Updating Traffic Secrets {#key_update}
 
@@ -516,8 +511,12 @@ tickets have been exchanged.
 
 # IANA Considerations
 
+## TLS Alerts
+
 IANA is requested to allocate value TBD for the "extended_key_update_required" alert
 in the "TLS Alerts" registry. The value for the "DTLS-OK" column is "Y".
+
+## TLS Flags
 
 IANA is requested to add the following entry to the "TLS Flags"
 extension registry {{TLS-Ext-Registry}}:
@@ -532,19 +531,34 @@ extension registry {{TLS-Ext-Registry}}:
 
 *  Reference: [This document]
 
-IANA is requested to add the following entry to the "TLS
-HandshakeType" registry {{TLS-Ext-Registry}}:
+## TLS HandshakeType
+
+IANA is requested to add the following entries to the "TLS
+HandshakeType" registry {{TLS-Ext-Registry}}.
+
+### `extended_key_update_request` Message
 
 *  Value: TBD2
-
 *  Description: extended_key_update
-
 *  DTLS-OK: Y
-
 *  Reference: [This document]
-
 *  Comment:
 
+### `extended_key_update_response` Message
+
+*  Value: TBD3
+*  Description: extended_key_update_response
+*  DTLS-OK: Y
+*  Reference: [This document]
+*  Comment:
+
+### `new_key_update` Message
+
+*  Value: TBD3
+*  Description: new_key_update
+*  DTLS-OK: Y
+*  Reference: [This document]
+*  Comment:
 
 --- back
 
