@@ -5,14 +5,14 @@
 Transport Layer Security                                   H. Tschofenig
 Internet-Draft                                                   Siemens
 Intended status: Standards Track                                M. Tüxen
-Expires: 6 January 2026                Münster Univ. of Applied Sciences
+Expires: 8 January 2026                Münster Univ. of Applied Sciences
                                                                 T. Reddy
                                                                    Nokia
                                                                 S. Fries
                                                                  Siemens
                                                             Y. Rosomakho
                                                                  Zscaler
-                                                             5 July 2025
+                                                             7 July 2025
 
 
        Extended Key Update for Transport Layer Security (TLS) 1.3
@@ -64,7 +64,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 6 January 2026.
+   This Internet-Draft will expire on 8 January 2026.
 
 Copyright Notice
 
@@ -85,15 +85,21 @@ Table of Contents
    1.  Introduction
    2.  Terminology and Requirements Language
    3.  Negotiating the Extended Key Update
-   4.  Extended Key Update Message
+   4.  Extended Key Update Messages
    5.  Updating Traffic Secrets
    6.  Example
    7.  DTLS 1.3 Considerations
    8.  Post-Quantum Cryptography Considerations
-   9.  SSLKEYLOGFILE update
+   9.  SSLKEYLOGFILE Update
    10. Exporter
    11. Security Considerations
    12. IANA Considerations
+     12.1.  TLS Alerts
+     12.2.  TLS Flags
+     12.3.  TLS HandshakeType
+       12.3.1.  extended_key_update_request Message
+       12.3.2.  extended_key_update_response Message
+       12.3.3.  new_key_update Message
    13. References
      13.1.  Normative References
      13.2.  Informative References
@@ -186,7 +192,9 @@ Table of Contents
    require perfect forward security will have to initiate a full
    handshake.
 
-   If the client and server agree to use the extended key update
+4.  Extended Key Update Messages
+
+   ======= If the client and server agree to use the extended key update
    mechanism, the standard key update MUST NOT be used.  In this case,
    the extended key update fully replaces the standard key update
    functionality.
@@ -195,22 +203,18 @@ Table of Contents
    successfully negotiating the Extended Key Update functionality MUST
    terminate the connection with an "unexpected_message" alert.
 
-4.  Extended Key Update Message
+   The extended key update handshake message exchange used to perform an
+   update of cryptographic keys.  This key update process can be sent by
+   either peer after it has sent a Finished message.  Implementations
+   that receive a ExtendedKeyUpdateRequest message prior to receiving a
+   Finished message MUST terminate the connection with an
+   "unexpected_message" alert.
 
-   The ExtendedKeyUpdate handshake message is used to indicate an update
-   of cryptographic keys.  This key update process can be sent by either
-   peer after it has sent a Finished message.  Implementations that
-   receive a ExtendedKeyUpdate message prior to receiving a Finished
-   message MUST terminate the connection with an "unexpected_message"
-   alert.
-
-   The KeyShareEntry in the ExtendedKeyUpdate message MUST be the same
-   group mutually supported by the client and server during the initial
-   handshake.  The peers MUST NOT send a KeyShareEntry in the
-   ExtendedKeyUpdate message that is not mutually supported by the
-   client and server during the initial handshake.  An implementation
-   that receives any other value MUST terminate the connection with an
-   "illegal_parameter" alert.
+   The KeyShareEntry in the ExtendedKeyUpdateRequest message and in the
+   ExtendedKeyUpdateResponse message MUST be the same algorithm mutually
+   supported by the client and server during the initial handshake.  An
+   implementation that receives an algorithm not previously negotiated
+   MUST terminate the connection with an "illegal_parameter" alert.
 
    Figure 1 shows the interaction graphically.  First, support for the
    functionality in this specification is negotiated in the ClientHello
@@ -226,12 +230,12 @@ Table of Contents
  Key  ^ ClientHello
  Exch | + key_share
       | + signature_algorithms
-      v + Extended_Key_Update       -------->
+      v + extended_key_update       -------->
                                                    ServerHello  ^ Key
                                                    + key_share  | Exch
                                                                 v
                                          {EncryptedExtensions   ^ Server
-                                        + Extended_Key_Update}  | Params
+                                        + extended_key_update}  | Params
                                           {CertificateRequest}  v
                                                  {Certificate}  ^
                                            {CertificateVerify}  | Auth
@@ -240,14 +244,31 @@ Table of Contents
       ^ {Certificate}
  Auth | {CertificateVerify}
       v {Finished}              -------->
-        [Application Data]      <------->  [Application Data]
+        [Application Data]N     <------->  [Application Data]N
                                    ...
- [ExtendedKeyUpdateRequest]     -------->
-                                <--------  [ExtendedKeyUpdateResponse]
-             [NewKeyUpdate]     -------->
-                                <--------  [NewKeyUpdate]
+ [ExtendedKeyUpdateRequest]N    -------->
+                                <--------  [ExtendedKeyUpdateResponse]N
+             [NewKeyUpdate]N    -------->
+                                <--------  [NewKeyUpdate]N
                                    ...
-        [Application Data]      <------->  [Application Data]
+        [Application Data]N+1   <------->  [Application Data]N+1
+
+ Legend:
+
+         Indicates noteworthy extensions sent in the
+         previously noted message.
+
+ -       Indicates optional or situation-dependent
+         messages/extensions that are not always sent.
+
+     () Indicates messages protected using keys
+     derived from a client_early_traffic_secret.
+
+     {} Indicates messages protected using keys
+     derived from a [sender]_handshake_traffic_secret.
+
+     []N Indicates messages protected using keys
+     derived from [sender]_application_traffic_secret_N.
 
             Figure 1: Extended Key Update Message Exchange.
 
@@ -366,23 +387,23 @@ Table of Contents
 
                        Figure 2: Handshake Structure.
 
-   The ExtendedKeyUpdate and the KeyUpdates MAY be used in combination
-   over the lifetime of a TLS communication session, depending on the
-   desired security properties.
-
 5.  Updating Traffic Secrets
 
-   The ExtendedKeyUpdate handshake message is used to indicate that the
-   sender is updating its sending cryptographic keys.  This message can
-   be sent by either endpoint after the Finished messages have been
-   exchanged.
+   When the extended key update message exchange is completed both peers
+   have successfully updated their application traffic secrets.  The key
+   derivation function described in this document is used to perform
+   this update.
 
    The design of the key derivation function for computing the next
    generation of application_traffic_secret is motivated by the desire
    to include
 
-   *  the old traffic secret as well as a secret derived from the DH
-      exchange or from the hybrid key exchange,
+   *  a secret derived from the (EC)DHE exchange (or from the hybrid key
+      exchange / PQ-KEM exchange),
+
+   *  a secret that allows the new key exchange to be cryptographally
+      bind the previously established secret to the newly derived
+      secret,
 
    *  the concatenation of the ExtendedKeyUpdateRequest and the
       ExtendedKeyUpdateResponse messages, which contain the key shares,
@@ -390,27 +411,72 @@ Table of Contents
       of hybrid key exchange, providing MAL-BIND-K-CT security (see
       [CDM23]), and
 
-   *  a new label string to distinguish it from the application traffic
-      secret computation defined in [I-D.ietf-tls-rfc8446bis] for use
-      with the regular KeyUpdate.
+   *  new label strings to distinguish it from the key derivation used
+      in TLS 1.3.
 
-   sk = HKDF-Extract(Transcript-Hash(KeyUpdateMessages), secret)
+   The following diagram shows the key derivation hierarchy.
 
-   application_traffic_secret_N+1 =
-       HKDF-Expand-Label(sk,
-                         "traffic up2", application_traffic_secret_N,
-                         Hash.length)
+          Master Secret N
+                |
+                v
+          Derive-Secret(., "key derived", "")
+                |
+                v
+    (EC)DHE -> HKDF-Extract = Master Secret N+1
+                |
+                +-----> Derive-Secret(., "c ap traffic2",
+                |                ExtendedKeyUpdateRequest ||
+                |                ExtendedKeyUpdateResponse)
+                |                = client_application_traffic_secret_N+1
+                |
+                +-----> Derive-Secret(., "s ap traffic2",
+                |                ExtendedKeyUpdateRequest ||
+                |                ExtendedKeyUpdateResponse)
+                |                = server_application_traffic_secret_N+1
+                |
+                +-----> Derive-Secret(., "exp master2",
+                |                ExtendedKeyUpdateRequest ||
+                |                ExtendedKeyUpdateResponse)
+                |                = exporter_master_secret_N+1
+                |
+                +-----> Derive-Secret(., "res master2",
+                |                ExtendedKeyUpdateRequest ||
+                |                ExtendedKeyUpdateResponse))
+                                 = resumption_master_secret_N+1
 
-   The traffic keys are re-derived from the client_/
-   server_application_traffic_secret_N+1 as described in Section 7.3 of
+   During the initial handshake the Master Secret is generated, see
+   Section 7.1 of [I-D.ietf-tls-rfc8446bis].  Since the Master Secret is
+   discarded during the key derivation procedure, a derived value is
+   stored.  This value then serves as input to another key derivation
+   step that takes the (EC)DHE-established value as a second parameter
+   into account.
+
+   The traffic keys are re-derived from
+   client_application_traffic_secret_N+1 and
+   server_application_traffic_secret_N+1, as described in Section 7.3 of
    [I-D.ietf-tls-rfc8446bis].
 
    Once client_/server_application_traffic_secret_N+1 and its associated
    traffic keys have been computed, implementations SHOULD delete
    client_/server_application_traffic_secret_N and its associated
-   traffic keys.  Note: The client_/server_application_traffic_secret_N
-   and its associated traffic keys can only be deleted after receiving
-   the NewKeyUpdate message.
+   traffic keys as soon as possible.  Note: The client_/
+   server_application_traffic_secret_N and its associated traffic keys
+   can only be deleted after receiving the NewKeyUpdate message.
+
+   When using this extension, it is important to consider its
+   interaction with ticket-based session resumption.  If resumption
+   occurs without a new (EC)DH exchange that provides forward secrecy,
+   an attacker could potentially revert the security context to an
+   earlier state, thereby negating the benefits of the extended key
+   update.  To preserve the security guarantees provided by key updates,
+   endpoints MUST either invalidate any session tickets issued prior to
+   the key update or ensure that resumption always involves a fresh
+   (EC)DH exchange.
+
+   If session tickets cannot be stored securely, developers SHOULD
+   consider disabling ticket-based resumption in their deployments.
+   While this approach may impact performance, it provides improved
+   security properties.
 
 6.  Example
 
@@ -453,10 +519,10 @@ Table of Contents
                                    ...
                                some time later
                                    ...
-  [ExtendedKeyUpdateRequest]    -------->
-   (with key_share)
-                                <-------- [ExtendedKeyUpdateResponse]
-                                            (with key_share)
+  [ExtendedKeyUpdateRequest     -------->
+   (with key_share)]
+                                <-------- [ExtendedKeyUpdateResponse
+                                            (with key_share)]
   [NewKeyUpdate]                -------->
                                 <-------- [NewKeyUpdate]
 
@@ -477,37 +543,47 @@ Table of Contents
 
 8.  Post-Quantum Cryptography Considerations
 
-   Hybrid key exchange refers to using multiple key exchange algorithms
-   simultaneously and combining the result with the goal of providing
-   security even if all but one of the component algorithms is broken.
-   The transition to post-quantum cryptography motivates the
-   introduction of hybrid key exchanges to TLS, as described in
-   [I-D.ietf-tls-hybrid-design].  When the hybrid key exchange is used,
-   then the key_exchange field of a KeyShareEntry in the initial
-   exchange is the concatenation of the key_exchange field for each of
-   the algorithms.  The same approach is then re-used in the extended
-   key update when key shares are exchanged.
+   Hybrid key exchange refers to the simultaneous use of multiple key
+   exchange algorithms, with the resulting shared secret derived by
+   combining the outputs of each.  The goal of this approach is to
+   maintain security even if all but one of the component algorithms are
+   later found to be vulnerable.
 
-9.  SSLKEYLOGFILE update
+   The transition to post-quantum cryptography has motivated the
+   adoption of hybrid key exchanges in TLS, as described in
+   [I-D.ietf-tls-hybrid-design].  Specific hybrid groups have been
+   registered in [I-D.ietf-tls-ecdhe-mlkem].  When hybrid key exchange
+   is used, the key_exchange field of each KeyShareEntry in the initial
+   handshake is formed by concatenating the key_exchange fields of the
+   constituent algorithms.  This same approach is reused during the
+   Extended Key Update, when new key shares are exchanged.
 
-   As Extended Key Update invalidates previous secrets, SSLKEYLOGFILE
-   [I-D.ietf-tls-keylogfile] needs to be populated with new entries.
-   Each completed Extended Key Update results in two additional secret
-   labels in SSLKEYLOGFILE:
+   In addition to hybrid mechanisms, fully post-quantum key exchange can
+   also be used in TLS 1.3.  The specification in [I-D.ietf-tls-mlkem]
+   registers several lattice-based key encapsulation mechanisms (KEMs)
+   for this purpose.
 
-   1.  CLIENT_TRAFFIC_SECRET_N+1: identified as
+9.  SSLKEYLOGFILE Update
+
+   As a successful extended key update exchange invalidates previous
+   secrets, SSLKEYLOGFILE [I-D.ietf-tls-keylogfile] needs to be
+   populated with new entries.  As a result, two additional secret
+   labels are utilized in the SSLKEYLOGFILE:
+
+   1.  CLIENT_TRAFFIC_SECRET_N+1: identifies the
        client_application_traffic_secret_N+1 in the key schedule
 
-   2.  SERVER_TRAFFIC_SECRET_N+1: identified as
+   2.  SERVER_TRAFFIC_SECRET_N+1: identifies the
        server_application_traffic_secret_N+1 in the key schedule
 
-   Similarly to other records in SSLKEYLOGFILE label is followed by
-   32-byte value of the Random field from the ClientHello message that
-   established the TLS connection and corresponding secret encoded in
-   hexadecimal.
+   Similar to other entries in the SSLKEYLOGFILE, the label is followed
+   by the 32-byte value of the Random field from the ClientHello message
+   that established the TLS connection, and the corresponding secret
+   encoded in hexadecimal.
 
-   SSLKEYLOGFILE entries for Extended Key Update MUST NOT be produced if
-   SSLKEYLOGFILE was not used for other secrets in the handshake.
+   SSLKEYLOGFILE entries for the extended key update MUST NOT be
+   produced if SSLKEYLOGFILE was not used for other secrets in the
+   handshake.
 
    Note that each successful Extended Key Update invalidates all
    previous SSLKEYLOGFILE secrets including past iterations of
@@ -532,17 +608,15 @@ Table of Contents
 
    This entire document is about security.
 
-   When utilizing this extension it is important to understand the
-   interaction with ticket-based resumption since resumption without the
-   execution of a Diffie-Hellman exchange offering forward secrecy will
-   potentially undo updates to the application traffic secret
-   derivation, depending on when tickets have been exchanged.
-
 12.  IANA Considerations
+
+12.1.  TLS Alerts
 
    IANA is requested to allocate value TBD for the
    "extended_key_update_required" alert in the "TLS Alerts" registry.
    The value for the "DTLS-OK" column is "Y".
+
+12.2.  TLS Flags
 
    IANA is requested to add the following entry to the "TLS Flags"
    extension registry [TLS-Ext-Registry]:
@@ -557,12 +631,40 @@ Table of Contents
 
    *  Reference: [This document]
 
-   IANA is requested to add the following entry to the "TLS
-   HandshakeType" registry [TLS-Ext-Registry]:
+12.3.  TLS HandshakeType
+
+   IANA is requested to add the following entries to the "TLS
+   HandshakeType" registry [TLS-Ext-Registry].
+
+12.3.1.  extended_key_update_request Message
 
    *  Value: TBD2
 
    *  Description: extended_key_update
+
+   *  DTLS-OK: Y
+
+   *  Reference: [This document]
+
+   *  Comment:
+
+12.3.2.  extended_key_update_response Message
+
+   *  Value: TBD3
+
+   *  Description: extended_key_update_response
+
+   *  DTLS-OK: Y
+
+   *  Reference: [This document]
+
+   *  Comment:
+
+12.3.3.  new_key_update Message
+
+   *  Value: TBD3
+
+   *  Description: new_key_update
 
    *  DTLS-OK: Y
 
@@ -608,6 +710,14 @@ Table of Contents
               for KEMs and automated analysis of KEM-based protocols",
               November 2023, <https://eprint.iacr.org/2023/1933.pdf>.
 
+   [I-D.ietf-tls-ecdhe-mlkem]
+              Kwiatkowski, K., Kampanakis, P., Westerbaan, B., and D.
+              Stebila, "Post-quantum hybrid ECDHE-MLKEM Key Agreement
+              for TLSv1.3", Work in Progress, Internet-Draft, draft-
+              ietf-tls-ecdhe-mlkem-00, 23 March 2025,
+              <https://datatracker.ietf.org/doc/html/draft-ietf-tls-
+              ecdhe-mlkem-00>.
+
    [I-D.ietf-tls-hybrid-design]
               Stebila, D., Fluhrer, S., and S. Gueron, "Hybrid key
               exchange in TLS 1.3", Work in Progress, Internet-Draft,
@@ -621,6 +731,13 @@ Table of Contents
               Draft, draft-ietf-tls-keylogfile-05, 9 June 2025,
               <https://datatracker.ietf.org/doc/html/draft-ietf-tls-
               keylogfile-05>.
+
+   [I-D.ietf-tls-mlkem]
+              Connolly, D., "ML-KEM Post-Quantum Key Agreement for TLS
+              1.3", Work in Progress, Internet-Draft, draft-ietf-tls-
+              mlkem-00, 16 April 2025,
+              <https://datatracker.ietf.org/doc/html/draft-ietf-tls-
+              mlkem-00>.
 
    [RFC5746]  Rescorla, E., Ray, M., Dispensa, S., and N. Oskov,
               "Transport Layer Security (TLS) Renegotiation Indication
@@ -682,8 +799,8 @@ Appendix A.  Acknowledgments
 
    Finally, we would like to thank Martin Thomson, Ilari Liusvaara,
    Benjamin Kaduk, Scott Fluhrer, Dennis Jackson, David Benjamin,
-   Matthijs van Duin, Rifaat Shekh-Yusef and Thom Wiggers for their
-   review comments.
+   Matthijs van Duin, Rifaat Shekh-Yusef, Joe Birr-Pixton and Thom
+   Wiggers for their review comments.
 
 Authors' Addresses
 
