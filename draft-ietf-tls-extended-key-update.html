@@ -1209,7 +1209,7 @@ and DTLS 1.3.<a href="#section-abstract-2" class="pilcrow">¶</a></p>
             <p id="section-toc.1-1.8.1"><a href="#section-8" class="auto internal xref">8</a>.  <a href="#name-post-quantum-cryptography-c" class="internal xref">Post-Quantum Cryptography Considerations</a></p>
 </li>
           <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.9">
-            <p id="section-toc.1-1.9.1"><a href="#section-9" class="auto internal xref">9</a>.  <a href="#name-sslkeylogfile-update" class="internal xref">SSLKEYLOGFILE update</a></p>
+            <p id="section-toc.1-1.9.1"><a href="#section-9" class="auto internal xref">9</a>.  <a href="#name-sslkeylogfile-update" class="internal xref">SSLKEYLOGFILE Update</a></p>
 </li>
           <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.10">
             <p id="section-toc.1-1.10.1"><a href="#section-10" class="auto internal xref">10</a>. <a href="#name-exporter" class="internal xref">Exporter</a></p>
@@ -1681,26 +1681,29 @@ key shares are exchanged.<a href="#section-8-1" class="pilcrow">¶</a></p>
 <div id="sslkeylogfile-update">
 <section id="section-9">
       <h2 id="name-sslkeylogfile-update">
-<a href="#section-9" class="section-number selfRef">9. </a><a href="#name-sslkeylogfile-update" class="section-name selfRef">SSLKEYLOGFILE update</a>
+<a href="#section-9" class="section-number selfRef">9. </a><a href="#name-sslkeylogfile-update" class="section-name selfRef">SSLKEYLOGFILE Update</a>
       </h2>
-<p id="section-9-1">As Extended Key Update invalidates previous secrets, SSLKEYLOGFILE <span>[<a href="#I-D.ietf-tls-keylogfile" class="cite xref">I-D.ietf-tls-keylogfile</a>]</span> needs to
-be populated with new entries. Each completed Extended Key Update results
-in two additional secret labels in SSLKEYLOGFILE:<a href="#section-9-1" class="pilcrow">¶</a></p>
+<p id="section-9-1">As a successful extended key update exchange invalidates previous secrets,
+SSLKEYLOGFILE <span>[<a href="#I-D.ietf-tls-keylogfile" class="cite xref">I-D.ietf-tls-keylogfile</a>]</span> needs to be populated with new
+entries. As a result, two additional secret labels are utilized in the
+SSLKEYLOGFILE:<a href="#section-9-1" class="pilcrow">¶</a></p>
 <ol start="1" type="1" class="normal type-1" id="section-9-2">
 <li id="section-9-2.1">
-          <p id="section-9-2.1.1"><code>CLIENT_TRAFFIC_SECRET_N+1</code>: identified as client_application_traffic_secret_N+1 in the key schedule<a href="#section-9-2.1.1" class="pilcrow">¶</a></p>
+          <p id="section-9-2.1.1"><code>CLIENT_TRAFFIC_SECRET_N+1</code>: identifies the client_application_traffic_secret_N+1 in the key schedule<a href="#section-9-2.1.1" class="pilcrow">¶</a></p>
 </li>
         <li id="section-9-2.2">
-          <p id="section-9-2.2.1"><code>SERVER_TRAFFIC_SECRET_N+1</code>: identified as server_application_traffic_secret_N+1 in the key schedule<a href="#section-9-2.2.1" class="pilcrow">¶</a></p>
+          <p id="section-9-2.2.1"><code>SERVER_TRAFFIC_SECRET_N+1</code>: identifies the server_application_traffic_secret_N+1 in the key schedule<a href="#section-9-2.2.1" class="pilcrow">¶</a></p>
 </li>
       </ol>
-<p id="section-9-3">Similarly to other records in SSLKEYLOGFILE label is followed by 32-byte value
-of the Random field from the ClientHello message that established the TLS
-connection and corresponding secret encoded in hexadecimal.<a href="#section-9-3" class="pilcrow">¶</a></p>
-<p id="section-9-4">SSLKEYLOGFILE entries for Extended Key Update MUST NOT be produced if
+<p id="section-9-3">Similar to other entries in the SSLKEYLOGFILE, the label is followed by the
+32-byte value of the Random field from the ClientHello message that
+established the TLS connection, and the corresponding secret encoded in
+hexadecimal.<a href="#section-9-3" class="pilcrow">¶</a></p>
+<p id="section-9-4">SSLKEYLOGFILE entries for the extended key update MUST NOT be produced if
 SSLKEYLOGFILE was not used for other secrets in the handshake.<a href="#section-9-4" class="pilcrow">¶</a></p>
-<p id="section-9-5">Note that each successful Extended Key Update invalidates all previous SSLKEYLOGFILE secrets including
-past iterations of <code>CLIENT_TRAFFIC_SECRET_</code> and <code>SERVER_TRAFFIC_SECRET_</code>.<a href="#section-9-5" class="pilcrow">¶</a></p>
+<p id="section-9-5">Note that each successful Extended Key Update invalidates all previous SSLKEYLOGFILE
+secrets including past iterations of <code>CLIENT_TRAFFIC_SECRET_</code> and
+<code>SERVER_TRAFFIC_SECRET_</code>.<a href="#section-9-5" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="exporter">
@@ -1708,14 +1711,16 @@ past iterations of <code>CLIENT_TRAFFIC_SECRET_</code> and <code>SERVER_TRAFFIC_
       <h2 id="name-exporter">
 <a href="#section-10" class="section-number selfRef">10. </a><a href="#name-exporter" class="section-name selfRef">Exporter</a>
       </h2>
-<p id="section-10-1">Protocols like DTLS-SRTP and DTLS-over-SCTP utilize TLS or DTLS for key establishment but repurpose
-some of the keying material for their own purpose. These protocols use the TLS exporter defined in
-Section 7.5 of <span>[<a href="#I-D.ietf-tls-rfc8446bis" class="cite xref">I-D.ietf-tls-rfc8446bis</a>]</span>.<a href="#section-10-1" class="pilcrow">¶</a></p>
-<p id="section-10-2">Once the Extended Key Update mechanism is complete, such protocols would need to use the newly
-derived key to generate Exported Keying Material (EKM) to protect packets. The "sk" derived in the
-<a href="#key_update" class="auto internal xref">Section 5</a> will be used as the "Secret" in the exporter function, defined in
-Section 7.5 of <span>[<a href="#I-D.ietf-tls-rfc8446bis" class="cite xref">I-D.ietf-tls-rfc8446bis</a>]</span>, to generate EKM, ensuring that the exported keying material is
-aligned with the updated security context.<a href="#section-10-2" class="pilcrow">¶</a></p>
+<p id="section-10-1">Protocols such as DTLS-SRTP and DTLS-over-SCTP use TLS or DTLS for key
+establishment but extract specific parts of the derived keying material
+for their own use. They achieve this using the TLS exporter mechanism
+defined in Section 7.5 of <span>[<a href="#I-D.ietf-tls-rfc8446bis" class="cite xref">I-D.ietf-tls-rfc8446bis</a>]</span>.<a href="#section-10-1" class="pilcrow">¶</a></p>
+<p id="section-10-2">After the extended key update exchange is completed, such protocols
+need to regenerate Exported Keying Material (EKM) based on the updated
+keying context. The sk value derived during the <a href="#key_update" class="auto internal xref">Section 5</a> process
+is used as the "Secret" input to the exporter function, ensuring that
+the EKM reflects the most recent cryptographic state and can be used
+to protect subsequent packets.<a href="#section-10-2" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="security-considerations">
