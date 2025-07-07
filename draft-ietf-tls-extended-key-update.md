@@ -136,7 +136,7 @@ where a long-term secret is extracted once and reused, poses a greater long-term
 threat, especially when session keys are not refreshed with forward-secret input.
 
 This specification defines a TLS extension that introduces an extended key update
-mechanism. Unlike the standard KeyUpdate, this mechanism allows peers to perform a
+mechanism. Unlike the standard key update, this mechanism allows peers to perform a
 fresh Diffie-Hellman exchange within an active session using one of the groups
 negotiated during the initial handshake. By periodically rerunning (EC)DHE, this
 extension enables the derivation of new traffic secrets that are independent of
@@ -156,7 +156,8 @@ document are to be interpreted as described in RFC 2119 {{RFC2119}}.
 
 To distinguish the key update procedure defined in {{I-D.ietf-tls-rfc8446bis}}
 from the key update procedure specified in this document, we use the terms
-"key update" and "extended key update", respectively.
+"standard key update" and "extended key update", respectively.
+
 
 # Negotiating the Extended Key Update
 
@@ -176,21 +177,28 @@ functionality specified in this document and applications that
 require perfect forward security will have to initiate a full
 handshake.
 
-# Extended Key Update Message {#ext-key-update}
+# Extended Key Update Messages {#ext-key-update}
+=======
+If the client and server agree to use the extended key update mechanism,
+the standard key update MUST NOT be used. In this case, the extended
+key update fully replaces the standard key update functionality.
 
-The ExtendedKeyUpdate handshake message is used to indicate an update
+Implementations that receive a classic KeyUpdate message after successfully
+negotiating the Extended Key Update functionality MUST terminate the
+connection with an "unexpected_message" alert.
+
+The extended key update handshake message exchange used to perform an update
 of cryptographic keys. This key update process can be sent by either
 peer after it has sent a Finished message.  Implementations that
-receive a ExtendedKeyUpdate message prior to receiving a Finished
+receive a ExtendedKeyUpdateRequest message prior to receiving a Finished
 message MUST terminate the connection with an "unexpected_message"
 alert.
 
-The KeyShareEntry in the ExtendedKeyUpdate message MUST be the same
-group mutually supported by the client and server during the initial
-handshake. The peers MUST NOT send a KeyShareEntry in the ExtendedKeyUpdate
-message that is not mutually supported by the client and server during
-the initial handshake. An implementation that receives any other value
-MUST terminate the connection with an "illegal_parameter" alert.
+The KeyShareEntry in the ExtendedKeyUpdateRequest message and in the
+ExtendedKeyUpdateResponse message MUST be the same
+algorithm mutually supported by the client and server during the initial
+handshake. An implementation that receives an algorithm not previously
+negotiated MUST terminate the connection with an "illegal_parameter" alert.
 
 {{fig-key-update}} shows the interaction graphically.
 First, support for the functionality in this specification
@@ -343,10 +351,6 @@ keys by two generations.
       } Handshake;
 ~~~
 {: #fig-handshake title="Handshake Structure."}
-
-The ExtendedKeyUpdate and the KeyUpdates MAY be used in combination
-over the lifetime of a TLS communication session, depending on the
-desired security properties.
 
 # Updating Traffic Secrets {#key_update}
 
@@ -509,25 +513,28 @@ is the concatenation of the key_exchange field for each of the algorithms.
 The same approach is then re-used in the extended key update when
 key shares are exchanged.
 
-# SSLKEYLOGFILE update
+# SSLKEYLOGFILE Update
 
-As Extended Key Update invalidates previous secrets, SSLKEYLOGFILE {{I-D.ietf-tls-keylogfile}} needs to
-be populated with new entries. Each completed Extended Key Update results
-in two additional secret labels in SSLKEYLOGFILE:
+As a successful extended key update exchange invalidates previous secrets,
+SSLKEYLOGFILE {{I-D.ietf-tls-keylogfile}} needs to be populated with new
+entries. As a result, two additional secret labels are utilized in the
+SSLKEYLOGFILE:
 
-1. `CLIENT_TRAFFIC_SECRET_N+1`: identified as client_application_traffic_secret_N+1 in the key schedule
+1. `CLIENT_TRAFFIC_SECRET_N+1`: identifies the client_application_traffic_secret_N+1 in the key schedule
 
-2. `SERVER_TRAFFIC_SECRET_N+1`: identified as server_application_traffic_secret_N+1 in the key schedule
+2. `SERVER_TRAFFIC_SECRET_N+1`: identifies the server_application_traffic_secret_N+1 in the key schedule
 
-Similarly to other records in SSLKEYLOGFILE label is followed by 32-byte value
-of the Random field from the ClientHello message that established the TLS
-connection and corresponding secret encoded in hexadecimal.
+Similar to other entries in the SSLKEYLOGFILE, the label is followed by the
+32-byte value of the Random field from the ClientHello message that
+established the TLS connection, and the corresponding secret encoded in
+hexadecimal.
 
-SSLKEYLOGFILE entries for Extended Key Update MUST NOT be produced if
+SSLKEYLOGFILE entries for the extended key update MUST NOT be produced if
 SSLKEYLOGFILE was not used for other secrets in the handshake.
 
-Note that each successful Extended Key Update invalidates all previous SSLKEYLOGFILE secrets including
-past iterations of `CLIENT_TRAFFIC_SECRET_` and `SERVER_TRAFFIC_SECRET_`.
+Note that each successful Extended Key Update invalidates all previous SSLKEYLOGFILE
+secrets including past iterations of `CLIENT_TRAFFIC_SECRET_` and
+`SERVER_TRAFFIC_SECRET_`.
 
 # Exporter
 
@@ -547,8 +554,12 @@ This entire document is about security.
 
 # IANA Considerations
 
+## TLS Alerts
+
 IANA is requested to allocate value TBD for the "extended_key_update_required" alert
 in the "TLS Alerts" registry. The value for the "DTLS-OK" column is "Y".
+
+## TLS Flags
 
 IANA is requested to add the following entry to the "TLS Flags"
 extension registry {{TLS-Ext-Registry}}:
@@ -563,19 +574,34 @@ extension registry {{TLS-Ext-Registry}}:
 
 *  Reference: [This document]
 
-IANA is requested to add the following entry to the "TLS
-HandshakeType" registry {{TLS-Ext-Registry}}:
+## TLS HandshakeType
+
+IANA is requested to add the following entries to the "TLS
+HandshakeType" registry {{TLS-Ext-Registry}}.
+
+### `extended_key_update_request` Message
 
 *  Value: TBD2
-
 *  Description: extended_key_update
-
 *  DTLS-OK: Y
-
 *  Reference: [This document]
-
 *  Comment:
 
+### `extended_key_update_response` Message
+
+*  Value: TBD3
+*  Description: extended_key_update_response
+*  DTLS-OK: Y
+*  Reference: [This document]
+*  Comment:
+
+### `new_key_update` Message
+
+*  Value: TBD3
+*  Description: new_key_update
+*  DTLS-OK: Y
+*  Reference: [This document]
+*  Comment:
 
 --- back
 
@@ -602,4 +628,4 @@ Marten Seemann as well as the responsible area director Martin Duke.
 
 Finally, we would like to thank Martin Thomson, Ilari Liusvaara,
 Benjamin Kaduk, Scott Fluhrer, Dennis Jackson, David Benjamin,
-Matthijs van Duin, Rifaat Shekh-Yusef and Thom Wiggers for their review comments.
+Matthijs van Duin, Rifaat Shekh-Yusef, Joe Birr-Pixton and Thom Wiggers for their review comments.
