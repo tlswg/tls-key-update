@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2025-07-06T02:03:05.872119+00:00",
+  "timestamp": "2025-07-08T01:55:12.535175+00:00",
   "repo": "tlswg/tls-key-update",
   "labels": [
     {
@@ -134,7 +134,7 @@
       "labels": [],
       "body": "Working on the implementation I was wondering whether it would make sense to use a different key hierarchy. Here is what the TLS RFC specifies for the application traffic secrets, the exporter master secret and the resumption master secrets.\n\n>              |\n>              v\n>    0 -> HKDF-Extract = Master Secret\n>              |\n>              +-----> Derive-Secret(., \"c ap traffic\",\n>              |                     ClientHello...server Finished)\n>              |                     = client_application_traffic_secret_0\n>              |\n>              +-----> Derive-Secret(., \"s ap traffic\",\n>              |                     ClientHello...server Finished)\n>              |                     = server_application_traffic_secret_0\n>              |\n>              +-----> Derive-Secret(., \"exp master\",\n>              |                     ClientHello...server Finished)\n>              |                     = exporter_master_secret\n>              |\n>              +-----> Derive-Secret(., \"res master\",\n>                                    ClientHello...client Finished)\n>                                    = resumption_master_secret\n\nCurrently, draft version -04 uses the current application traffic secret and also computes a new exporter secret based on the following key hierarchy. The resumption_master_secret so far is left untouched.\n\nQuestion: \n1) Should also say something about the resumption master secret update?\n2) Should we recompute the master secret instead?",
       "createdAt": "2025-04-26T19:21:49Z",
-      "updatedAt": "2025-07-05T17:12:45Z",
+      "updatedAt": "2025-07-07T13:13:11Z",
       "closedAt": null,
       "comments": [
         {
@@ -164,6 +164,27 @@
           "body": "I think significant work is needed to describe:\n\n\n- How exporters now work, and how/whether peers can no longer actually agree on the same exporter output at all times in the connection's life. This is quite a big change to the meaning of exporters. It would also be good to include examples of how you see the exporter interfaces of TLS libraries changing as a result. eg, are we introducing key epochs here? How does [this](https://pkg.go.dev/crypto/tls#ConnectionState.ExportKeyingMaterial) or [this](https://learn.microsoft.com/en-us/windows/win32/seccng/sslexportkeyingmaterial) look like after this change?\n\n- How and whether tickets work across extended key updates. I guess once the resumption secret is rolled, then we can send a new batch of tickets using the new keys, but if the previously-sent tickets are still accepted then this RFC doesn't really meet its goal (since that resumption would \"rewind\" the session keying back to the compromised ones). One option would be to require stateful resumption, with all the deployment difficulties that come with it. Note we can't just say \"clients must delete previously-received tickets after an extended key update\", because the threat model here is that the peers have failed to keep secrets.",
           "createdAt": "2025-07-05T17:12:45Z",
           "updatedAt": "2025-07-05T17:12:45Z"
+        },
+        {
+          "author": "hannestschofenig",
+          "authorAssociation": "COLLABORATOR",
+          "body": "I agree that this is a big change for the key exporter. Unfortunately, we need this functionality whenever we use TLS as a key management protocol for some other protocol. It is not clear to me why the key exporter in TLS 1.3 does not modify the keys when it performs a key update.",
+          "createdAt": "2025-07-06T18:24:24Z",
+          "updatedAt": "2025-07-06T18:24:24Z"
+        },
+        {
+          "author": "hannestschofenig",
+          "authorAssociation": "COLLABORATOR",
+          "body": "FWIW I added text about the ticket-based exchange.\n\nI believe that noting that \"clients must delete previously-received tickets after an extended key update\" is a solution. Of course, the ticket storage adds extra risks since these keys need to be stored somewhere. If that is a concern, then using the tickets might be not be the right solution.",
+          "createdAt": "2025-07-07T08:34:05Z",
+          "updatedAt": "2025-07-07T08:34:05Z"
+        },
+        {
+          "author": "hannestschofenig",
+          "authorAssociation": "COLLABORATOR",
+          "body": "I leave this issue open althrough I provided an update to the draft. Based on the feedback from Joe I believe more text is needed.",
+          "createdAt": "2025-07-07T13:13:11Z",
+          "updatedAt": "2025-07-07T13:13:11Z"
         }
       ]
     },
@@ -172,15 +193,15 @@
       "id": "I_kwDOMJPqLM63ncQQ",
       "title": "Update IANA Consideration Section",
       "url": "https://github.com/tlswg/tls-key-update/issues/21",
-      "state": "OPEN",
+      "state": "CLOSED",
       "author": "hannestschofenig",
       "authorAssociation": "COLLABORATOR",
       "assignees": [],
       "labels": [],
       "body": "Not all messages are registered:\n- NewKeyUpdate\n- ExtendedKeyUpdateRequest\n- ExtendedKeyUpdateResponseStatus",
       "createdAt": "2025-05-21T15:09:14Z",
-      "updatedAt": "2025-07-05T15:13:04Z",
-      "closedAt": null,
+      "updatedAt": "2025-07-07T13:12:15Z",
+      "closedAt": "2025-07-07T13:12:15Z",
       "comments": [
         {
           "author": "hannestschofenig",
@@ -196,15 +217,15 @@
       "id": "I_kwDOMJPqLM63n5gO",
       "title": "Extended Key Update replaces regular Key Update",
       "url": "https://github.com/tlswg/tls-key-update/issues/22",
-      "state": "OPEN",
+      "state": "CLOSED",
       "author": "hannestschofenig",
       "authorAssociation": "COLLABORATOR",
       "assignees": [],
       "labels": [],
       "body": "Add text in the document.",
       "createdAt": "2025-05-21T15:41:34Z",
-      "updatedAt": "2025-07-05T14:41:51Z",
-      "closedAt": null,
+      "updatedAt": "2025-07-07T13:12:02Z",
+      "closedAt": "2025-07-07T13:12:02Z",
       "comments": [
         {
           "author": "stfries",
@@ -264,24 +285,32 @@
       "labels": [],
       "body": "",
       "createdAt": "2025-05-21T15:45:50Z",
-      "updatedAt": "2025-05-21T15:45:50Z",
+      "updatedAt": "2025-07-07T13:14:22Z",
       "closedAt": null,
-      "comments": []
+      "comments": [
+        {
+          "author": "hannestschofenig",
+          "authorAssociation": "COLLABORATOR",
+          "body": "Add a message exchange to the DTLS 1.3 section",
+          "createdAt": "2025-07-07T13:14:21Z",
+          "updatedAt": "2025-07-07T13:14:21Z"
+        }
+      ]
     },
     {
       "number": 25,
       "id": "I_kwDOMJPqLM63oBjA",
       "title": "Add annotation to figures identifying the utilized key",
       "url": "https://github.com/tlswg/tls-key-update/issues/25",
-      "state": "OPEN",
+      "state": "CLOSED",
       "author": "hannestschofenig",
       "authorAssociation": "COLLABORATOR",
       "assignees": [],
       "labels": [],
       "body": "",
       "createdAt": "2025-05-21T15:52:55Z",
-      "updatedAt": "2025-05-21T15:55:37Z",
-      "closedAt": null,
+      "updatedAt": "2025-07-07T13:11:54Z",
+      "closedAt": "2025-07-07T13:11:54Z",
       "comments": [
         {
           "author": "hannestschofenig",
@@ -289,6 +318,13 @@
           "body": "Add:\n\n>    +  Indicates noteworthy extensions sent in the\n> \t  previously noted message.\n> \n>    *  Indicates optional or situation-dependent\n> \t  messages/extensions that are not always sent.\n> \n>    () Indicates messages protected using keys\n> \t  derived from a client_early_traffic_secret.\n> \n>    {} Indicates messages protected using keys\n> \t  derived from a [sender]_handshake_traffic_secret.\n> \n>    [] Indicates messages protected using keys\n> \t  derived from [sender]_application_traffic_secret_N.\n",
           "createdAt": "2025-05-21T15:54:41Z",
           "updatedAt": "2025-05-21T15:55:35Z"
+        },
+        {
+          "author": "hannestschofenig",
+          "authorAssociation": "COLLABORATOR",
+          "body": "PR is here: https://github.com/tlswg/tls-key-update/pull/35\n",
+          "createdAt": "2025-07-07T08:41:26Z",
+          "updatedAt": "2025-07-07T08:41:26Z"
         }
       ]
     },
@@ -1249,104 +1285,271 @@
       "id": "PR_kwDOMJPqLM6dj4hz",
       "title": "Extended Key Update replaces the Standard Key Update",
       "url": "https://github.com/tlswg/tls-key-update/pull/30",
-      "state": "OPEN",
+      "state": "MERGED",
       "author": "hannestschofenig",
       "authorAssociation": "COLLABORATOR",
       "assignees": [],
       "labels": [],
       "body": "",
       "createdAt": "2025-07-05T14:39:30Z",
-      "updatedAt": "2025-07-05T14:44:23Z",
+      "updatedAt": "2025-07-07T08:42:27Z",
       "baseRepository": "tlswg/tls-key-update",
       "baseRefName": "main",
       "baseRefOid": "face47eaae1b2f80b048a39ed5ba65cdda9a99a2",
       "headRepository": "tlswg/tls-key-update",
       "headRefName": "hannestschofenig-patch-5",
       "headRefOid": "790fa2fc915fd36e3085594a798edb04934aad46",
-      "closedAt": null,
-      "mergedAt": null,
-      "mergedBy": null,
-      "mergeCommit": null,
+      "closedAt": "2025-07-07T08:42:23Z",
+      "mergedAt": "2025-07-07T08:42:23Z",
+      "mergedBy": "hannestschofenig",
+      "mergeCommit": {
+        "oid": "4749c1934b868a5c2665635552e17c97ae0b44dd"
+      },
       "comments": [],
-      "reviews": []
+      "reviews": [
+        {
+          "id": "PRR_kwDOMJPqLM6yTdpZ",
+          "commit": {
+            "abbreviatedOid": "790fa2f"
+          },
+          "author": "yaroslavros",
+          "authorAssociation": "COLLABORATOR",
+          "state": "APPROVED",
+          "body": "",
+          "createdAt": "2025-07-06T15:46:32Z",
+          "updatedAt": "2025-07-06T15:46:32Z",
+          "comments": []
+        }
+      ]
     },
     {
       "number": 31,
       "id": "PR_kwDOMJPqLM6dj_yn",
       "title": "Correcting the Message Registration",
       "url": "https://github.com/tlswg/tls-key-update/pull/31",
-      "state": "OPEN",
+      "state": "MERGED",
       "author": "hannestschofenig",
       "authorAssociation": "COLLABORATOR",
       "assignees": [],
       "labels": [],
       "body": "... and clarifying text throughout the draft.",
       "createdAt": "2025-07-05T15:12:42Z",
-      "updatedAt": "2025-07-05T15:12:43Z",
+      "updatedAt": "2025-07-07T08:43:56Z",
       "baseRepository": "tlswg/tls-key-update",
       "baseRefName": "main",
-      "baseRefOid": "face47eaae1b2f80b048a39ed5ba65cdda9a99a2",
+      "baseRefOid": "4749c1934b868a5c2665635552e17c97ae0b44dd",
       "headRepository": "tlswg/tls-key-update",
       "headRefName": "hannestschofenig-patch-6",
-      "headRefOid": "b8b8670e92630fa451fb013e47381ccf6d54182b",
-      "closedAt": null,
-      "mergedAt": null,
-      "mergedBy": null,
-      "mergeCommit": null,
+      "headRefOid": "6a9502c0005a89cf1fd596d46c850c36bae56f73",
+      "closedAt": "2025-07-07T08:43:53Z",
+      "mergedAt": "2025-07-07T08:43:53Z",
+      "mergedBy": "hannestschofenig",
+      "mergeCommit": {
+        "oid": "996ce0066c1c22ea0035dc5b95b1f5ea72f747a9"
+      },
       "comments": [],
-      "reviews": []
+      "reviews": [
+        {
+          "id": "PRR_kwDOMJPqLM6yTdhI",
+          "commit": {
+            "abbreviatedOid": "b8b8670"
+          },
+          "author": "yaroslavros",
+          "authorAssociation": "COLLABORATOR",
+          "state": "APPROVED",
+          "body": "",
+          "createdAt": "2025-07-06T15:45:19Z",
+          "updatedAt": "2025-07-06T15:45:19Z",
+          "comments": []
+        }
+      ]
     },
     {
       "number": 32,
       "id": "PR_kwDOMJPqLM6dkIsL",
       "title": "Updated text in \"SSLKEYLOGFILE Update\" and \"Exporter\"",
       "url": "https://github.com/tlswg/tls-key-update/pull/32",
-      "state": "OPEN",
+      "state": "MERGED",
       "author": "hannestschofenig",
       "authorAssociation": "COLLABORATOR",
       "assignees": [],
       "labels": [],
       "body": "",
       "createdAt": "2025-07-05T15:52:27Z",
-      "updatedAt": "2025-07-05T19:05:45Z",
+      "updatedAt": "2025-07-07T08:44:08Z",
       "baseRepository": "tlswg/tls-key-update",
       "baseRefName": "main",
       "baseRefOid": "face47eaae1b2f80b048a39ed5ba65cdda9a99a2",
       "headRepository": "tlswg/tls-key-update",
       "headRefName": "hannestschofenig-patch-7",
       "headRefOid": "af50ed66cc0ed1465714478aa90bf06eaeccb27d",
-      "closedAt": null,
-      "mergedAt": null,
-      "mergedBy": null,
-      "mergeCommit": null,
+      "closedAt": "2025-07-07T08:44:05Z",
+      "mergedAt": "2025-07-07T08:44:05Z",
+      "mergedBy": "hannestschofenig",
+      "mergeCommit": {
+        "oid": "764d5f73f110bc73004920e16548a02219135028"
+      },
       "comments": [],
-      "reviews": []
+      "reviews": [
+        {
+          "id": "PRR_kwDOMJPqLM6yTddv",
+          "commit": {
+            "abbreviatedOid": "af50ed6"
+          },
+          "author": "yaroslavros",
+          "authorAssociation": "COLLABORATOR",
+          "state": "APPROVED",
+          "body": "",
+          "createdAt": "2025-07-06T15:44:30Z",
+          "updatedAt": "2025-07-06T15:44:30Z",
+          "comments": []
+        }
+      ]
     },
     {
       "number": 33,
       "id": "PR_kwDOMJPqLM6dkYyj",
       "title": "Update to the Key Derivation",
       "url": "https://github.com/tlswg/tls-key-update/pull/33",
-      "state": "OPEN",
+      "state": "MERGED",
       "author": "hannestschofenig",
       "authorAssociation": "COLLABORATOR",
       "assignees": [],
       "labels": [],
       "body": "",
       "createdAt": "2025-07-05T16:39:49Z",
-      "updatedAt": "2025-07-05T19:05:55Z",
+      "updatedAt": "2025-07-07T08:48:47Z",
+      "baseRepository": "tlswg/tls-key-update",
+      "baseRefName": "main",
+      "baseRefOid": "c01c0490e6ac241a6b9a6a7fea0e6dc75d76a0ac",
+      "headRepository": "tlswg/tls-key-update",
+      "headRefName": "hannestschofenig-patch-8",
+      "headRefOid": "2b56a22da2a96914ac605e400ae983b3284fc2a8",
+      "closedAt": "2025-07-07T08:48:43Z",
+      "mergedAt": "2025-07-07T08:48:43Z",
+      "mergedBy": "hannestschofenig",
+      "mergeCommit": {
+        "oid": "5eae8b793e84297c685ec5904534453263d6ebe6"
+      },
+      "comments": [],
+      "reviews": [
+        {
+          "id": "PRR_kwDOMJPqLM6yTdVj",
+          "commit": {
+            "abbreviatedOid": "c18dc90"
+          },
+          "author": "yaroslavros",
+          "authorAssociation": "COLLABORATOR",
+          "state": "APPROVED",
+          "body": "",
+          "createdAt": "2025-07-06T15:43:23Z",
+          "updatedAt": "2025-07-06T15:43:23Z",
+          "comments": []
+        }
+      ]
+    },
+    {
+      "number": 34,
+      "id": "PR_kwDOMJPqLM6dpTRV",
+      "title": "Adding Joe Birr-Pixton to Acknowledgments Section",
+      "url": "https://github.com/tlswg/tls-key-update/pull/34",
+      "state": "MERGED",
+      "author": "hannestschofenig",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [],
+      "body": "",
+      "createdAt": "2025-07-06T17:24:59Z",
+      "updatedAt": "2025-07-07T08:44:21Z",
       "baseRepository": "tlswg/tls-key-update",
       "baseRefName": "main",
       "baseRefOid": "face47eaae1b2f80b048a39ed5ba65cdda9a99a2",
       "headRepository": "tlswg/tls-key-update",
-      "headRefName": "hannestschofenig-patch-8",
-      "headRefOid": "c18dc90d159d2dee6511ee8f9f82f15ddc62963d",
+      "headRefName": "hannestschofenig-patch-9",
+      "headRefOid": "7334dff4fbc2e6e73ad620a3bcabfe1642346c9a",
+      "closedAt": "2025-07-07T08:44:19Z",
+      "mergedAt": "2025-07-07T08:44:18Z",
+      "mergedBy": "hannestschofenig",
+      "mergeCommit": {
+        "oid": "c01c0490e6ac241a6b9a6a7fea0e6dc75d76a0ac"
+      },
+      "comments": [],
+      "reviews": []
+    },
+    {
+      "number": 35,
+      "id": "PR_kwDOMJPqLM6dtdZk",
+      "title": "Legend for Figure",
+      "url": "https://github.com/tlswg/tls-key-update/pull/35",
+      "state": "MERGED",
+      "author": "hannestschofenig",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [],
+      "body": "",
+      "createdAt": "2025-07-07T08:41:08Z",
+      "updatedAt": "2025-07-07T13:11:45Z",
+      "baseRepository": "tlswg/tls-key-update",
+      "baseRefName": "main",
+      "baseRefOid": "5eae8b793e84297c685ec5904534453263d6ebe6",
+      "headRepository": "tlswg/tls-key-update",
+      "headRefName": "hannestschofenig-patch-10",
+      "headRefOid": "ac706798ce8515842afd226e5f138c2bda6f572e",
+      "closedAt": "2025-07-07T13:11:43Z",
+      "mergedAt": "2025-07-07T13:11:42Z",
+      "mergedBy": "hannestschofenig",
+      "mergeCommit": {
+        "oid": "599e47d445bcbcc77b09fbe5a482705fdb2be04c"
+      },
+      "comments": [],
+      "reviews": []
+    },
+    {
+      "number": 36,
+      "id": "PR_kwDOMJPqLM6dxiuL",
+      "title": "Updated Post-Quantum Cryptography Considerations Section",
+      "url": "https://github.com/tlswg/tls-key-update/pull/36",
+      "state": "OPEN",
+      "author": "hannestschofenig",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [],
+      "body": "",
+      "createdAt": "2025-07-07T14:30:46Z",
+      "updatedAt": "2025-07-07T15:41:35Z",
+      "baseRepository": "tlswg/tls-key-update",
+      "baseRefName": "main",
+      "baseRefOid": "599e47d445bcbcc77b09fbe5a482705fdb2be04c",
+      "headRepository": "tlswg/tls-key-update",
+      "headRefName": "hannestschofenig-patch-5",
+      "headRefOid": "bfb4b4d503eceea54aa3ae66d4c13f66a54b455a",
       "closedAt": null,
       "mergedAt": null,
       "mergedBy": null,
       "mergeCommit": null,
       "comments": [],
-      "reviews": []
+      "reviews": [
+        {
+          "id": "PRR_kwDOMJPqLM6yescJ",
+          "commit": {
+            "abbreviatedOid": "bfb4b4d"
+          },
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-07-07T15:41:31Z",
+          "updatedAt": "2025-07-07T15:41:35Z",
+          "comments": [
+            {
+              "originalPosition": 42,
+              "body": "The above line is not correct, the ietf-tls-mlkem draft registers only ML-KEM and its variants. we may want to say: \r\nThe specification in {{I-D.ietf-tls-mlkem}} registers the lattice-based ML-KEM algorithm and its variants, such as ML-KEM-512, ML-KEM-768 and ML-KEM-1024. The KEM encapsulation key or KEM ciphertext is represented as a 'KeyShareEntry' field. This same\r\napproach is reused during the Extended Key Update, when new key shares are exchanged.",
+              "createdAt": "2025-07-07T15:41:31Z",
+              "updatedAt": "2025-07-07T15:41:35Z"
+            }
+          ]
+        }
+      ]
     }
   ]
 }
