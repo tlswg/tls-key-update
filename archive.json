@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2025-07-08T01:55:12.535175+00:00",
+  "timestamp": "2025-07-10T01:56:32.484072+00:00",
   "repo": "tlswg/tls-key-update",
   "labels": [
     {
@@ -1550,6 +1550,32 @@
           ]
         }
       ]
+    },
+    {
+      "number": 37,
+      "id": "PR_kwDOMJPqLM6eDSrX",
+      "title": "Update to Key Update Procedure",
+      "url": "https://github.com/tlswg/tls-key-update/pull/37",
+      "state": "OPEN",
+      "author": "tireddy2",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [],
+      "body": "",
+      "createdAt": "2025-07-09T05:18:23Z",
+      "updatedAt": "2025-07-09T05:18:44Z",
+      "baseRepository": "tlswg/tls-key-update",
+      "baseRefName": "main",
+      "baseRefOid": "599e47d445bcbcc77b09fbe5a482705fdb2be04c",
+      "headRepository": "tlswg/tls-key-update",
+      "headRefName": "tireddy2-patch-2",
+      "headRefOid": "dc91659814fdad5972adaa046eddfcf811026e48",
+      "closedAt": null,
+      "mergedAt": null,
+      "mergedBy": null,
+      "mergeCommit": null,
+      "comments": [],
+      "reviews": []
     }
   ]
 }
