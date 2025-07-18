@@ -431,7 +431,7 @@ procedure that incorporates the ephemeral (EC)DHE-established value as
 a input keying material (IKM) to produce master_secret_{N+1}. The derived value
 from this new master secret serves as input salt to the subsequent key update
 procedure, which also incorporates a fresh ephemeral (EC)DHE value as IKM.
-This process is repeated for each additional key update procedure. 
+This process is repeated for each additional key update procedure.
 
 The traffic keys are re-derived from client_application_traffic_secret_N+1
 and server_application_traffic_secret_N+1, as described in
