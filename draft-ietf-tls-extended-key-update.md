@@ -538,10 +538,11 @@ the `key_exchange` fields of the constituent algorithms. This same
 approach is reused during the Extended Key Update, when new key
 shares are exchanged.
 
-In addition to hybrid mechanisms, fully post-quantum key exchange
-can also be used in TLS 1.3. The specification in
-{{I-D.ietf-tls-mlkem}} registers several lattice-based
-key encapsulation mechanisms (KEMs) for this purpose.
+The specification in {{I-D.ietf-tls-mlkem}} registers the lattice-based
+ML-KEM algorithm and its variants, such as ML-KEM-512, ML-KEM-768 and
+ML-KEM-1024. The KEM encapsulation key or KEM ciphertext is represented
+as a 'KeyShareEntry' field. This same approach is reused during the
+Extended Key Update, when new key shares are exchanged.
 
 # SSLKEYLOGFILE Update
 
