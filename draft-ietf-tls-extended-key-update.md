@@ -56,6 +56,8 @@ normative:
   RFC9147:
   I-D.ietf-tls-tlsflags:
 informative:
+  I-D.ietf-tls-ecdhe-mlkem:
+  I-D.ietf-tls-mlkem:
   RFC9325:
   RFC7296:
   RFC7624:
@@ -523,16 +525,27 @@ such out-of-epoch records.
 
 # Post-Quantum Cryptography Considerations
 
-Hybrid key exchange refers to using multiple key exchange algorithms
-simultaneously and combining the result with the goal of providing
-security even if all but one of the component algorithms is broken.
-The transition to post-quantum cryptography motivates the introduction
-of hybrid key exchanges to TLS, as described in
-{{I-D.ietf-tls-hybrid-design}}. When the hybrid key exchange is used,
-then the key_exchange field of a KeyShareEntry in the initial exchange
-is the concatenation of the key_exchange field for each of the algorithms.
-The same approach is then re-used in the extended key update when
-key shares are exchanged.
+Hybrid key exchange refers to the simultaneous use of multiple key
+exchange algorithms, with the resulting shared secret derived by
+combining the outputs of each. The goal of this approach is to maintain
+security even if all but one of the component algorithms are later found
+to be vulnerable.
+
+The transition to post-quantum cryptography has motivated the adoption of
+hybrid key exchanges in TLS, as described in
+{{I-D.ietf-tls-hybrid-design}}. Specific hybrid groups
+have been registered in {{I-D.ietf-tls-ecdhe-mlkem}}.
+When hybrid key exchange is used, the `key_exchange` field of each
+`KeyShareEntry` in the initial handshake is formed by concatenating
+the `key_exchange` fields of the constituent algorithms. This same
+approach is reused during the Extended Key Update, when new key
+shares are exchanged.
+
+The specification in {{I-D.ietf-tls-mlkem}} registers the lattice-based
+ML-KEM algorithm and its variants, such as ML-KEM-512, ML-KEM-768 and
+ML-KEM-1024. The KEM encapsulation key or KEM ciphertext is represented
+as a 'KeyShareEntry' field. This same approach is reused during the
+Extended Key Update, when new key shares are exchanged.
 
 # SSLKEYLOGFILE Update
 
