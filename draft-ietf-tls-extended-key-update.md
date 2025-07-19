@@ -178,7 +178,7 @@ require perfect forward security will have to initiate a full
 handshake.
 
 # Extended Key Update Messages {#ext-key-update}
-=======
+
 If the client and server agree to use the extended key update mechanism,
 the standard key update MUST NOT be used. In this case, the extended
 key update fully replaces the standard key update functionality.
@@ -419,16 +419,19 @@ The following diagram shows the key derivation hierarchy.
              |
              +-----> Derive-Secret(., "res master2",
              |                ExtendedKeyUpdateRequest ||
-             |                ExtendedKeyUpdateResponse))
+             |                ExtendedKeyUpdateResponse)
                               = resumption_master_secret_N+1
 ~~~
 
-During the initial handshake the Master Secret is generated, see
-{{Section 7.1 of I-D.ietf-tls-rfc8446bis}}. Since the Master Secret
+During the initial handshake, the Master Secret is generated (see
+{{Section 7.1 of I-D.ietf-tls-rfc8446bis}}). Since the Master Secret
 is discarded during the key derivation procedure, a derived value is
-stored. This value then serves as input to another key derivation step
-that takes the (EC)DHE-established value as a second parameter into
-account.
+stored. This stored value then serves as the input salt to the first key update
+procedure that incorporates the ephemeral (EC)DHE-established value as
+a input keying material (IKM) to produce master_secret_{N+1}. The derived value
+from this new master secret serves as input salt to the subsequent key update
+procedure, which also incorporates a fresh ephemeral (EC)DHE value as IKM.
+This process is repeated for each additional key update procedure.
 
 The traffic keys are re-derived from client_application_traffic_secret_N+1
 and server_application_traffic_secret_N+1, as described in
