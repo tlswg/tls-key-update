@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2025-07-10T01:56:32.484072+00:00",
+  "timestamp": "2025-07-20T02:09:48.693762+00:00",
   "repo": "tlswg/tls-key-update",
   "labels": [
     {
@@ -1509,24 +1509,26 @@
       "id": "PR_kwDOMJPqLM6dxiuL",
       "title": "Updated Post-Quantum Cryptography Considerations Section",
       "url": "https://github.com/tlswg/tls-key-update/pull/36",
-      "state": "OPEN",
+      "state": "MERGED",
       "author": "hannestschofenig",
       "authorAssociation": "COLLABORATOR",
       "assignees": [],
       "labels": [],
       "body": "",
       "createdAt": "2025-07-07T14:30:46Z",
-      "updatedAt": "2025-07-07T15:41:35Z",
+      "updatedAt": "2025-07-19T08:20:50Z",
       "baseRepository": "tlswg/tls-key-update",
       "baseRefName": "main",
       "baseRefOid": "599e47d445bcbcc77b09fbe5a482705fdb2be04c",
       "headRepository": "tlswg/tls-key-update",
       "headRefName": "hannestschofenig-patch-5",
-      "headRefOid": "bfb4b4d503eceea54aa3ae66d4c13f66a54b455a",
-      "closedAt": null,
-      "mergedAt": null,
-      "mergedBy": null,
-      "mergeCommit": null,
+      "headRefOid": "08e80b2c3ec98ce7cf8040bd321498d1c5147c7d",
+      "closedAt": "2025-07-19T08:20:50Z",
+      "mergedAt": "2025-07-19T08:20:50Z",
+      "mergedBy": "tireddy2",
+      "mergeCommit": {
+        "oid": "d151fff133866a40725039dd77a53f6b92cb90e6"
+      },
       "comments": [],
       "reviews": [
         {
@@ -1548,6 +1550,39 @@
               "updatedAt": "2025-07-07T15:41:35Z"
             }
           ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM60zVcZ",
+          "commit": {
+            "abbreviatedOid": "bfb4b4d"
+          },
+          "author": "hannestschofenig",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-07-18T12:20:44Z",
+          "updatedAt": "2025-07-18T12:20:44Z",
+          "comments": [
+            {
+              "originalPosition": 42,
+              "body": "Thanks, Tiru. I incoporated your wording.",
+              "createdAt": "2025-07-18T12:20:44Z",
+              "updatedAt": "2025-07-18T12:20:44Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM606sxx",
+          "commit": {
+            "abbreviatedOid": "08e80b2"
+          },
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "state": "APPROVED",
+          "body": "",
+          "createdAt": "2025-07-19T08:20:40Z",
+          "updatedAt": "2025-07-19T08:20:40Z",
+          "comments": []
         }
       ]
     },
@@ -1556,26 +1591,49 @@
       "id": "PR_kwDOMJPqLM6eDSrX",
       "title": "Update to Key Update Procedure",
       "url": "https://github.com/tlswg/tls-key-update/pull/37",
-      "state": "OPEN",
+      "state": "MERGED",
       "author": "tireddy2",
       "authorAssociation": "COLLABORATOR",
       "assignees": [],
       "labels": [],
       "body": "",
       "createdAt": "2025-07-09T05:18:23Z",
-      "updatedAt": "2025-07-09T05:18:44Z",
+      "updatedAt": "2025-07-19T08:19:42Z",
       "baseRepository": "tlswg/tls-key-update",
       "baseRefName": "main",
       "baseRefOid": "599e47d445bcbcc77b09fbe5a482705fdb2be04c",
       "headRepository": "tlswg/tls-key-update",
       "headRefName": "tireddy2-patch-2",
-      "headRefOid": "dc91659814fdad5972adaa046eddfcf811026e48",
-      "closedAt": null,
-      "mergedAt": null,
-      "mergedBy": null,
-      "mergeCommit": null,
+      "headRefOid": "761f46c4ec2f42691863ea7a08dabb9b26e4fac4",
+      "closedAt": "2025-07-19T08:19:41Z",
+      "mergedAt": "2025-07-19T08:19:41Z",
+      "mergedBy": "tireddy2",
+      "mergeCommit": {
+        "oid": "afafc6fa3bd3a8f6f97446d74c7496c9b7b09aa4"
+      },
       "comments": [],
-      "reviews": []
+      "reviews": [
+        {
+          "id": "PRR_kwDOMJPqLM60ymB-",
+          "commit": {
+            "abbreviatedOid": "dc91659"
+          },
+          "author": "hannestschofenig",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-07-18T11:11:46Z",
+          "updatedAt": "2025-07-18T11:11:47Z",
+          "comments": [
+            {
+              "originalPosition": 31,
+              "body": "```suggestion\r\nThis process is repeated for each additional key update procedure.\r\n```",
+              "createdAt": "2025-07-18T11:11:47Z",
+              "updatedAt": "2025-07-18T11:11:47Z"
+            }
+          ]
+        }
+      ]
     }
   ]
 }
