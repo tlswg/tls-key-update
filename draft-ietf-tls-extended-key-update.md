@@ -331,13 +331,13 @@ the initiator is able to derive a secret key based on the exchanged key shares.
 The NewKeyUpdate message is intentionally an empty structure that triggers
 the transition to new keying material.
 
-5. On receipt of the NewKeyUpdate message by the responder, it MUST update
+4. After the Initiator sends a NewKeyUpdate message it MUST update its
+send keys. On receipt of the NewKeyUpdate message by the responder, it MUST update
 its receive keys. In response, the responder transmits a NewKeyUpdate message
 and MUST update its sending keys.
 
-6. After receiving the NewKeyUpdate message from the responder, the initiator
-MUST update its traffic keys and MUST send all its traffic using the next
-generation of keys.
+5. After receiving the NewKeyUpdate message from the responder, the initiator
+MUST update its receive keys.
 
 Both sender and receiver MUST encrypt their NewKeyUpdate messages with
 the old keys. Both sides MUST ensure that the NewKeyUpdate encrypted
