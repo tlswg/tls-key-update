@@ -538,11 +538,10 @@ the transition to new keying material.
 
 4. The initiator transmits the NewKeyUpdate message.
 
-5. On receipt of the NewKeyUpdate message, the responder MUST update its receive keys.
-In response, the responder acknowledges the received NewKeyUpdate
-message and transmits a NewKeyUpdate message. That message will acknowledge
-the received NewKeyUpdate message and initiate the new NewKeyUpdate message in
-one message since the ACK is piggybacked.
+5. Upon receiving a NewKeyUpdate message, the responder MUST update its receive
+keys. It then acknowledges the received message by sending its own NewKeyUpdate
+message. This response both acknowledges the incoming key update and initiates
+a new key update in a single message, as the acknowledgment is piggybacked.
 
 6. After the initiator receives the ACK from the responder, the initiator
 MUST update its send key. With the receipt of the NewKeyUpdate message the
