@@ -1744,11 +1744,10 @@ the transition to new keying material.<a href="#section-7-3.3.1" class="pilcrow"
           <p id="section-7-3.4.1">The initiator transmits the NewKeyUpdate message.<a href="#section-7-3.4.1" class="pilcrow">¶</a></p>
 </li>
         <li id="section-7-3.5">
-          <p id="section-7-3.5.1">On receipt of the NewKeyUpdate message, the responder MUST update its receive keys.
-In response, the responder acknowledges the received NewKeyUpdate
-message and transmits a NewKeyUpdate message. That message will acknowledge
-the received NewKeyUpdate message and initiate the new NewKeyUpdate message in
-one message since the ACK is piggybacked.<a href="#section-7-3.5.1" class="pilcrow">¶</a></p>
+          <p id="section-7-3.5.1">Upon receiving a NewKeyUpdate message, the responder MUST update its receive
+keys. It then acknowledges the received message by sending its own NewKeyUpdate
+message. This response both acknowledges the incoming key update and initiates
+a new key update in a single message, as the acknowledgment is piggybacked.<a href="#section-7-3.5.1" class="pilcrow">¶</a></p>
 </li>
         <li id="section-7-3.6">
           <p id="section-7-3.6.1">After the initiator receives the ACK from the responder, the initiator
