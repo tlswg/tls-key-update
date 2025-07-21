@@ -513,7 +513,7 @@ Auth | {CertificateVerify}
 #  DTLS 1.3 Considerations
 
 Unlike TLS 1.3, DTLS 1.3 implementations must take into account that handshake
-messages are not transitted over a reliable transport protocol. As with other
+messages are not transmitted over a reliable transport protocol. As with other
 handshake messages with no built-in response, NewKeyUpdate messages MUST be
 acknowledged. Unlike the NewKeyUpdate message, the ExtendedKeyUpdateRequest
 is acknowledged by the ExtendedKeyUpdateResponse.
