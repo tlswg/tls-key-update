@@ -512,13 +512,102 @@ Auth | {CertificateVerify}
 
 #  DTLS 1.3 Considerations
 
+Unlike TLS 1.3, DTLS 1.3 implementations must take into account that handshake
+messages are not transitted over a reliable transport protocol. As with other
+handshake messages with no built-in response, NewKeyUpdate messages MUST be
+acknowledged. Unlike the NewKeyUpdate message, the ExtendedKeyUpdateRequest
+is acknowledged by the ExtendedKeyUpdateResponse.
+
+The exchange has the following steps:
+
+1. Initiator sends a ExtendedKeyUpdateRequest message, which contains
+a key share. While an extended key update is in progress, the initiator
+MUST NOT initiate further key updates.
+
+2. On receipt of the ExtendedKeyUpdateRequest message, the responder
+sends the ExtendedKeyUpdateResponse message. If the responder accepts the
+request, it sets the status to `accepted` and includes its own key share.
+If the responder declines the request, it sets the status accordingly and
+does not include the key share. While an extended key update is in progress,
+the responder MUST NOT initiate further key updates.
+
+3. On receipt of the ExtendedKeyUpdateResponse message with `accepted` status,
+the initiator is able to derive a secret key based on the exchanged key shares.
+The NewKeyUpdate message is intentionally an empty structure that triggers
+the transition to new keying material.
+
+4. The initiator transmits the NewKeyUpdate message.
+
+5. On receipt of the NewKeyUpdate message, the responder MUST update its receive keys.
+In response, the responder acknowledges the received NewKeyUpdate
+message and transmits a NewKeyUpdate message. That message will acknowledge
+the received NewKeyUpdate message and initiate the new NewKeyUpdate message in
+one message since the ACK is piggybacked.
+
+6. After the initiator receives the ACK from the responder, the initiator
+MUST update its send key. With the receipt of the NewKeyUpdate message the
+initiator MUST update its receive keys. The initiator itself MUST acknowledge
+the received NewKeyUpdate message with an ACK message.
+
+7. On receipt of the ACK message the responder updates its send key.
+
+Note that the procedure above aligns with the key update procedure defined in
+DTLS 1.3.
+
+{{dtls-key-update}} shows an example exchange illustrating that successful
+ACK processing updates the keys of the NewKeyUpdate message sender, which is
+reflected in the change of epoch values.
+
+~~~
+Client                                             Server
+
+      /-------------------------------------------\
+     |                                             |
+     |             Initial Handshake               |
+      \-------------------------------------------/
+
+ [Application Data]         -------->
+ (epoch=3)
+
+                            <--------      [Application Data]
+                                                    (epoch=3)
+
+      /-------------------------------------------\
+     |                                             |
+     |              Some time later ...            |
+      \-------------------------------------------/
+
+ [ExtendedKeyUpdateRequest] -------->
+ (epoch=3)
+
+                        <-------- [ExtendedKeyUpdateResponse]
+                                                    (epoch=3)
+
+ [NewKeyUpdate] -------->
+ (epoch 3)
+
+
+                            <--------    [NewKeyUpdate]+[ACK]
+                                                    (epoch=3)
+
+ [ACK]                      -------->
+ (epoch=4)
+
+                            <--------      [Application Data]
+                                                    (epoch=4)
+
+ [Application Data]
+ (epoch=4)                  -------->
+~~~
+{: #dtls-key-update title="Example DTLS 1.3 Extended Key Update Exchange."}
+
 Due to the possibility of a NewKeyUpdate message being lost and
 thereby preventing the sender of the NewKeyUpdate message
 from updating its keying material, receivers MUST retain the
 pre-update keying material until receipt and successful decryption
 of a message using the new keys.
 
-Due to loss and/or reordering, DTLS 1.3 implementations may receive a
+Due to loss and/or reordering, DTLS 1.3 peers MAY receive a
 record with an older epoch than the current one. They SHOULD attempt to
 process those records with that epoch but MAY opt to discard
 such out-of-epoch records.
