@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2025-07-20T02:09:48.693762+00:00",
+  "timestamp": "2025-07-22T02:01:13.903370+00:00",
   "repo": "tlswg/tls-key-update",
   "labels": [
     {
@@ -1630,6 +1630,246 @@
               "body": "```suggestion\r\nThis process is repeated for each additional key update procedure.\r\n```",
               "createdAt": "2025-07-18T11:11:47Z",
               "updatedAt": "2025-07-18T11:11:47Z"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "number": 38,
+      "id": "PR_kwDOMJPqLM6fzA7O",
+      "title": "Update TLS Key Update Procedure",
+      "url": "https://github.com/tlswg/tls-key-update/pull/38",
+      "state": "OPEN",
+      "author": "hannestschofenig",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [],
+      "body": "Based on side discussion at IETF 123",
+      "createdAt": "2025-07-21T07:38:55Z",
+      "updatedAt": "2025-07-21T11:12:40Z",
+      "baseRepository": "tlswg/tls-key-update",
+      "baseRefName": "main",
+      "baseRefOid": "d151fff133866a40725039dd77a53f6b92cb90e6",
+      "headRepository": "tlswg/tls-key-update",
+      "headRefName": "hannestschofenig-patch-6",
+      "headRefOid": "5fa6d2b568e4a46edb96d732da2cff4c03be036c",
+      "closedAt": null,
+      "mergedAt": null,
+      "mergedBy": null,
+      "mergeCommit": null,
+      "comments": [],
+      "reviews": [
+        {
+          "id": "PRR_kwDOMJPqLM61CLF1",
+          "commit": {
+            "abbreviatedOid": "5fa6d2b"
+          },
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "state": "APPROVED",
+          "body": "",
+          "createdAt": "2025-07-21T09:30:23Z",
+          "updatedAt": "2025-07-21T09:30:23Z",
+          "comments": []
+        },
+        {
+          "id": "PRR_kwDOMJPqLM61DifC",
+          "commit": {
+            "abbreviatedOid": "5fa6d2b"
+          },
+          "author": "tuexen",
+          "authorAssociation": "COLLABORATOR",
+          "state": "APPROVED",
+          "body": "",
+          "createdAt": "2025-07-21T11:12:40Z",
+          "updatedAt": "2025-07-21T11:12:40Z",
+          "comments": []
+        }
+      ]
+    },
+    {
+      "number": 39,
+      "id": "PR_kwDOMJPqLM6fz3uB",
+      "title": "DTLS 1.3 Considerations",
+      "url": "https://github.com/tlswg/tls-key-update/pull/39",
+      "state": "OPEN",
+      "author": "hannestschofenig",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [],
+      "body": "Based on discussion at the IETF 123",
+      "createdAt": "2025-07-21T09:12:59Z",
+      "updatedAt": "2025-07-21T12:26:27Z",
+      "baseRepository": "tlswg/tls-key-update",
+      "baseRefName": "main",
+      "baseRefOid": "d151fff133866a40725039dd77a53f6b92cb90e6",
+      "headRepository": "tlswg/tls-key-update",
+      "headRefName": "hannestschofenig-patch-7",
+      "headRefOid": "e25c1661ce2c6b02ca2999c63867b5151914b9ff",
+      "closedAt": null,
+      "mergedAt": null,
+      "mergedBy": null,
+      "mergeCommit": null,
+      "comments": [],
+      "reviews": [
+        {
+          "id": "PRR_kwDOMJPqLM61CEK1",
+          "commit": {
+            "abbreviatedOid": "de4a9c7"
+          },
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-07-21T09:23:19Z",
+          "updatedAt": "2025-07-21T09:23:19Z",
+          "comments": [
+            {
+              "originalPosition": 32,
+              "body": "I can't parse the last line. ",
+              "createdAt": "2025-07-21T09:23:19Z",
+              "updatedAt": "2025-07-21T09:23:19Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM61DXFM",
+          "commit": {
+            "abbreviatedOid": "de4a9c7"
+          },
+          "author": "hannestschofenig",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-07-21T10:59:10Z",
+          "updatedAt": "2025-07-21T10:59:10Z",
+          "comments": [
+            {
+              "originalPosition": 32,
+              "body": "Tried to fix the text. Hope it is understandable now...",
+              "createdAt": "2025-07-21T10:59:10Z",
+              "updatedAt": "2025-07-21T10:59:10Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM61DjYt",
+          "commit": {
+            "abbreviatedOid": "55d88fe"
+          },
+          "author": "tuexen",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-07-21T11:13:59Z",
+          "updatedAt": "2025-07-21T11:13:59Z",
+          "comments": [
+            {
+              "originalPosition": 5,
+              "body": "transmitted",
+              "createdAt": "2025-07-21T11:13:59Z",
+              "updatedAt": "2025-07-21T11:13:59Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM61DmVw",
+          "commit": {
+            "abbreviatedOid": "55d88fe"
+          },
+          "author": "tuexen",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-07-21T11:17:56Z",
+          "updatedAt": "2025-07-21T11:17:57Z",
+          "comments": [
+            {
+              "originalPosition": 33,
+              "body": "This diagram below indicates an [ACK] message. My understanding from yesterday was the the NewKeyUpdate sent by the responder is an implicit acknowledge for the NewKeyUpdate sent by the initiator. Is that understanding correct or incorrect?",
+              "createdAt": "2025-07-21T11:17:57Z",
+              "updatedAt": "2025-07-21T11:17:57Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM61DnZV",
+          "commit": {
+            "abbreviatedOid": "55d88fe"
+          },
+          "author": "tuexen",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-07-21T11:19:10Z",
+          "updatedAt": "2025-07-21T11:19:11Z",
+          "comments": [
+            {
+              "originalPosition": 36,
+              "body": "Are you exchanging ACK and NewKeyUpdate? if yes, why do you describe the sequence of receiving different that the sequence of sending?",
+              "createdAt": "2025-07-21T11:19:10Z",
+              "updatedAt": "2025-07-21T11:19:11Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM61DojO",
+          "commit": {
+            "abbreviatedOid": "55d88fe"
+          },
+          "author": "tuexen",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-07-21T11:20:26Z",
+          "updatedAt": "2025-07-21T11:20:26Z",
+          "comments": [
+            {
+              "originalPosition": 91,
+              "body": "I suggest to show in the diagram when send/recv keys are updated.",
+              "createdAt": "2025-07-21T11:20:26Z",
+              "updatedAt": "2025-07-21T11:20:26Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM61DqNH",
+          "commit": {
+            "abbreviatedOid": "55d88fe"
+          },
+          "author": "tuexen",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-07-21T11:22:07Z",
+          "updatedAt": "2025-07-21T11:22:07Z",
+          "comments": [
+            {
+              "originalPosition": 99,
+              "body": "This is true. But if we use the procedure described above, requires the use of the older epoch also if no loss and reordering is happening? I think this will happen in normal operation for messages sent during the extended key update...",
+              "createdAt": "2025-07-21T11:22:07Z",
+              "updatedAt": "2025-07-21T11:22:07Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM61Ejmo",
+          "commit": {
+            "abbreviatedOid": "55d88fe"
+          },
+          "author": "hannestschofenig",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-07-21T12:26:22Z",
+          "updatedAt": "2025-07-21T12:26:23Z",
+          "comments": [
+            {
+              "originalPosition": 5,
+              "body": "```suggestion\r\nmessages are not transmitted over a reliable transport protocol. As with other\r\n```",
+              "createdAt": "2025-07-21T12:26:22Z",
+              "updatedAt": "2025-07-21T12:26:23Z"
             }
           ]
         }
