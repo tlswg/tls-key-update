@@ -525,37 +525,42 @@ a key share. While an extended key update is in progress, the initiator
 MUST NOT initiate further key updates.
 
 2. On receipt of the ExtendedKeyUpdateRequest message, the responder
-sends the ExtendedKeyUpdateResponse message. If the responder accepts the
-request, it sets the status to `accepted` and includes its own key share.
-If the responder declines the request, it sets the status accordingly and
-does not include the key share. While an extended key update is in progress,
-the responder MUST NOT initiate further key updates.
+either accepts or declines the request. If the responder accepts the
+request, it sets the status of the ExtendedKeyUpdateResponse message
+to `accepted` and includes its own key share. While an extended key
+update is in progress, the responder MUST NOT initiate further key
+updates. If the responder declines the request, it sets the status of
+the ExtendedKeyUpdateResponse message accordingly and does not include
+the key share. Declining the request aborts the exchange.
 
-3. On receipt of the ExtendedKeyUpdateResponse message with `accepted` status,
+3. If the status of the ExtendedKeyUpdateResponse message
+was set to `accepted`, the responder transmit the ExtendedKeyUpdateResponse
+message to the initiator.
+
+4. On receipt of the ExtendedKeyUpdateResponse message with `accepted` status,
 the initiator is able to derive a secret key based on the exchanged key shares.
-The NewKeyUpdate message is intentionally an empty structure that triggers
-the transition to new keying material.
 
-4. The initiator transmits the NewKeyUpdate message.
+5. The initiator transmits the NewKeyUpdate message.
 
-5. Upon receiving a NewKeyUpdate message, the responder MUST update its receive
-keys. It then acknowledges the received message by sending its own NewKeyUpdate
-message. This response both acknowledges the incoming key update and initiates
-a new key update in a single message, as the acknowledgment is piggybacked.
+6. Upon receiving a NewKeyUpdate message, the responder MUST update its receive
+keys and epoch value.
 
-6. After the initiator receives the ACK from the responder, the initiator
-MUST update its send key. With the receipt of the NewKeyUpdate message the
-initiator MUST update its receive keys. The initiator itself MUST acknowledge
-the received NewKeyUpdate message with an ACK message.
+7. The responder acknowledges the received message by sending its
+own NewKeyUpdate message.
 
-7. On receipt of the ACK message the responder updates its send key.
+8. After the initiator receives the NewKeyUpdate message from the responder, the initiator
+MUST update its send key and epoch value. With the receipt of the NewKeyUpdate message the
+initiator MUST update its receive keys.
+
+9. The initiator itself MUST acknowledge the received NewKeyUpdate message with an ACK message.
+
+10. On receipt of the ACK message the responder updates its send key and epoch value.
 
 Note that the procedure above aligns with the key update procedure defined in
 DTLS 1.3.
 
-{{dtls-key-update}} shows an example exchange illustrating that successful
-ACK processing updates the keys of the NewKeyUpdate message sender, which is
-reflected in the change of epoch values.
+{{dtls-key-update}} shows an example exchange illustrating a successful
+extended key update, which is reflected in the change of epoch values.
 
 ~~~
 Client                                             Server
@@ -586,7 +591,7 @@ Client                                             Server
  (epoch 3)
 
 
-                            <--------    [NewKeyUpdate]+[ACK]
+                            <--------          [NewKeyUpdate]
                                                     (epoch=3)
 
  [ACK]                      -------->
