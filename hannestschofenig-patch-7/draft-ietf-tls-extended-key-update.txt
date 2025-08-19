@@ -5,14 +5,14 @@
 Transport Layer Security                                   H. Tschofenig
 Internet-Draft                                                   Siemens
 Intended status: Standards Track                                M. Tüxen
-Expires: 22 January 2026               Münster Univ. of Applied Sciences
+Expires: 20 February 2026              Münster Univ. of Applied Sciences
                                                                 T. Reddy
                                                                    Nokia
                                                                 S. Fries
                                                                  Siemens
                                                             Y. Rosomakho
                                                                  Zscaler
-                                                            21 July 2025
+                                                          19 August 2025
 
 
        Extended Key Update for Transport Layer Security (TLS) 1.3
@@ -64,7 +64,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 22 January 2026.
+   This Internet-Draft will expire on 20 February 2026.
 
 Copyright Notice
 
@@ -543,46 +543,53 @@ Table of Contents
 
    The exchange has the following steps:
 
-   1.  Initiator sends a ExtendedKeyUpdateRequest message, which
-       contains a key share.  While an extended key update is in
-       progress, the initiator MUST NOT initiate further key updates.
+   1.   Initiator sends a ExtendedKeyUpdateRequest message, which
+        contains a key share.  While an extended key update is in
+        progress, the initiator MUST NOT initiate further key updates.
 
-   2.  On receipt of the ExtendedKeyUpdateRequest message, the responder
-       sends the ExtendedKeyUpdateResponse message.  If the responder
-       accepts the request, it sets the status to accepted and includes
-       its own key share.  If the responder declines the request, it
-       sets the status accordingly and does not include the key share.
-       While an extended key update is in progress, the responder MUST
-       NOT initiate further key updates.
+   2.   On receipt of the ExtendedKeyUpdateRequest message, the
+        responder either accepts or declines the request.  If the
+        responder accepts the request, it sets the status of the
+        ExtendedKeyUpdateResponse message to accepted and includes its
+        own key share.  While an extended key update is in progress, the
+        responder MUST NOT initiate further key updates.  If the
+        responder declines the request, it sets the status of the
+        ExtendedKeyUpdateResponse message accordingly and does not
+        include the key share.  Declining the request aborts the
+        exchange.
 
-   3.  On receipt of the ExtendedKeyUpdateResponse message with accepted
-       status, the initiator is able to derive a secret key based on the
-       exchanged key shares.  The NewKeyUpdate message is intentionally
-       an empty structure that triggers the transition to new keying
-       material.
+   3.   If the status of the ExtendedKeyUpdateResponse message was set
+        to accepted, the responder transmit the
+        ExtendedKeyUpdateResponse message to the initiator.
 
-   4.  The initiator transmits the NewKeyUpdate message.
+   4.   On receipt of the ExtendedKeyUpdateResponse message with
+        accepted status, the initiator is able to derive a secret key
+        based on the exchanged key shares.
 
-   5.  Upon receiving a NewKeyUpdate message, the responder MUST update
-       its receive keys.  It then acknowledges the received message by
-       sending its own NewKeyUpdate message.  This response both
-       acknowledges the incoming key update and initiates a new key
-       update in a single message, as the acknowledgment is piggybacked.
+   5.   The initiator transmits the NewKeyUpdate message.
 
-   6.  After the initiator receives the ACK from the responder, the
-       initiator MUST update its send key.  With the receipt of the
-       NewKeyUpdate message the initiator MUST update its receive keys.
-       The initiator itself MUST acknowledge the received NewKeyUpdate
-       message with an ACK message.
+   6.   Upon receiving a NewKeyUpdate message, the responder MUST update
+        its receive keys and epoch value.
 
-   7.  On receipt of the ACK message the responder updates its send key.
+   7.   The responder acknowledges the received message by sending its
+        own NewKeyUpdate message.
+
+   8.   After the initiator receives the NewKeyUpdate message from the
+        responder, the initiator MUST update its send key and epoch
+        value.  With the receipt of the NewKeyUpdate message the
+        initiator MUST update its receive keys.
+
+   9.   The initiator itself MUST acknowledge the received NewKeyUpdate
+        message with an ACK message.
+
+   10.  On receipt of the ACK message the responder updates its send key
+        and epoch value.
 
    Note that the procedure above aligns with the key update procedure
    defined in DTLS 1.3.
 
-   Figure 4 shows an example exchange illustrating that successful ACK
-   processing updates the keys of the NewKeyUpdate message sender, which
-   is reflected in the change of epoch values.
+   Figure 4 shows an example exchange illustrating a successful extended
+   key update, which is reflected in the change of epoch values.
 
    Client                                             Server
 
@@ -612,7 +619,7 @@ Table of Contents
     (epoch 3)
 
 
-                               <--------    [NewKeyUpdate]+[ACK]
+                               <--------          [NewKeyUpdate]
                                                        (epoch=3)
 
     [ACK]                      -------->
@@ -776,9 +783,9 @@ Table of Contents
    [I-D.ietf-tls-rfc8446bis]
               Rescorla, E., "The Transport Layer Security (TLS) Protocol
               Version 1.3", Work in Progress, Internet-Draft, draft-
-              ietf-tls-rfc8446bis-12, 17 February 2025,
+              ietf-tls-rfc8446bis-13, 21 July 2025,
               <https://datatracker.ietf.org/doc/html/draft-ietf-tls-
-              rfc8446bis-12>.
+              rfc8446bis-13>.
 
    [I-D.ietf-tls-tlsflags]
               Nir, Y., "A Flags Extension for TLS 1.3", Work in
@@ -818,9 +825,9 @@ Table of Contents
    [I-D.ietf-tls-hybrid-design]
               Stebila, D., Fluhrer, S., and S. Gueron, "Hybrid key
               exchange in TLS 1.3", Work in Progress, Internet-Draft,
-              draft-ietf-tls-hybrid-design-13, 17 June 2025,
+              draft-ietf-tls-hybrid-design-14, 21 July 2025,
               <https://datatracker.ietf.org/doc/html/draft-ietf-tls-
-              hybrid-design-13>.
+              hybrid-design-14>.
 
    [I-D.ietf-tls-keylogfile]
               Thomson, M., Rosomakho, Y., and H. Tschofenig, "The
@@ -832,9 +839,9 @@ Table of Contents
    [I-D.ietf-tls-mlkem]
               Connolly, D., "ML-KEM Post-Quantum Key Agreement for TLS
               1.3", Work in Progress, Internet-Draft, draft-ietf-tls-
-              mlkem-01, 7 July 2025,
+              mlkem-04, 22 July 2025,
               <https://datatracker.ietf.org/doc/html/draft-ietf-tls-
-              mlkem-01>.
+              mlkem-04>.
 
    [RFC5746]  Rescorla, E., Ray, M., Dispensa, S., and N. Oskov,
               "Transport Layer Security (TLS) Renegotiation Indication
