@@ -1060,11 +1060,11 @@ svg :is([fill="white"], [fill^="#fff"]) {
 <thead><tr>
 <td class="left">Internet-Draft</td>
 <td class="center">Extended Key Update for TLS</td>
-<td class="right">July 2025</td>
+<td class="right">August 2025</td>
 </tr></thead>
 <tfoot><tr>
 <td class="left">Tschofenig, et al.</td>
-<td class="center">Expires 20 January 2026</td>
+<td class="center">Expires 20 February 2026</td>
 <td class="right">[Page]</td>
 </tr></tfoot>
 </table>
@@ -1077,12 +1077,12 @@ svg :is([fill="white"], [fill^="#fff"]) {
 <dd class="internet-draft">draft-ietf-tls-extended-key-update-latest</dd>
 <dt class="label-published">Published:</dt>
 <dd class="published">
-<time datetime="2025-07-19" class="published">19 July 2025</time>
+<time datetime="2025-08-19" class="published">19 August 2025</time>
     </dd>
 <dt class="label-intended-status">Intended Status:</dt>
 <dd class="intended-status">Standards Track</dd>
 <dt class="label-expires">Expires:</dt>
-<dd class="expires"><time datetime="2026-01-20">20 January 2026</time></dd>
+<dd class="expires"><time datetime="2026-02-20">20 February 2026</time></dd>
 <dt class="label-authors">Authors:</dt>
 <dd class="authors">
 <div class="author">
@@ -1155,7 +1155,7 @@ and DTLS 1.3.<a href="#section-abstract-2" class="pilcrow">¶</a></p>
         time. It is inappropriate to use Internet-Drafts as reference
         material or to cite them other than as "work in progress."<a href="#section-boilerplate.1-3" class="pilcrow">¶</a></p>
 <p id="section-boilerplate.1-4">
-        This Internet-Draft will expire on 20 January 2026.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
+        This Internet-Draft will expire on 20 February 2026.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="copyright">
@@ -1503,14 +1503,14 @@ The NewKeyUpdate message is intentionally an empty structure that triggers
 the transition to new keying material.<a href="#section-4-16.3.1" class="pilcrow">¶</a></p>
 </li>
         <li id="section-4-16.4">
-          <p id="section-4-16.4.1">On receipt of the NewKeyUpdate message by the responder, it MUST update
+          <p id="section-4-16.4.1">After the Initiator sends a NewKeyUpdate message it MUST update its
+send keys. On receipt of the NewKeyUpdate message by the responder, it MUST update
 its receive keys. In response, the responder transmits a NewKeyUpdate message
 and MUST update its sending keys.<a href="#section-4-16.4.1" class="pilcrow">¶</a></p>
 </li>
         <li id="section-4-16.5">
           <p id="section-4-16.5.1">After receiving the NewKeyUpdate message from the responder, the initiator
-MUST update its traffic keys and MUST send all its traffic using the next
-generation of keys.<a href="#section-4-16.5.1" class="pilcrow">¶</a></p>
+MUST update its receive keys.<a href="#section-4-16.5.1" class="pilcrow">¶</a></p>
 </li>
       </ol>
 <p id="section-4-17">Both sender and receiver MUST encrypt their NewKeyUpdate messages with
@@ -1616,7 +1616,7 @@ TLS 1.3.<a href="#section-5-3.4.1" class="pilcrow">¶</a></p>
 </pre><a href="#section-5-5" class="pilcrow">¶</a>
 </div>
 <p id="section-5-6">During the initial handshake, the Master Secret is generated (see
-<span><a href="https://datatracker.ietf.org/doc/html/draft-ietf-tls-rfc8446bis-12#section-7.1" class="relref">Section 7.1</a> of [<a href="#I-D.ietf-tls-rfc8446bis" class="cite xref">I-D.ietf-tls-rfc8446bis</a>]</span>). Since the Master Secret
+<span><a href="https://datatracker.ietf.org/doc/html/draft-ietf-tls-rfc8446bis-13#section-7.1" class="relref">Section 7.1</a> of [<a href="#I-D.ietf-tls-rfc8446bis" class="cite xref">I-D.ietf-tls-rfc8446bis</a>]</span>). Since the Master Secret
 is discarded during the key derivation procedure, a derived value is
 stored. This stored value then serves as the input salt to the first key update
 procedure that incorporates the ephemeral (EC)DHE-established value as
@@ -1626,7 +1626,7 @@ procedure, which also incorporates a fresh ephemeral (EC)DHE value as IKM.
 This process is repeated for each additional key update procedure.<a href="#section-5-6" class="pilcrow">¶</a></p>
 <p id="section-5-7">The traffic keys are re-derived from client_application_traffic_secret_N+1
 and server_application_traffic_secret_N+1, as described in
-<span><a href="https://datatracker.ietf.org/doc/html/draft-ietf-tls-rfc8446bis-12#section-7.3" class="relref">Section 7.3</a> of [<a href="#I-D.ietf-tls-rfc8446bis" class="cite xref">I-D.ietf-tls-rfc8446bis</a>]</span>.<a href="#section-5-7" class="pilcrow">¶</a></p>
+<span><a href="https://datatracker.ietf.org/doc/html/draft-ietf-tls-rfc8446bis-13#section-7.3" class="relref">Section 7.3</a> of [<a href="#I-D.ietf-tls-rfc8446bis" class="cite xref">I-D.ietf-tls-rfc8446bis</a>]</span>.<a href="#section-5-7" class="pilcrow">¶</a></p>
 <p id="section-5-8">Once client_/server_application_traffic_secret_N+1 and its associated
 traffic keys have been computed, implementations SHOULD delete
 client_/server_application_traffic_secret_N and its associated
@@ -1786,11 +1786,11 @@ secrets including past iterations of <code>CLIENT_TRAFFIC_SECRET_</code> and
       </h2>
 <p id="section-10-1">Protocols like DTLS-SRTP and DTLS-over-SCTP utilize TLS or DTLS for key establishment but repurpose
 some of the keying material for their own purpose. These protocols use the TLS exporter defined in
-<span><a href="https://datatracker.ietf.org/doc/html/draft-ietf-tls-rfc8446bis-12#section-7.5" class="relref">Section 7.5</a> of [<a href="#I-D.ietf-tls-rfc8446bis" class="cite xref">I-D.ietf-tls-rfc8446bis</a>]</span>.<a href="#section-10-1" class="pilcrow">¶</a></p>
+<span><a href="https://datatracker.ietf.org/doc/html/draft-ietf-tls-rfc8446bis-13#section-7.5" class="relref">Section 7.5</a> of [<a href="#I-D.ietf-tls-rfc8446bis" class="cite xref">I-D.ietf-tls-rfc8446bis</a>]</span>.<a href="#section-10-1" class="pilcrow">¶</a></p>
 <p id="section-10-2">Once the Extended Key Update mechanism is complete, such protocols would need to use the newly
 derived key to generate Exported Keying Material (EKM) to protect packets. The "sk" derived in the
 <a href="#key_update" class="auto internal xref">Section 5</a> will be used as the "Secret" in the exporter function, defined in
-<span><a href="https://datatracker.ietf.org/doc/html/draft-ietf-tls-rfc8446bis-12#section-7.5" class="relref">Section 7.5</a> of [<a href="#I-D.ietf-tls-rfc8446bis" class="cite xref">I-D.ietf-tls-rfc8446bis</a>]</span>, to generate EKM, ensuring that the exported keying
+<span><a href="https://datatracker.ietf.org/doc/html/draft-ietf-tls-rfc8446bis-13#section-7.5" class="relref">Section 7.5</a> of [<a href="#I-D.ietf-tls-rfc8446bis" class="cite xref">I-D.ietf-tls-rfc8446bis</a>]</span>, to generate EKM, ensuring that the exported keying
 material is aligned with the updated security context.<a href="#section-10-2" class="pilcrow">¶</a></p>
 </section>
 </div>
@@ -1938,7 +1938,7 @@ registry <span>[<a href="#TLS-Ext-Registry" class="cite xref">TLS-Ext-Registry</
 <dl class="references">
 <dt id="I-D.ietf-tls-rfc8446bis">[I-D.ietf-tls-rfc8446bis]</dt>
         <dd>
-<span class="refAuthor">Rescorla, E.</span>, <span class="refTitle">"The Transport Layer Security (TLS) Protocol Version 1.3"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-ietf-tls-rfc8446bis-12</span>, <time datetime="2025-02-17" class="refDate">17 February 2025</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-ietf-tls-rfc8446bis-12">https://datatracker.ietf.org/doc/html/draft-ietf-tls-rfc8446bis-12</a>&gt;</span>. </dd>
+<span class="refAuthor">Rescorla, E.</span>, <span class="refTitle">"The Transport Layer Security (TLS) Protocol Version 1.3"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-ietf-tls-rfc8446bis-13</span>, <time datetime="2025-07-21" class="refDate">21 July 2025</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-ietf-tls-rfc8446bis-13">https://datatracker.ietf.org/doc/html/draft-ietf-tls-rfc8446bis-13</a>&gt;</span>. </dd>
 <dd class="break"></dd>
 <dt id="I-D.ietf-tls-tlsflags">[I-D.ietf-tls-tlsflags]</dt>
         <dd>
@@ -1975,7 +1975,7 @@ registry <span>[<a href="#TLS-Ext-Registry" class="cite xref">TLS-Ext-Registry</
 <dd class="break"></dd>
 <dt id="I-D.ietf-tls-hybrid-design">[I-D.ietf-tls-hybrid-design]</dt>
         <dd>
-<span class="refAuthor">Stebila, D.</span>, <span class="refAuthor">Fluhrer, S.</span>, and <span class="refAuthor">S. Gueron</span>, <span class="refTitle">"Hybrid key exchange in TLS 1.3"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-ietf-tls-hybrid-design-13</span>, <time datetime="2025-06-17" class="refDate">17 June 2025</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-ietf-tls-hybrid-design-13">https://datatracker.ietf.org/doc/html/draft-ietf-tls-hybrid-design-13</a>&gt;</span>. </dd>
+<span class="refAuthor">Stebila, D.</span>, <span class="refAuthor">Fluhrer, S.</span>, and <span class="refAuthor">S. Gueron</span>, <span class="refTitle">"Hybrid key exchange in TLS 1.3"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-ietf-tls-hybrid-design-14</span>, <time datetime="2025-07-21" class="refDate">21 July 2025</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-ietf-tls-hybrid-design-14">https://datatracker.ietf.org/doc/html/draft-ietf-tls-hybrid-design-14</a>&gt;</span>. </dd>
 <dd class="break"></dd>
 <dt id="I-D.ietf-tls-keylogfile">[I-D.ietf-tls-keylogfile]</dt>
         <dd>
@@ -1983,7 +1983,7 @@ registry <span>[<a href="#TLS-Ext-Registry" class="cite xref">TLS-Ext-Registry</
 <dd class="break"></dd>
 <dt id="I-D.ietf-tls-mlkem">[I-D.ietf-tls-mlkem]</dt>
         <dd>
-<span class="refAuthor">Connolly, D.</span>, <span class="refTitle">"ML-KEM Post-Quantum Key Agreement for TLS 1.3"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-ietf-tls-mlkem-01</span>, <time datetime="2025-07-07" class="refDate">7 July 2025</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-ietf-tls-mlkem-01">https://datatracker.ietf.org/doc/html/draft-ietf-tls-mlkem-01</a>&gt;</span>. </dd>
+<span class="refAuthor">Connolly, D.</span>, <span class="refTitle">"ML-KEM Post-Quantum Key Agreement for TLS 1.3"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-ietf-tls-mlkem-04</span>, <time datetime="2025-07-22" class="refDate">22 July 2025</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-ietf-tls-mlkem-04">https://datatracker.ietf.org/doc/html/draft-ietf-tls-mlkem-04</a>&gt;</span>. </dd>
 <dd class="break"></dd>
 <dt id="RFC5746">[RFC5746]</dt>
         <dd>
