@@ -181,17 +181,37 @@ handshake.
 
 # Extended Key Update Messages {#ext-key-update}
 
-If the client and server agree to use the extended key update mechanism, the standard key update MUST NOT be used. In this case, the extended key update fully replaces the standard key update functionality.
+If the client and server agree to use the extended key update mechanism,
+the standard key update MUST NOT be used. In this case, the extended key
+update fully replaces the standard key update functionality.
 
-Implementations that receive a classic `KeyUpdate` message after successfully negotiating the Extended Key Update functionality MUST terminate the connection with an `"unexpected_message"` alert.
+Implementations that receive a classic `KeyUpdate` message after
+successfully negotiating the Extended Key Update functionality MUST
+terminate the connection with an `"unexpected_message"` alert.
 
-The extended key update is carried in a single handshake message named `ExtendedKeyUpdate`, with an internal subtype indicating its role (request, response, or new key update). The extended key update process can be initiated by either peer after it has sent a `Finished` message. Implementations that receive an `ExtendedKeyUpdate` message prior to the sender having sent `Finished` MUST terminate the connection with an `"unexpected_message"` alert.
+The extended key update is carried in a single handshake message named
+`ExtendedKeyUpdate`, with an internal subtype indicating its role (request,
+response, or new key update). The extended key update process can be
+initiated by either peer after it has sent a `Finished` message.
+Implementations that receive an `ExtendedKeyUpdate` message prior to
+the sender having sent `Finished` MUST terminate the connection with
+an `"unexpected_message"` alert.
 
-The `KeyShareEntry` carried in a `ExtendedKeyUpdate(request)` and in a `ExtendedKeyUpdate(response)` MUST use a group that was mutually supported by the client and server during the initial handshake. An implementation that receives an algorithm not previously negotiated MUST terminate the connection with an `"illegal_parameter"` alert.
+The `KeyShareEntry` carried in a `ExtendedKeyUpdate(request)` and in
+a `ExtendedKeyUpdate(response)` MUST use a group that was mutually
+supported by the client and server during the initial handshake. An
+implementation that receives an algorithm not previously negotiated
+MUST terminate the connection with an `"illegal_parameter"` alert.
 
-{{fig-key-update}} shows the interaction graphically. First, support for the functionality in this specification is negotiated in the `ClientHello` and the `EncryptedExtensions` messages. Then, the `ExtendedKeyUpdate` exchange is sent to update the application traffic secrets.
+{{fig-key-update}} shows the interaction graphically. First, support
+for the functionality in this specification is negotiated in the
+`ClientHello` and the `EncryptedExtensions` messages. Then, the
+`ExtendedKeyUpdate` exchange is sent to update the application traffic
+secrets.
 
-The extended key update exchange is performed between the initiator and the responder; either the TLS client or the TLS server may act as initiator.
+The extended key update exchange is performed between the initiator
+and the responder; either the TLS client or the TLS server may act
+as initiator.
 
 ~~~
        Client                                           Server
@@ -199,7 +219,7 @@ The extended key update exchange is performed between the initiator and the resp
 Key  ^ ClientHello
 Exch | + key_share
      | + signature_algorithms
-     v + extended_key_update       -------->
+     v + extended_key_update   -------->
                                                   ServerHello  ^ Key
                                                   + key_share  | Exch
                                                                v
@@ -216,19 +236,20 @@ Auth | {CertificateVerify}
        [Application Data]N     <------->  [Application Data]N
                                   ...
 [ExtendedKeyUpdate(request)]N   -------->
-                               <--------  [ExtendedKeyUpdate(response)]N
+                               <-------- [ExtendedKeyUpdate(response)]N
      [ExtendedKeyUpdate(new_key_update)]N   -------->
-                                           <--------  [ExtendedKeyUpdate(new_key_update)]N
+                                           <-------- 
+							       [ExtendedKeyUpdate(new_key_update)]N
                                   ...
        [Application Data]N+1   <------->  [Application Data]N+1
 
 Legend:
 
-        Indicates noteworthy extensions sent in the
-        previously noted message.
+    +   Indicates noteworthy extensions sent in the
+    previously noted message.
 
--       Indicates optional or situation-dependent
-        messages/extensions that are not always sent.
+    -   Indicates optional or situation-dependent
+    messages/extensions that are not always sent.
 
     () Indicates messages protected using keys
     derived from a client_early_traffic_secret.
@@ -238,7 +259,6 @@ Legend:
 
     []N Indicates messages protected using keys
     derived from [sender]_application_traffic_secret_N.
-
 ~~~
 {: #fig-key-update title="Extended Key Update Message Exchange."}
 
@@ -283,37 +303,77 @@ struct {
 Fields:
 
 * `update_type`: the subtype of the `ExtendedKeyUpdate` message.
-* `key_share`: key share information. The contents of this field are determined by the specified group and its corresponding definition (see {{I-D.ietf-tls-rfc8446bis}}).
-* `status`: response to an `extended_key_update_request`. Indicates whether the responder accepted or declined the request.
-* `delay`: delay in seconds for the initiator to retry the request when `status == retry`.
+* `key_share`: key share information. The contents of this field are
+determined by the specified group and its corresponding definition
+(see {{I-D.ietf-tls-rfc8446bis}}).
+* `status`: response to an `extended_key_update_request`. Indicates
+whether the responder accepted or declined the request.
+* `delay`: delay in seconds for the initiator to retry the request
+when `status == retry`.
 
 There are three rejection reasons:
 
-1. `retry`: request declined temporarily (responder is too busy). In this case the message includes a `delay` in seconds. The initiator MUST NOT retry within this interval and SHOULD retry after it elapses. The responder MAY apply an overall rate limit not specific to a single TLS session. If the initiator cannot proceed without an immediate Extended Key Update it MUST terminate the connection with the TLS alert `"extended_key_update_required"` (alert number TBD).
+1. `retry`: request declined temporarily (responder is too busy).
+In this case the message includes a `delay` in seconds. The initiator
+MUST NOT retry within this interval and SHOULD retry after it elapses.
+The responder MAY apply an overall rate limit not specific to a single
+TLS session. If the initiator cannot proceed without an immediate
+Extended Key Update it MUST terminate the connection with the TLS alert
+`"extended_key_update_required"` (alert number TBD).
 
-2. `rejected`: request declined permanently. The initiator MUST NOT retry and, if it cannot proceed without Extended Key Update, MUST terminate the connection with `"extended_key_update_required"` (alert number TBD).
+2. `rejected`: request declined permanently. The initiator MUST NOT
+retry and, if it cannot proceed without Extended Key Update, MUST
+terminate the connection with `"extended_key_update_required"`
+(alert number TBD).
 
-3. `clashed`: request declined because the responder has already initiated its own extended key update.
+3. `clashed`: request declined because the responder has already
+initiated its own extended key update.
 
 # TLS 1.3 Exchange Steps
 
-The following steps are taken by a TLS 1.3 implementation; the steps executed with DTLS 1.3 differ slightly.
+The following steps are taken by a TLS 1.3 implementation; the steps
+executed with DTLS 1.3 differ slightly.
 
-1. The initiator sends `ExtendedKeyUpdate(request)` carrying a `KeyShareEntry`. While an extended key update is in progress, the initiator MUST NOT initiate another key update.
+1. The initiator sends `ExtendedKeyUpdate(request)` carrying a
+`KeyShareEntry`. While an extended key update is in progress, the
+initiator MUST NOT initiate another key update.
 
-2. Upon receipt, the responder sends `ExtendedKeyUpdate(response)`. If the responder accepts the request, it sets `status=accepted` and includes its own `KeyShareEntry`. If the responder declines, it sets the appropriate status and omits the `KeyShareEntry`. While an extended key update is in progress, the responder MUST NOT initiate another key update.
+2. Upon receipt, the responder sends `ExtendedKeyUpdate(response)`.
+If the responder accepts the request, it sets `status=accepted` and
+includes its own `KeyShareEntry`. If the responder declines, it sets
+the appropriate status and omits the `KeyShareEntry`. While an extended
+key update is in progress, the responder MUST NOT initiate another
+key update.
 
-3. Upon receipt of an `ExtendedKeyUpdate(response)` with `status=accepted`, the initiator derives the new secrets from the exchanged key shares. The subsequent `ExtendedKeyUpdate(new_key_update)` is an intentionally empty structure that triggers the switch to the new keying material.
+3. Upon receipt of an `ExtendedKeyUpdate(response)` with
+`status=accepted`, the initiator derives the new secrets from the
+exchanged key shares. The subsequent
+`ExtendedKeyUpdate(new_key_update)` is an intentionally empty structure
+that triggers the switch to the new keying material.
 
-4. After the initiator sends `ExtendedKeyUpdate(new_key_update)` it MUST update its send keys. Upon receipt of this message, the responder MUST update its receive keys and then send `ExtendedKeyUpdate(new_key_update)`, after which it MUST update its send keys.
+4. After the initiator sends `ExtendedKeyUpdate(new_key_update)` it
+MUST update its send keys. Upon receipt of this message, the responder
+MUST update its receive keys and then send
+`ExtendedKeyUpdate(new_key_update)`, after which it MUST update its
+send keys.
 
-5. After receiving the responder’s `ExtendedKeyUpdate(new_key_update)`, the initiator MUST update its receive keys.
+5. After receiving the responder’s `ExtendedKeyUpdate(new_key_update)`,
+the initiator MUST update its receive keys.
 
-Both sender and receiver MUST encrypt their `ExtendedKeyUpdate(new_key_update)` messages with the old keys. Both sides MUST ensure that the `new_key_update` encrypted with the old key is received before accepting any messages encrypted with the new key.
+Both sender and receiver MUST encrypt their
+`ExtendedKeyUpdate(new_key_update)` messages with the old keys. Both
+sides MUST ensure that the `new_key_update` encrypted with the old key
+is received before accepting any messages encrypted with the new key.
 
-If TLS peers independently initiate the extended key update and the requests cross in flight, the `ExtendedKeyUpdate(request)` with the lower lexicographic order of the `key_exchange` value in `KeyShareEntry` MUST be rejected with `status=clashed` in the corresponding `ExtendedKeyUpdate(response)`. This prevents each side from advancing keys by two generations.
+If TLS peers independently initiate the extended key update and the
+requests cross in flight, the `ExtendedKeyUpdate(request)` with the
+lower lexicographic order of the `key_exchange` value in
+`KeyShareEntry` MUST be rejected with `status=clashed` in the
+corresponding `ExtendedKeyUpdate(response)`. This prevents each
+side from advancing keys by two generations.
 
-The handshake framing uses a single `HandshakeType` for this message (see {{fig-handshake}}).
+The handshake framing uses a single `HandshakeType` for this message
+(see {{fig-handshake}}).
 
 ~~~
       struct {
@@ -343,17 +403,19 @@ have successfully updated their application traffic secrets. The
 key derivation function described in this document is used to perform
 this update.
 
-The design of the key derivation function for computing the next generation
-of application_traffic_secret is motivated by the desire to include
+The design of the key derivation function for computing the next
+generation of application_traffic_secret is motivated by the desire
+to include
 
-* a secret derived from the (EC)DHE exchange (or from the hybrid key exchange
-/ PQ-KEM exchange),
-* a secret that allows the new key exchange to be cryptographically bound
-to the previously established secret,
+* a secret derived from the (EC)DHE exchange (or from the hybrid
+key exchange / PQ-KEM exchange),
+* a secret that allows the new key exchange to be cryptographically
+bound to the previously established secret,
 * the concatenation of the `ExtendedKeyUpdate(request)` and the
-`ExtendedKeyUpdate(response)` messages, which contain the key shares, binding
-the encapsulated shared secret ciphertext to IKM in case of hybrid key
-exchange, providing MAL-BIND-K-CT security (see {{CDM23}}), and
+`ExtendedKeyUpdate(response)` messages, which contain the key shares,
+binding the encapsulated shared secret ciphertext to IKM in case of
+hybrid key exchange, providing MAL-BIND-K-CT security (see {{CDM23}}),
+and
 * new label strings to distinguish it from the key derivation used in
 TLS 1.3.
 
@@ -392,15 +454,17 @@ The following diagram shows the key derivation hierarchy.
 During the initial handshake, the Master Secret is generated (see
 {{Section 7.1 of I-D.ietf-tls-rfc8446bis}}). Since the Master Secret
 is discarded during the key derivation procedure, a derived value is
-stored. This stored value then serves as the input salt to the first key update
-procedure that incorporates the ephemeral (EC)DHE-established value as
-input keying material (IKM) to produce master_secret_{N+1}. The derived value
-from this new master secret serves as input salt to the subsequent key update
-procedure, which also incorporates a fresh ephemeral (EC)DHE value as IKM.
-This process is repeated for each additional key update procedure.
+stored. This stored value then serves as the input salt to the first
+key update procedure that incorporates the ephemeral (EC)DHE-
+established value as input keying material (IKM) to produce
+master_secret_{N+1}. The derived value from this new master secret
+serves as input salt to the subsequent key update procedure, which
+also incorporates a fresh ephemeral (EC)DHE value as IKM. This
+process is repeated for each additional key update procedure.
 
-The traffic keys are re-derived from client_application_traffic_secret_N+1
-and server_application_traffic_secret_N+1, as described in
+The traffic keys are re-derived from
+client_application_traffic_secret_N+1 and
+server_application_traffic_secret_N+1, as described in
 {{Section 7.3 of I-D.ietf-tls-rfc8446bis}}.
 
 Once client_/server_application_traffic_secret_N+1 and its associated
@@ -471,13 +535,15 @@ Auth | {CertificateVerify}
                                <-------- [ExtendedKeyUpdate(response
                                            (accepted, with key_share))]
  [ExtendedKeyUpdate(new_key_update)]     -------->
-                                         <-------- [ExtendedKeyUpdate(new_key_update)]
+                                         <--------
+								    [ExtendedKeyUpdate(new_key_update)]
 ~~~
 {: #fig-key-update2 title="Extended Key Update Example Exchange."}
 
 #  DTLS 1.3 Considerations
 
-Due to the possibility of an `ExtendedKeyUpdate(new_key_update)` message being lost and
+Due to the possibility of an `ExtendedKeyUpdate(new_key_update)` message
+being lost and
 thereby preventing the sender of the message
 from updating its keying material, receivers MUST retain the
 pre-update keying material until receipt and successful decryption
@@ -519,9 +585,11 @@ SSLKEYLOGFILE {{I-D.ietf-tls-keylogfile}} needs to be populated with new
 entries. As a result, two additional secret labels are utilized in the
 SSLKEYLOGFILE:
 
-1. `CLIENT_TRAFFIC_SECRET_N+1`: identifies the client_application_traffic_secret_N+1 in the key schedule
+1. `CLIENT_TRAFFIC_SECRET_N+1`: identifies the 
+client_application_traffic_secret_N+1 in the key schedule
 
-2. `SERVER_TRAFFIC_SECRET_N+1`: identifies the server_application_traffic_secret_N+1 in the key schedule
+2. `SERVER_TRAFFIC_SECRET_N+1`: identifies the
+server_application_traffic_secret_N+1 in the key schedule
 
 Similar to other entries in the SSLKEYLOGFILE, the label is followed by the
 32-byte value of the Random field from the ClientHello message that
@@ -531,21 +599,23 @@ hexadecimal.
 SSLKEYLOGFILE entries for the extended key update MUST NOT be produced if
 SSLKEYLOGFILE was not used for other secrets in the handshake.
 
-Note that each successful Extended Key Update invalidates all previous SSLKEYLOGFILE
-secrets including past iterations of `CLIENT_TRAFFIC_SECRET_` and
-`SERVER_TRAFFIC_SECRET_`.
+Note that each successful Extended Key Update invalidates all previous
+SSLKEYLOGFILE secrets including past iterations of `CLIENT_TRAFFIC_SECRET_`
+and `SERVER_TRAFFIC_SECRET_`.
 
 # Exporter
 
-Protocols like DTLS-SRTP and DTLS-over-SCTP utilize TLS or DTLS for key establishment but repurpose
-some of the keying material for their own purpose. These protocols use the TLS exporter defined in
+Protocols like DTLS-SRTP and DTLS-over-SCTP utilize TLS or DTLS for key
+establishment but repurpose some of the keying material for their own
+purpose. These protocols use the TLS exporter defined in
 {{Section 7.5 of I-D.ietf-tls-rfc8446bis}}.
 
-Once the Extended Key Update mechanism is complete, such protocols would need to use the newly
-derived key to generate Exported Keying Material (EKM) to protect packets. The "sk" derived in the
-{{key_update}} will be used as the "Secret" in the exporter function, defined in
-{{Section 7.5 of I-D.ietf-tls-rfc8446bis}}, to generate EKM, ensuring that the exported keying
-material is aligned with the updated security context.
+Once the Extended Key Update mechanism is complete, such protocols would
+need to use the newly derived key to generate Exported Keying Material
+(EKM) to protect packets. The "sk" derived in the {{key_update}} will be
+used as the "Secret" in the exporter function, defined in
+{{Section 7.5 of I-D.ietf-tls-rfc8446bis}}, to generate EKM, ensuring that
+the exported keying material is aligned with the updated security context.
 
 #  Security Considerations
 
@@ -608,4 +678,5 @@ Marten Seemann as well as the responsible area director Martin Duke.
 
 Finally, we would like to thank Martin Thomson, Ilari Liusvaara,
 Benjamin Kaduk, Scott Fluhrer, Dennis Jackson, David Benjamin,
-Matthijs van Duin, Rifaat Shekh-Yusef, Joe Birr-Pixton and Thom Wiggers for their review comments.
+Matthijs van Duin, Rifaat Shekh-Yusef, Joe Birr-Pixton and Thom Wiggers
+for their review comments.
