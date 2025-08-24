@@ -239,7 +239,7 @@ Auth | {CertificateVerify}
                                <-------- [ExtendedKeyUpdate(response)]N
      [ExtendedKeyUpdate(new_key_update)]N   -------->
                                            <-------- 
-							       [ExtendedKeyUpdate(new_key_update)]N
+                                   [ExtendedKeyUpdate(new_key_update)]N
                                   ...
        [Application Data]N+1   <------->  [Application Data]N+1
 
