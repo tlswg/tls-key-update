@@ -536,7 +536,7 @@ Auth | {CertificateVerify}
                                            (accepted, with key_share))]
  [ExtendedKeyUpdate(new_key_update)]     -------->
                                          <--------
-								    [ExtendedKeyUpdate(new_key_update)]
+                                    [ExtendedKeyUpdate(new_key_update)]
 ~~~
 {: #fig-key-update2 title="Extended Key Update Example Exchange."}
 
