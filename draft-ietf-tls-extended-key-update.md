@@ -585,7 +585,7 @@ SSLKEYLOGFILE {{I-D.ietf-tls-keylogfile}} needs to be populated with new
 entries. As a result, two additional secret labels are utilized in the
 SSLKEYLOGFILE:
 
-1. `CLIENT_TRAFFIC_SECRET_N+1`: identifies the 
+1. `CLIENT_TRAFFIC_SECRET_N+1`: identifies the
 client_application_traffic_secret_N+1 in the key schedule
 
 2. `SERVER_TRAFFIC_SECRET_N+1`: identifies the
