@@ -224,52 +224,53 @@ Table of Contents
    and the responder; either the TLS client or the TLS server may act as
    initiator.
 
-       Client                                           Server
+        Client                                           Server
 
-Key  ^ ClientHello
-Exch | + key_share
-     | + signature_algorithms
-     v + extended_key_update       -------->
-                                                  ServerHello  ^ Key
-                                                  + key_share  | Exch
-                                                               v
-                                        {EncryptedExtensions   ^ Server
-                                       + extended_key_update}  | Params
-                                         {CertificateRequest}  v
-                                                {Certificate}  ^
-                                          {CertificateVerify}  | Auth
-                                                   {Finished}  v
-                               <--------
-     ^ {Certificate}
-Auth | {CertificateVerify}
-     v {Finished}              -------->
-       [Application Data]N     <------->  [Application Data]N
-                                  ...
-[ExtendedKeyUpdate(request)]N   -------->
-                               <--------  [ExtendedKeyUpdate(response)]N
-     [ExtendedKeyUpdate(new_key_update)]N   -------->
-                                           <--------  [ExtendedKeyUpdate(new_key_update)]N
-                                  ...
-       [Application Data]N+1   <------->  [Application Data]N+1
+ Key  ^ ClientHello
+ Exch | + key_share
+      | + signature_algorithms
+      v + extended_key_update   -------->
+                                                   ServerHello  ^ Key
+                                                   + key_share  | Exch
+                                                                v
+                                         {EncryptedExtensions   ^ Server
+                                        + extended_key_update}  | Params
+                                          {CertificateRequest}  v
+                                                 {Certificate}  ^
+                                           {CertificateVerify}  | Auth
+                                                    {Finished}  v
+                                <--------
+      ^ {Certificate}
+ Auth | {CertificateVerify}
+      v {Finished}              -------->
+        [Application Data]N     <------->  [Application Data]N
+                                   ...
+ [ExtendedKeyUpdate(request)]N   -------->
+                                <-------- [ExtendedKeyUpdate(response)]N
+      [ExtendedKeyUpdate(new_key_update)]N   -------->
+                                            <--------
+                                    [ExtendedKeyUpdate(new_key_update)]N
+                                   ...
+        [Application Data]N+1   <------->  [Application Data]N+1
 
-Legend:
+ Legend:
 
-        Indicates noteworthy extensions sent in the
-        previously noted message.
+     +   Indicates noteworthy extensions sent in the
+     previously noted message.
 
--       Indicates optional or situation-dependent
-        messages/extensions that are not always sent.
+     -   Indicates optional or situation-dependent
+     messages/extensions that are not always sent.
 
-    () Indicates messages protected using keys
-    derived from a client_early_traffic_secret.
+     () Indicates messages protected using keys
+     derived from a client_early_traffic_secret.
 
-    {} Indicates messages protected using keys
-    derived from a [sender]_handshake_traffic_secret.
+     {} Indicates messages protected using keys
+     derived from a [sender]_handshake_traffic_secret.
 
-    []N Indicates messages protected using keys
-    derived from [sender]_application_traffic_secret_N.
+     []N Indicates messages protected using keys
+     derived from [sender]_application_traffic_secret_N.
 
-           Figure 1: Extended Key Update Message Exchange.
+            Figure 1: Extended Key Update Message Exchange.
 
    The ExtendedKeyUpdate wire format is:
 
@@ -520,37 +521,38 @@ Legend:
    Figure 3 provides an overview of the exchange starting with the
    initial negotiation followed by the key update.
 
-       Client                                           Server
+        Client                                           Server
 
-Key  ^ ClientHello
-Exch | + key_share
-     | + signature_algorithms
-     v + extended_key_update
-                             -------->
-                                                  ServerHello  ^ Key
-                                                  + key_share  | Exch
-                                                               v
-                                        {EncryptedExtensions   ^ Server
-                                       + extended_key_update}  | Params
-                                         {CertificateRequest}  v
-                                                {Certificate}  ^
-                                          {CertificateVerify}  | Auth
-                                                   {Finished}  v
-                               <--------
-     ^ {Certificate}
-Auth | {CertificateVerify}
-     v {Finished}              -------->
-                                  ...
-                              some time later
-                                  ...
- [ExtendedKeyUpdate(request     -------->
-  (with key_share))]
-                               <-------- [ExtendedKeyUpdate(response
-                                           (accepted, with key_share))]
- [ExtendedKeyUpdate(new_key_update)]     -------->
-                                         <-------- [ExtendedKeyUpdate(new_key_update)]
+ Key  ^ ClientHello
+ Exch | + key_share
+      | + signature_algorithms
+      v + extended_key_update
+                              -------->
+                                                   ServerHello  ^ Key
+                                                   + key_share  | Exch
+                                                                v
+                                         {EncryptedExtensions   ^ Server
+                                        + extended_key_update}  | Params
+                                          {CertificateRequest}  v
+                                                 {Certificate}  ^
+                                           {CertificateVerify}  | Auth
+                                                    {Finished}  v
+                                <--------
+      ^ {Certificate}
+ Auth | {CertificateVerify}
+      v {Finished}              -------->
+                                   ...
+                               some time later
+                                   ...
+  [ExtendedKeyUpdate(request     -------->
+   (with key_share))]
+                                <-------- [ExtendedKeyUpdate(response
+                                            (accepted, with key_share))]
+  [ExtendedKeyUpdate(new_key_update)]     -------->
+                                          <--------
+                                     [ExtendedKeyUpdate(new_key_update)]
 
-           Figure 3: Extended Key Update Example Exchange.
+            Figure 3: Extended Key Update Example Exchange.
 
 8.  DTLS 1.3 Considerations
 

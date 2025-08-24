@@ -1340,12 +1340,32 @@ handshake.<a href="#section-3-3" class="pilcrow">¶</a></p>
       <h2 id="name-extended-key-update-message">
 <a href="#section-4" class="section-number selfRef">4. </a><a href="#name-extended-key-update-message" class="section-name selfRef">Extended Key Update Messages</a>
       </h2>
-<p id="section-4-1">If the client and server agree to use the extended key update mechanism, the standard key update MUST NOT be used. In this case, the extended key update fully replaces the standard key update functionality.<a href="#section-4-1" class="pilcrow">¶</a></p>
-<p id="section-4-2">Implementations that receive a classic <code>KeyUpdate</code> message after successfully negotiating the Extended Key Update functionality MUST terminate the connection with an <code>"unexpected_message"</code> alert.<a href="#section-4-2" class="pilcrow">¶</a></p>
-<p id="section-4-3">The extended key update is carried in a single handshake message named <code>ExtendedKeyUpdate</code>, with an internal subtype indicating its role (request, response, or new key update). The extended key update process can be initiated by either peer after it has sent a <code>Finished</code> message. Implementations that receive an <code>ExtendedKeyUpdate</code> message prior to the sender having sent <code>Finished</code> MUST terminate the connection with an <code>"unexpected_message"</code> alert.<a href="#section-4-3" class="pilcrow">¶</a></p>
-<p id="section-4-4">The <code>KeyShareEntry</code> carried in a <code>ExtendedKeyUpdate(request)</code> and in a <code>ExtendedKeyUpdate(response)</code> MUST use a group that was mutually supported by the client and server during the initial handshake. An implementation that receives an algorithm not previously negotiated MUST terminate the connection with an <code>"illegal_parameter"</code> alert.<a href="#section-4-4" class="pilcrow">¶</a></p>
-<p id="section-4-5"><a href="#fig-key-update" class="auto internal xref">Figure 1</a> shows the interaction graphically. First, support for the functionality in this specification is negotiated in the <code>ClientHello</code> and the <code>EncryptedExtensions</code> messages. Then, the <code>ExtendedKeyUpdate</code> exchange is sent to update the application traffic secrets.<a href="#section-4-5" class="pilcrow">¶</a></p>
-<p id="section-4-6">The extended key update exchange is performed between the initiator and the responder; either the TLS client or the TLS server may act as initiator.<a href="#section-4-6" class="pilcrow">¶</a></p>
+<p id="section-4-1">If the client and server agree to use the extended key update mechanism,
+the standard key update MUST NOT be used. In this case, the extended key
+update fully replaces the standard key update functionality.<a href="#section-4-1" class="pilcrow">¶</a></p>
+<p id="section-4-2">Implementations that receive a classic <code>KeyUpdate</code> message after
+successfully negotiating the Extended Key Update functionality MUST
+terminate the connection with an <code>"unexpected_message"</code> alert.<a href="#section-4-2" class="pilcrow">¶</a></p>
+<p id="section-4-3">The extended key update is carried in a single handshake message named
+<code>ExtendedKeyUpdate</code>, with an internal subtype indicating its role (request,
+response, or new key update). The extended key update process can be
+initiated by either peer after it has sent a <code>Finished</code> message.
+Implementations that receive an <code>ExtendedKeyUpdate</code> message prior to
+the sender having sent <code>Finished</code> MUST terminate the connection with
+an <code>"unexpected_message"</code> alert.<a href="#section-4-3" class="pilcrow">¶</a></p>
+<p id="section-4-4">The <code>KeyShareEntry</code> carried in a <code>ExtendedKeyUpdate(request)</code> and in
+a <code>ExtendedKeyUpdate(response)</code> MUST use a group that was mutually
+supported by the client and server during the initial handshake. An
+implementation that receives an algorithm not previously negotiated
+MUST terminate the connection with an <code>"illegal_parameter"</code> alert.<a href="#section-4-4" class="pilcrow">¶</a></p>
+<p id="section-4-5"><a href="#fig-key-update" class="auto internal xref">Figure 1</a> shows the interaction graphically. First, support
+for the functionality in this specification is negotiated in the
+<code>ClientHello</code> and the <code>EncryptedExtensions</code> messages. Then, the
+<code>ExtendedKeyUpdate</code> exchange is sent to update the application traffic
+secrets.<a href="#section-4-5" class="pilcrow">¶</a></p>
+<p id="section-4-6">The extended key update exchange is performed between the initiator
+and the responder; either the TLS client or the TLS server may act
+as initiator.<a href="#section-4-6" class="pilcrow">¶</a></p>
 <span id="name-extended-key-update-message-"></span><div id="fig-key-update">
 <figure id="figure-1">
         <div class="alignLeft art-text artwork" id="section-4-7.1">
@@ -1355,7 +1375,7 @@ handshake.<a href="#section-3-3" class="pilcrow">¶</a></p>
 Key  ^ ClientHello
 Exch | + key_share
      | + signature_algorithms
-     v + extended_key_update       --------&gt;
+     v + extended_key_update   --------&gt;
                                                   ServerHello  ^ Key
                                                   + key_share  | Exch
                                                                v
@@ -1372,19 +1392,20 @@ Auth | {CertificateVerify}
        [Application Data]N     &lt;-------&gt;  [Application Data]N
                                   ...
 [ExtendedKeyUpdate(request)]N   --------&gt;
-                               &lt;--------  [ExtendedKeyUpdate(response)]N
+                               &lt;-------- [ExtendedKeyUpdate(response)]N
      [ExtendedKeyUpdate(new_key_update)]N   --------&gt;
-                                           &lt;--------  [ExtendedKeyUpdate(new_key_update)]N
+                                           &lt;--------
+                                   [ExtendedKeyUpdate(new_key_update)]N
                                   ...
        [Application Data]N+1   &lt;-------&gt;  [Application Data]N+1
 
 Legend:
 
-        Indicates noteworthy extensions sent in the
-        previously noted message.
+    +   Indicates noteworthy extensions sent in the
+    previously noted message.
 
--       Indicates optional or situation-dependent
-        messages/extensions that are not always sent.
+    -   Indicates optional or situation-dependent
+    messages/extensions that are not always sent.
 
     () Indicates messages protected using keys
     derived from a client_early_traffic_secret.
@@ -1394,7 +1415,6 @@ Legend:
 
     []N Indicates messages protected using keys
     derived from [sender]_application_traffic_secret_N.
-
 </pre>
 </div>
 <figcaption><a href="#figure-1" class="selfRef">Figure 1</a>:
@@ -1445,25 +1465,39 @@ struct {
           <p id="section-4-11.1.1"><code>update_type</code>: the subtype of the <code>ExtendedKeyUpdate</code> message.<a href="#section-4-11.1.1" class="pilcrow">¶</a></p>
 </li>
         <li class="normal" id="section-4-11.2">
-          <p id="section-4-11.2.1"><code>key_share</code>: key share information. The contents of this field are determined by the specified group and its corresponding definition (see <span>[<a href="#I-D.ietf-tls-rfc8446bis" class="cite xref">I-D.ietf-tls-rfc8446bis</a>]</span>).<a href="#section-4-11.2.1" class="pilcrow">¶</a></p>
+          <p id="section-4-11.2.1"><code>key_share</code>: key share information. The contents of this field are
+determined by the specified group and its corresponding definition
+(see <span>[<a href="#I-D.ietf-tls-rfc8446bis" class="cite xref">I-D.ietf-tls-rfc8446bis</a>]</span>).<a href="#section-4-11.2.1" class="pilcrow">¶</a></p>
 </li>
         <li class="normal" id="section-4-11.3">
-          <p id="section-4-11.3.1"><code>status</code>: response to an <code>extended_key_update_request</code>. Indicates whether the responder accepted or declined the request.<a href="#section-4-11.3.1" class="pilcrow">¶</a></p>
+          <p id="section-4-11.3.1"><code>status</code>: response to an <code>extended_key_update_request</code>. Indicates
+whether the responder accepted or declined the request.<a href="#section-4-11.3.1" class="pilcrow">¶</a></p>
 </li>
         <li class="normal" id="section-4-11.4">
-          <p id="section-4-11.4.1"><code>delay</code>: delay in seconds for the initiator to retry the request when <code>status == retry</code>.<a href="#section-4-11.4.1" class="pilcrow">¶</a></p>
+          <p id="section-4-11.4.1"><code>delay</code>: delay in seconds for the initiator to retry the request
+when <code>status == retry</code>.<a href="#section-4-11.4.1" class="pilcrow">¶</a></p>
 </li>
       </ul>
 <p id="section-4-12">There are three rejection reasons:<a href="#section-4-12" class="pilcrow">¶</a></p>
 <ol start="1" type="1" class="normal type-1" id="section-4-13">
 <li id="section-4-13.1">
-          <p id="section-4-13.1.1"><code>retry</code>: request declined temporarily (responder is too busy). In this case the message includes a <code>delay</code> in seconds. The initiator MUST NOT retry within this interval and SHOULD retry after it elapses. The responder MAY apply an overall rate limit not specific to a single TLS session. If the initiator cannot proceed without an immediate Extended Key Update it MUST terminate the connection with the TLS alert <code>"extended_key_update_required"</code> (alert number TBD).<a href="#section-4-13.1.1" class="pilcrow">¶</a></p>
+          <p id="section-4-13.1.1"><code>retry</code>: request declined temporarily (responder is too busy).
+In this case the message includes a <code>delay</code> in seconds. The initiator
+MUST NOT retry within this interval and SHOULD retry after it elapses.
+The responder MAY apply an overall rate limit not specific to a single
+TLS session. If the initiator cannot proceed without an immediate
+Extended Key Update it MUST terminate the connection with the TLS alert
+<code>"extended_key_update_required"</code> (alert number TBD).<a href="#section-4-13.1.1" class="pilcrow">¶</a></p>
 </li>
         <li id="section-4-13.2">
-          <p id="section-4-13.2.1"><code>rejected</code>: request declined permanently. The initiator MUST NOT retry and, if it cannot proceed without Extended Key Update, MUST terminate the connection with <code>"extended_key_update_required"</code> (alert number TBD).<a href="#section-4-13.2.1" class="pilcrow">¶</a></p>
+          <p id="section-4-13.2.1"><code>rejected</code>: request declined permanently. The initiator MUST NOT
+retry and, if it cannot proceed without Extended Key Update, MUST
+terminate the connection with <code>"extended_key_update_required"</code>
+(alert number TBD).<a href="#section-4-13.2.1" class="pilcrow">¶</a></p>
 </li>
         <li id="section-4-13.3">
-          <p id="section-4-13.3.1"><code>clashed</code>: request declined because the responder has already initiated its own extended key update.<a href="#section-4-13.3.1" class="pilcrow">¶</a></p>
+          <p id="section-4-13.3.1"><code>clashed</code>: request declined because the responder has already
+initiated its own extended key update.<a href="#section-4-13.3.1" class="pilcrow">¶</a></p>
 </li>
       </ol>
 </section>
@@ -1473,27 +1507,53 @@ struct {
       <h2 id="name-tls-13-exchange-steps">
 <a href="#section-5" class="section-number selfRef">5. </a><a href="#name-tls-13-exchange-steps" class="section-name selfRef">TLS 1.3 Exchange Steps</a>
       </h2>
-<p id="section-5-1">The following steps are taken by a TLS 1.3 implementation; the steps executed with DTLS 1.3 differ slightly.<a href="#section-5-1" class="pilcrow">¶</a></p>
+<p id="section-5-1">The following steps are taken by a TLS 1.3 implementation; the steps
+executed with DTLS 1.3 differ slightly.<a href="#section-5-1" class="pilcrow">¶</a></p>
 <ol start="1" type="1" class="normal type-1" id="section-5-2">
 <li id="section-5-2.1">
-          <p id="section-5-2.1.1">The initiator sends <code>ExtendedKeyUpdate(request)</code> carrying a <code>KeyShareEntry</code>. While an extended key update is in progress, the initiator MUST NOT initiate another key update.<a href="#section-5-2.1.1" class="pilcrow">¶</a></p>
+          <p id="section-5-2.1.1">The initiator sends <code>ExtendedKeyUpdate(request)</code> carrying a
+<code>KeyShareEntry</code>. While an extended key update is in progress, the
+initiator MUST NOT initiate another key update.<a href="#section-5-2.1.1" class="pilcrow">¶</a></p>
 </li>
         <li id="section-5-2.2">
-          <p id="section-5-2.2.1">Upon receipt, the responder sends <code>ExtendedKeyUpdate(response)</code>. If the responder accepts the request, it sets <code>status=accepted</code> and includes its own <code>KeyShareEntry</code>. If the responder declines, it sets the appropriate status and omits the <code>KeyShareEntry</code>. While an extended key update is in progress, the responder MUST NOT initiate another key update.<a href="#section-5-2.2.1" class="pilcrow">¶</a></p>
+          <p id="section-5-2.2.1">Upon receipt, the responder sends <code>ExtendedKeyUpdate(response)</code>.
+If the responder accepts the request, it sets <code>status=accepted</code> and
+includes its own <code>KeyShareEntry</code>. If the responder declines, it sets
+the appropriate status and omits the <code>KeyShareEntry</code>. While an extended
+key update is in progress, the responder MUST NOT initiate another
+key update.<a href="#section-5-2.2.1" class="pilcrow">¶</a></p>
 </li>
         <li id="section-5-2.3">
-          <p id="section-5-2.3.1">Upon receipt of an <code>ExtendedKeyUpdate(response)</code> with <code>status=accepted</code>, the initiator derives the new secrets from the exchanged key shares. The subsequent <code>ExtendedKeyUpdate(new_key_update)</code> is an intentionally empty structure that triggers the switch to the new keying material.<a href="#section-5-2.3.1" class="pilcrow">¶</a></p>
+          <p id="section-5-2.3.1">Upon receipt of an <code>ExtendedKeyUpdate(response)</code> with
+<code>status=accepted</code>, the initiator derives the new secrets from the
+exchanged key shares. The subsequent
+<code>ExtendedKeyUpdate(new_key_update)</code> is an intentionally empty structure
+that triggers the switch to the new keying material.<a href="#section-5-2.3.1" class="pilcrow">¶</a></p>
 </li>
         <li id="section-5-2.4">
-          <p id="section-5-2.4.1">After the initiator sends <code>ExtendedKeyUpdate(new_key_update)</code> it MUST update its send keys. Upon receipt of this message, the responder MUST update its receive keys and then send <code>ExtendedKeyUpdate(new_key_update)</code>, after which it MUST update its send keys.<a href="#section-5-2.4.1" class="pilcrow">¶</a></p>
+          <p id="section-5-2.4.1">After the initiator sends <code>ExtendedKeyUpdate(new_key_update)</code> it
+MUST update its send keys. Upon receipt of this message, the responder
+MUST update its receive keys and then send
+<code>ExtendedKeyUpdate(new_key_update)</code>, after which it MUST update its
+send keys.<a href="#section-5-2.4.1" class="pilcrow">¶</a></p>
 </li>
         <li id="section-5-2.5">
-          <p id="section-5-2.5.1">After receiving the responder’s <code>ExtendedKeyUpdate(new_key_update)</code>, the initiator MUST update its receive keys.<a href="#section-5-2.5.1" class="pilcrow">¶</a></p>
+          <p id="section-5-2.5.1">After receiving the responder’s <code>ExtendedKeyUpdate(new_key_update)</code>,
+the initiator MUST update its receive keys.<a href="#section-5-2.5.1" class="pilcrow">¶</a></p>
 </li>
       </ol>
-<p id="section-5-3">Both sender and receiver MUST encrypt their <code>ExtendedKeyUpdate(new_key_update)</code> messages with the old keys. Both sides MUST ensure that the <code>new_key_update</code> encrypted with the old key is received before accepting any messages encrypted with the new key.<a href="#section-5-3" class="pilcrow">¶</a></p>
-<p id="section-5-4">If TLS peers independently initiate the extended key update and the requests cross in flight, the <code>ExtendedKeyUpdate(request)</code> with the lower lexicographic order of the <code>key_exchange</code> value in <code>KeyShareEntry</code> MUST be rejected with <code>status=clashed</code> in the corresponding <code>ExtendedKeyUpdate(response)</code>. This prevents each side from advancing keys by two generations.<a href="#section-5-4" class="pilcrow">¶</a></p>
-<p id="section-5-5">The handshake framing uses a single <code>HandshakeType</code> for this message (see <a href="#fig-handshake" class="auto internal xref">Figure 2</a>).<a href="#section-5-5" class="pilcrow">¶</a></p>
+<p id="section-5-3">Both sender and receiver MUST encrypt their
+<code>ExtendedKeyUpdate(new_key_update)</code> messages with the old keys. Both
+sides MUST ensure that the <code>new_key_update</code> encrypted with the old key
+is received before accepting any messages encrypted with the new key.<a href="#section-5-3" class="pilcrow">¶</a></p>
+<p id="section-5-4">If TLS peers independently initiate the extended key update and the
+requests cross in flight, the <code>ExtendedKeyUpdate(request)</code> with the
+lower lexicographic order of the <code>key_exchange</code> value in
+<code>KeyShareEntry</code> MUST be rejected with <code>status=clashed</code> in the
+corresponding <code>ExtendedKeyUpdate(response)</code>. This prevents each
+side from advancing keys by two generations.<a href="#section-5-4" class="pilcrow">¶</a></p>
+<p id="section-5-5">The handshake framing uses a single <code>HandshakeType</code> for this message
+(see <a href="#fig-handshake" class="auto internal xref">Figure 2</a>).<a href="#section-5-5" class="pilcrow">¶</a></p>
 <span id="name-handshake-structure"></span><div id="fig-handshake">
 <figure id="figure-2">
         <div class="alignLeft art-text artwork" id="section-5-6.1">
@@ -1532,22 +1592,24 @@ struct {
 have successfully updated their application traffic secrets. The
 key derivation function described in this document is used to perform
 this update.<a href="#section-6-1" class="pilcrow">¶</a></p>
-<p id="section-6-2">The design of the key derivation function for computing the next generation
-of application_traffic_secret is motivated by the desire to include<a href="#section-6-2" class="pilcrow">¶</a></p>
+<p id="section-6-2">The design of the key derivation function for computing the next
+generation of application_traffic_secret is motivated by the desire
+to include<a href="#section-6-2" class="pilcrow">¶</a></p>
 <ul class="normal">
 <li class="normal" id="section-6-3.1">
-          <p id="section-6-3.1.1">a secret derived from the (EC)DHE exchange (or from the hybrid key exchange
-/ PQ-KEM exchange),<a href="#section-6-3.1.1" class="pilcrow">¶</a></p>
+          <p id="section-6-3.1.1">a secret derived from the (EC)DHE exchange (or from the hybrid
+key exchange / PQ-KEM exchange),<a href="#section-6-3.1.1" class="pilcrow">¶</a></p>
 </li>
         <li class="normal" id="section-6-3.2">
-          <p id="section-6-3.2.1">a secret that allows the new key exchange to be cryptographically bound
-to the previously established secret,<a href="#section-6-3.2.1" class="pilcrow">¶</a></p>
+          <p id="section-6-3.2.1">a secret that allows the new key exchange to be cryptographically
+bound to the previously established secret,<a href="#section-6-3.2.1" class="pilcrow">¶</a></p>
 </li>
         <li class="normal" id="section-6-3.3">
           <p id="section-6-3.3.1">the concatenation of the <code>ExtendedKeyUpdate(request)</code> and the
-<code>ExtendedKeyUpdate(response)</code> messages, which contain the key shares, binding
-the encapsulated shared secret ciphertext to IKM in case of hybrid key
-exchange, providing MAL-BIND-K-CT security (see <span>[<a href="#CDM23" class="cite xref">CDM23</a>]</span>), and<a href="#section-6-3.3.1" class="pilcrow">¶</a></p>
+<code>ExtendedKeyUpdate(response)</code> messages, which contain the key shares,
+binding the encapsulated shared secret ciphertext to IKM in case of
+hybrid key exchange, providing MAL-BIND-K-CT security (see <span>[<a href="#CDM23" class="cite xref">CDM23</a>]</span>),
+and<a href="#section-6-3.3.1" class="pilcrow">¶</a></p>
 </li>
         <li class="normal" id="section-6-3.4">
           <p id="section-6-3.4.1">new label strings to distinguish it from the key derivation used in
@@ -1589,14 +1651,16 @@ TLS 1.3.<a href="#section-6-3.4.1" class="pilcrow">¶</a></p>
 <p id="section-6-6">During the initial handshake, the Master Secret is generated (see
 <span><a href="https://datatracker.ietf.org/doc/html/draft-ietf-tls-rfc8446bis-13#section-7.1" class="relref">Section 7.1</a> of [<a href="#I-D.ietf-tls-rfc8446bis" class="cite xref">I-D.ietf-tls-rfc8446bis</a>]</span>). Since the Master Secret
 is discarded during the key derivation procedure, a derived value is
-stored. This stored value then serves as the input salt to the first key update
-procedure that incorporates the ephemeral (EC)DHE-established value as
-input keying material (IKM) to produce master_secret_{N+1}. The derived value
-from this new master secret serves as input salt to the subsequent key update
-procedure, which also incorporates a fresh ephemeral (EC)DHE value as IKM.
-This process is repeated for each additional key update procedure.<a href="#section-6-6" class="pilcrow">¶</a></p>
-<p id="section-6-7">The traffic keys are re-derived from client_application_traffic_secret_N+1
-and server_application_traffic_secret_N+1, as described in
+stored. This stored value then serves as the input salt to the first
+key update procedure that incorporates the ephemeral (EC)DHE-
+established value as input keying material (IKM) to produce
+master_secret_{N+1}. The derived value from this new master secret
+serves as input salt to the subsequent key update procedure, which
+also incorporates a fresh ephemeral (EC)DHE value as IKM. This
+process is repeated for each additional key update procedure.<a href="#section-6-6" class="pilcrow">¶</a></p>
+<p id="section-6-7">The traffic keys are re-derived from
+client_application_traffic_secret_N+1 and
+server_application_traffic_secret_N+1, as described in
 <span><a href="https://datatracker.ietf.org/doc/html/draft-ietf-tls-rfc8446bis-13#section-7.3" class="relref">Section 7.3</a> of [<a href="#I-D.ietf-tls-rfc8446bis" class="cite xref">I-D.ietf-tls-rfc8446bis</a>]</span>.<a href="#section-6-7" class="pilcrow">¶</a></p>
 <p id="section-6-8">Once client_/server_application_traffic_secret_N+1 and its associated
 traffic keys have been computed, implementations SHOULD delete
@@ -1672,7 +1736,8 @@ Auth | {CertificateVerify}
                                &lt;-------- [ExtendedKeyUpdate(response
                                            (accepted, with key_share))]
  [ExtendedKeyUpdate(new_key_update)]     --------&gt;
-                                         &lt;-------- [ExtendedKeyUpdate(new_key_update)]
+                                         &lt;--------
+                                    [ExtendedKeyUpdate(new_key_update)]
 </pre>
 </div>
 <figcaption><a href="#figure-3" class="selfRef">Figure 3</a>:
@@ -1686,7 +1751,8 @@ Auth | {CertificateVerify}
       <h2 id="name-dtls-13-considerations">
 <a href="#section-8" class="section-number selfRef">8. </a><a href="#name-dtls-13-considerations" class="section-name selfRef">DTLS 1.3 Considerations</a>
       </h2>
-<p id="section-8-1">Due to the possibility of an <code>ExtendedKeyUpdate(new_key_update)</code> message being lost and
+<p id="section-8-1">Due to the possibility of an <code>ExtendedKeyUpdate(new_key_update)</code> message
+being lost and
 thereby preventing the sender of the message
 from updating its keying material, receivers MUST retain the
 pre-update keying material until receipt and successful decryption
@@ -1734,10 +1800,12 @@ entries. As a result, two additional secret labels are utilized in the
 SSLKEYLOGFILE:<a href="#section-10-1" class="pilcrow">¶</a></p>
 <ol start="1" type="1" class="normal type-1" id="section-10-2">
 <li id="section-10-2.1">
-          <p id="section-10-2.1.1"><code>CLIENT_TRAFFIC_SECRET_N+1</code>: identifies the client_application_traffic_secret_N+1 in the key schedule<a href="#section-10-2.1.1" class="pilcrow">¶</a></p>
+          <p id="section-10-2.1.1"><code>CLIENT_TRAFFIC_SECRET_N+1</code>: identifies the
+client_application_traffic_secret_N+1 in the key schedule<a href="#section-10-2.1.1" class="pilcrow">¶</a></p>
 </li>
         <li id="section-10-2.2">
-          <p id="section-10-2.2.1"><code>SERVER_TRAFFIC_SECRET_N+1</code>: identifies the server_application_traffic_secret_N+1 in the key schedule<a href="#section-10-2.2.1" class="pilcrow">¶</a></p>
+          <p id="section-10-2.2.1"><code>SERVER_TRAFFIC_SECRET_N+1</code>: identifies the
+server_application_traffic_secret_N+1 in the key schedule<a href="#section-10-2.2.1" class="pilcrow">¶</a></p>
 </li>
       </ol>
 <p id="section-10-3">Similar to other entries in the SSLKEYLOGFILE, the label is followed by the
@@ -1746,9 +1814,9 @@ established the TLS connection, and the corresponding secret encoded in
 hexadecimal.<a href="#section-10-3" class="pilcrow">¶</a></p>
 <p id="section-10-4">SSLKEYLOGFILE entries for the extended key update MUST NOT be produced if
 SSLKEYLOGFILE was not used for other secrets in the handshake.<a href="#section-10-4" class="pilcrow">¶</a></p>
-<p id="section-10-5">Note that each successful Extended Key Update invalidates all previous SSLKEYLOGFILE
-secrets including past iterations of <code>CLIENT_TRAFFIC_SECRET_</code> and
-<code>SERVER_TRAFFIC_SECRET_</code>.<a href="#section-10-5" class="pilcrow">¶</a></p>
+<p id="section-10-5">Note that each successful Extended Key Update invalidates all previous
+SSLKEYLOGFILE secrets including past iterations of <code>CLIENT_TRAFFIC_SECRET_</code>
+and <code>SERVER_TRAFFIC_SECRET_</code>.<a href="#section-10-5" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="exporter">
@@ -1756,14 +1824,16 @@ secrets including past iterations of <code>CLIENT_TRAFFIC_SECRET_</code> and
       <h2 id="name-exporter">
 <a href="#section-11" class="section-number selfRef">11. </a><a href="#name-exporter" class="section-name selfRef">Exporter</a>
       </h2>
-<p id="section-11-1">Protocols like DTLS-SRTP and DTLS-over-SCTP utilize TLS or DTLS for key establishment but repurpose
-some of the keying material for their own purpose. These protocols use the TLS exporter defined in
+<p id="section-11-1">Protocols like DTLS-SRTP and DTLS-over-SCTP utilize TLS or DTLS for key
+establishment but repurpose some of the keying material for their own
+purpose. These protocols use the TLS exporter defined in
 <span><a href="https://datatracker.ietf.org/doc/html/draft-ietf-tls-rfc8446bis-13#section-7.5" class="relref">Section 7.5</a> of [<a href="#I-D.ietf-tls-rfc8446bis" class="cite xref">I-D.ietf-tls-rfc8446bis</a>]</span>.<a href="#section-11-1" class="pilcrow">¶</a></p>
-<p id="section-11-2">Once the Extended Key Update mechanism is complete, such protocols would need to use the newly
-derived key to generate Exported Keying Material (EKM) to protect packets. The "sk" derived in the
-<a href="#key_update" class="auto internal xref">Section 6</a> will be used as the "Secret" in the exporter function, defined in
-<span><a href="https://datatracker.ietf.org/doc/html/draft-ietf-tls-rfc8446bis-13#section-7.5" class="relref">Section 7.5</a> of [<a href="#I-D.ietf-tls-rfc8446bis" class="cite xref">I-D.ietf-tls-rfc8446bis</a>]</span>, to generate EKM, ensuring that the exported keying
-material is aligned with the updated security context.<a href="#section-11-2" class="pilcrow">¶</a></p>
+<p id="section-11-2">Once the Extended Key Update mechanism is complete, such protocols would
+need to use the newly derived key to generate Exported Keying Material
+(EKM) to protect packets. The "sk" derived in the <a href="#key_update" class="auto internal xref">Section 6</a> will be
+used as the "Secret" in the exporter function, defined in
+<span><a href="https://datatracker.ietf.org/doc/html/draft-ietf-tls-rfc8446bis-13#section-7.5" class="relref">Section 7.5</a> of [<a href="#I-D.ietf-tls-rfc8446bis" class="cite xref">I-D.ietf-tls-rfc8446bis</a>]</span>, to generate EKM, ensuring that
+the exported keying material is aligned with the updated security context.<a href="#section-11-2" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="security-considerations">
@@ -1972,7 +2042,8 @@ Transport and Services Working Group (tsvwg) Gorry Fairhurst and
 Marten Seemann as well as the responsible area director Martin Duke.<a href="#appendix-A-3" class="pilcrow">¶</a></p>
 <p id="appendix-A-4">Finally, we would like to thank Martin Thomson, Ilari Liusvaara,
 Benjamin Kaduk, Scott Fluhrer, Dennis Jackson, David Benjamin,
-Matthijs van Duin, Rifaat Shekh-Yusef, Joe Birr-Pixton and Thom Wiggers for their review comments.<a href="#appendix-A-4" class="pilcrow">¶</a></p>
+Matthijs van Duin, Rifaat Shekh-Yusef, Joe Birr-Pixton and Thom Wiggers
+for their review comments.<a href="#appendix-A-4" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="authors-addresses">
