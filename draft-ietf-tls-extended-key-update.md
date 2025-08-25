@@ -341,7 +341,7 @@ initiator MUST NOT initiate another key update.
 2. Upon receipt, the responder sends `ExtendedKeyUpdate(response)`.
 If the responder accepts the request, it sets `status=accepted` and
 includes its own `KeyShareEntry`. If the responder declines, it sets
-the appropriate status and omits the `KeyShareEntry`. While an extended
+an appropriate rejection status and omits the `KeyShareEntry`. While an extended
 key update is in progress, the responder MUST NOT initiate another
 key update.
 
