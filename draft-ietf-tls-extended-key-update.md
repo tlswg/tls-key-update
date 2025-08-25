@@ -346,7 +346,7 @@ key update is in progress, the responder MUST NOT initiate another
 key update.
 
 3. Upon receipt of an `ExtendedKeyUpdate(response)` with
-`status=accepted`, the initiator derives the new secrets from the
+status to `accepted`, the initiator derives the new secrets from the
 exchanged key shares. The subsequent
 `ExtendedKeyUpdate(new_key_update)` is an intentionally empty structure
 that triggers the switch to the new keying material.
