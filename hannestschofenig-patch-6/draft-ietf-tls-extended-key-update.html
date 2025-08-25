@@ -1526,9 +1526,9 @@ key update.<a href="#section-5-2.2.1" class="pilcrow">¶</a></p>
         <li id="section-5-2.3">
           <p id="section-5-2.3.1">Upon receipt of an <code>ExtendedKeyUpdate(response)</code> with
 status to <code>accepted</code>, the initiator derives the new secrets from the
-exchanged key shares. The subsequent
-<code>ExtendedKeyUpdate(new_key_update)</code> is an intentionally empty structure
-that triggers the switch to the new keying material.<a href="#section-5-2.3.1" class="pilcrow">¶</a></p>
+exchanged key shares. The initiator then sends an empty
+ExtendedKeyUpdate(new_key_update) message to trigger the switch to the
+new keys.<a href="#section-5-2.3.1" class="pilcrow">¶</a></p>
 </li>
         <li id="section-5-2.4">
           <p id="section-5-2.4.1">After the initiator sends <code>ExtendedKeyUpdate(new_key_update)</code> it
@@ -1549,7 +1549,7 @@ is received before accepting any messages encrypted with the new key.<a href="#s
 <p id="section-5-4">If TLS peers independently initiate the extended key update and the
 requests cross in flight, the <code>ExtendedKeyUpdate(request)</code> with the
 lower lexicographic order of the <code>key_exchange</code> value in
-<code>KeyShareEntry</code> MUST be rejected with <code>status=clashed</code> in the
+<code>KeyShareEntry</code> MUST be rejected with status set to <code>clashed</code> in the
 corresponding <code>ExtendedKeyUpdate(response)</code>. This prevents each
 side from advancing keys by two generations.<a href="#section-5-4" class="pilcrow">¶</a></p>
 <p id="section-5-5">The handshake framing uses a single <code>HandshakeType</code> for this message
