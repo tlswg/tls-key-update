@@ -368,7 +368,7 @@ is received before accepting any messages encrypted with the new key.
 If TLS peers independently initiate the extended key update and the
 requests cross in flight, the `ExtendedKeyUpdate(request)` with the
 lower lexicographic order of the `key_exchange` value in
-`KeyShareEntry` MUST be rejected with `status=clashed` in the
+`KeyShareEntry` MUST be rejected with status set to `clashed` in the
 corresponding `ExtendedKeyUpdate(response)`. This prevents each
 side from advancing keys by two generations.
 
