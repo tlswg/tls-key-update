@@ -309,7 +309,7 @@ determined by the specified group and its corresponding definition
 * `status`: response to an `extended_key_update_request`. Indicates
 whether the responder accepted or declined the request.
 * `delay`: delay in seconds for the initiator to retry the request
-when `status == retry`.
+when status is set to `retry`.
 
 There are three rejection reasons:
 
