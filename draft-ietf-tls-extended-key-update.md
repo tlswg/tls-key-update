@@ -347,17 +347,17 @@ key update.
 
 3. Upon receipt of an `ExtendedKeyUpdate(response)` with
 status to `accepted`, the initiator derives the new secrets from the
-exchanged key shares. The subsequent
-`ExtendedKeyUpdate(new_key_update)` is an intentionally empty structure
-that triggers the switch to the new keying material.
-
-4. After the initiator sends `ExtendedKeyUpdate(new_key_update)` it
+exchanged key shares. The initiator then sends an empty
+ExtendedKeyUpdate(new_key_update) message to trigger the switch to the
+new keys.
+ 
+5. After the initiator sends `ExtendedKeyUpdate(new_key_update)` it
 MUST update its send keys. Upon receipt of this message, the responder
 MUST update its receive keys and then send
 `ExtendedKeyUpdate(new_key_update)`, after which it MUST update its
 send keys.
 
-5. After receiving the responder’s `ExtendedKeyUpdate(new_key_update)`,
+6. After receiving the responder’s `ExtendedKeyUpdate(new_key_update)`,
 the initiator MUST update its receive keys.
 
 Both sender and receiver MUST encrypt their
