@@ -353,9 +353,9 @@ Table of Contents
    2.  Upon receipt, the responder sends ExtendedKeyUpdate(response).
        If the responder accepts the request, it sets status=accepted and
        includes its own KeyShareEntry.  If the responder declines, it
-       sets the appropriate status and omits the KeyShareEntry.  While
-       an extended key update is in progress, the responder MUST NOT
-       initiate another key update.
+       sets an appropriate rejection status and omits the KeyShareEntry.
+       While an extended key update is in progress, the responder MUST
+       NOT initiate another key update.
 
    3.  Upon receipt of an ExtendedKeyUpdate(response) with status to
        accepted, the initiator derives the new secrets from the

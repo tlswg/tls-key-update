@@ -1519,7 +1519,7 @@ initiator MUST NOT initiate another key update.<a href="#section-5-2.1.1" class=
           <p id="section-5-2.2.1">Upon receipt, the responder sends <code>ExtendedKeyUpdate(response)</code>.
 If the responder accepts the request, it sets <code>status=accepted</code> and
 includes its own <code>KeyShareEntry</code>. If the responder declines, it sets
-the appropriate status and omits the <code>KeyShareEntry</code>. While an extended
+an appropriate rejection status and omits the <code>KeyShareEntry</code>. While an extended
 key update is in progress, the responder MUST NOT initiate another
 key update.<a href="#section-5-2.2.1" class="pilcrow">¶</a></p>
 </li>
