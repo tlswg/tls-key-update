@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2025-08-26T01:48:07.706313+00:00",
+  "timestamp": "2025-08-28T01:44:02.593111+00:00",
   "repo": "tlswg/tls-key-update",
   "labels": [
     {
@@ -1702,7 +1702,7 @@
       "labels": [],
       "body": "Based on discussion at the IETF 123",
       "createdAt": "2025-07-21T09:12:59Z",
-      "updatedAt": "2025-08-25T11:20:00Z",
+      "updatedAt": "2025-08-27T14:26:09Z",
       "baseRepository": "tlswg/tls-key-update",
       "baseRefName": "main",
       "baseRefOid": "d151fff133866a40725039dd77a53f6b92cb90e6",
@@ -1892,6 +1892,26 @@
               "body": "This section needs to be updated to align with https://github.com/tlswg/tls-key-update/pull/40. ",
               "createdAt": "2025-08-25T11:19:59Z",
               "updatedAt": "2025-08-25T11:20:00Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM68WlJk",
+          "commit": {
+            "abbreviatedOid": "5f84be4"
+          },
+          "author": "hannestschofenig",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-08-27T14:26:09Z",
+          "updatedAt": "2025-08-27T14:26:09Z",
+          "comments": [
+            {
+              "originalPosition": 4,
+              "body": "Definitely.\r\n\r\nBefore I do that I need to merge this PR, then PR 40 and finally update this section again to avoid merge conflicts.",
+              "createdAt": "2025-08-27T14:26:09Z",
+              "updatedAt": "2025-08-27T14:26:09Z"
             }
           ]
         }
