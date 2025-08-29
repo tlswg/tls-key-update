@@ -509,52 +509,54 @@ Auth | {CertificateVerify}
                                <-------- [NewKeyUpdate]
 ~~~
 {: #fig-key-update2 title="Extended Key Update Message Exchange."}
-
 #  DTLS 1.3 Considerations
 
 Unlike TLS 1.3, DTLS 1.3 implementations must take into account that handshake
 messages are not transmitted over a reliable transport protocol. As with other
-handshake messages with no built-in response, NewKeyUpdate messages MUST be
-acknowledged. Unlike the NewKeyUpdate message, the ExtendedKeyUpdateRequest
-is acknowledged by the ExtendedKeyUpdateResponse.
+handshake messages with no built-in response, `extended_key_update("new_keys")`
+messages MUST be acknowledged using the DTLS 1.3 ACK. By contrast,
+`extended_key_update("request")` is acknowledged by the peer’s
+`extended_key_update("response")`.
 
 The exchange has the following steps:
 
-1. Initiator sends a ExtendedKeyUpdateRequest message, which contains
-a key share. While an extended key update is in progress, the initiator
-MUST NOT initiate further key updates.
+1. The initiator sends `extended_key_update("request")`, which contains a key
+   share. While an extended key update is in progress, the initiator MUST NOT
+   initiate further key updates.
 
-2. On receipt of the ExtendedKeyUpdateRequest message, the responder
-either accepts or declines the request. If the responder accepts the
-request, it sets the status of the ExtendedKeyUpdateResponse message
-to `accepted` and includes its own key share. While an extended key
-update is in progress, the responder MUST NOT initiate further key
-updates. If the responder declines the request, it sets the status of
-the ExtendedKeyUpdateResponse message accordingly and does not include
-the key share. Declining the request aborts the exchange.
+2. On receipt of `extended_key_update("request")`, the responder either accepts
+   or declines the request. If the responder accepts the request, it sets the
+   status in `extended_key_update("response")` to `accepted` and includes its
+   own key share. While an extended key update is in progress, the responder
+   MUST NOT initiate further key updates. If the responder declines the request,
+   it sets the status accordingly and does not include a key share. Declining
+   the request aborts the exchange.
 
-3. If the status of the ExtendedKeyUpdateResponse message
-was set to `accepted`, the responder transmit the ExtendedKeyUpdateResponse
-message to the initiator.
+3. If the status in `extended_key_update("response")` was set to `accepted`,
+   the responder transmits that `extended_key_update("response")` to the
+   initiator.
 
-4. On receipt of the ExtendedKeyUpdateResponse message with `accepted` status,
-the initiator is able to derive a secret key based on the exchanged key shares.
+4. On receipt of `extended_key_update("response")` with status `accepted`,
+   the initiator is able to derive a secret key based on the exchanged key
+   shares.
 
-5. The initiator transmits the NewKeyUpdate message.
+5. The initiator transmits `extended_key_update("new_keys")`.
 
-6. Upon receiving a NewKeyUpdate message, the responder MUST update its receive
-keys and epoch value.
+6. Upon receiving `extended_key_update("new_keys")`, the responder MUST update
+   its receive keys and epoch value.
 
-7. The responder acknowledges the received message by sending its
-own NewKeyUpdate message.
+7. The responder acknowledges the received message by sending its own
+   `extended_key_update("new_keys")`.
 
-8. After the initiator receives the NewKeyUpdate message from the responder, the initiator
-MUST update its send key and epoch value. With the receipt of the NewKeyUpdate message the
-initiator MUST update its receive keys.
+8. After the initiator receives the responder’s `extended_key_update("new_keys")`,
+   the initiator MUST update its send key and epoch value. With the receipt of
+   that message, the initiator MUST also update its receive keys.
 
-9. The initiator itself MUST acknowledge the received NewKeyUpdate message with an ACK message.
+9. The initiator MUST acknowledge the responder’s
+   `extended_key_update("new_keys")` with an ACK message.
 
-10. On receipt of the ACK message the responder updates its send key and epoch value.
+10. On receipt of the ACK message, the responder updates its send key and epoch
+    value.
 
 Note that the procedure above aligns with the key update procedure defined in
 DTLS 1.3.
@@ -581,17 +583,16 @@ Client                                             Server
      |              Some time later ...            |
       \-------------------------------------------/
 
- [ExtendedKeyUpdateRequest] -------->
+ [extended_key_update("request")] -------->
  (epoch=3)
 
-                        <-------- [ExtendedKeyUpdateResponse]
+                        <-------- [extended_key_update("response")]
                                                     (epoch=3)
 
- [NewKeyUpdate] -------->
- (epoch 3)
+ [extended_key_update("new_keys")] -------->
+ (epoch=3)
 
-
-                            <--------          [NewKeyUpdate]
+                            <-------- [extended_key_update("new_keys")]
                                                     (epoch=3)
 
  [ACK]                      -------->
@@ -605,16 +606,14 @@ Client                                             Server
 ~~~
 {: #dtls-key-update title="Example DTLS 1.3 Extended Key Update Exchange."}
 
-Due to the possibility of a NewKeyUpdate message being lost and
-thereby preventing the sender of the NewKeyUpdate message
-from updating its keying material, receivers MUST retain the
-pre-update keying material until receipt and successful decryption
-of a message using the new keys.
+Due to the possibility of an `extended_key_update("new_keys")` message being
+lost and thereby preventing the sender of that message from updating its keying
+material, receivers MUST retain the pre-update keying material until receipt
+and successful decryption of a message using the new keys.
 
-Due to loss and/or reordering, DTLS 1.3 peers MAY receive a
-record with an older epoch than the current one. They SHOULD attempt to
-process those records with that epoch but MAY opt to discard
-such out-of-epoch records.
+Due to loss and/or reordering, DTLS 1.3 peers MAY receive a record with an
+older epoch than the current one. They SHOULD attempt to process such records
+for that epoch but MAY opt to discard such out-of-epoch records.
 
 # Post-Quantum Cryptography Considerations
 
