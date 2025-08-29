@@ -357,7 +357,7 @@ MUST update its receive keys and then send
 `ExtendedKeyUpdate(new_key_update)`, after which it MUST update its
 send keys.
 
-6. After receiving the responder’s `ExtendedKeyUpdate(new_key_update)`,
+5. After receiving the responder’s `ExtendedKeyUpdate(new_key_update)`,
 the initiator MUST update its receive keys.
 
 Both sender and receiver MUST encrypt their
