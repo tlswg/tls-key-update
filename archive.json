@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2025-08-28T01:44:02.593111+00:00",
+  "timestamp": "2025-08-31T01:48:58.295695+00:00",
   "repo": "tlswg/tls-key-update",
   "labels": [
     {
@@ -262,15 +262,15 @@
       "id": "I_kwDOMJPqLM63n7H_",
       "title": "Describe epoch handling in DTLS",
       "url": "https://github.com/tlswg/tls-key-update/issues/23",
-      "state": "OPEN",
+      "state": "CLOSED",
       "author": "hannestschofenig",
       "authorAssociation": "COLLABORATOR",
       "assignees": [],
       "labels": [],
       "body": "Section 8 is quite short and does not cover this topic in detail",
       "createdAt": "2025-05-21T15:43:11Z",
-      "updatedAt": "2025-05-21T15:43:11Z",
-      "closedAt": null,
+      "updatedAt": "2025-08-29T13:41:09Z",
+      "closedAt": "2025-08-29T13:41:09Z",
       "comments": []
     },
     {
@@ -278,15 +278,15 @@
       "id": "I_kwDOMJPqLM63n82D",
       "title": "Add ACK to final NewKeyUpdate for DTLS",
       "url": "https://github.com/tlswg/tls-key-update/issues/24",
-      "state": "OPEN",
+      "state": "CLOSED",
       "author": "hannestschofenig",
       "authorAssociation": "COLLABORATOR",
       "assignees": [],
       "labels": [],
       "body": "",
       "createdAt": "2025-05-21T15:45:50Z",
-      "updatedAt": "2025-07-07T13:14:22Z",
-      "closedAt": null,
+      "updatedAt": "2025-08-29T13:41:16Z",
+      "closedAt": "2025-08-29T13:41:16Z",
       "comments": [
         {
           "author": "hannestschofenig",
@@ -403,6 +403,22 @@
           "updatedAt": "2025-07-05T14:27:45Z"
         }
       ]
+    },
+    {
+      "number": 41,
+      "id": "I_kwDOMJPqLM7IrO5V",
+      "title": "Remove \"Clashed\"",
+      "url": "https://github.com/tlswg/tls-key-update/issues/41",
+      "state": "OPEN",
+      "author": "hannestschofenig",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [],
+      "body": "Tiru wrote: I like the suggestion from Ekr to remove clashed, see his comment below:\n\nI see what \"clashed\" is trying to do, but I think there's another\nopportunity to simplify: because you are determining which side wins\nbased on information known both sides, they can each independently\ndetermine which EKURequest will be accepted and which one will be\nrejected [0]. So instead of having the winner send a EKUResponse\nrejecting the loser, I suggest it just wait for the EKUResponse\nfrom the loser. I.e.,\nClient Server\n\nEKURequest(share=1) -> <- EKURequest(share=2)\n[ignores EKURequest]\nEKUResponse(share=1) ->\n\nThis removes one message and simplifies the state machine because the\nlosing Initiator can transition directly to sending EKUResponse\nwithout having to have a state waiting for the EKUResponse(clashed)\nmessage.",
+      "createdAt": "2025-08-29T12:48:31Z",
+      "updatedAt": "2025-08-29T12:48:31Z",
+      "closedAt": null,
+      "comments": []
     }
   ],
   "pulls": [
@@ -1695,25 +1711,33 @@
       "id": "PR_kwDOMJPqLM6fz3uB",
       "title": "DTLS 1.3 Considerations",
       "url": "https://github.com/tlswg/tls-key-update/pull/39",
-      "state": "OPEN",
+      "state": "CLOSED",
       "author": "hannestschofenig",
       "authorAssociation": "COLLABORATOR",
       "assignees": [],
       "labels": [],
       "body": "Based on discussion at the IETF 123",
       "createdAt": "2025-07-21T09:12:59Z",
-      "updatedAt": "2025-08-27T14:26:09Z",
+      "updatedAt": "2025-08-29T13:30:52Z",
       "baseRepository": "tlswg/tls-key-update",
       "baseRefName": "main",
-      "baseRefOid": "d151fff133866a40725039dd77a53f6b92cb90e6",
+      "baseRefOid": "bf25ead02f927b6454fdaa42013ff879860f5fcb",
       "headRepository": "tlswg/tls-key-update",
       "headRefName": "hannestschofenig-patch-7",
-      "headRefOid": "5f84be41651cd4fdafb4c2d016fe5d266961b5ec",
-      "closedAt": null,
+      "headRefOid": "c63dd4b7dc288079d9988c90048c0bddf7f7c828",
+      "closedAt": "2025-08-29T13:30:48Z",
       "mergedAt": null,
       "mergedBy": null,
       "mergeCommit": null,
-      "comments": [],
+      "comments": [
+        {
+          "author": "hannestschofenig",
+          "authorAssociation": "COLLABORATOR",
+          "body": "Replaced this PR with a #43 ",
+          "createdAt": "2025-08-29T13:30:48Z",
+          "updatedAt": "2025-08-29T13:30:48Z"
+        }
+      ],
       "reviews": [
         {
           "id": "PRR_kwDOMJPqLM61CEK1",
@@ -1914,6 +1938,46 @@
               "updatedAt": "2025-08-27T14:26:09Z"
             }
           ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM68jPKV",
+          "commit": {
+            "abbreviatedOid": "5f84be4"
+          },
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-08-28T06:24:49Z",
+          "updatedAt": "2025-08-28T06:24:50Z",
+          "comments": [
+            {
+              "originalPosition": 4,
+              "body": "why not publish PR 40 first and then revise this PR ?",
+              "createdAt": "2025-08-28T06:24:50Z",
+              "updatedAt": "2025-08-28T06:24:50Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM683oJ5",
+          "commit": {
+            "abbreviatedOid": "c63dd4b"
+          },
+          "author": "hannestschofenig",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-08-29T13:15:01Z",
+          "updatedAt": "2025-08-29T13:15:01Z",
+          "comments": [
+            {
+              "originalPosition": 91,
+              "body": "Will do in a separate PR",
+              "createdAt": "2025-08-29T13:15:01Z",
+              "updatedAt": "2025-08-29T13:15:01Z"
+            }
+          ]
         }
       ]
     },
@@ -1922,24 +1986,26 @@
       "id": "PR_kwDOMJPqLM6lGlcx",
       "title": "Reduce the number of handshake messages",
       "url": "https://github.com/tlswg/tls-key-update/pull/40",
-      "state": "OPEN",
+      "state": "MERGED",
       "author": "hannestschofenig",
       "authorAssociation": "COLLABORATOR",
       "assignees": [],
       "labels": [],
       "body": "As discussed at IETF 123",
       "createdAt": "2025-08-24T16:13:22Z",
-      "updatedAt": "2025-08-25T11:46:30Z",
+      "updatedAt": "2025-08-29T12:50:31Z",
       "baseRepository": "tlswg/tls-key-update",
       "baseRefName": "main",
       "baseRefOid": "f13a5f08f867b6be656b3467be840ecb31b6e482",
       "headRepository": "tlswg/tls-key-update",
       "headRefName": "hannestschofenig-patch-6",
-      "headRefOid": "c0667be9df9c7a33346510f803d7d9e8086baa3c",
-      "closedAt": null,
-      "mergedAt": null,
-      "mergedBy": null,
-      "mergeCommit": null,
+      "headRefOid": "961669edb1a2b9511ea918d09ec3d8ca76ad91b5",
+      "closedAt": "2025-08-29T12:50:28Z",
+      "mergedAt": "2025-08-29T12:50:28Z",
+      "mergedBy": "hannestschofenig",
+      "mergeCommit": {
+        "oid": "bf25ead02f927b6454fdaa42013ff879860f5fcb"
+      },
       "comments": [],
       "reviews": [
         {
@@ -2236,6 +2302,62 @@
           ]
         }
       ]
+    },
+    {
+      "number": 42,
+      "id": "PR_kwDOMJPqLM6l_aJf",
+      "title": "Update draft-ietf-tls-extended-key-update.md",
+      "url": "https://github.com/tlswg/tls-key-update/pull/42",
+      "state": "MERGED",
+      "author": "hannestschofenig",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [],
+      "body": "",
+      "createdAt": "2025-08-29T13:12:25Z",
+      "updatedAt": "2025-08-29T13:12:58Z",
+      "baseRepository": "tlswg/tls-key-update",
+      "baseRefName": "hannestschofenig-patch-7",
+      "baseRefOid": "5f84be41651cd4fdafb4c2d016fe5d266961b5ec",
+      "headRepository": "tlswg/tls-key-update",
+      "headRefName": "hannestschofenig-patch-6",
+      "headRefOid": "9f1b35514bae468a7f09359f7015da3dd53eb08e",
+      "closedAt": "2025-08-29T13:12:55Z",
+      "mergedAt": "2025-08-29T13:12:54Z",
+      "mergedBy": "hannestschofenig",
+      "mergeCommit": {
+        "oid": "fed0d4b9a9c27cdbbb89ac1c1f9a9caf3d87712b"
+      },
+      "comments": [],
+      "reviews": []
+    },
+    {
+      "number": 43,
+      "id": "PR_kwDOMJPqLM6l_lIP",
+      "title": "New Version of the DTLS 1.3 Considerations",
+      "url": "https://github.com/tlswg/tls-key-update/pull/43",
+      "state": "MERGED",
+      "author": "hannestschofenig",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [],
+      "body": "",
+      "createdAt": "2025-08-29T13:30:22Z",
+      "updatedAt": "2025-08-29T13:31:07Z",
+      "baseRepository": "tlswg/tls-key-update",
+      "baseRefName": "main",
+      "baseRefOid": "bf25ead02f927b6454fdaa42013ff879860f5fcb",
+      "headRepository": "tlswg/tls-key-update",
+      "headRefName": "hannestschofenig-patch-6",
+      "headRefOid": "65ae274312d45314069cd4557f9dcd11fca968c5",
+      "closedAt": "2025-08-29T13:31:04Z",
+      "mergedAt": "2025-08-29T13:31:04Z",
+      "mergedBy": "hannestschofenig",
+      "mergeCommit": {
+        "oid": "f079df600c24e3bc650299ff7e3321341673422b"
+      },
+      "comments": [],
+      "reviews": []
     }
   ]
 }
