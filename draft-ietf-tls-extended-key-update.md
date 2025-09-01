@@ -455,24 +455,24 @@ messages are not transmitted over a reliable transport protocol.
 
 The exchange has the following steps:
 
-1. The initiator sends an `ExtendedKeyUpdate(request)` message, which contains a key
-   share. While an extended key update is in progress, the initiator MUST NOT
+1. The initiator sends an `ExtendedKeyUpdate(request)` message, which contains a
+   key share. While an extended key update is in progress, the initiator MUST NOT
    initiate further key updates.
 
 2. On receipt of the `ExtendedKeyUpdate(request)`, the responder either accepts
    or declines the request. If the responder accepts the request, it sets the
-   status in `ExtendedKeyUpdate(response)` to `accepted` and includes its own key
-   share. While an extended key update is in progress, the responder MUST NOT
-   initiate further key updates. If the responder declines the request, it sets
-   the status accordingly and does not include a key share. Declining the request
-   aborts the exchange.
+   status in `ExtendedKeyUpdate(response)` to `accepted`, includes its own key
+   share, and sets the local variable `accepted=1`. While an extended key update
+   is in progress, the responder MUST NOT initiate further key updates. If the
+   responder declines the request, it sets the status accordingly and does not
+   include a key share. Declining the request aborts the exchange.
 
 3. If the status in `ExtendedKeyUpdate(response)` was set to `accepted`,
    the responder transmits that message to the initiator.
 
 4. On receipt of `ExtendedKeyUpdate(response)` with status `accepted`,
-   the initiator is able to derive a secret key based on the exchanged key
-   shares.
+   the initiator sets `accepted=1` and derives a secret key based on the
+   exchanged key shares.
 
 5. The initiator transmits an `ExtendedKeyUpdate(new_key_update)` message.
 
@@ -499,21 +499,22 @@ DTLS 1.3.
 
 The following variables are used in the state machine diagrams below.
 
-- rx - current, accepted receive epoch (initiator side).
+- rx - current, accepted receive epoch.
 - tx - current transmit epoch used for tagging outgoing messages.
 - E - initial epoch value (0 in the model).
 - updating - true while a key-update handshake is in progress.
-- derived - set to true after an accepted Resp (keys locally derived).
+- accepted - set to true after an accepted Resp; indicates the peer has
+  agreed to proceed with the update and that new key material can be derived.
 - old_rx - the previous receive epoch remembered during retention.
 - retain_old - when true, receiver accepts tags old_rx and rx.
-- tag=... - the TX-epoch value the initiator writes on an outgoing message.
+- tag=... - the TX-epoch value written on an outgoing message.
 - e==... - the tag carried on an incoming message (what the peer sent).
 - Req / Resp(true|false) / NKU / ACK / APP - protocol message types.
 - FINISHED / START/IDLE / WAIT_RESP / SENT_NKU / WAIT_R_NKU - diagram
-states; FINISHED denotes the steady state after success or reject.
+  states; FINISHED denotes the steady state after success or reject.
 
 
-## State Machine (Initiatior)
+## State Machine (Initiator)
 
 The initiator starts in START/IDLE with matching epochs (rx=tx=E).
 It sends a Req and enters WAIT_RESP (updating=1). While waiting,
@@ -522,8 +523,8 @@ according to the APP acceptance rule below.
 
 If the responder returns Resp(false), the update aborts and the initiator
 returns to FINISHED (no epoch change). If it returns Resp(true) with a
-tag matching the current rx, the initiator marks keys as derived
-(derived=1) and sends NKU still tagged with the old tx, moving to
+tag matching the current rx, the initiator sets `accepted=1` and derives
+new key material. It then sends NKU still tagged with the old tx, moving to
 SENT_NKU/WAIT_R_NKU.
 
 Upon receiving the responder's NKU (tag equals the current rx, meaning
@@ -598,7 +599,7 @@ rx arrives, clear retain_old.
 
 The responder starts in the READY state with synchronized transmit and receive epochs (rx=tx=E) and no update in progress. Application data can be sent at any time with the current transmit epoch and is accepted if the epoch matches the receiver's view or, if retention is active, the previous epoch.
 
-Upon receiving an ExtendedKeyUpdate(request) (Req), the responder transitions to the RESPOND state, where it decides to either reject (acc=false, returning to FINISHED) or accept (acc=true). If accepted, it sends a positive response tagged with the current transmit epoch and enters the WAIT_I_NKU state.
+Upon receiving an ExtendedKeyUpdate(request) (Req), the responder transitions to the RESPOND state, where it decides to either reject (acc=false, returning to FINISHED) or accept (acc=true). If accepted, it sets `accepted=1`, sends a positive response tagged with the current transmit epoch, and enters the WAIT_I_NKU state.
 
 When a new_key_update (NKU) is received with the correct epoch, the responder activates retention mode: the old epoch is remembered, the receive epoch is incremented, and application data is accepted under both epochs for a transition period. The responder then sends its own NKU tagged with the old transmit epoch and moves to the WAIT_ACK state.
 
@@ -615,7 +616,7 @@ Throughout the process:
 ~~~
                           +----------------+
                           |     READY      |
-                          |  rx=tx=E, up=0 |
+                          | rx=tx=E, updating=0 |
                           +----------------+
                            |  (3) recv Req [e==rx]
                            |  set updating=1
@@ -630,7 +631,7 @@ Throughout the process:
                  v                                   v
         (reject) acc=false                    (accept) acc=true
         send Resp(false)                      send Resp(true) [tag=tx]
-        set updating=0                        set derived=1
+        set updating=0                        set accepted=1
                  |                                   |
                  v                                   v
           +-------------+                     +---------------+
@@ -670,11 +671,10 @@ Note:
 
 - APP receive: accept if e==rx or (retain_old && e==old_rx).
 
-
 ## DTLS 1.3 Extended Key Update Example
 
-{{dtls-key-update}} shows an example exchange illustrating a successful
-extended key update, which is reflected in the change of epoch values.
+The following example illustrates a successful extended key update,
+including how the epochs change during the exchange.
 
 ~~~
 Client                            Server
@@ -732,19 +732,19 @@ Client                            Server
 The following table shows the steps, the message in flight, and the tx/rx epochs on both sides.
 
 ~~~
-+-----+-------------------------------+---------------+---------+---------------+
-|Step | Message                       | Client tx/rx  | Msg Ep. | Server tx/rx  |
-+-----+-------------------------------+---------------+---------+---------------+
-|  1  | Application Data ------------>| 3/3 -> 3/3    |   3     | 3/3 -> 3/3    |
-|  2  | <------------ Application Data| 3/3 -> 3/3    |   3     | 3/3 -> 3/3    |
-|  3  | EKU(request) ---------------->| 3/3 -> 3/3    |   3     | 3/3 -> 3/3    |
-|  4  | <------------ EKU(response)   | 3/3 -> 3/3    |   3     | 3/3 -> 3/3    |
-|  5  | EKU(new_key_update) --------->| 3/3 -> 3/3    |   3     | 3/3 -> 3/3    |
-|  6  | <----- EKU(new_key_update)    | 3/3 -> 3/3    |   3     | 3/3 -> 3/3    |
-|  7  | ACK          ---------------->| 3/3 -> 4/4    |   4     | 3/3 -> 4/4    |
-|  8  | <------------ Application Data| 4/4 -> 4/4    |   4     | 4/4 -> 4/4    |
-|  9  | Application Data ------------>| 4/4 -> 4/4    |   4     | 4/4 -> 4/4    |
-+-----+-------------------------------+---------------+---------+---------------+
++-----+--------------------+-------------+-------+-------------+
+|Step | Message            | Client tx/rx| MsgEp | Server tx/rx|
++-----+--------------------+-------------+-------+-------------+
+|  1  | App Data --------->| 3/3 -> 3/3  |   3   | 3/3 -> 3/3  |
+|  2  | <------ App Data   | 3/3 -> 3/3  |   3   | 3/3 -> 3/3  |
+|  3  | EKU(request) ----->| 3/3 -> 3/3  |   3   | 3/3 -> 3/3  |
+|  4  | <------ EKU(resp)  | 3/3 -> 3/3  |   3   | 3/3 -> 3/3  |
+|  5  | EKU(new_key_upd) ->| 3/3 -> 3/3  |   3   | 3/3 -> 3/3  |
+|  6  | <--- EKU(new_key_u)| 3/3 -> 3/3  |   3   | 3/3 -> 3/3  |
+|  7  | ACK -------------->| 3/3 -> 4/4  |   4   | 3/3 -> 4/4  |
+|  8  | <------ App Data   | 4/4 -> 4/4  |   4   | 4/4 -> 4/4  |
+|  9  | App Data --------->| 4/4 -> 4/4  |   4   | 4/4 -> 4/4  |
++-----+--------------------+-------------+-------+-------------+
 ~~~
 
 Due to the possibility of an `ExtendedKeyUpdate(new_key_update)` message being
