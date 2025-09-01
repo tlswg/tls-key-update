@@ -329,7 +329,7 @@ terminate the connection with `"extended_key_update_required"`
 3. `clashed`: request declined because the responder has already
 initiated its own extended key update.
 
-# TLS 1.3 Exchange Steps
+# TLS 1.3 Considerations
 
 The following steps are taken by a TLS 1.3 implementation; the steps
 executed with DTLS 1.3 differ slightly.
@@ -396,99 +396,7 @@ The handshake framing uses a single `HandshakeType` for this message
 ~~~
 {: #fig-handshake title="Handshake Structure."}
 
-# Updating Traffic Secrets {#key_update}
-
-When the extended key update message exchange is completed both peers
-have successfully updated their application traffic secrets. The
-key derivation function described in this document is used to perform
-this update.
-
-The design of the key derivation function for computing the next
-generation of application_traffic_secret is motivated by the desire
-to include
-
-* a secret derived from the (EC)DHE exchange (or from the hybrid
-key exchange / PQ-KEM exchange),
-* a secret that allows the new key exchange to be cryptographically
-bound to the previously established secret,
-* the concatenation of the `ExtendedKeyUpdate(request)` and the
-`ExtendedKeyUpdate(response)` messages, which contain the key shares,
-binding the encapsulated shared secret ciphertext to IKM in case of
-hybrid key exchange, providing MAL-BIND-K-CT security (see {{CDM23}}),
-and
-* new label strings to distinguish it from the key derivation used in
-TLS 1.3.
-
-The following diagram shows the key derivation hierarchy.
-
-~~~
-       Master Secret N
-             |
-             v
-       Derive-Secret(., "key derived", "")
-             |
-             v
- (EC)DHE -> HKDF-Extract = Master Secret N+1
-             |
-             +-----> Derive-Secret(., "c ap traffic2",
-             |                ExtendedKeyUpdate(request) ||
-             |                ExtendedKeyUpdate(response))
-             |                = client_application_traffic_secret_N+1
-             |
-             +-----> Derive-Secret(., "s ap traffic2",
-             |                ExtendedKeyUpdate(request) ||
-             |                ExtendedKeyUpdate(response))
-             |                = server_application_traffic_secret_N+1
-             |
-             +-----> Derive-Secret(., "exp master2",
-             |                ExtendedKeyUpdate(request) ||
-             |                ExtendedKeyUpdate(response))
-             |                = exporter_master_secret_N+1
-             |
-             +-----> Derive-Secret(., "res master2",
-             |                ExtendedKeyUpdate(request) ||
-             |                ExtendedKeyUpdate(response))
-                              = resumption_master_secret_N+1
-~~~
-
-During the initial handshake, the Master Secret is generated (see
-{{Section 7.1 of I-D.ietf-tls-rfc8446bis}}). Since the Master Secret
-is discarded during the key derivation procedure, a derived value is
-stored. This stored value then serves as the input salt to the first
-key update procedure that incorporates the ephemeral (EC)DHE-
-established value as input keying material (IKM) to produce
-master_secret_{N+1}. The derived value from this new master secret
-serves as input salt to the subsequent key update procedure, which
-also incorporates a fresh ephemeral (EC)DHE value as IKM. This
-process is repeated for each additional key update procedure.
-
-The traffic keys are re-derived from
-client_application_traffic_secret_N+1 and
-server_application_traffic_secret_N+1, as described in
-{{Section 7.3 of I-D.ietf-tls-rfc8446bis}}.
-
-Once client_/server_application_traffic_secret_N+1 and its associated
-traffic keys have been computed, implementations SHOULD delete
-client_/server_application_traffic_secret_N and its associated
-traffic keys as soon as possible. Note: The
-client_/server_application_traffic_secret_N and its associated
-traffic keys can only be deleted after receiving the
-`ExtendedKeyUpdate(new_key_update)` message.
-
-When using this extension, it is important to consider its interaction with
-ticket-based session resumption. If resumption occurs without a new (EC)DH
-exchange that provides forward secrecy, an attacker could potentially revert
-the security context to an earlier state, thereby negating the benefits of
-the extended key update. To preserve the security guarantees provided by key
-updates, endpoints MUST either invalidate any session tickets issued prior
-to the key update or ensure that resumption always involves a fresh (EC)DH
-exchange.
-
-If session tickets cannot be stored securely, developers SHOULD consider
-disabling ticket-based resumption in their deployments. While this approach
-may impact performance, it provides improved security properties.
-
-# Example
+## TLS 1.3 Extended Key Update Example
 
 {{fig-key-update}} shows the interaction between a TLS 1.3 client
 and server graphically. This section shows an example message exchange
@@ -587,50 +495,257 @@ The exchange has the following steps:
 Note that the procedure above aligns with the key update procedure defined in
 DTLS 1.3.
 
+## Figure Legend
+
+The following variables are used in the state machine diagrams below.
+
+- rx - current, accepted receive epoch (initiator side).
+- tx - current transmit epoch used for tagging outgoing messages.
+- E - initial epoch value (0 in the model).
+- updating - true while a key-update handshake is in progress.
+- derived - set to true after an accepted Resp (keys locally derived).
+- old_rx - the previous receive epoch remembered during retention.
+- retain_old - when true, receiver accepts tags old_rx and rx.
+- tag=... - the TX-epoch value the initiator writes on an outgoing message.
+- e==... - the tag carried on an incoming message (what the peer sent).
+- Req / Resp(true|false) / NKU / ACK / APP - protocol message types.
+- FINISHED / START/IDLE / WAIT_RESP / SENT_NKU / WAIT_R_NKU - diagram
+states; FINISHED denotes the steady state after success or reject.
+
+
+## State Machine (Initiatior)
+
+The initiator starts in START/IDLE with matching epochs (rx=tx=E).
+It sends a Req and enters WAIT_RESP (updating=1). While waiting,
+APP data may be sent at any time (tagged with the current tx) and received
+according to the APP acceptance rule below.
+
+If the responder returns Resp(false), the update aborts and the initiator
+returns to FINISHED (no epoch change). If it returns Resp(true) with a
+tag matching the current rx, the initiator marks keys as derived
+(derived=1) and sends NKU still tagged with the old tx, moving to
+SENT_NKU/WAIT_R_NKU.
+
+Upon receiving the responder's NKU (tag equals the current rx, meaning
+the responder is still tagging with its old tx), the initiator:
+
+1. activates retention (old_rx=rx; retain_old=1),
+
+2. increments both epochs (rx++, tx++),
+
+3. sends ACK tagged with the new tx (which now equals the new rx),
+
+4. clears updating and enters FINISHED.
+
+Retention at the initiator ends automatically on the first APP received under
+the new rx (then retain_old := 0). APP traffic is otherwise permitted at
+any time; reordering is tolerated by the acceptance rule.
+
+APP acceptance rule (receiver): accept if e == rx or
+(retain_old && e == old_rx). If retain_old is set and an APP with the new
+rx arrives, clear retain_old.
+
+~~~
+                       +---------------------+
+                       |  START / IDLE       |
+                       | rx=tx=E, updating=0 |
+                       +---------------------+
+                                   |
+                       (1) send Req [tag=tx]
+                       set updating=1
+                                   v
+                          +----------------+
+                          |   WAIT_RESP    |
+                          |  (updating=1)  |
+                          +----------------+
+                      /|\     |          /|\ APP recv:
+                       |      |           |  accept if e==rx
+ APP send (anytime) ---+      |           |  or (retain_old &&
+ (APP, tag=tx)                |           |     e==old_rx);
+                              |           |  if e==rx and
+                              |           |     retain_old: clear
+                              |
+                 Resp(false) -+      Resp(true, e==rx):
+                 (reject)            (4) accepted=1
+                 set updating=0      (5) send NKU [tag=old tx]
+                 ----------------           v
+                          +----------------------+
+                          |  SENT_NKU /          |
+                          |  WAIT_R_NKU          |
+                          +----------------------+
+                                   |         /|\ APP send/recv
+                                   |             allowed
+                                   |
+                            (7) recv NKU [e==rx]
+                                   | (Responder still tags old tx)
+                                   v
+                          +----------------------+
+                          |  ACTIVATE RETENTION  |
+                          |  old_rx=rx;          |
+                          |  retain_old=1;       |
+                          |  rx=rx+1; tx=tx+1    |
+                          +----------------------+
+                                   |
+                        (9) send ACK [tag=tx]
+                        set updating=0; assert tx==rx
+                                   v
+                          +----------------+
+ APP send/recv allowed -- |   FINISHED     |
+ retain_old=0 afterwards  +----------------+
+~~~
+
+## State Machine (Responder)
+
+The responder starts in the READY state with synchronized transmit and receive epochs (rx=tx=E) and no update in progress. Application data can be sent at any time with the current transmit epoch and is accepted if the epoch matches the receiver's view or, if retention is active, the previous epoch.
+
+Upon receiving an ExtendedKeyUpdate(request) (Req), the responder transitions to the RESPOND state, where it decides to either reject (acc=false, returning to FINISHED) or accept (acc=true). If accepted, it sends a positive response tagged with the current transmit epoch and enters the WAIT_I_NKU state.
+
+When a new_key_update (NKU) is received with the correct epoch, the responder activates retention mode: the old epoch is remembered, the receive epoch is incremented, and application data is accepted under both epochs for a transition period. The responder then sends its own NKU tagged with the old transmit epoch and moves to the WAIT_ACK state.
+
+Finally, upon receipt of an ACK matching the updated epoch, the responder completes the transition by synchronizing transmit and receive epochs (tx=rx), disabling retention, and clearing the update flag. The state machine returns to FINISHED, ready for subsequent updates.
+
+Throughout the process:
+
+- Duplicate messages are tolerated (for retransmission handling).
+
+- Temporary epoch mismatches are permitted while an update is in progress.
+
+- Application data flows continuously, subject to epoch acceptance rules.
+
+~~~
+                          +----------------+
+                          |     READY      |
+                          |  rx=tx=E, up=0 |
+                          +----------------+
+                           |  (3) recv Req [e==rx]
+                           |  set updating=1
+                           v
+                        +----------------------+
+                        |       RESPOND        |
+                        | acc is true or false |
+                        +----------+-----------+
+                                   |
+                 +-----------------+-----------------+
+                 |                                   |
+                 v                                   v
+        (reject) acc=false                    (accept) acc=true
+        send Resp(false)                      send Resp(true) [tag=tx]
+        set updating=0                        set derived=1
+                 |                                   |
+                 v                                   v
+          +-------------+                     +---------------+
+          |  FINISHED   |                     |  WAIT_I_NKU   |
+          +-------------+                     | (updating=1)  |
+                                              +-------+-------+
+                                                      |
+                                 (6) recv NKU [e==rx], assert accepted
+                                                      |
+                                                      v
+                                           +---------------------+
+                                           | ACTIVATE RETENTION  |
+                                           | old_rx=rx;          |
+                                           | retain_old=1; rx++  |
+                                           +----------+----------+
+                                                      |
+                                         (7) send NKU [tag=old tx]
+                                                      |
+                                                      v
+                                              +--------------+
+                                              |  WAIT_ACK    |
+                                              | (updating=1) |
+                                              +-------+------+
+                                                      |
+                                       (8/9) recv ACK [e==rx]
+                                       tx=rx; retain_old=0; updating=0
+                                                      |
+                                                      v
+                                                +-----------+
+                                                | FINISHED  |
+                                                +-----------+
+~~~
+
+Note:
+
+- APP send (any time): tag with current tx.
+
+- APP receive: accept if e==rx or (retain_old && e==old_rx).
+
+
+## DTLS 1.3 Extended Key Update Example
+
 {{dtls-key-update}} shows an example exchange illustrating a successful
 extended key update, which is reflected in the change of epoch values.
 
 ~~~
-Client                                      Server
+Client                            Server
 
   /---------------------------------------\
- |                                         |
  |           Initial Handshake             |
   \---------------------------------------/
 
- [Application Data]        -------->
- (epoch=3)
+[C: tx=3, rx=3]                   [S: tx=3, rx=3]
+[Application Data]               -------->
+[C: tx=3, rx=3]                   [S: tx=3, rx=3]
 
-                           <--------   [Application Data]
-                                          (epoch=3)
+[C: tx=3, rx=3]                   [S: tx=3, rx=3]
+                                  <--------   [Application Data]
+[C: tx=3, rx=3]                   [S: tx=3, rx=3]
 
   /---------------------------------------\
- |                                         |
  |           Some time later ...           |
   \---------------------------------------/
 
- [ExtendedKeyUpdate(request)] -------->
- (epoch=3)
+[C: tx=3, rx=3]                   [S: tx=3, rx=3]
+[ExtendedKeyUpdate(request)]     -------->
+[C: tx=3, rx=3]                   [S: tx=3, rx=3]
 
-                    <-------- [ExtendedKeyUpdate(response)]
-                                          (epoch=3)
+[C: tx=3, rx=3]                   [S: tx=3, rx=3]
+                           <-------- [ExtendedKeyUpdate(response)]
+[C: tx=3, rx=3]                   [S: tx=3, rx=3]
 
- [ExtendedKeyUpdate(new_key_update)] -------->
- (epoch=3)
+[C: tx=3, rx=3]                   [S: tx=3, rx=3]
+[ExtendedKeyUpdate(new_key_update)] -------->
+[C: tx=3, rx=3]                   [S: tx=3, rx=3]
 
-        <-------- [ExtendedKeyUpdate(new_key_update)]
-                                          (epoch=3)
+[C: tx=3, rx=3]                   [S: tx=3, rx=3]
+                 <-------- [ExtendedKeyUpdate(new_key_update)]
+[C: tx=3, rx=3]                   [S: tx=3, rx=3]
 
- [ACK]                   -------->
- (epoch=4)
+# Epoch switch point:
+# Client bumps epochs when sending ACK (tx=4, rx=4).
+# Server bumps epochs only *after receiving* that ACK.
 
-                           <--------   [Application Data]
-                                          (epoch=4)
+[C: tx=4, rx=4]                   [S: tx=3, rx=3]
+[ACK] (tag=new, tx==rx==4)        -------->
+[C: tx=4, rx=4]                   [S: tx=4, rx=4]
 
- [Application Data]
- (epoch=4)               -------->
+[C: tx=4, rx=4]                   [S: tx=4, rx=4]
+                                  <--------   [Application Data]
+[C: tx=4, rx=4]                   [S: tx=4, rx=4]
+
+[C: tx=4, rx=4]                   [S: tx=4, rx=4]
+[Application Data]                -------->
+[C: tx=4, rx=4]                   [S: tx=4, rx=4]
 ~~~
 {: #dtls-key-update title="Example DTLS 1.3 Extended Key Update Exchange."}
+
+The following table shows the steps, the message in flight, and the tx/rx epochs on both sides.
+
+~~~
++-----+-------------------------------+---------------+---------+---------------+
+|Step | Message                       | Client tx/rx  | Msg Ep. | Server tx/rx  |
++-----+-------------------------------+---------------+---------+---------------+
+|  1  | Application Data ------------>| 3/3 -> 3/3    |   3     | 3/3 -> 3/3    |
+|  2  | <------------ Application Data| 3/3 -> 3/3    |   3     | 3/3 -> 3/3    |
+|  3  | EKU(request) ---------------->| 3/3 -> 3/3    |   3     | 3/3 -> 3/3    |
+|  4  | <------------ EKU(response)   | 3/3 -> 3/3    |   3     | 3/3 -> 3/3    |
+|  5  | EKU(new_key_update) --------->| 3/3 -> 3/3    |   3     | 3/3 -> 3/3    |
+|  6  | <----- EKU(new_key_update)    | 3/3 -> 3/3    |   3     | 3/3 -> 3/3    |
+|  7  | ACK          ---------------->| 3/3 -> 4/4    |   4     | 3/3 -> 4/4    |
+|  8  | <------------ Application Data| 4/4 -> 4/4    |   4     | 4/4 -> 4/4    |
+|  9  | Application Data ------------>| 4/4 -> 4/4    |   4     | 4/4 -> 4/4    |
++-----+-------------------------------+---------------+---------+---------------+
+~~~
 
 Due to the possibility of an `ExtendedKeyUpdate(new_key_update)` message being
 lost and thereby preventing the sender of that message from updating its keying
@@ -640,6 +755,98 @@ and successful decryption of a message using the new keys.
 Due to loss and/or reordering, DTLS 1.3 peers MAY receive a record with an
 older epoch than the current one. They SHOULD attempt to process such records
 for that epoch but MAY opt to discard such out-of-epoch records.
+
+# Updating Traffic Secrets {#key_update}
+
+When the extended key update message exchange is completed both peers
+have successfully updated their application traffic secrets. The
+key derivation function described in this document is used to perform
+this update.
+
+The design of the key derivation function for computing the next
+generation of application_traffic_secret is motivated by the desire
+to include
+
+* a secret derived from the (EC)DHE exchange (or from the hybrid
+key exchange / PQ-KEM exchange),
+* a secret that allows the new key exchange to be cryptographically
+bound to the previously established secret,
+* the concatenation of the `ExtendedKeyUpdate(request)` and the
+`ExtendedKeyUpdate(response)` messages, which contain the key shares,
+binding the encapsulated shared secret ciphertext to IKM in case of
+hybrid key exchange, providing MAL-BIND-K-CT security (see {{CDM23}}),
+and
+* new label strings to distinguish it from the key derivation used in
+TLS 1.3.
+
+The following diagram shows the key derivation hierarchy.
+
+~~~
+       Master Secret N
+             |
+             v
+       Derive-Secret(., "key derived", "")
+             |
+             v
+ (EC)DHE -> HKDF-Extract = Master Secret N+1
+             |
+             +-----> Derive-Secret(., "c ap traffic2",
+             |                ExtendedKeyUpdate(request) ||
+             |                ExtendedKeyUpdate(response))
+             |                = client_application_traffic_secret_N+1
+             |
+             +-----> Derive-Secret(., "s ap traffic2",
+             |                ExtendedKeyUpdate(request) ||
+             |                ExtendedKeyUpdate(response))
+             |                = server_application_traffic_secret_N+1
+             |
+             +-----> Derive-Secret(., "exp master2",
+             |                ExtendedKeyUpdate(request) ||
+             |                ExtendedKeyUpdate(response))
+             |                = exporter_master_secret_N+1
+             |
+             +-----> Derive-Secret(., "res master2",
+             |                ExtendedKeyUpdate(request) ||
+             |                ExtendedKeyUpdate(response))
+                              = resumption_master_secret_N+1
+~~~
+
+During the initial handshake, the Master Secret is generated (see
+{{Section 7.1 of I-D.ietf-tls-rfc8446bis}}). Since the Master Secret
+is discarded during the key derivation procedure, a derived value is
+stored. This stored value then serves as the input salt to the first
+key update procedure that incorporates the ephemeral (EC)DHE-
+established value as input keying material (IKM) to produce
+master_secret_{N+1}. The derived value from this new master secret
+serves as input salt to the subsequent key update procedure, which
+also incorporates a fresh ephemeral (EC)DHE value as IKM. This
+process is repeated for each additional key update procedure.
+
+The traffic keys are re-derived from
+client_application_traffic_secret_N+1 and
+server_application_traffic_secret_N+1, as described in
+{{Section 7.3 of I-D.ietf-tls-rfc8446bis}}.
+
+Once client_/server_application_traffic_secret_N+1 and its associated
+traffic keys have been computed, implementations SHOULD delete
+client_/server_application_traffic_secret_N and its associated
+traffic keys as soon as possible. Note: The
+client_/server_application_traffic_secret_N and its associated
+traffic keys can only be deleted after receiving the
+`ExtendedKeyUpdate(new_key_update)` message.
+
+When using this extension, it is important to consider its interaction with
+ticket-based session resumption. If resumption occurs without a new (EC)DH
+exchange that provides forward secrecy, an attacker could potentially revert
+the security context to an earlier state, thereby negating the benefits of
+the extended key update. To preserve the security guarantees provided by key
+updates, endpoints MUST either invalidate any session tickets issued prior
+to the key update or ensure that resumption always involves a fresh (EC)DH
+exchange.
+
+If session tickets cannot be stored securely, developers SHOULD consider
+disabling ticket-based resumption in their deployments. While this approach
+may impact performance, it provides improved security properties.
 
 # Post-Quantum Cryptography Considerations
 
@@ -692,10 +899,10 @@ and `SERVER_TRAFFIC_SECRET_`.
 
 # Exporter
 
-Protocols like DTLS-SRTP and DTLS-over-SCTP utilize TLS or DTLS for key
-establishment but repurpose some of the keying material for their own
-purpose. These protocols use the TLS exporter defined in
-{{Section 7.5 of I-D.ietf-tls-rfc8446bis}}.
+Protocols such as DTLS-SRTP and DTLS-over-SCTP rely on TLS or DTLS for
+key establishment, but reuse portions of the derived keying material for
+their own specific purposes.These protocols use the TLS exporter defined
+in {{Section 7.5 of I-D.ietf-tls-rfc8446bis}}.
 
 Once the Extended Key Update mechanism is complete, such protocols would
 need to use the newly derived key to generate Exported Keying Material
@@ -765,5 +972,5 @@ Marten Seemann as well as the responsible area director Martin Duke.
 
 Finally, we would like to thank Martin Thomson, Ilari Liusvaara,
 Benjamin Kaduk, Scott Fluhrer, Dennis Jackson, David Benjamin,
-Matthijs van Duin, Rifaat Shekh-Yusef, Joe Birr-Pixton and Thom Wiggers
-for their review comments.
+Matthijs van Duin, Rifaat Shekh-Yusef, Joe Birr-Pixton, Eric Rescorla,
+and Thom Wiggers for their review comments.
