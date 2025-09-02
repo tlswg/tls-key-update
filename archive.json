@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2025-08-31T01:48:58.295695+00:00",
+  "timestamp": "2025-09-02T01:45:47.554109+00:00",
   "repo": "tlswg/tls-key-update",
   "labels": [
     {
@@ -385,15 +385,15 @@
       "id": "I_kwDOMJPqLM65PVfR",
       "title": "Missing references in introduction",
       "url": "https://github.com/tlswg/tls-key-update/issues/27",
-      "state": "CLOSED",
+      "state": "OPEN",
       "author": "muhammad-usama-sardar",
       "authorAssociation": "COLLABORATOR",
       "assignees": [],
       "labels": [],
       "body": "> For IPsec, US NIST, German BSI, and French ANSSI recommend to re-run Diffie-Hellman exchanges frequently to provide forward secrecy and force attackers to perform a dynamic key exfiltration [[RFC7624](https://tlswg.org/tls-key-update/draft-ietf-tls-extended-key-update.html#RFC7624)].\n\nThe mentioned reference RFC 7624 does not mention US NIST, German BSI, and French ANSSI. So this claim needs to be justified by corresponding references from US NIST, German BSI and French ANSSI. \n\nThe reference for French ANSSI is given in the next sentence, but references for US NIST and German BSI are missing. ",
       "createdAt": "2025-06-01T20:23:44Z",
-      "updatedAt": "2025-07-05T14:34:40Z",
-      "closedAt": "2025-07-05T14:34:40Z",
+      "updatedAt": "2025-09-01T20:04:07Z",
+      "closedAt": null,
       "comments": [
         {
           "author": "hannestschofenig",
@@ -401,6 +401,13 @@
           "body": "Rewrote the introduction in https://github.com/tlswg/tls-key-update/pull/29 and included only the reference to ANSSI. It is just an example and we do not have to be exhaustive.",
           "createdAt": "2025-07-05T14:27:45Z",
           "updatedAt": "2025-07-05T14:27:45Z"
+        },
+        {
+          "author": "muhammad-usama-sardar",
+          "authorAssociation": "COLLABORATOR",
+          "body": "> Rewrote the introduction in https://github.com/tlswg/tls-key-update/pull/29 and included only the reference to ANSSI.\n\nThe given [ref](https://cyber.gouv.fr/uploads/2015/09/NT_IPsec_EN.pdf) for ANSSI is broken. \n\n> It is just an example and we do not have to be exhaustive.\n\nSure, but there should be at least one justified example.",
+          "createdAt": "2025-09-01T20:04:07Z",
+          "updatedAt": "2025-09-01T20:04:07Z"
         }
       ]
     },
@@ -416,9 +423,17 @@
       "labels": [],
       "body": "Tiru wrote: I like the suggestion from Ekr to remove clashed, see his comment below:\n\nI see what \"clashed\" is trying to do, but I think there's another\nopportunity to simplify: because you are determining which side wins\nbased on information known both sides, they can each independently\ndetermine which EKURequest will be accepted and which one will be\nrejected [0]. So instead of having the winner send a EKUResponse\nrejecting the loser, I suggest it just wait for the EKUResponse\nfrom the loser. I.e.,\nClient Server\n\nEKURequest(share=1) -> <- EKURequest(share=2)\n[ignores EKURequest]\nEKUResponse(share=1) ->\n\nThis removes one message and simplifies the state machine because the\nlosing Initiator can transition directly to sending EKUResponse\nwithout having to have a state waiting for the EKUResponse(clashed)\nmessage.",
       "createdAt": "2025-08-29T12:48:31Z",
-      "updatedAt": "2025-08-29T12:48:31Z",
+      "updatedAt": "2025-09-01T14:41:21Z",
       "closedAt": null,
-      "comments": []
+      "comments": [
+        {
+          "author": "stfries",
+          "authorAssociation": "COLLABORATOR",
+          "body": "I agree, the proposal to avoid the \"clashed\" is fine from my understanding and would reduce the number of states. \nAlso, when indicating the share in the response message, it is easy to identify the matching request. \nGiven the above, I would have expected the call flow differently, at least the response from the client would be a reaction on the  server provided share(2):\n~~~~\nClient                                       Server\n---------------------------------------------------\nEKURequest(share=1) ->       <- EKURequest(share=2)\n                               [ignores EKURequest]\nEKUResponse(share=2) ->\n~~~~\n\nIf I understand ecr right, avoiding to send EKUResponse(share=1) informs the client that share=1 has not been taken res. if the client sends EKUResponse(share=2) it would essentiall frop its own proposal and take the server's proposal instead. \n\nCould this lead to a race condition, if both accept the other side's proposal?\n",
+          "createdAt": "2025-09-01T14:41:21Z",
+          "updatedAt": "2025-09-01T14:41:21Z"
+        }
+      ]
     }
   ],
   "pulls": [
