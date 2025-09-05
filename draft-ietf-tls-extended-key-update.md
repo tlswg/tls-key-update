@@ -441,7 +441,7 @@ Auth | {CertificateVerify}
                                <-------- [ExtendedKeyUpdate(response
                                            (accepted, with key_share))]
 										# Server derives new secrets
-# Client derives new secrets			   
+# Client derives new secrets			
  [ExtendedKeyUpdate(new_key_update)]
                                -------->
 # Client updates SEND keys here
