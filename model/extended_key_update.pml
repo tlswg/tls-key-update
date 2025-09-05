@@ -168,8 +168,7 @@ proctype Initiator()
         old_epoch_i  = rx_epoch_i;
         retain_old_i = true;
 
-        /* NEW RULE: derive new epoch from old TX (may differ from RX initially)
-           Let N = old_tx + 1; set tx=N; set rx=N; */
+        /* Derive new keys and epoch */
         N_i = tx_epoch_i + 1;
         tx_epoch_i = N_i;
         rx_epoch_i = N_i;

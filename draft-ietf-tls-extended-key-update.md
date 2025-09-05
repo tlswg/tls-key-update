@@ -58,13 +58,11 @@ normative:
 informative:
   I-D.ietf-tls-ecdhe-mlkem:
   I-D.ietf-tls-mlkem:
-  RFC9325:
-  RFC7296:
   RFC7624:
   I-D.ietf-tls-hybrid-design:
   I-D.ietf-tls-keylogfile:
   RFC5746:
-  ANSSI-DAT-NT-003:
+  ANSSI:
      author:
         org: ANSSI
      title: Recommendations for securing networks with IPsec, Technical Report
@@ -127,7 +125,7 @@ KeyUpdate message was introduced to offer limited rekeying functionality, it doe
 not fulfill the same cryptographic role as renegotiation and cannot refresh
 long-term secrets or derive new secrets from fresh DHE input.
 
-Security guidance from national agencies, such as ANSSI (France), recommends the
+Security guidance from national agencies, such as ANSSI (France( {{ANSSI}}, recommends the
 periodic renewal of cryptographic keys during long-lived sessions to limit the
 impact of key compromise. This approach encourages designs that force an
 attacker to perform dynamic key exfiltration, as defined in {{RFC7624}}. Dynamic
@@ -146,7 +144,7 @@ prior key material. As noted in Appendix F of {{I-D.ietf-tls-rfc8446bis}}, this
 approach mitigates the risk of static key exfiltration and shifts the attacker
 burden toward dynamic key exfiltration.
 
-The proposed extension is applicable to both TLS 1.3 and DTLS 1.3. For clarity,
+The proposed extension is applicable to both TLS 1.3 and DTLS 1.3  {{RFC9147}}. For clarity,
 the term "TLS" is used throughout this document to refer to both protocols unless
 otherwise specified.
 
@@ -260,7 +258,7 @@ Legend:
     []N Indicates messages protected using keys
     derived from [sender]_application_traffic_secret_N.
 ~~~
-{: #fig-key-update title="Extended Key Update Message Exchange."}
+{: #fig-key-update title="Extended Key Update Message Exchange in TLS 1.3."}
 
 The `ExtendedKeyUpdate` wire format is:
 
@@ -398,9 +396,9 @@ The handshake framing uses a single `HandshakeType` for this message
 
 ## TLS 1.3 Extended Key Update Example
 
-{{fig-key-update}} shows the interaction between a TLS 1.3 client
-and server graphically. This section shows an example message exchange
-where a client updates its sending keys.
+While {{fig-key-update}} shows the high-level interaction between a
+TLS 1.3 client and server, this section shows an example message exchange
+with information about the updated keys added.
 
 There are two phases:
 
@@ -442,16 +440,33 @@ Auth | {CertificateVerify}
   (with key_share))]
                                <-------- [ExtendedKeyUpdate(response
                                            (accepted, with key_share))]
- [ExtendedKeyUpdate(new_key_update)]     -------->
-                                         <--------
+										# Server derives new secrets
+# Client derives new secrets			   
+ [ExtendedKeyUpdate(new_key_update)]
+                               -------->
+# Client updates SEND keys here
+                                    # Server updates RECEIVE keys here
+   							   <--------
                                     [ExtendedKeyUpdate(new_key_update)]
+									# Server updates SEND keys here
+
+# Client updates RECEIVE keys here
 ~~~
-{: #fig-key-update2 title="Extended Key Update Example Exchange."}
+{: #fig-key-update2 title="Extended Key Update Example."}
 
 #  DTLS 1.3 Considerations
 
 Unlike TLS 1.3, DTLS 1.3 implementations must take into account that handshake
 messages are not transmitted over a reliable transport protocol.
+
+Due to the possibility of an `ExtendedKeyUpdate(new_key_update)` message being
+lost and thereby preventing the sender of that message from updating its keying
+material, receivers MUST retain the pre-update keying material until receipt
+and successful decryption of a message using the new keys.
+
+Due to loss and/or reordering, DTLS 1.3 peers MAY receive a record with an
+older epoch than the current one. They SHOULD attempt to process such records
+for that epoch but MAY opt to discard such out-of-epoch records.
 
 The exchange has the following steps:
 
@@ -492,16 +507,14 @@ The exchange has the following steps:
 10. On receipt of the ACK message, the responder updates its send key and epoch
     value.
 
-Note that the procedure above aligns with the key update procedure defined in
-DTLS 1.3.
 
-## Figure Legend
+## Legend used in Figures
 
 The following variables are used in the state machine diagrams below.
 
 - rx - current, accepted receive epoch.
 - tx - current transmit epoch used for tagging outgoing messages.
-- E - initial epoch value (0 in the model).
+- E - initial epoch value.
 - updating - true while a key-update handshake is in progress.
 - accepted - set to true after an accepted Resp; indicates the peer has
   agreed to proceed with the update and that new key material can be derived.
@@ -509,14 +522,14 @@ The following variables are used in the state machine diagrams below.
 - retain_old - when true, receiver accepts tags old_rx and rx.
 - tag=... - the TX-epoch value written on an outgoing message.
 - e==... - the tag carried on an incoming message (what the peer sent).
-- Req / Resp(true|false) / NKU / ACK / APP - protocol message types.
+- Req / Resp(true or false) / NKU / ACK / APP - protocol message types.
 - FINISHED / START/IDLE / WAIT_RESP / SENT_NKU / WAIT_R_NKU - diagram
   states; FINISHED denotes the steady state after success or reject.
 
 
 ## State Machine (Initiator)
 
-The initiator starts in START/IDLE with matching epochs (rx=tx=E).
+The initiator starts in the START state with matching epochs (rx=tx=E).
 It sends a Req and enters WAIT_RESP (updating=1). While waiting,
 APP data may be sent at any time (tagged with the current tx) and received
 according to the APP acceptance rule below.
@@ -548,7 +561,7 @@ rx arrives, clear retain_old.
 
 ~~~
                        +---------------------+
-                       |  START / IDLE       |
+                       |        START        |
                        | rx=tx=E, updating=0 |
                        +---------------------+
                                    |
@@ -559,37 +572,39 @@ rx arrives, clear retain_old.
                           |   WAIT_RESP    |
                           |  (updating=1)  |
                           +----------------+
-                      /|\     |          /|\ APP recv:
-                       |      |           |  accept if e==rx
- APP send (anytime) ---+      |           |  or (retain_old &&
+                         /|\  |          /|\ APP recv:
+                          |   |           |  accept if e==rx
+ APP send (anytime) ------+   |           |  or (retain_old &&
  (APP, tag=tx)                |           |     e==old_rx);
                               |           |  if e==rx and
                               |           |     retain_old: clear
                               |
                  Resp(false) -+      Resp(true, e==rx):
-                 (reject)            (4) accepted=1
-                 set updating=0      (5) send NKU [tag=old tx]
-                 ----------------           v
-                          +----------------------+
-                          |  SENT_NKU /          |
-                          |  WAIT_R_NKU          |
-                          +----------------------+
-                                   |         /|\ APP send/recv
-                                   |             allowed
-                                   |
-                            (7) recv NKU [e==rx]
-                                   | (Responder still tags old tx)
-                                   v
-                          +----------------------+
-                          |  ACTIVATE RETENTION  |
-                          |  old_rx=rx;          |
-                          |  retain_old=1;       |
-                          |  rx=rx+1; tx=tx+1    |
-                          +----------------------+
-                                   |
-                        (9) send ACK [tag=tx]
-                        set updating=0; assert tx==rx
-                                   v
+                |(reject)            (4) accepted=1
+                |set updating=0      (5) send NKU [tag=old tx]
+                +------------               v
+                |         +----------------------+
+                |         |  SENT_NKU /          |
+                |         |  WAIT_R_NKU          |
+                |         +----------------------+
+                |                  |         /|\ APP send/recv
+                |                  |             allowed
+                |                  |
+                |           (7) recv NKU [e==rx]
+                |                  | (Responder still tags old tx)
+                |                  v
+                |         +----------------------+
+                |         |  ACTIVATE RETENTION  |
+                |         |  old_rx=rx;          |
+                |         |  retain_old=1;       |
+                |         |  rx=rx+1; tx=tx+1    |
+                |         +----------------------+
+                |                  |
+                |       (9) send ACK [tag=tx]
+                |       set updating=0; assert tx==rx
+                |                  |
+                +-----------+      |
+                            v      v
                           +----------------+
  APP send/recv allowed -- |   FINISHED     |
  retain_old=0 afterwards  +----------------+
@@ -597,7 +612,7 @@ rx arrives, clear retain_old.
 
 ## State Machine (Responder)
 
-The responder starts in the READY state with synchronized transmit and receive epochs (rx=tx=E) and no update in progress. Application data can be sent at any time with the current transmit epoch and is accepted if the epoch matches the receiver's view or, if retention is active, the previous epoch.
+The responder starts in the START state with synchronized transmit and receive epochs (rx=tx=E) and no update in progress. Application data can be sent at any time with the current transmit epoch and is accepted if the epoch matches the receiver's view or, if retention is active, the previous epoch.
 
 Upon receiving an ExtendedKeyUpdate(request) (Req), the responder transitions to the RESPOND state, where it decides to either reject (acc=false, returning to FINISHED) or accept (acc=true). If accepted, it sets `accepted=1`, sends a positive response tagged with the current transmit epoch, and enters the WAIT_I_NKU state.
 
@@ -614,10 +629,10 @@ Throughout the process:
 - Application data flows continuously, subject to epoch acceptance rules.
 
 ~~~
-                          +----------------+
-                          |     READY      |
+                          +---------------------+
+                          |         START       |
                           | rx=tx=E, updating=0 |
-                          +----------------+
+                          +---------------------+
                            |  (3) recv Req [e==rx]
                            |  set updating=1
                            v
@@ -664,12 +679,6 @@ Throughout the process:
                                                 | FINISHED  |
                                                 +-----------+
 ~~~
-
-Note:
-
-- APP send (any time): tag with current tx.
-
-- APP receive: accept if e==rx or (retain_old && e==old_rx).
 
 ## DTLS 1.3 Extended Key Update Example
 
@@ -746,15 +755,6 @@ The following table shows the steps, the message in flight, and the tx/rx epochs
 |  9  | App Data --------->| 4/4 -> 4/4  |   4   | 4/4 -> 4/4  |
 +-----+--------------------+-------------+-------+-------------+
 ~~~
-
-Due to the possibility of an `ExtendedKeyUpdate(new_key_update)` message being
-lost and thereby preventing the sender of that message from updating its keying
-material, receivers MUST retain the pre-update keying material until receipt
-and successful decryption of a message using the new keys.
-
-Due to loss and/or reordering, DTLS 1.3 peers MAY receive a record with an
-older epoch than the current one. They SHOULD attempt to process such records
-for that epoch but MAY opt to discard such out-of-epoch records.
 
 # Updating Traffic Secrets {#key_update}
 
