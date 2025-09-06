@@ -521,7 +521,7 @@ has the following steps:
    `ExtendedKeyUpdate(new_key_update)` with an ACK message.
 
 10. On receipt of the ACK message, the responder updates its send key and epoch
-    value.
+    value. If this ACK is not received, the responder re-transmits ExtendedKeyUpdate(new_key_update) until ACK is received. The key update is complete once this ACK is processed by the responder.
 
 
 
