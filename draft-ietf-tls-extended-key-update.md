@@ -158,6 +158,23 @@ To distinguish the key update procedure defined in {{I-D.ietf-tls-rfc8446bis}}
 from the key update procedure specified in this document, we use the terms
 "standard key update" and "extended key update", respectively.
 
+The following variables and abbreviations are used in the state machine diagrams.
+
+- rx - current, accepted receive epoch.
+- tx - current transmit epoch used for tagging outgoing messages.
+- E - initial epoch value.
+- updating - true while a key-update handshake is in progress.
+- accepted - set to true after an accepted Resp; indicates the peer has
+  agreed to proceed with the update and that new key material can be derived.
+- old_rx - the previous receive epoch remembered during retention.
+- retain_old - when true, receiver accepts tags old_rx and rx.
+- tag=... - the TX-epoch value written on an outgoing message.
+- e==... - the tag carried on an incoming message (what the peer sent).
+- Protocol message types - ExtendedKeyUpdate(request) (Req) /
+  ExtendedKeyUpdate(response) (Resp) / ExtendedKeyUpdate(new_key_update) (NKU) /
+  ACK (from {{Section 7 of RFC9147}} / APP for application data.
+- FINISHED / START/IDLE / WAIT_RESP / SENT_NKU / WAIT_R_NKU - diagram
+  states; FINISHED denotes the steady state after success or reject.
 
 # Negotiating the Extended Key Update
 
@@ -507,24 +524,6 @@ The exchange has the following steps:
 10. On receipt of the ACK message, the responder updates its send key and epoch
     value.
 
-
-## Legend used in Figures
-
-The following variables are used in the state machine diagrams below.
-
-- rx - current, accepted receive epoch.
-- tx - current transmit epoch used for tagging outgoing messages.
-- E - initial epoch value.
-- updating - true while a key-update handshake is in progress.
-- accepted - set to true after an accepted Resp; indicates the peer has
-  agreed to proceed with the update and that new key material can be derived.
-- old_rx - the previous receive epoch remembered during retention.
-- retain_old - when true, receiver accepts tags old_rx and rx.
-- tag=... - the TX-epoch value written on an outgoing message.
-- e==... - the tag carried on an incoming message (what the peer sent).
-- Req / Resp(true or false) / NKU / ACK / APP - protocol message types.
-- FINISHED / START/IDLE / WAIT_RESP / SENT_NKU / WAIT_R_NKU - diagram
-  states; FINISHED denotes the steady state after success or reject.
 
 
 ## State Machine (Initiator)
