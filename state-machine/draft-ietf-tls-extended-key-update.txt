@@ -1051,7 +1051,8 @@ Table of Contents
 
    [ANSSI]    ANSSI, "Recommendations for securing networks with IPsec,
               Technical Report", August 2015,
-              <https://www.ssi.gouv.fr/uploads/2015/09/NT_IPsec_EN.pdf>.
+              <https://cyber.gouv.fr/sites/default/files/2012/09/
+              NT_IPsec_EN.pdf>.
 
    [CDM23]    ACM, "Keeping Up with the KEMs: Stronger Security Notions
               for KEMs and automated analysis of KEM-based protocols",
