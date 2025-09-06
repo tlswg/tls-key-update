@@ -2001,26 +2001,34 @@ Client                            Server
 </pre>
 </div>
 <figcaption><a href="#figure-4" class="selfRef">Figure 4</a>:
-<a href="#name-example-dtls-13-extended-ke" class="selfRef">Example DTLS 1.3 Extended Key Update Exchange.</a>
+<a href="#name-example-dtls-13-extended-ke" class="selfRef">Example DTLS 1.3 Extended Key Update: Message Exchange.</a>
           </figcaption></figure>
 </div>
-<p id="section-6.3-3">The following table shows the steps, the message in flight, and the tx/rx epochs on both sides.<a href="#section-6.3-3" class="pilcrow">¶</a></p>
-<div class="alignLeft art-text artwork" id="section-6.3-4">
+<p id="section-6.3-3"><a href="#dtls-table" class="auto internal xref">Figure 5</a> shows the steps, the message in flight, and the epoch changes on both sides.
+The A/B -&gt; X/Y notation indicates the change of epoch values for tx/rx before and after
+the message transmission.<a href="#section-6.3-3" class="pilcrow">¶</a></p>
+<span id="name-example-dtls-13-extended-key"></span><div id="dtls-table">
+<figure id="figure-5">
+          <div class="alignLeft art-text artwork" id="section-6.3-4.1">
 <pre>
 +-----+--------------------+-------------+-------+-------------+
-|Step | Message            | Client tx/rx| MsgEp | Server tx/rx|
+|Step | Message            | Client tx/rx| Epoch | Server tx/rx|
 +-----+--------------------+-------------+-------+-------------+
-|  1  | App Data ---------&gt;| 3/3 -&gt; 3/3  |   3   | 3/3 -&gt; 3/3  |
-|  2  | &lt;------ App Data   | 3/3 -&gt; 3/3  |   3   | 3/3 -&gt; 3/3  |
-|  3  | EKU(request) -----&gt;| 3/3 -&gt; 3/3  |   3   | 3/3 -&gt; 3/3  |
-|  4  | &lt;------ EKU(resp)  | 3/3 -&gt; 3/3  |   3   | 3/3 -&gt; 3/3  |
-|  5  | EKU(new_key_upd) -&gt;| 3/3 -&gt; 3/3  |   3   | 3/3 -&gt; 3/3  |
-|  6  | &lt;--- EKU(new_key_u)| 3/3 -&gt; 3/3  |   3   | 3/3 -&gt; 3/3  |
-|  7  | ACK --------------&gt;| 3/3 -&gt; 4/4  |   4   | 3/3 -&gt; 4/4  |
-|  8  | &lt;------ App Data   | 4/4 -&gt; 4/4  |   4   | 4/4 -&gt; 4/4  |
-|  9  | App Data ---------&gt;| 4/4 -&gt; 4/4  |   4   | 4/4 -&gt; 4/4  |
+|  1  | APP ------------&gt;  | 3/3 -&gt; 3/3  |   3   | 3/3 -&gt; 3/3  |
+|  2  | &lt;------------ APP  | 3/3 -&gt; 3/3  |   3   | 3/3 -&gt; 3/3  |
+|  3  | req -------------&gt; | 3/3 -&gt; 3/3  |   3   | 3/3 -&gt; 3/3  |
+|  4  | &lt;------------ resp | 3/3 -&gt; 3/3  |   3   | 3/3 -&gt; 3/3  |
+|  5  | NKU  ------------&gt; | 3/3 -&gt; 3/3  |   3   | 3/3 -&gt; 3/3  |
+|  6  | &lt;------------- NKU | 3/3 -&gt; 3/3  |   3   | 3/3 -&gt; 3/3  |
+|  7  | ACK -------------&gt; | 3/3 -&gt; 4/4  |   4   | 3/3 -&gt; 4/4  |
+|  8  | &lt;------------- APP | 4/4 -&gt; 4/4  |   4   | 4/4 -&gt; 4/4  |
+|  9  | APP -------------&gt; | 4/4 -&gt; 4/4  |   4   | 4/4 -&gt; 4/4  |
 +-----+--------------------+-------------+-------+-------------+
-</pre><a href="#section-6.3-4" class="pilcrow">¶</a>
+</pre>
+</div>
+<figcaption><a href="#figure-5" class="selfRef">Figure 5</a>:
+<a href="#name-example-dtls-13-extended-key" class="selfRef">Example DTLS 1.3 Extended Key Update: Epoch Changes.</a>
+          </figcaption></figure>
 </div>
 </section>
 </div>
