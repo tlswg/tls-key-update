@@ -503,7 +503,7 @@ has the following steps:
 
 4. On receipt of `ExtendedKeyUpdate(response)` with status `accepted`,
    the initiator sets the local variable `accepted=1` and derives a secret key based on the
-   exchanged key shares.
+   exchanged key shares. This message also serves as an implicit acknowledgment of the initiators’s ExtendedKeyUpdate(request), so no separate ACK is required.
 
 5. The initiator transmits an `ExtendedKeyUpdate(new_key_update)` message.
 
