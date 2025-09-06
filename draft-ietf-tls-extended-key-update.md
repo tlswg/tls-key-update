@@ -144,7 +144,7 @@ prior key material. As noted in Appendix F of {{I-D.ietf-tls-rfc8446bis}}, this
 approach mitigates the risk of static key exfiltration and shifts the attacker
 burden toward dynamic key exfiltration.
 
-The proposed extension is applicable to both TLS 1.3 and DTLS 1.3  {{RFC9147}}. For clarity,
+The proposed extension is applicable to both TLS 1.3 {{I-D.ietf-tls-rfc8446bis}} and DTLS 1.3  {{RFC9147}}. For clarity,
 the term "TLS" is used throughout this document to refer to both protocols unless
 otherwise specified.
 
