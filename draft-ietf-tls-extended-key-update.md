@@ -734,25 +734,29 @@ Client                            Server
 [Application Data]                -------->
 [C: tx=4, rx=4]                   [S: tx=4, rx=4]
 ~~~
-{: #dtls-key-update title="Example DTLS 1.3 Extended Key Update Exchange."}
+{: #dtls-key-update title="Example DTLS 1.3 Extended Key Update: Message Exchange."}
 
-The following table shows the steps, the message in flight, and the tx/rx epochs on both sides.
+{{dtls-table}} shows the steps, the message in flight, and the epoch changes on both sides.
+The A/B -> X/Y notation indicates the change of epoch values for tx/rx before and after
+the message transmission.
 
 ~~~
 +-----+--------------------+-------------+-------+-------------+
-|Step | Message            | Client tx/rx| MsgEp | Server tx/rx|
+|Step | Message            | Client tx/rx| Epoch | Server tx/rx|
 +-----+--------------------+-------------+-------+-------------+
-|  1  | App Data --------->| 3/3 -> 3/3  |   3   | 3/3 -> 3/3  |
-|  2  | <------ App Data   | 3/3 -> 3/3  |   3   | 3/3 -> 3/3  |
-|  3  | EKU(request) ----->| 3/3 -> 3/3  |   3   | 3/3 -> 3/3  |
-|  4  | <------ EKU(resp)  | 3/3 -> 3/3  |   3   | 3/3 -> 3/3  |
-|  5  | EKU(new_key_upd) ->| 3/3 -> 3/3  |   3   | 3/3 -> 3/3  |
-|  6  | <--- EKU(new_key_u)| 3/3 -> 3/3  |   3   | 3/3 -> 3/3  |
-|  7  | ACK -------------->| 3/3 -> 4/4  |   4   | 3/3 -> 4/4  |
-|  8  | <------ App Data   | 4/4 -> 4/4  |   4   | 4/4 -> 4/4  |
-|  9  | App Data --------->| 4/4 -> 4/4  |   4   | 4/4 -> 4/4  |
+|  1  | APP ------------>  | 3/3 -> 3/3  |   3   | 3/3 -> 3/3  |
+|  2  | <------------ APP  | 3/3 -> 3/3  |   3   | 3/3 -> 3/3  |
+|  3  | req -------------> | 3/3 -> 3/3  |   3   | 3/3 -> 3/3  |
+|  4  | <------------ resp | 3/3 -> 3/3  |   3   | 3/3 -> 3/3  |
+|  5  | NKU  ------------> | 3/3 -> 3/3  |   3   | 3/3 -> 3/3  |
+|  6  | <------------- NKU | 3/3 -> 3/3  |   3   | 3/3 -> 3/3  |
+|  7  | ACK -------------> | 3/3 -> 4/4  |   4   | 3/3 -> 4/4  |
+|  8  | <------------- APP | 4/4 -> 4/4  |   4   | 4/4 -> 4/4  |
+|  9  | APP -------------> | 4/4 -> 4/4  |   4   | 4/4 -> 4/4  |
 +-----+--------------------+-------------+-------+-------------+
 ~~~
+{: #dtls-table title="Example DTLS 1.3 Extended Key Update: Epoch Changes."}
+
 
 # Updating Traffic Secrets {#key_update}
 
