@@ -137,17 +137,18 @@ Table of Contents
    renegotiation and cannot refresh long-term secrets or derive new
    secrets from fresh DHE input.
 
-   Security guidance from national agencies, such as ANSSI (France(
-   [ANSSI], recommends the periodic renewal of cryptographic keys during
-   long-lived sessions to limit the impact of key compromise.  This
-   approach encourages designs that force an attacker to perform dynamic
-   key exfiltration, as defined in [RFC7624].  Dynamic key exfiltration
-   refers to attack scenarios where an adversary must repeatedly extract
-   fresh keying material to maintain access to protected data,
-   increasing operational cost and risk for the attacker.  In contrast,
-   static key exfiltration, where a long-term secret is extracted once
-   and reused, poses a greater long-term threat, especially when session
-   keys are not refreshed with forward-secret input.
+   Security guidance from national agencies, such as ANSSI (France
+   [ANSSI]), recommends the periodic renewal of cryptographic keys
+   during long-lived sessions to limit the impact of key compromise.
+   This approach encourages designs that force an attacker to perform
+   dynamic key exfiltration, as defined in [RFC7624].  Dynamic key
+   exfiltration refers to attack scenarios where an adversary must
+   repeatedly extract fresh keying material to maintain access to
+   protected data, increasing operational cost and risk for the
+   attacker.  In contrast, static key exfiltration, where a long-term
+   secret is extracted once and reused, poses a greater long-term
+   threat, especially when session keys are not refreshed with forward-
+   secret input.
 
    This specification defines a TLS extension that introduces an
    extended key update mechanism.  Unlike the standard key update, this
