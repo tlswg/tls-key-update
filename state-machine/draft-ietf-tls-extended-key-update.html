@@ -1745,7 +1745,7 @@ the responder transmits that message to the initiator.<a href="#section-6-4.3.1"
         <li id="section-6-4.4">
           <p id="section-6-4.4.1">On receipt of <code>ExtendedKeyUpdate(response)</code> with status <code>accepted</code>,
 the initiator sets the local variable <code>accepted=1</code> and derives a secret key based on the
-exchanged key shares.<a href="#section-6-4.4.1" class="pilcrow">¶</a></p>
+exchanged key shares. This message also serves as an implicit acknowledgment of the initiators’s ExtendedKeyUpdate(request), so no separate ACK is required.<a href="#section-6-4.4.1" class="pilcrow">¶</a></p>
 </li>
         <li id="section-6-4.5">
           <p id="section-6-4.5.1">The initiator transmits an <code>ExtendedKeyUpdate(new_key_update)</code> message.<a href="#section-6-4.5.1" class="pilcrow">¶</a></p>
