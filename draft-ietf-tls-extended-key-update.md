@@ -125,7 +125,7 @@ KeyUpdate message was introduced to offer limited rekeying functionality, it doe
 not fulfill the same cryptographic role as renegotiation and cannot refresh
 long-term secrets or derive new secrets from fresh DHE input.
 
-Security guidance from national agencies, such as ANSSI (France( {{ANSSI}}, recommends the
+Security guidance from national agencies, such as ANSSI (France {{ANSSI}}), recommends the
 periodic renewal of cryptographic keys during long-lived sessions to limit the
 impact of key compromise. This approach encourages designs that force an
 attacker to perform dynamic key exfiltration, as defined in {{RFC7624}}. Dynamic
