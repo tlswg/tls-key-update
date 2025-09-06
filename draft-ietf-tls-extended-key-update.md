@@ -463,7 +463,7 @@ Auth | {CertificateVerify}
                                -------->
 # Client updates SEND keys here
                                     # Server updates RECEIVE keys here
-   							   <--------
+                               <--------
                                     [ExtendedKeyUpdate(new_key_update)]
 									# Server updates SEND keys here
 
