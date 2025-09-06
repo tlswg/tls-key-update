@@ -502,7 +502,7 @@ has the following steps:
    the responder transmits that message to the initiator.
 
 4. On receipt of `ExtendedKeyUpdate(response)` with status `accepted`,
-   the initiator sets `accepted=1` and derives a secret key based on the
+   the initiator sets the local variable `accepted=1` and derives a secret key based on the
    exchanged key shares.
 
 5. The initiator transmits an `ExtendedKeyUpdate(new_key_update)` message.
