@@ -704,33 +704,33 @@ Client                            Server
 
 [C: tx=3, rx=3]                   [S: tx=3, rx=3]
 [ExtendedKeyUpdate(request)]     -------->
-[C: tx=3, rx=3]                   [S: tx=3, rx=3]
+                                  # no epoch change yet
 
-[C: tx=3, rx=3]                   [S: tx=3, rx=3]
                            <-------- [ExtendedKeyUpdate(response)]
-[C: tx=3, rx=3]                   [S: tx=3, rx=3]
+                                  # accepted; still old epochs
 
-[C: tx=3, rx=3]                   [S: tx=3, rx=3]
 [ExtendedKeyUpdate(new_key_update)] -------->
-[C: tx=3, rx=3]                   [S: tx=3, rx=3]
+# Sent under OLD epoch. Client does NOT bump yet.
 
-[C: tx=3, rx=3]                   [S: tx=3, rx=3]
+# Step 6: responder bumps RECEIVE epoch on NKU-in:
+# (rx:=rx+1; tx still old)
+[C: tx=3, rx=3]                   [S: tx=3, rx=4]
+
                  <-------- [ExtendedKeyUpdate(new_key_update)]
-[C: tx=3, rx=3]                   [S: tx=3, rx=3]
+# Responder’s NKU is tagged with OLD tx (3).
 
 # Epoch switch point:
-# Client bumps epochs when sending ACK (tx=4, rx=4).
-# Server bumps epochs only *after receiving* that ACK.
+# Step 8: initiator bumps BOTH tx and rx on NKU-in:
+[C: tx=4, rx=4]                   [S: tx=3, rx=4]
 
-[C: tx=4, rx=4]                   [S: tx=3, rx=3]
 [ACK] (tag=new, tx==rx==4)        -------->
+
+# Step 10: responder bumps SEND epoch on ACK-in:
 [C: tx=4, rx=4]                   [S: tx=4, rx=4]
 
-[C: tx=4, rx=4]                   [S: tx=4, rx=4]
                                   <--------   [Application Data]
 [C: tx=4, rx=4]                   [S: tx=4, rx=4]
 
-[C: tx=4, rx=4]                   [S: tx=4, rx=4]
 [Application Data]                -------->
 [C: tx=4, rx=4]                   [S: tx=4, rx=4]
 ~~~
