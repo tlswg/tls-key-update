@@ -1769,7 +1769,7 @@ that message, the initiator MUST also update its receive keys.<a href="#section-
 </li>
         <li id="section-6-4.10">
           <p id="section-6-4.10.1">On receipt of the ACK message, the responder updates its send key and epoch
-value.<a href="#section-6-4.10.1" class="pilcrow">¶</a></p>
+value. If this ACK is not received, the responder re-transmits ExtendedKeyUpdate(new_key_update) until ACK is received. The key update is complete once this ACK is processed by the responder.<a href="#section-6-4.10.1" class="pilcrow">¶</a></p>
 </li>
       </ol>
 <div id="state-machine-initiator">
