@@ -1950,6 +1950,7 @@ including how the epochs change during the exchange.<a href="#section-6.3-1" cla
           <div class="alignLeft art-text artwork" id="section-6.3-2.1">
 <pre>
 Client                            Server
+(Initiator)                       (Responder)
 
   /---------------------------------------\
  |           Initial Handshake             |
@@ -1988,7 +1989,7 @@ Client                            Server
 # Step 8: initiator bumps BOTH tx and rx on NKU-in:
 [C: tx=4, rx=4]                   [S: tx=3, rx=4]
 
-[ACK] (tag=new, tx==rx==4)        --------&gt;
+[ACK] (tag=new)   --------&gt;
 
 # Step 10: responder bumps SEND epoch on ACK-in:
 [C: tx=4, rx=4]                   [S: tx=4, rx=4]
@@ -2011,19 +2012,19 @@ the message transmission.<a href="#section-6.3-3" class="pilcrow">¶</a></p>
 <figure id="figure-5">
           <div class="alignLeft art-text artwork" id="section-6.3-4.1">
 <pre>
-+-----+--------------------+-------------+-------+-------------+
-|Step | Message            | Client tx/rx| Epoch | Server tx/rx|
-+-----+--------------------+-------------+-------+-------------+
-|  1  | APP ------------&gt;  | 3/3 -&gt; 3/3  |   3   | 3/3 -&gt; 3/3  |
-|  2  | &lt;------------ APP  | 3/3 -&gt; 3/3  |   3   | 3/3 -&gt; 3/3  |
-|  3  | req -------------&gt; | 3/3 -&gt; 3/3  |   3   | 3/3 -&gt; 3/3  |
-|  4  | &lt;------------ resp | 3/3 -&gt; 3/3  |   3   | 3/3 -&gt; 3/3  |
-|  5  | NKU  ------------&gt; | 3/3 -&gt; 3/3  |   3   | 3/3 -&gt; 3/3  |
-|  6  | &lt;------------- NKU | 3/3 -&gt; 3/3  |   3   | 3/3 -&gt; 3/3  |
-|  7  | ACK -------------&gt; | 3/3 -&gt; 4/4  |   4   | 3/3 -&gt; 4/4  |
-|  8  | &lt;------------- APP | 4/4 -&gt; 4/4  |   4   | 4/4 -&gt; 4/4  |
-|  9  | APP -------------&gt; | 4/4 -&gt; 4/4  |   4   | 4/4 -&gt; 4/4  |
-+-----+--------------------+-------------+-------+-------------+
++--------------------+----------------+--------------+
+| Message            | Client tx/rx   | Server tx/rx |
++--------------------+----------------+--------------+
+| APP ------------&gt;  | 3/3 -&gt; 3/3     | 3/3 -&gt; 3/3   |
+| &lt;------------ APP  | 3/3 -&gt; 3/3     | 3/3 -&gt; 3/3   |
+| req -------------&gt; | 3/3 -&gt; 3/3     | 3/3 -&gt; 3/3   |
+| &lt;------------ resp | 3/3 -&gt; 3/3     | 3/3 -&gt; 3/3   |
+| NKU  ------------&gt; | 3/3 -&gt; 3/3     | 3/3 -&gt; 3/4   | &lt;- step 6
+| &lt;------------- NKU | 3/3 -&gt; 4/4     | 3/4 -&gt; 3/4   | &lt;- step 8
+| ACK -------------&gt; | 4/4 -&gt; 4/4     | 3/4 -&gt; 4/4   | &lt;- step 10
+| &lt;------------- APP | 4/4 -&gt; 4/4     | 4/4 -&gt; 4/4   |
+| APP -------------&gt; | 4/4 -&gt; 4/4     | 4/4 -&gt; 4/4   |
++--------------------+----------------+--------------+
 </pre>
 </div>
 <figcaption><a href="#figure-5" class="selfRef">Figure 5</a>:
