@@ -517,12 +517,10 @@ Auth | {CertificateVerify}
    update keying material until receipt and successful decryption of a
    message using the new keys.
 
-   Due to loss and/or reordering, DTLS 1.3 peers MAY receive a record
-   with an older epoch than the current one.  They SHOULD attempt to
-   process such records for that epoch but MAY opt to discard such out-
-   of-epoch records.
-
-   The exchange has the following steps:
+   Due to packet loss and/or reordering, DTLS 1.3 peers MAY receive
+   records from an earlier epoch.  If the necessary keys are available,
+   implementations SHOULD attempt to process such records; however, they
+   MAY choose to discard them.The exchange has the following steps:
 
    1.   The initiator sends an ExtendedKeyUpdate(request) message, which
         contains a key share.  While an extended key update is in
