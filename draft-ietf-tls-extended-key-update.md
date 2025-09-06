@@ -66,7 +66,7 @@ informative:
      author:
         org: ANSSI
      title: Recommendations for securing networks with IPsec, Technical Report
-     target: https://www.ssi.gouv.fr/uploads/2015/09/NT_IPsec_EN.pdf
+     target: https://cyber.gouv.fr/sites/default/files/2012/09/NT_IPsec_EN.pdf
      date: August 2015
   TLS-Ext-Registry:
      author:
