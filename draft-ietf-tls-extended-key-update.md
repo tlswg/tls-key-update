@@ -829,6 +829,102 @@ The following variables and abbreviations are used in the state machine diagrams
 - FINISHED / START/IDLE / WAIT_RESP / SENT_NKU / WAIT_R_NKU - diagram
   states; FINISHED denotes the steady state after success or reject.
 
+## TLS 1.3 State Machines
+
+This section describes the initiator and responder state machines.
+To keep terminology of variables consistent within this specification
+tx/rx track the application-traffic-secret generation (N, N+1, ...)
+even though there is no epoch tag in TLS.
+
+## Initiator State Machine
+
+The Initiator updates send keys immediately after sending its NKU; it
+updates receive keys when it receives the responder's NKU. Both NKUs are
+protected with the old keys.
+
+~~~
++----------------------+
+|   START              |
+|   tx=N, rx=N         |
+|   updating=0         |
++----------------------+
+          |
+ (1) send ExtendedKeyUpdate(request)
+     set updating=1
+          v
++----------------------+
+|      WAIT_RESP       |
+|      updating=1      |
++----------------------+
+     |            |
+     | Resp(rejected/retry/clashed):
+     |   set updating=0
+     |   -> FINISHED (no change)
+     |
+     | Resp(accepted) with key_share:
+     |   derive new secrets
+     |   send NKU  (encrypted under old keys)
+     |   update SEND keys (tx := new key)    <-- TLS step 4
+     v
++---------------------------+
+|  SENT_NKU / WAIT_R_NKU    |
+|  tx=N+1, rx=N, updating=1 |
++---------------------------+
+          |
+ (5) recv NKU (encrypted under old keys)
+     update RECEIVE keys (rx := new key)     <-- TLS step 5
+     set updating=0
+          v
++----------------------+
+|       FINISHED       |
++----------------------+
+~~~
+
+## Responder State Machine
+
+The Responder updates receive keys on arrival of the initiator's NKU, then
+sends its NKU (still under old keys) and immediately updates send keys.
+
+~~~
++----------------------+
+|   START              |
+|   tx=N, rx=N         |
+|   updating=0         |
++----------------------+
+          |
+ (2) recv ExtendedKeyUpdate(request)
+     set updating=1
+          v
++----------------------+
+|       RESPOND        |
++----------------------+
+     |            |
+     | reject/retry/clashed:
+     |   send Resp(status)
+     |   set updating=0
+     |   -> FINISHED (no change)
+     |
+     | accept:
+     |   send Resp(accepted) with key_share
+     |   derive new secrets
+     |   -> WAIT_I_NKU
+     v
++----------------------+
+|     WAIT_I_NKU       |
+|     updating=1       |
++----------------------+
+          |
+ (4) recv NKU (encrypted under old keys)
+     update RECEIVE keys (rx := new key)     <-- TLS step 4
+     send NKU (encrypted under old keys)
+     update SEND keys (tx := new key)        <-- TLS step 4
+     set updating=0
+          v
++----------------------+
+|       FINISHED       |
++----------------------+
+~~~
+
 ## DTLS 1.3 State Machines
 
 This section describes the initiator and responder state machines.
