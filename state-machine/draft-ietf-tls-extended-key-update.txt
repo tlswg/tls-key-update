@@ -198,8 +198,8 @@ Table of Contents
 
    *  tag=... - the TX-epoch value written on an outgoing message.
 
-   *  e==... - the tag carried on an incoming message (what the peer
-      sent).
+   *  e==... - the epoch tag carried on an incoming message (what the
+      peer sent).
 
    *  Protocol message types - ExtendedKeyUpdate(request) (Req) /
       ExtendedKeyUpdate(response) (Resp) /
