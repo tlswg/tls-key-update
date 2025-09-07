@@ -488,7 +488,9 @@ has the following steps:
 
 1. The initiator sends an `ExtendedKeyUpdate(request)` message, which contains a
    key share. While an extended key update is in progress, the initiator MUST NOT
-   initiate further key updates.
+   initiate further key updates. This message is subject to DTLS handshake
+   retransmission, but delivery is only confirmed when the initiator receives the
+   corresponding `ExtendedKeyUpdate(response)`.
 
 2. On receipt of the `ExtendedKeyUpdate(request)`, the responder either accepts
    or declines the request. If the responder accepts the request, it sets the
