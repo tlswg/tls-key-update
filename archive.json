@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2025-09-02T01:45:47.554109+00:00",
+  "timestamp": "2025-09-07T01:46:42.046152+00:00",
   "repo": "tlswg/tls-key-update",
   "labels": [
     {
@@ -434,6 +434,54 @@
           "updatedAt": "2025-09-01T14:41:21Z"
         }
       ]
+    },
+    {
+      "number": 45,
+      "id": "I_kwDOMJPqLM7KGOWH",
+      "title": "Move State Machines to the Appendix",
+      "url": "https://github.com/tlswg/tls-key-update/issues/45",
+      "state": "OPEN",
+      "author": "hannestschofenig",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [],
+      "body": "As it is, for instance, done in https://datatracker.ietf.org/doc/html/rfc8446#appendix-A.1",
+      "createdAt": "2025-09-06T18:02:27Z",
+      "updatedAt": "2025-09-06T18:07:33Z",
+      "closedAt": null,
+      "comments": []
+    },
+    {
+      "number": 46,
+      "id": "I_kwDOMJPqLM7KGP0U",
+      "title": "Explain interactions with other handshake messages",
+      "url": "https://github.com/tlswg/tls-key-update/issues/46",
+      "state": "OPEN",
+      "author": "hannestschofenig",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [],
+      "body": "Currently we only talk about application data payloads being accepted during the different extended key update states.",
+      "createdAt": "2025-09-06T18:05:00Z",
+      "updatedAt": "2025-09-06T18:05:00Z",
+      "closedAt": null,
+      "comments": []
+    },
+    {
+      "number": 47,
+      "id": "I_kwDOMJPqLM7KGQCy",
+      "title": "Add state machine for TLS 1.3",
+      "url": "https://github.com/tlswg/tls-key-update/issues/47",
+      "state": "OPEN",
+      "author": "hannestschofenig",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [],
+      "body": "",
+      "createdAt": "2025-09-06T18:05:25Z",
+      "updatedAt": "2025-09-06T18:05:25Z",
+      "closedAt": null,
+      "comments": []
     }
   ],
   "pulls": [
@@ -2373,6 +2421,544 @@
       },
       "comments": [],
       "reviews": []
+    },
+    {
+      "number": 44,
+      "id": "PR_kwDOMJPqLM6nAsm5",
+      "title": "State machine",
+      "url": "https://github.com/tlswg/tls-key-update/pull/44",
+      "state": "OPEN",
+      "author": "hannestschofenig",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [],
+      "body": "With this PR I added a state machine to the description in DTLS 1.3\r\n\r\nI also added the SPIN model used to verify correctness of the exchange",
+      "createdAt": "2025-09-05T09:12:34Z",
+      "updatedAt": "2025-09-06T18:08:59Z",
+      "baseRepository": "tlswg/tls-key-update",
+      "baseRefName": "main",
+      "baseRefOid": "f079df600c24e3bc650299ff7e3321341673422b",
+      "headRepository": "tlswg/tls-key-update",
+      "headRefName": "state-machine",
+      "headRefOid": "ce3a39dfba64f39e070f2ea728854252d70b385e",
+      "closedAt": null,
+      "mergedAt": null,
+      "mergedBy": null,
+      "mergeCommit": null,
+      "comments": [],
+      "reviews": [
+        {
+          "id": "PRR_kwDOMJPqLM6-GzEQ",
+          "commit": {
+            "abbreviatedOid": "3b0a70e"
+          },
+          "author": "stfries",
+          "authorAssociation": "COLLABORATOR",
+          "state": "APPROVED",
+          "body": "Thanks for providing the updated description, I have only identified an editorial point. The state machine seems fine from my understanding. The other comments mainly relate to the relation of ExtendedKeyUpdate and KeyUpdate.  ",
+          "createdAt": "2025-09-05T13:48:30Z",
+          "updatedAt": "2025-09-05T14:28:17Z",
+          "comments": [
+            {
+              "originalPosition": 250,
+              "body": "Just as a note, NKU is explained further down as New Key Update, but should be on first occurrence",
+              "createdAt": "2025-09-05T13:48:30Z",
+              "updatedAt": "2025-09-05T14:28:17Z"
+            },
+            {
+              "originalPosition": 473,
+              "body": "I had some rounds of thinking regarding the switch in tx and rx on the client and the server side, but I think it is fine that way. ",
+              "createdAt": "2025-09-05T14:11:59Z",
+              "updatedAt": "2025-09-05T14:28:17Z"
+            },
+            {
+              "originalPosition": 598,
+              "body": "good catch!",
+              "createdAt": "2025-09-05T14:17:59Z",
+              "updatedAt": "2025-09-05T14:28:17Z"
+            },
+            {
+              "originalPosition": 589,
+              "body": "The state machine looks fine from my point of view, thank you for putting it together. \r\nNevertheless, what I need to think through is the part that in case ExtendedKeyUpdate is used, the normal KeyUpdate shall not be used. So essentially, we need to cover the same functionality as in the key update. That said, it might be a silly question, but if ExtendedKeyUpdate is used, it always changes the \"long term secret\". How is the \"normal\" KeyUpdate resembled? In other words how do we distinguish between extended and normal keyUpdate?",
+              "createdAt": "2025-09-05T14:26:43Z",
+              "updatedAt": "2025-09-05T14:28:17Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM6-O_8E",
+          "commit": {
+            "abbreviatedOid": "3b0a70e"
+          },
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-09-06T05:47:12Z",
+          "updatedAt": "2025-09-06T05:47:12Z",
+          "comments": [
+            {
+              "originalPosition": 20,
+              "body": "```suggestion\r\nSecurity guidance from national agencies, such as ANSSI (France {{ANSSI}}), recommends the\r\n```",
+              "createdAt": "2025-09-06T05:47:12Z",
+              "updatedAt": "2025-09-06T05:47:13Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM6-PAnd",
+          "commit": {
+            "abbreviatedOid": "3b0a70e"
+          },
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-09-06T05:49:19Z",
+          "updatedAt": "2025-09-06T05:49:19Z",
+          "comments": [
+            {
+              "originalPosition": 29,
+              "body": "```suggestion\r\nThe proposed extension is applicable to both TLS 1.3 {{I-D.ietf-tls-rfc8446bis}} and DTLS 1.3  {{RFC9147}}. For clarity,\r\n```",
+              "createdAt": "2025-09-06T05:49:19Z",
+              "updatedAt": "2025-09-06T05:49:19Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM6-PDWs",
+          "commit": {
+            "abbreviatedOid": "3b0a70e"
+          },
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-09-06T06:02:44Z",
+          "updatedAt": "2025-09-06T06:02:44Z",
+          "comments": [
+            {
+              "originalPosition": 200,
+              "body": "```suggestion\r\n   initiate further key updates. This message is sent reliably using DTLS handshake retransmission.\r\n```",
+              "createdAt": "2025-09-06T06:02:44Z",
+              "updatedAt": "2025-09-06T06:02:44Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM6-PE1V",
+          "commit": {
+            "abbreviatedOid": "3b0a70e"
+          },
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-09-06T06:09:45Z",
+          "updatedAt": "2025-09-06T06:09:45Z",
+          "comments": [
+            {
+              "originalPosition": 215,
+              "body": "Step 3 does not specify what happens when the status in ExtendedKeyUpdate(response) is not set to \"accepted\". \r\nI don\u2019t see a need for Step 3, since the responder must send an ExtendedKeyUpdate(response) regardless of whether the status is \"accepted\" or not.",
+              "createdAt": "2025-09-06T06:09:45Z",
+              "updatedAt": "2025-09-06T06:09:45Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM6-PFEG",
+          "commit": {
+            "abbreviatedOid": "3b0a70e"
+          },
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-09-06T06:11:34Z",
+          "updatedAt": "2025-09-06T06:11:35Z",
+          "comments": [
+            {
+              "originalPosition": 221,
+              "body": "```suggestion\r\n   the initiator sets the local variable `accepted=1` and derives a secret key based on the\r\n```",
+              "createdAt": "2025-09-06T06:11:35Z",
+              "updatedAt": "2025-09-06T06:11:35Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM6-PFLB",
+          "commit": {
+            "abbreviatedOid": "3b0a70e"
+          },
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-09-06T06:12:34Z",
+          "updatedAt": "2025-09-06T06:12:34Z",
+          "comments": [
+            {
+              "originalPosition": 222,
+              "body": "```suggestion\r\n   exchanged key shares. This message also serves as an implicit acknowledgment of the initiators\u2019s ExtendedKeyUpdate(request), so no separate ACK is required.\r\n```",
+              "createdAt": "2025-09-06T06:12:34Z",
+              "updatedAt": "2025-09-06T06:12:34Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM6-PFb4",
+          "commit": {
+            "abbreviatedOid": "3b0a70e"
+          },
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-09-06T06:14:52Z",
+          "updatedAt": "2025-09-06T06:14:52Z",
+          "comments": [
+            {
+              "originalPosition": 224,
+              "body": "```suggestion\r\n5. The initiator transmits an `ExtendedKeyUpdate(new_key_update)` message. This message also serves as an implicit acknowledgment of the responder\u2019s ExtendedKeyUpdate(response), so no separate ACK is required.\r\n```",
+              "createdAt": "2025-09-06T06:14:52Z",
+              "updatedAt": "2025-09-06T06:14:52Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM6-PGdt",
+          "commit": {
+            "abbreviatedOid": "3b0a70e"
+          },
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-09-06T06:21:20Z",
+          "updatedAt": "2025-09-06T06:21:20Z",
+          "comments": [
+            {
+              "originalPosition": 192,
+              "body": "NEW:\r\nDue to packet loss and/or reordering, DTLS 1.3 peers MAY receive records from an earlier epoch. If the necessary keys are available, implementations SHOULD attempt to process such records; however, they MAY choose to discard them.",
+              "createdAt": "2025-09-06T06:21:20Z",
+              "updatedAt": "2025-09-06T06:21:20Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM6-PG99",
+          "commit": {
+            "abbreviatedOid": "3b0a70e"
+          },
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-09-06T06:25:07Z",
+          "updatedAt": "2025-09-06T06:25:07Z",
+          "comments": [
+            {
+              "originalPosition": 228,
+              "body": "```suggestion\r\n    value. If this ACK is not received, the responder re-transmits ExtendedKeyUpdate(new_key_update) until ACK is received. The key update is complete once this ACK is processed by the responder.\r\n```",
+              "createdAt": "2025-09-06T06:25:07Z",
+              "updatedAt": "2025-09-06T06:25:07Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM6-PH3d",
+          "commit": {
+            "abbreviatedOid": "3b0a70e"
+          },
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-09-06T06:32:05Z",
+          "updatedAt": "2025-09-06T06:32:05Z",
+          "comments": [
+            {
+              "originalPosition": 249,
+              "body": "what is NKU ?",
+              "createdAt": "2025-09-06T06:32:05Z",
+              "updatedAt": "2025-09-06T06:32:05Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM6-RqLc",
+          "commit": {
+            "abbreviatedOid": "3b0a70e"
+          },
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-09-06T11:18:18Z",
+          "updatedAt": "2025-09-06T11:18:18Z",
+          "comments": [
+            {
+              "originalPosition": 248,
+              "body": "```suggestion\r\n- e==... - the epoch tag carried on an incoming message (what the peer sent).\r\n```",
+              "createdAt": "2025-09-06T11:18:18Z",
+              "updatedAt": "2025-09-06T11:18:18Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM6-Ryni",
+          "commit": {
+            "abbreviatedOid": "3b0a70e"
+          },
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-09-06T11:31:49Z",
+          "updatedAt": "2025-09-06T11:31:49Z",
+          "comments": [
+            {
+              "originalPosition": 280,
+              "body": "what about messages like DTLS heartbeat ? ",
+              "createdAt": "2025-09-06T11:31:49Z",
+              "updatedAt": "2025-09-06T11:31:49Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM6-R0Bo",
+          "commit": {
+            "abbreviatedOid": "3b0a70e"
+          },
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-09-06T11:34:30Z",
+          "updatedAt": "2025-09-06T11:34:30Z",
+          "comments": [
+            {
+              "originalPosition": 254,
+              "body": "Any specific reason for the state machine not being depicted in the Appendix (for instance, see https://datatracker.ietf.org/doc/html/rfc8446#appendix-A.1) ?",
+              "createdAt": "2025-09-06T11:34:30Z",
+              "updatedAt": "2025-09-06T11:34:30Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM6-SAtZ",
+          "commit": {
+            "abbreviatedOid": "3b0a70e"
+          },
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-09-06T11:49:05Z",
+          "updatedAt": "2025-09-06T11:49:05Z",
+          "comments": [
+            {
+              "originalPosition": 508,
+              "body": "The above table does not align with the following step:\r\n\r\nAfter the initiator receives the responder\u2019s ExtendedKeyUpdate(new_key_update), the initiator MUST update its send key and epoch value. With the receipt of that message, the initiator MUST also update its receive keys.\r\n\r\n",
+              "createdAt": "2025-09-06T11:49:05Z",
+              "updatedAt": "2025-09-06T11:49:05Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM6-SClf",
+          "commit": {
+            "abbreviatedOid": "3b0a70e"
+          },
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "The PR is awesome, Thanks.",
+          "createdAt": "2025-09-06T11:51:02Z",
+          "updatedAt": "2025-09-06T11:51:02Z",
+          "comments": []
+        },
+        {
+          "id": "PRR_kwDOMJPqLM6-SyhX",
+          "commit": {
+            "abbreviatedOid": "65f32ce"
+          },
+          "author": "hannestschofenig",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-09-06T12:42:41Z",
+          "updatedAt": "2025-09-06T12:42:41Z",
+          "comments": [
+            {
+              "originalPosition": 189,
+              "body": "```suggestion\r\n                                        # Server derives new secrets\r\n```",
+              "createdAt": "2025-09-06T12:42:41Z",
+              "updatedAt": "2025-09-06T12:42:42Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM6-SyxT",
+          "commit": {
+            "abbreviatedOid": "65f32ce"
+          },
+          "author": "hannestschofenig",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-09-06T12:42:58Z",
+          "updatedAt": "2025-09-06T12:42:59Z",
+          "comments": [
+            {
+              "originalPosition": 195,
+              "body": "```suggestion\r\n                               <--------\r\n```",
+              "createdAt": "2025-09-06T12:42:58Z",
+              "updatedAt": "2025-09-06T12:42:59Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM6-Sy5u",
+          "commit": {
+            "abbreviatedOid": "65f32ce"
+          },
+          "author": "hannestschofenig",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-09-06T12:43:11Z",
+          "updatedAt": "2025-09-06T12:43:11Z",
+          "comments": [
+            {
+              "originalPosition": 197,
+              "body": "```suggestion\r\n                                    # Server updates SEND keys here\r\n```",
+              "createdAt": "2025-09-06T12:43:11Z",
+              "updatedAt": "2025-09-06T12:43:11Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM6-S1oj",
+          "commit": {
+            "abbreviatedOid": "ec2cf6c"
+          },
+          "author": "hannestschofenig",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-09-06T12:46:38Z",
+          "updatedAt": "2025-09-06T12:46:38Z",
+          "comments": [
+            {
+              "originalPosition": 200,
+              "body": "The message per se is not sent reliably without the response message, which gives the sender an assurance that the request message has indeed arrived.",
+              "createdAt": "2025-09-06T12:46:38Z",
+              "updatedAt": "2025-09-06T12:46:38Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM6-S5mu",
+          "commit": {
+            "abbreviatedOid": "ea02538"
+          },
+          "author": "hannestschofenig",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-09-06T12:51:40Z",
+          "updatedAt": "2025-09-06T12:51:40Z",
+          "comments": [
+            {
+              "originalPosition": 589,
+              "body": "The normal key update uses different messages. So, it is easy to differentiate from the new functionality. When the peers negotiate the extended key update then the normal key update is not used. ",
+              "createdAt": "2025-09-06T12:51:40Z",
+              "updatedAt": "2025-09-06T12:51:40Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM6-Tm3J",
+          "commit": {
+            "abbreviatedOid": "3b0a70e"
+          },
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-09-06T13:57:29Z",
+          "updatedAt": "2025-09-06T13:57:29Z",
+          "comments": [
+            {
+              "originalPosition": 200,
+              "body": "we may want to add: This message is subject to DTLS handshake retransmission, but delivery is only\r\nconfirmed when the initiator receives the corresponding `ExtendedKeyUpdate(response)`.",
+              "createdAt": "2025-09-06T13:57:29Z",
+              "updatedAt": "2025-09-06T13:57:29Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM6-UtZx",
+          "commit": {
+            "abbreviatedOid": "7e3b7cf"
+          },
+          "author": "hannestschofenig",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-09-06T15:39:55Z",
+          "updatedAt": "2025-09-06T15:39:55Z",
+          "comments": [
+            {
+              "originalPosition": 280,
+              "body": "Good question. I think we have to state what handshake messages are allowed interleaving the extended key update.\r\nSince we do not permit the traditional key update and, based on the most recent discussions, also no ticket exchanges I believe all other handshake messages are pretty much treated like application data.\r\n\r\nI will, however, extend the formal to verify this statement.",
+              "createdAt": "2025-09-06T15:39:55Z",
+              "updatedAt": "2025-09-06T15:39:55Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM6-UuGi",
+          "commit": {
+            "abbreviatedOid": "7e3b7cf"
+          },
+          "author": "hannestschofenig",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-09-06T15:41:05Z",
+          "updatedAt": "2025-09-06T15:41:05Z",
+          "comments": [
+            {
+              "originalPosition": 254,
+              "body": "No, there is no reason. I can move those to the appendix, if you think it is better. Happy to do this in a separate PR.",
+              "createdAt": "2025-09-06T15:41:05Z",
+              "updatedAt": "2025-09-06T15:41:05Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM6-WY0C",
+          "commit": {
+            "abbreviatedOid": "3b0a70e"
+          },
+          "author": "hannestschofenig",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-09-06T18:06:40Z",
+          "updatedAt": "2025-09-06T18:06:40Z",
+          "comments": [
+            {
+              "originalPosition": 249,
+              "body": "New Key Update. I improved the description ",
+              "createdAt": "2025-09-06T18:06:40Z",
+              "updatedAt": "2025-09-06T18:06:40Z"
+            }
+          ]
+        }
+      ]
     }
   ]
 }
