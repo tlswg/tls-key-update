@@ -809,32 +809,20 @@ and Thom Wiggers for their review comments.
 
 # State Machines
 
-## Terms and Abbreviations
+The sections below describe the state machines for the extended key update
+operation for TLS 1.3 and DTLS 1.3.
 
-The following variables and abbreviations are used in the state machine diagrams.
+For editorial reasons we abbreviate the protocol message types:
 
-- rx - current, accepted receive epoch.
-- tx - current transmit epoch used for tagging outgoing messages.
-- E - initial epoch value.
-- updating - true while a key-update handshake is in progress.
-- accepted - set to true after an accepted Resp; indicates the peer has
-  agreed to proceed with the update and that new key material can be derived.
-- old_rx - the previous receive epoch remembered during retention.
-- retain_old - when true, receiver accepts tags old_rx and rx.
-- tag=... - the TX-epoch value written on an outgoing message.
-- e==... - the epoch tag carried on an incoming message (what the peer sent).
-- Protocol message types - ExtendedKeyUpdate(request) (Req) /
-  ExtendedKeyUpdate(response) (Resp) / ExtendedKeyUpdate(new_key_update) (NKU) /
-  ACK (from {{Section 7 of RFC9147}} / APP for application data.
-- FINISHED / START/IDLE / WAIT_RESP / SENT_NKU / WAIT_R_NKU - diagram
-  states; FINISHED denotes the steady state after success or reject.
+ * Req - ExtendedKeyUpdate(request)
+ * Resp - ExtendedKeyUpdate(response)
+ * NKU - ExtendedKeyUpdate(new_key_update)
+ * ACK - Acknowledgement message from {{Section 7 of RFC9147}}
+ * APP - application data payloads
 
 ## TLS 1.3 State Machines
 
 This section describes the initiator and responder state machines.
-To keep terminology of variables consistent within this specification
-tx/rx track the application-traffic-secret generation (N, N+1, ...)
-even though there is no epoch tag in TLS.
 
 ## Initiator State Machine
 
@@ -845,7 +833,8 @@ protected with the old keys.
 ~~~
 +----------------------+
 |   START              |
-|   tx=N, rx=N         |
+|   send_key=current,  |
+|   receive_key=current|
 |   updating=0         |
 +----------------------+
           |
@@ -864,15 +853,17 @@ protected with the old keys.
      | Resp(accepted) with key_share:
      |   derive new secrets
      |   send NKU  (encrypted under old keys)
-     |   update SEND keys (tx := new key)    <-- TLS step 4
+     |   update SEND keys (send_key := new key)   <-- TLS step 4
      v
 +---------------------------+
 |  SENT_NKU / WAIT_R_NKU    |
-|  tx=N+1, rx=N, updating=1 |
+|  send_key=new,            |
+|  receive_key=current,     |
+|  updating=1               |
 +---------------------------+
           |
  (5) recv NKU (encrypted under old keys)
-     update RECEIVE keys (rx := new key)     <-- TLS step 5
+     update RECEIVE keys (receive_key := new key) <-- Step 5
      set updating=0
           v
 +----------------------+
@@ -888,7 +879,8 @@ sends its NKU (still under old keys) and immediately updates send keys.
 ~~~
 +----------------------+
 |   START              |
-|   tx=N, rx=N         |
+|   send_key=current,  |
+|   receive_key=current|
 |   updating=0         |
 +----------------------+
           |
@@ -915,9 +907,9 @@ sends its NKU (still under old keys) and immediately updates send keys.
 +----------------------+
           |
  (4) recv NKU (encrypted under old keys)
-     update RECEIVE keys (rx := new key)     <-- TLS step 4
+     update RECEIVE keys (receive_key := new key) <-- TLS step 4
      send NKU (encrypted under old keys)
-     update SEND keys (tx := new key)        <-- TLS step 4
+     update SEND keys (send_key := new key)       <-- TLS step 4
      set updating=0
           v
 +----------------------+
@@ -928,6 +920,23 @@ sends its NKU (still under old keys) and immediately updates send keys.
 ## DTLS 1.3 State Machines
 
 This section describes the initiator and responder state machines.
+
+### Terms and Abbreviations
+
+The following variables and abbreviations are used in the state machine diagrams.
+
+- rx - current, accepted receive epoch.
+- tx - current transmit epoch used for tagging outgoing messages.
+- E - initial epoch value.
+- updating - true while a key-update handshake is in progress.
+- accepted - set to true after an accepted Resp; indicates the peer has
+  agreed to proceed with the update and that new key material can be derived.
+- old_rx - the previous receive epoch remembered during retention.
+- retain_old - when true, receiver accepts tags old_rx and rx.
+- tag=... - the TX-epoch value written on an outgoing message.
+- e==... - the epoch tag carried on an incoming message (what the peer sent).
+- FINISHED / START / WAIT_RESP / SENT_NKU / WAIT_R_NKU / ACTIVATE RETENTION -
+  diagram states; FINISHED denotes the steady state after success or reject.
 
 ### State Machine (Initiator)
 
