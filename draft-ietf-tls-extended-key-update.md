@@ -158,24 +158,6 @@ To distinguish the key update procedure defined in {{I-D.ietf-tls-rfc8446bis}}
 from the key update procedure specified in this document, we use the terms
 "standard key update" and "extended key update", respectively.
 
-The following variables and abbreviations are used in the state machine diagrams.
-
-- rx - current, accepted receive epoch.
-- tx - current transmit epoch used for tagging outgoing messages.
-- E - initial epoch value.
-- updating - true while a key-update handshake is in progress.
-- accepted - set to true after an accepted Resp; indicates the peer has
-  agreed to proceed with the update and that new key material can be derived.
-- old_rx - the previous receive epoch remembered during retention.
-- retain_old - when true, receiver accepts tags old_rx and rx.
-- tag=... - the TX-epoch value written on an outgoing message.
-- e==... - the epoch tag carried on an incoming message (what the peer sent).
-- Protocol message types - ExtendedKeyUpdate(request) (Req) /
-  ExtendedKeyUpdate(response) (Resp) / ExtendedKeyUpdate(new_key_update) (NKU) /
-  ACK (from {{Section 7 of RFC9147}} / APP for application data.
-- FINISHED / START/IDLE / WAIT_RESP / SENT_NKU / WAIT_R_NKU - diagram
-  states; FINISHED denotes the steady state after success or reject.
-
 # Negotiating the Extended Key Update
 
 Client and servers use the TLS flags extension
@@ -525,161 +507,6 @@ has the following steps:
 10. On receipt of the ACK message, the responder updates its send key and epoch
     value. If this ACK is not received, the responder re-transmits ExtendedKeyUpdate(new_key_update) until ACK is received. The key update is complete once this ACK is processed by the responder.
 
-
-
-## State Machine (Initiator)
-
-The initiator starts in the START state with matching epochs (rx=tx=E).
-It sends a Req and enters WAIT_RESP (updating=1). While waiting,
-APP data may be sent at any time (tagged with the current tx) and received
-according to the APP acceptance rule below.
-
-If the responder returns Resp(false), the update aborts and the initiator
-returns to FINISHED (no epoch change). If it returns Resp(true) with a
-tag matching the current rx, the initiator sets `accepted=1` and derives
-new key material. It then sends NKU still tagged with the old tx, moving to
-SENT_NKU/WAIT_R_NKU.
-
-Upon receiving the responder's NKU (tag equals the current rx, meaning
-the responder is still tagging with its old tx), the initiator:
-
-1. activates retention (old_rx=rx; retain_old=1),
-
-2. increments both epochs (rx++, tx++),
-
-3. sends ACK tagged with the new tx (which now equals the new rx),
-
-4. clears updating and enters FINISHED.
-
-Retention at the initiator ends automatically on the first APP received under
-the new rx (then retain_old := 0). APP traffic is otherwise permitted at
-any time; reordering is tolerated by the acceptance rule.
-
-APP acceptance rule (receiver): accept if e == rx or
-(retain_old && e == old_rx). If retain_old is set and an APP with the new
-rx arrives, clear retain_old.
-
-~~~
-                       +---------------------+
-                       |        START        |
-                       | rx=tx=E, updating=0 |
-                       +---------------------+
-                                   |
-                       (1) send Req [tag=tx]
-                       set updating=1
-                                   v
-                          +----------------+
-                          |   WAIT_RESP    |
-                          |  (updating=1)  |
-                          +----------------+
-                         /|\  |          /|\ APP recv:
-                          |   |           |  accept if e==rx
- APP send (anytime) ------+   |           |  or (retain_old &&
- (APP, tag=tx)                |           |     e==old_rx);
-                              |           |  if e==rx and
-                              |           |     retain_old: clear
-                              |
-                 Resp(false) -+      Resp(true, e==rx):
-                |(reject)            (4) accepted=1
-                |set updating=0      (5) send NKU [tag=old tx]
-                +------------               v
-                |         +----------------------+
-                |         |  SENT_NKU /          |
-                |         |  WAIT_R_NKU          |
-                |         +----------------------+
-                |                  |         /|\ APP send/recv
-                |                  |             allowed
-                |                  |
-                |           (7) recv NKU [e==rx]
-                |                  | (Responder still tags old tx)
-                |                  v
-                |         +----------------------+
-                |         |  ACTIVATE RETENTION  |
-                |         |  old_rx=rx;          |
-                |         |  retain_old=1;       |
-                |         |  rx=rx+1; tx=tx+1    |
-                |         +----------------------+
-                |                  |
-                |       (9) send ACK [tag=tx]
-                |       set updating=0; assert tx==rx
-                |                  |
-                +-----------+      |
-                            v      v
-                          +----------------+
- APP send/recv allowed -- |   FINISHED     |
- retain_old=0 afterwards  +----------------+
-~~~
-
-## State Machine (Responder)
-
-The responder starts in the START state with synchronized transmit and receive epochs (rx=tx=E) and no update in progress. Application data can be sent at any time with the current transmit epoch and is accepted if the epoch matches the receiver's view or, if retention is active, the previous epoch.
-
-Upon receiving an ExtendedKeyUpdate(request) (Req), the responder transitions to the RESPOND state, where it decides to either reject (acc=false, returning to FINISHED) or accept (acc=true). If accepted, it sets `accepted=1`, sends a positive response tagged with the current transmit epoch, and enters the WAIT_I_NKU state.
-
-When a new_key_update (NKU) is received with the correct epoch, the responder activates retention mode: the old epoch is remembered, the receive epoch is incremented, and application data is accepted under both epochs for a transition period. The responder then sends its own NKU tagged with the old transmit epoch and moves to the WAIT_ACK state.
-
-Finally, upon receipt of an ACK matching the updated epoch, the responder completes the transition by synchronizing transmit and receive epochs (tx=rx), disabling retention, and clearing the update flag. The state machine returns to FINISHED, ready for subsequent updates.
-
-Throughout the process:
-
-- Duplicate messages are tolerated (for retransmission handling).
-
-- Temporary epoch mismatches are permitted while an update is in progress.
-
-- Application data flows continuously, subject to epoch acceptance rules.
-
-~~~
-                          +---------------------+
-                          |         START       |
-                          | rx=tx=E, updating=0 |
-                          +---------------------+
-                           |  (3) recv Req [e==rx]
-                           |  set updating=1
-                           v
-                        +----------------------+
-                        |       RESPOND        |
-                        | acc is true or false |
-                        +----------+-----------+
-                                   |
-                 +-----------------+-----------------+
-                 |                                   |
-                 v                                   v
-        (reject) acc=false                    (accept) acc=true
-        send Resp(false)                      send Resp(true) [tag=tx]
-        set updating=0                        set accepted=1
-                 |                                   |
-                 v                                   v
-          +-------------+                     +---------------+
-          |  FINISHED   |                     |  WAIT_I_NKU   |
-          +-------------+                     | (updating=1)  |
-                                              +-------+-------+
-                                                      |
-                                 (6) recv NKU [e==rx], assert accepted
-                                                      |
-                                                      v
-                                           +---------------------+
-                                           | ACTIVATE RETENTION  |
-                                           | old_rx=rx;          |
-                                           | retain_old=1; rx++  |
-                                           +----------+----------+
-                                                      |
-                                         (7) send NKU [tag=old tx]
-                                                      |
-                                                      v
-                                              +--------------+
-                                              |  WAIT_ACK    |
-                                              | (updating=1) |
-                                              +-------+------+
-                                                      |
-                                       (8/9) recv ACK [e==rx]
-                                       tx=rx; retain_old=0; updating=0
-                                                      |
-                                                      v
-                                                +-----------+
-                                                | FINISHED  |
-                                                +-----------+
-~~~
-
 ## DTLS 1.3 Extended Key Update Example
 
 The following example illustrates a successful extended key update,
@@ -979,3 +806,182 @@ Finally, we would like to thank Martin Thomson, Ilari Liusvaara,
 Benjamin Kaduk, Scott Fluhrer, Dennis Jackson, David Benjamin,
 Matthijs van Duin, Rifaat Shekh-Yusef, Joe Birr-Pixton, Eric Rescorla,
 and Thom Wiggers for their review comments.
+
+# State Machines
+
+## Terms and Abbreviations
+
+The following variables and abbreviations are used in the state machine diagrams.
+
+- rx - current, accepted receive epoch.
+- tx - current transmit epoch used for tagging outgoing messages.
+- E - initial epoch value.
+- updating - true while a key-update handshake is in progress.
+- accepted - set to true after an accepted Resp; indicates the peer has
+  agreed to proceed with the update and that new key material can be derived.
+- old_rx - the previous receive epoch remembered during retention.
+- retain_old - when true, receiver accepts tags old_rx and rx.
+- tag=... - the TX-epoch value written on an outgoing message.
+- e==... - the epoch tag carried on an incoming message (what the peer sent).
+- Protocol message types - ExtendedKeyUpdate(request) (Req) /
+  ExtendedKeyUpdate(response) (Resp) / ExtendedKeyUpdate(new_key_update) (NKU) /
+  ACK (from {{Section 7 of RFC9147}} / APP for application data.
+- FINISHED / START/IDLE / WAIT_RESP / SENT_NKU / WAIT_R_NKU - diagram
+  states; FINISHED denotes the steady state after success or reject.
+
+## DTLS 1.3 State Machines
+
+This section describes the initiator and responder state machines.
+
+### State Machine (Initiator)
+
+The initiator starts in the START state with matching epochs (rx=tx=E).
+It sends a Req and enters WAIT_RESP (updating=1). While waiting,
+APP data may be sent at any time (tagged with the current tx) and received
+according to the APP acceptance rule below.
+
+If the responder returns Resp(false), the update aborts and the initiator
+returns to FINISHED (no epoch change). If it returns Resp(true) with a
+tag matching the current rx, the initiator sets `accepted=1` and derives
+new key material. It then sends NKU still tagged with the old tx, moving to
+SENT_NKU/WAIT_R_NKU.
+
+Upon receiving the responder's NKU (tag equals the current rx, meaning
+the responder is still tagging with its old tx), the initiator:
+
+1. activates retention (old_rx=rx; retain_old=1),
+
+2. increments both epochs (rx++, tx++),
+
+3. sends ACK tagged with the new tx (which now equals the new rx),
+
+4. clears updating and enters FINISHED.
+
+Retention at the initiator ends automatically on the first APP received under
+the new rx (then retain_old := 0). APP traffic is otherwise permitted at
+any time; reordering is tolerated by the acceptance rule.
+
+APP acceptance rule (receiver): accept if e == rx or
+(retain_old && e == old_rx). If retain_old is set and an APP with the new
+rx arrives, clear retain_old.
+
+~~~
+                       +---------------------+
+                       |        START        |
+                       | rx=tx=E, updating=0 |
+                       +---------------------+
+                                   |
+                       (1) send Req [tag=tx]
+                       set updating=1
+                                   v
+                          +----------------+
+                          |   WAIT_RESP    |
+                          |  (updating=1)  |
+                          +----------------+
+                         /|\  |          /|\ APP recv:
+                          |   |           |  accept if e==rx
+ APP send (anytime) ------+   |           |  or (retain_old &&
+ (APP, tag=tx)                |           |     e==old_rx);
+                              |           |  if e==rx and
+                              |           |     retain_old: clear
+                              |
+                 Resp(false) -+      Resp(true, e==rx):
+                |(reject)            (4) accepted=1
+                |set updating=0      (5) send NKU [tag=old tx]
+                +------------               v
+                |         +----------------------+
+                |         |  SENT_NKU /          |
+                |         |  WAIT_R_NKU          |
+                |         +----------------------+
+                |                  |         /|\ APP send/recv
+                |                  |             allowed
+                |                  |
+                |           (7) recv NKU [e==rx]
+                |                  | (Responder still tags old tx)
+                |                  v
+                |         +----------------------+
+                |         |  ACTIVATE RETENTION  |
+                |         |  old_rx=rx;          |
+                |         |  retain_old=1;       |
+                |         |  rx=rx+1; tx=tx+1    |
+                |         +----------------------+
+                |                  |
+                |       (9) send ACK [tag=tx]
+                |       set updating=0; assert tx==rx
+                |                  |
+                +-----------+      |
+                            v      v
+                          +----------------+
+ APP send/recv allowed -- |   FINISHED     |
+ retain_old=0 afterwards  +----------------+
+~~~
+
+### State Machine (Responder)
+
+The responder starts in the START state with synchronized transmit and receive epochs (rx=tx=E) and no update in progress. Application data can be sent at any time with the current transmit epoch and is accepted if the epoch matches the receiver's view or, if retention is active, the previous epoch.
+
+Upon receiving an ExtendedKeyUpdate(request) (Req), the responder transitions to the RESPOND state, where it decides to either reject (acc=false, returning to FINISHED) or accept (acc=true). If accepted, it sets `accepted=1`, sends a positive response tagged with the current transmit epoch, and enters the WAIT_I_NKU state.
+
+When a new_key_update (NKU) is received with the correct epoch, the responder activates retention mode: the old epoch is remembered, the receive epoch is incremented, and application data is accepted under both epochs for a transition period. The responder then sends its own NKU tagged with the old transmit epoch and moves to the WAIT_ACK state.
+
+Finally, upon receipt of an ACK matching the updated epoch, the responder completes the transition by synchronizing transmit and receive epochs (tx=rx), disabling retention, and clearing the update flag. The state machine returns to FINISHED, ready for subsequent updates.
+
+Throughout the process:
+
+- Duplicate messages are tolerated (for retransmission handling).
+
+- Temporary epoch mismatches are permitted while an update is in progress.
+
+- Application data flows continuously, subject to epoch acceptance rules.
+
+~~~
+                          +---------------------+
+                          |         START       |
+                          | rx=tx=E, updating=0 |
+                          +---------------------+
+                           |  (3) recv Req [e==rx]
+                           |  set updating=1
+                           v
+                        +----------------------+
+                        |       RESPOND        |
+                        | acc is true or false |
+                        +----------+-----------+
+                                   |
+                 +-----------------+-----------------+
+                 |                                   |
+                 v                                   v
+        (reject) acc=false                    (accept) acc=true
+        send Resp(false)                      send Resp(true) [tag=tx]
+        set updating=0                        set accepted=1
+                 |                                   |
+                 v                                   v
+          +-------------+                     +---------------+
+          |  FINISHED   |                     |  WAIT_I_NKU   |
+          +-------------+                     | (updating=1)  |
+                                              +-------+-------+
+                                                      |
+                                 (6) recv NKU [e==rx], assert accepted
+                                                      |
+                                                      v
+                                           +---------------------+
+                                           | ACTIVATE RETENTION  |
+                                           | old_rx=rx;          |
+                                           | retain_old=1; rx++  |
+                                           +----------+----------+
+                                                      |
+                                         (7) send NKU [tag=old tx]
+                                                      |
+                                                      v
+                                              +--------------+
+                                              |  WAIT_ACK    |
+                                              | (updating=1) |
+                                              +-------+------+
+                                                      |
+                                       (8/9) recv ACK [e==rx]
+                                       tx=rx; retain_old=0; updating=0
+                                                      |
+                                                      v
+                                                +-----------+
+                                                | FINISHED  |
+                                                +-----------+
+~~~
