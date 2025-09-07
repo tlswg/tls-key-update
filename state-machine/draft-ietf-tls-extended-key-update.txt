@@ -5,14 +5,14 @@
 Transport Layer Security                                   H. Tschofenig
 Internet-Draft                                                   Siemens
 Intended status: Standards Track                                M. Tüxen
-Expires: 10 March 2026                 Münster Univ. of Applied Sciences
+Expires: 11 March 2026                 Münster Univ. of Applied Sciences
                                                                 T. Reddy
                                                                    Nokia
                                                                 S. Fries
                                                                  Siemens
                                                             Y. Rosomakho
                                                                  Zscaler
-                                                        6 September 2025
+                                                        7 September 2025
 
 
        Extended Key Update for Transport Layer Security (TLS) 1.3
@@ -64,7 +64,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 10 March 2026.
+   This Internet-Draft will expire on 11 March 2026.
 
 Copyright Notice
 
@@ -525,6 +525,9 @@ Table of Contents
    1.   The initiator sends an ExtendedKeyUpdate(request) message, which
         contains a key share.  While an extended key update is in
         progress, the initiator MUST NOT initiate further key updates.
+        This message is subject to DTLS handshake retransmission, but
+        delivery is only confirmed when the initiator receives the
+        corresponding ExtendedKeyUpdate(response).
 
    2.   On receipt of the ExtendedKeyUpdate(request), the responder
         either accepts or declines the request.  If the responder
