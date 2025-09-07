@@ -548,7 +548,7 @@ The handshake framing uses a single `HandshakeType` for this message
                case finished:              Finished;
                case new_session_ticket:    NewSessionTicket;
                case key_update:            KeyUpdate;
-               case extended_key_update:   ExtendedKeyUpdate;			   
+               case extended_key_update:   ExtendedKeyUpdate;
                case request_connection_id: RequestConnectionId;
                case new_connection_id:     NewConnectionId;
            } body;
