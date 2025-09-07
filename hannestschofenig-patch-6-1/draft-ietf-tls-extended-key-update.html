@@ -1259,25 +1259,25 @@ and DTLS 1.3.<a href="#section-abstract-2" class="pilcrow">¶</a></p>
             <p id="section-toc.1-1.15.1"><a href="#appendix-B" class="auto internal xref">Appendix B</a>.  <a href="#name-state-machines" class="internal xref">State Machines</a></p>
 <ul class="compact toc ulBare ulEmpty">
 <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.15.2.1">
-                <p id="section-toc.1-1.15.2.1.1"><a href="#appendix-B.1" class="auto internal xref">B.1</a>.  <a href="#name-terms-and-abbreviations" class="internal xref">Terms and Abbreviations</a></p>
+                <p id="section-toc.1-1.15.2.1.1"><a href="#appendix-B.1" class="auto internal xref">B.1</a>.  <a href="#name-tls-13-state-machines" class="internal xref">TLS 1.3 State Machines</a></p>
 </li>
               <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.15.2.2">
-                <p id="section-toc.1-1.15.2.2.1"><a href="#appendix-B.2" class="auto internal xref">B.2</a>.  <a href="#name-tls-13-state-machines" class="internal xref">TLS 1.3 State Machines</a></p>
+                <p id="section-toc.1-1.15.2.2.1"><a href="#appendix-B.2" class="auto internal xref">B.2</a>.  <a href="#name-initiator-state-machine" class="internal xref">Initiator State Machine</a></p>
 </li>
               <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.15.2.3">
-                <p id="section-toc.1-1.15.2.3.1"><a href="#appendix-B.3" class="auto internal xref">B.3</a>.  <a href="#name-initiator-state-machine" class="internal xref">Initiator State Machine</a></p>
+                <p id="section-toc.1-1.15.2.3.1"><a href="#appendix-B.3" class="auto internal xref">B.3</a>.  <a href="#name-responder-state-machine" class="internal xref">Responder State Machine</a></p>
 </li>
               <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.15.2.4">
-                <p id="section-toc.1-1.15.2.4.1"><a href="#appendix-B.4" class="auto internal xref">B.4</a>.  <a href="#name-responder-state-machine" class="internal xref">Responder State Machine</a></p>
-</li>
-              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.15.2.5">
-                <p id="section-toc.1-1.15.2.5.1"><a href="#appendix-B.5" class="auto internal xref">B.5</a>.  <a href="#name-dtls-13-state-machines" class="internal xref">DTLS 1.3 State Machines</a></p>
+                <p id="section-toc.1-1.15.2.4.1"><a href="#appendix-B.4" class="auto internal xref">B.4</a>.  <a href="#name-dtls-13-state-machines" class="internal xref">DTLS 1.3 State Machines</a></p>
 <ul class="compact toc ulBare ulEmpty">
-<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.15.2.5.2.1">
-                    <p id="section-toc.1-1.15.2.5.2.1.1"><a href="#appendix-B.5.1" class="auto internal xref">B.5.1</a>.  <a href="#name-state-machine-initiator" class="internal xref">State Machine (Initiator)</a></p>
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.15.2.4.2.1">
+                    <p id="section-toc.1-1.15.2.4.2.1.1"><a href="#appendix-B.4.1" class="auto internal xref">B.4.1</a>.  <a href="#name-terms-and-abbreviations" class="internal xref">Terms and Abbreviations</a></p>
 </li>
-                  <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.15.2.5.2.2">
-                    <p id="section-toc.1-1.15.2.5.2.2.1"><a href="#appendix-B.5.2" class="auto internal xref">B.5.2</a>.  <a href="#name-state-machine-responder" class="internal xref">State Machine (Responder)</a></p>
+                  <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.15.2.4.2.2">
+                    <p id="section-toc.1-1.15.2.4.2.2.1"><a href="#appendix-B.4.2" class="auto internal xref">B.4.2</a>.  <a href="#name-state-machine-initiator" class="internal xref">State Machine (Initiator)</a></p>
+</li>
+                  <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.15.2.4.2.3">
+                    <p id="section-toc.1-1.15.2.4.2.3.1"><a href="#appendix-B.4.3" class="auto internal xref">B.4.3</a>.  <a href="#name-state-machine-responder" class="internal xref">State Machine (Responder)</a></p>
 </li>
                 </ul>
 </li>
@@ -2232,77 +2232,48 @@ and Thom Wiggers for their review comments.<a href="#appendix-A-4" class="pilcro
       <h2 id="name-state-machines">
 <a href="#appendix-B" class="section-number selfRef">Appendix B. </a><a href="#name-state-machines" class="section-name selfRef">State Machines</a>
       </h2>
-<div id="terms-and-abbreviations">
-<section id="appendix-B.1">
-        <h3 id="name-terms-and-abbreviations">
-<a href="#appendix-B.1" class="section-number selfRef">B.1. </a><a href="#name-terms-and-abbreviations" class="section-name selfRef">Terms and Abbreviations</a>
-        </h3>
-<p id="appendix-B.1-1">The following variables and abbreviations are used in the state machine diagrams.<a href="#appendix-B.1-1" class="pilcrow">¶</a></p>
+<p id="appendix-B-1">The sections below describe the state machines for the extended key update
+operation for TLS 1.3 and DTLS 1.3.<a href="#appendix-B-1" class="pilcrow">¶</a></p>
+<p id="appendix-B-2">For editorial reasons we abbreviate the protocol message types:<a href="#appendix-B-2" class="pilcrow">¶</a></p>
 <ul class="normal">
-<li class="normal" id="appendix-B.1-2.1">
-            <p id="appendix-B.1-2.1.1">rx - current, accepted receive epoch.<a href="#appendix-B.1-2.1.1" class="pilcrow">¶</a></p>
+<li class="normal" id="appendix-B-3.1">
+          <p id="appendix-B-3.1.1">Req - ExtendedKeyUpdate(request)<a href="#appendix-B-3.1.1" class="pilcrow">¶</a></p>
 </li>
-          <li class="normal" id="appendix-B.1-2.2">
-            <p id="appendix-B.1-2.2.1">tx - current transmit epoch used for tagging outgoing messages.<a href="#appendix-B.1-2.2.1" class="pilcrow">¶</a></p>
+        <li class="normal" id="appendix-B-3.2">
+          <p id="appendix-B-3.2.1">Resp - ExtendedKeyUpdate(response)<a href="#appendix-B-3.2.1" class="pilcrow">¶</a></p>
 </li>
-          <li class="normal" id="appendix-B.1-2.3">
-            <p id="appendix-B.1-2.3.1">E - initial epoch value.<a href="#appendix-B.1-2.3.1" class="pilcrow">¶</a></p>
+        <li class="normal" id="appendix-B-3.3">
+          <p id="appendix-B-3.3.1">NKU - ExtendedKeyUpdate(new_key_update)<a href="#appendix-B-3.3.1" class="pilcrow">¶</a></p>
 </li>
-          <li class="normal" id="appendix-B.1-2.4">
-            <p id="appendix-B.1-2.4.1">updating - true while a key-update handshake is in progress.<a href="#appendix-B.1-2.4.1" class="pilcrow">¶</a></p>
+        <li class="normal" id="appendix-B-3.4">
+          <p id="appendix-B-3.4.1">ACK - Acknowledgement message from <span><a href="https://rfc-editor.org/rfc/rfc9147#section-7" class="relref">Section 7</a> of [<a href="#RFC9147" class="cite xref">RFC9147</a>]</span><a href="#appendix-B-3.4.1" class="pilcrow">¶</a></p>
 </li>
-          <li class="normal" id="appendix-B.1-2.5">
-            <p id="appendix-B.1-2.5.1">accepted - set to true after an accepted Resp; indicates the peer has
-agreed to proceed with the update and that new key material can be derived.<a href="#appendix-B.1-2.5.1" class="pilcrow">¶</a></p>
+        <li class="normal" id="appendix-B-3.5">
+          <p id="appendix-B-3.5.1">APP - application data payloads<a href="#appendix-B-3.5.1" class="pilcrow">¶</a></p>
 </li>
-          <li class="normal" id="appendix-B.1-2.6">
-            <p id="appendix-B.1-2.6.1">old_rx - the previous receive epoch remembered during retention.<a href="#appendix-B.1-2.6.1" class="pilcrow">¶</a></p>
-</li>
-          <li class="normal" id="appendix-B.1-2.7">
-            <p id="appendix-B.1-2.7.1">retain_old - when true, receiver accepts tags old_rx and rx.<a href="#appendix-B.1-2.7.1" class="pilcrow">¶</a></p>
-</li>
-          <li class="normal" id="appendix-B.1-2.8">
-            <p id="appendix-B.1-2.8.1">tag=... - the TX-epoch value written on an outgoing message.<a href="#appendix-B.1-2.8.1" class="pilcrow">¶</a></p>
-</li>
-          <li class="normal" id="appendix-B.1-2.9">
-            <p id="appendix-B.1-2.9.1">e==... - the epoch tag carried on an incoming message (what the peer sent).<a href="#appendix-B.1-2.9.1" class="pilcrow">¶</a></p>
-</li>
-          <li class="normal" id="appendix-B.1-2.10">
-            <p id="appendix-B.1-2.10.1">Protocol message types - ExtendedKeyUpdate(request) (Req) /
-ExtendedKeyUpdate(response) (Resp) / ExtendedKeyUpdate(new_key_update) (NKU) /
-ACK (from <span><a href="https://rfc-editor.org/rfc/rfc9147#section-7" class="relref">Section 7</a> of [<a href="#RFC9147" class="cite xref">RFC9147</a>]</span> / APP for application data.<a href="#appendix-B.1-2.10.1" class="pilcrow">¶</a></p>
-</li>
-          <li class="normal" id="appendix-B.1-2.11">
-            <p id="appendix-B.1-2.11.1">FINISHED / START/IDLE / WAIT_RESP / SENT_NKU / WAIT_R_NKU - diagram
-states; FINISHED denotes the steady state after success or reject.<a href="#appendix-B.1-2.11.1" class="pilcrow">¶</a></p>
-</li>
-        </ul>
-</section>
-</div>
+      </ul>
 <div id="tls-13-state-machines">
-<section id="appendix-B.2">
+<section id="appendix-B.1">
         <h3 id="name-tls-13-state-machines">
-<a href="#appendix-B.2" class="section-number selfRef">B.2. </a><a href="#name-tls-13-state-machines" class="section-name selfRef">TLS 1.3 State Machines</a>
+<a href="#appendix-B.1" class="section-number selfRef">B.1. </a><a href="#name-tls-13-state-machines" class="section-name selfRef">TLS 1.3 State Machines</a>
         </h3>
-<p id="appendix-B.2-1">This section describes the initiator and responder state machines.
-To keep terminology of variables consistent within this specification
-tx/rx track the application-traffic-secret generation (N, N+1, ...)
-even though there is no epoch tag in TLS.<a href="#appendix-B.2-1" class="pilcrow">¶</a></p>
+<p id="appendix-B.1-1">This section describes the initiator and responder state machines.<a href="#appendix-B.1-1" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="initiator-state-machine">
-<section id="appendix-B.3">
+<section id="appendix-B.2">
         <h3 id="name-initiator-state-machine">
-<a href="#appendix-B.3" class="section-number selfRef">B.3. </a><a href="#name-initiator-state-machine" class="section-name selfRef">Initiator State Machine</a>
+<a href="#appendix-B.2" class="section-number selfRef">B.2. </a><a href="#name-initiator-state-machine" class="section-name selfRef">Initiator State Machine</a>
         </h3>
-<p id="appendix-B.3-1">The Initiator updates send keys immediately after sending its NKU; it
+<p id="appendix-B.2-1">The Initiator updates send keys immediately after sending its NKU; it
 updates receive keys when it receives the responder's NKU. Both NKUs are
-protected with the old keys.<a href="#appendix-B.3-1" class="pilcrow">¶</a></p>
-<div class="alignLeft art-text artwork" id="appendix-B.3-2">
+protected with the old keys.<a href="#appendix-B.2-1" class="pilcrow">¶</a></p>
+<div class="alignLeft art-text artwork" id="appendix-B.2-2">
 <pre>
 +----------------------+
 |   START              |
-|   tx=N, rx=N         |
+|   send_key=current,  |
+|   receive_key=current|
 |   updating=0         |
 +----------------------+
           |
@@ -2321,36 +2292,39 @@ protected with the old keys.<a href="#appendix-B.3-1" class="pilcrow">¶</a></p>
      | Resp(accepted) with key_share:
      |   derive new secrets
      |   send NKU  (encrypted under old keys)
-     |   update SEND keys (tx := new key)    &lt;-- TLS step 4
+     |   update SEND keys (send_key := new key)   &lt;-- TLS step 4
      v
 +---------------------------+
 |  SENT_NKU / WAIT_R_NKU    |
-|  tx=N+1, rx=N, updating=1 |
+|  send_key=new,            |
+|  receive_key=current,     |
+|  updating=1               |
 +---------------------------+
           |
  (5) recv NKU (encrypted under old keys)
-     update RECEIVE keys (rx := new key)     &lt;-- TLS step 5
+     update RECEIVE keys (receive_key := new key) &lt;-- Step 5
      set updating=0
           v
 +----------------------+
 |       FINISHED       |
 +----------------------+
-</pre><a href="#appendix-B.3-2" class="pilcrow">¶</a>
+</pre><a href="#appendix-B.2-2" class="pilcrow">¶</a>
 </div>
 </section>
 </div>
 <div id="responder-state-machine">
-<section id="appendix-B.4">
+<section id="appendix-B.3">
         <h3 id="name-responder-state-machine">
-<a href="#appendix-B.4" class="section-number selfRef">B.4. </a><a href="#name-responder-state-machine" class="section-name selfRef">Responder State Machine</a>
+<a href="#appendix-B.3" class="section-number selfRef">B.3. </a><a href="#name-responder-state-machine" class="section-name selfRef">Responder State Machine</a>
         </h3>
-<p id="appendix-B.4-1">The Responder updates receive keys on arrival of the initiator's NKU, then
-sends its NKU (still under old keys) and immediately updates send keys.<a href="#appendix-B.4-1" class="pilcrow">¶</a></p>
-<div class="alignLeft art-text artwork" id="appendix-B.4-2">
+<p id="appendix-B.3-1">The Responder updates receive keys on arrival of the initiator's NKU, then
+sends its NKU (still under old keys) and immediately updates send keys.<a href="#appendix-B.3-1" class="pilcrow">¶</a></p>
+<div class="alignLeft art-text artwork" id="appendix-B.3-2">
 <pre>
 +----------------------+
 |   START              |
-|   tx=N, rx=N         |
+|   send_key=current,  |
+|   receive_key=current|
 |   updating=0         |
 +----------------------+
           |
@@ -2377,61 +2351,103 @@ sends its NKU (still under old keys) and immediately updates send keys.<a href="
 +----------------------+
           |
  (4) recv NKU (encrypted under old keys)
-     update RECEIVE keys (rx := new key)     &lt;-- TLS step 4
+     update RECEIVE keys (receive_key := new key) &lt;-- TLS step 4
      send NKU (encrypted under old keys)
-     update SEND keys (tx := new key)        &lt;-- TLS step 4
+     update SEND keys (send_key := new key)       &lt;-- TLS step 4
      set updating=0
           v
 +----------------------+
 |       FINISHED       |
 +----------------------+
-</pre><a href="#appendix-B.4-2" class="pilcrow">¶</a>
+</pre><a href="#appendix-B.3-2" class="pilcrow">¶</a>
 </div>
 </section>
 </div>
 <div id="dtls-13-state-machines">
-<section id="appendix-B.5">
+<section id="appendix-B.4">
         <h3 id="name-dtls-13-state-machines">
-<a href="#appendix-B.5" class="section-number selfRef">B.5. </a><a href="#name-dtls-13-state-machines" class="section-name selfRef">DTLS 1.3 State Machines</a>
+<a href="#appendix-B.4" class="section-number selfRef">B.4. </a><a href="#name-dtls-13-state-machines" class="section-name selfRef">DTLS 1.3 State Machines</a>
         </h3>
-<p id="appendix-B.5-1">This section describes the initiator and responder state machines.<a href="#appendix-B.5-1" class="pilcrow">¶</a></p>
-<div id="state-machine-initiator">
-<section id="appendix-B.5.1">
-          <h4 id="name-state-machine-initiator">
-<a href="#appendix-B.5.1" class="section-number selfRef">B.5.1. </a><a href="#name-state-machine-initiator" class="section-name selfRef">State Machine (Initiator)</a>
+<p id="appendix-B.4-1">This section describes the initiator and responder state machines.<a href="#appendix-B.4-1" class="pilcrow">¶</a></p>
+<div id="terms-and-abbreviations">
+<section id="appendix-B.4.1">
+          <h4 id="name-terms-and-abbreviations">
+<a href="#appendix-B.4.1" class="section-number selfRef">B.4.1. </a><a href="#name-terms-and-abbreviations" class="section-name selfRef">Terms and Abbreviations</a>
           </h4>
-<p id="appendix-B.5.1-1">The initiator starts in the START state with matching epochs (rx=tx=E).
+<p id="appendix-B.4.1-1">The following variables and abbreviations are used in the state machine diagrams.<a href="#appendix-B.4.1-1" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="appendix-B.4.1-2.1">
+              <p id="appendix-B.4.1-2.1.1">rx - current, accepted receive epoch.<a href="#appendix-B.4.1-2.1.1" class="pilcrow">¶</a></p>
+</li>
+            <li class="normal" id="appendix-B.4.1-2.2">
+              <p id="appendix-B.4.1-2.2.1">tx - current transmit epoch used for tagging outgoing messages.<a href="#appendix-B.4.1-2.2.1" class="pilcrow">¶</a></p>
+</li>
+            <li class="normal" id="appendix-B.4.1-2.3">
+              <p id="appendix-B.4.1-2.3.1">E - initial epoch value.<a href="#appendix-B.4.1-2.3.1" class="pilcrow">¶</a></p>
+</li>
+            <li class="normal" id="appendix-B.4.1-2.4">
+              <p id="appendix-B.4.1-2.4.1">updating - true while a key-update handshake is in progress.<a href="#appendix-B.4.1-2.4.1" class="pilcrow">¶</a></p>
+</li>
+            <li class="normal" id="appendix-B.4.1-2.5">
+              <p id="appendix-B.4.1-2.5.1">accepted - set to true after an accepted Resp; indicates the peer has
+agreed to proceed with the update and that new key material can be derived.<a href="#appendix-B.4.1-2.5.1" class="pilcrow">¶</a></p>
+</li>
+            <li class="normal" id="appendix-B.4.1-2.6">
+              <p id="appendix-B.4.1-2.6.1">old_rx - the previous receive epoch remembered during retention.<a href="#appendix-B.4.1-2.6.1" class="pilcrow">¶</a></p>
+</li>
+            <li class="normal" id="appendix-B.4.1-2.7">
+              <p id="appendix-B.4.1-2.7.1">retain_old - when true, receiver accepts tags old_rx and rx.<a href="#appendix-B.4.1-2.7.1" class="pilcrow">¶</a></p>
+</li>
+            <li class="normal" id="appendix-B.4.1-2.8">
+              <p id="appendix-B.4.1-2.8.1">tag=... - the TX-epoch value written on an outgoing message.<a href="#appendix-B.4.1-2.8.1" class="pilcrow">¶</a></p>
+</li>
+            <li class="normal" id="appendix-B.4.1-2.9">
+              <p id="appendix-B.4.1-2.9.1">e==... - the epoch tag carried on an incoming message (what the peer sent).<a href="#appendix-B.4.1-2.9.1" class="pilcrow">¶</a></p>
+</li>
+            <li class="normal" id="appendix-B.4.1-2.10">
+              <p id="appendix-B.4.1-2.10.1">FINISHED / START / WAIT_RESP / SENT_NKU / WAIT_R_NKU / ACTIVATE RETENTION -
+diagram states; FINISHED denotes the steady state after success or reject.<a href="#appendix-B.4.1-2.10.1" class="pilcrow">¶</a></p>
+</li>
+          </ul>
+</section>
+</div>
+<div id="state-machine-initiator">
+<section id="appendix-B.4.2">
+          <h4 id="name-state-machine-initiator">
+<a href="#appendix-B.4.2" class="section-number selfRef">B.4.2. </a><a href="#name-state-machine-initiator" class="section-name selfRef">State Machine (Initiator)</a>
+          </h4>
+<p id="appendix-B.4.2-1">The initiator starts in the START state with matching epochs (rx=tx=E).
 It sends a Req and enters WAIT_RESP (updating=1). While waiting,
 APP data may be sent at any time (tagged with the current tx) and received
-according to the APP acceptance rule below.<a href="#appendix-B.5.1-1" class="pilcrow">¶</a></p>
-<p id="appendix-B.5.1-2">If the responder returns Resp(false), the update aborts and the initiator
+according to the APP acceptance rule below.<a href="#appendix-B.4.2-1" class="pilcrow">¶</a></p>
+<p id="appendix-B.4.2-2">If the responder returns Resp(false), the update aborts and the initiator
 returns to FINISHED (no epoch change). If it returns Resp(true) with a
 tag matching the current rx, the initiator sets <code>accepted=1</code> and derives
 new key material. It then sends NKU still tagged with the old tx, moving to
-SENT_NKU/WAIT_R_NKU.<a href="#appendix-B.5.1-2" class="pilcrow">¶</a></p>
-<p id="appendix-B.5.1-3">Upon receiving the responder's NKU (tag equals the current rx, meaning
-the responder is still tagging with its old tx), the initiator:<a href="#appendix-B.5.1-3" class="pilcrow">¶</a></p>
-<ol start="1" type="1" class="normal type-1" id="appendix-B.5.1-4">
-<li id="appendix-B.5.1-4.1">
-              <p id="appendix-B.5.1-4.1.1">activates retention (old_rx=rx; retain_old=1),<a href="#appendix-B.5.1-4.1.1" class="pilcrow">¶</a></p>
+SENT_NKU/WAIT_R_NKU.<a href="#appendix-B.4.2-2" class="pilcrow">¶</a></p>
+<p id="appendix-B.4.2-3">Upon receiving the responder's NKU (tag equals the current rx, meaning
+the responder is still tagging with its old tx), the initiator:<a href="#appendix-B.4.2-3" class="pilcrow">¶</a></p>
+<ol start="1" type="1" class="normal type-1" id="appendix-B.4.2-4">
+<li id="appendix-B.4.2-4.1">
+              <p id="appendix-B.4.2-4.1.1">activates retention (old_rx=rx; retain_old=1),<a href="#appendix-B.4.2-4.1.1" class="pilcrow">¶</a></p>
 </li>
-            <li id="appendix-B.5.1-4.2">
-              <p id="appendix-B.5.1-4.2.1">increments both epochs (rx++, tx++),<a href="#appendix-B.5.1-4.2.1" class="pilcrow">¶</a></p>
+            <li id="appendix-B.4.2-4.2">
+              <p id="appendix-B.4.2-4.2.1">increments both epochs (rx++, tx++),<a href="#appendix-B.4.2-4.2.1" class="pilcrow">¶</a></p>
 </li>
-            <li id="appendix-B.5.1-4.3">
-              <p id="appendix-B.5.1-4.3.1">sends ACK tagged with the new tx (which now equals the new rx),<a href="#appendix-B.5.1-4.3.1" class="pilcrow">¶</a></p>
+            <li id="appendix-B.4.2-4.3">
+              <p id="appendix-B.4.2-4.3.1">sends ACK tagged with the new tx (which now equals the new rx),<a href="#appendix-B.4.2-4.3.1" class="pilcrow">¶</a></p>
 </li>
-            <li id="appendix-B.5.1-4.4">
-              <p id="appendix-B.5.1-4.4.1">clears updating and enters FINISHED.<a href="#appendix-B.5.1-4.4.1" class="pilcrow">¶</a></p>
+            <li id="appendix-B.4.2-4.4">
+              <p id="appendix-B.4.2-4.4.1">clears updating and enters FINISHED.<a href="#appendix-B.4.2-4.4.1" class="pilcrow">¶</a></p>
 </li>
           </ol>
-<p id="appendix-B.5.1-5">Retention at the initiator ends automatically on the first APP received under
+<p id="appendix-B.4.2-5">Retention at the initiator ends automatically on the first APP received under
 the new rx (then retain_old := 0). APP traffic is otherwise permitted at
-any time; reordering is tolerated by the acceptance rule.<a href="#appendix-B.5.1-5" class="pilcrow">¶</a></p>
-<p id="appendix-B.5.1-6">APP acceptance rule (receiver): accept if e == rx or
+any time; reordering is tolerated by the acceptance rule.<a href="#appendix-B.4.2-5" class="pilcrow">¶</a></p>
+<p id="appendix-B.4.2-6">APP acceptance rule (receiver): accept if e == rx or
 (retain_old &amp;&amp; e == old_rx). If retain_old is set and an APP with the new
-rx arrives, clear retain_old.<a href="#appendix-B.5.1-6" class="pilcrow">¶</a></p>
-<div class="alignLeft art-text artwork" id="appendix-B.5.1-7">
+rx arrives, clear retain_old.<a href="#appendix-B.4.2-6" class="pilcrow">¶</a></p>
+<div class="alignLeft art-text artwork" id="appendix-B.4.2-7">
 <pre>
                        +---------------------+
                        |        START        |
@@ -2481,32 +2497,32 @@ rx arrives, clear retain_old.<a href="#appendix-B.5.1-6" class="pilcrow">¶</a><
                           +----------------+
  APP send/recv allowed -- |   FINISHED     |
  retain_old=0 afterwards  +----------------+
-</pre><a href="#appendix-B.5.1-7" class="pilcrow">¶</a>
+</pre><a href="#appendix-B.4.2-7" class="pilcrow">¶</a>
 </div>
 </section>
 </div>
 <div id="state-machine-responder">
-<section id="appendix-B.5.2">
+<section id="appendix-B.4.3">
           <h4 id="name-state-machine-responder">
-<a href="#appendix-B.5.2" class="section-number selfRef">B.5.2. </a><a href="#name-state-machine-responder" class="section-name selfRef">State Machine (Responder)</a>
+<a href="#appendix-B.4.3" class="section-number selfRef">B.4.3. </a><a href="#name-state-machine-responder" class="section-name selfRef">State Machine (Responder)</a>
           </h4>
-<p id="appendix-B.5.2-1">The responder starts in the START state with synchronized transmit and receive epochs (rx=tx=E) and no update in progress. Application data can be sent at any time with the current transmit epoch and is accepted if the epoch matches the receiver's view or, if retention is active, the previous epoch.<a href="#appendix-B.5.2-1" class="pilcrow">¶</a></p>
-<p id="appendix-B.5.2-2">Upon receiving an ExtendedKeyUpdate(request) (Req), the responder transitions to the RESPOND state, where it decides to either reject (acc=false, returning to FINISHED) or accept (acc=true). If accepted, it sets <code>accepted=1</code>, sends a positive response tagged with the current transmit epoch, and enters the WAIT_I_NKU state.<a href="#appendix-B.5.2-2" class="pilcrow">¶</a></p>
-<p id="appendix-B.5.2-3">When a new_key_update (NKU) is received with the correct epoch, the responder activates retention mode: the old epoch is remembered, the receive epoch is incremented, and application data is accepted under both epochs for a transition period. The responder then sends its own NKU tagged with the old transmit epoch and moves to the WAIT_ACK state.<a href="#appendix-B.5.2-3" class="pilcrow">¶</a></p>
-<p id="appendix-B.5.2-4">Finally, upon receipt of an ACK matching the updated epoch, the responder completes the transition by synchronizing transmit and receive epochs (tx=rx), disabling retention, and clearing the update flag. The state machine returns to FINISHED, ready for subsequent updates.<a href="#appendix-B.5.2-4" class="pilcrow">¶</a></p>
-<p id="appendix-B.5.2-5">Throughout the process:<a href="#appendix-B.5.2-5" class="pilcrow">¶</a></p>
+<p id="appendix-B.4.3-1">The responder starts in the START state with synchronized transmit and receive epochs (rx=tx=E) and no update in progress. Application data can be sent at any time with the current transmit epoch and is accepted if the epoch matches the receiver's view or, if retention is active, the previous epoch.<a href="#appendix-B.4.3-1" class="pilcrow">¶</a></p>
+<p id="appendix-B.4.3-2">Upon receiving an ExtendedKeyUpdate(request) (Req), the responder transitions to the RESPOND state, where it decides to either reject (acc=false, returning to FINISHED) or accept (acc=true). If accepted, it sets <code>accepted=1</code>, sends a positive response tagged with the current transmit epoch, and enters the WAIT_I_NKU state.<a href="#appendix-B.4.3-2" class="pilcrow">¶</a></p>
+<p id="appendix-B.4.3-3">When a new_key_update (NKU) is received with the correct epoch, the responder activates retention mode: the old epoch is remembered, the receive epoch is incremented, and application data is accepted under both epochs for a transition period. The responder then sends its own NKU tagged with the old transmit epoch and moves to the WAIT_ACK state.<a href="#appendix-B.4.3-3" class="pilcrow">¶</a></p>
+<p id="appendix-B.4.3-4">Finally, upon receipt of an ACK matching the updated epoch, the responder completes the transition by synchronizing transmit and receive epochs (tx=rx), disabling retention, and clearing the update flag. The state machine returns to FINISHED, ready for subsequent updates.<a href="#appendix-B.4.3-4" class="pilcrow">¶</a></p>
+<p id="appendix-B.4.3-5">Throughout the process:<a href="#appendix-B.4.3-5" class="pilcrow">¶</a></p>
 <ul class="normal">
-<li class="normal" id="appendix-B.5.2-6.1">
-              <p id="appendix-B.5.2-6.1.1">Duplicate messages are tolerated (for retransmission handling).<a href="#appendix-B.5.2-6.1.1" class="pilcrow">¶</a></p>
+<li class="normal" id="appendix-B.4.3-6.1">
+              <p id="appendix-B.4.3-6.1.1">Duplicate messages are tolerated (for retransmission handling).<a href="#appendix-B.4.3-6.1.1" class="pilcrow">¶</a></p>
 </li>
-            <li class="normal" id="appendix-B.5.2-6.2">
-              <p id="appendix-B.5.2-6.2.1">Temporary epoch mismatches are permitted while an update is in progress.<a href="#appendix-B.5.2-6.2.1" class="pilcrow">¶</a></p>
+            <li class="normal" id="appendix-B.4.3-6.2">
+              <p id="appendix-B.4.3-6.2.1">Temporary epoch mismatches are permitted while an update is in progress.<a href="#appendix-B.4.3-6.2.1" class="pilcrow">¶</a></p>
 </li>
-            <li class="normal" id="appendix-B.5.2-6.3">
-              <p id="appendix-B.5.2-6.3.1">Application data flows continuously, subject to epoch acceptance rules.<a href="#appendix-B.5.2-6.3.1" class="pilcrow">¶</a></p>
+            <li class="normal" id="appendix-B.4.3-6.3">
+              <p id="appendix-B.4.3-6.3.1">Application data flows continuously, subject to epoch acceptance rules.<a href="#appendix-B.4.3-6.3.1" class="pilcrow">¶</a></p>
 </li>
           </ul>
-<div class="alignLeft art-text artwork" id="appendix-B.5.2-7">
+<div class="alignLeft art-text artwork" id="appendix-B.4.3-7">
 <pre>
                           +---------------------+
                           |         START       |
@@ -2557,7 +2573,7 @@ rx arrives, clear retain_old.<a href="#appendix-B.5.1-6" class="pilcrow">¶</a><
                                                 +-----------+
                                                 | FINISHED  |
                                                 +-----------+
-</pre><a href="#appendix-B.5.2-7" class="pilcrow">¶</a>
+</pre><a href="#appendix-B.4.3-7" class="pilcrow">¶</a>
 </div>
 </section>
 </div>
