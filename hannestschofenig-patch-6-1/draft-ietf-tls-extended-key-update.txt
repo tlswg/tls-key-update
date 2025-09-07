@@ -968,10 +968,6 @@ B.1.  TLS 1.3 State Machines
 
 B.2.  Initiator State Machine
 
-   The Initiator updates send keys immediately after sending its NKU; it
-   updates receive keys when it receives the responder's NKU.  Both NKUs
-   are protected with the old keys.
-
    +----------------------+
    |   START              |
    |   send_key=current,  |
@@ -979,7 +975,7 @@ B.2.  Initiator State Machine
    |   updating=0         |
    +----------------------+
              |
-    (1) send ExtendedKeyUpdate(request)
+    (1) send Req
         set updating=1
              v
    +----------------------+
@@ -1013,10 +1009,6 @@ B.2.  Initiator State Machine
 
 B.3.  Responder State Machine
 
-   The Responder updates receive keys on arrival of the initiator's NKU,
-   then sends its NKU (still under old keys) and immediately updates
-   send keys.
-
    +----------------------+
    |   START              |
    |   send_key=current,  |
@@ -1024,7 +1016,7 @@ B.3.  Responder State Machine
    |   updating=0         |
    +----------------------+
              |
-    (2) recv ExtendedKeyUpdate(request)
+    (2) recv Req
         set updating=1
              v
    +----------------------+
