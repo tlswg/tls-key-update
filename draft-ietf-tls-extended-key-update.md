@@ -826,10 +826,6 @@ This section describes the initiator and responder state machines.
 
 ## Initiator State Machine
 
-The Initiator updates send keys immediately after sending its NKU; it
-updates receive keys when it receives the responder's NKU. Both NKUs are
-protected with the old keys.
-
 ~~~
 +----------------------+
 |   START              |
@@ -838,7 +834,7 @@ protected with the old keys.
 |   updating=0         |
 +----------------------+
           |
- (1) send ExtendedKeyUpdate(request)
+ (1) send Req
      set updating=1
           v
 +----------------------+
@@ -873,9 +869,6 @@ protected with the old keys.
 
 ## Responder State Machine
 
-The Responder updates receive keys on arrival of the initiator's NKU, then
-sends its NKU (still under old keys) and immediately updates send keys.
-
 ~~~
 +----------------------+
 |   START              |
@@ -884,7 +877,7 @@ sends its NKU (still under old keys) and immediately updates send keys.
 |   updating=0         |
 +----------------------+
           |
- (2) recv ExtendedKeyUpdate(request)
+ (2) recv Req
      set updating=1
           v
 +----------------------+
