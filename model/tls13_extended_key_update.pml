@@ -1,13 +1,9 @@
 /* 
  * TLS 1.3 Extended Key Update (EKU) - SPIN Model
- * 
- * This model mirrors the DTLS 1.3 EKU model's variable names/terminology,
- * but adapts the behavior to TLS 1.3 running over a reliable transport.
- * Hence: no ACKs, no loss/reordering, no retention, and no epoch tags.
  *
  * State/variable conventions (aligned with DTLS model where sensible):
- *   - tx, rx : generation counters of application_traffic_secret (N, N+1, ...)
- *   - E      : initial generation value
+ *   - send_key, receive_key : generation counters of application_traffic_secret (current, new keying material, ...)
+ *   - E        : initial key
  *   - updating : 1 while an EKU exchange is in progress
  *   - accepted : 1 after responder accepts a request
  *   - Messages: Req, Resp_* (accepted/retry/rejected/clashed), NKU
@@ -16,12 +12,12 @@
  *   1) Initiator: send Req; wait Resp.
  *   2) Responder: on Req, send Resp(accepted) or a rejection.
  *   3) If accepted, initiator sends NKU (under OLD keys) and immediately
- *      updates SEND keys (tx := tx+1).
- *   4) Responder on NKU-in: updates RECEIVE keys (rx := rx+1), sends NKU
- *      (under OLD keys), then updates SEND keys (tx := tx+1).
- *   5) Initiator on responder NKU-in: updates RECEIVE keys (rx := rx+1).
+ *      updates SEND keys (send_key := send_key+1).
+ *   4) Responder on NKU-in: updates RECEIVE keys (receive_key := receive_key+1), sends NKU
+ *      (under OLD keys), then updates SEND keys (send_key := send_key+1).
+ *   5) Initiator on responder NKU-in: updates RECEIVE keys (receive_key := receive_key+1).
  *
- * After success, both peers have tx==rx==E+1 and updating==0.
+ * After success, both peers have send_key==receive_key==E+1 and updating==0.
  */
 
 #define E 3  /* initial application traffic secret generation */
@@ -41,8 +37,8 @@ bool done_responder = 0;
 proctype Initiator()
 {
     /* Variables aligned with DTLS model naming */
-    byte tx = E;      /* current send generation */
-    byte rx = E;      /* current receive generation */
+    byte send_key = E;      /* current send generation */
+    byte receive_key = E;   /* current receive generation */
     bool updating = 0;
     bool accepted = 0;
     byte group = G_I;
@@ -61,8 +57,8 @@ WAIT_RESP:
         /* Send NKU under OLD keys */
         c_cli_to_srv ! NKU, 0;
 
-        /* Immediately update SEND keys (tx := tx+1) */
-        tx = tx + 1;
+        /* Immediately update SEND keys (send_key := send_key+1) */
+        send_key = send_key + 1;
 
         goto SENT_NKU_WAIT_R_NKU
 
@@ -87,15 +83,15 @@ SENT_NKU_WAIT_R_NKU:
     /* Step 5: receive responder NKU (still under OLD keys) */
     c_srv_to_cli ? NKU, 0;
 
-    /* Update RECEIVE keys (rx := rx+1) */
-    rx = rx + 1;
+    /* Update RECEIVE keys (receive_key := receive_key+1) */
+    receive_key = receive_key + 1;
 
     updating = 0;
 
 FINISHED:
     /* Success condition: if accepted, both gens should be E+1 */
     if
-    :: (accepted) -> assert(tx == E+1 && rx == E+1)
+    :: (accepted) -> assert(send_key == E+1 && receive_key == E+1)
     :: else -> skip
     fi;
 
@@ -108,8 +104,8 @@ FINISHED:
 /* ------------ Responder (TLS 1.3) ------------ */
 proctype Responder()
 {
-    byte tx = E;      /* current send generation */
-    byte rx = E;      /* current receive generation */
+    byte send_key = E;      /* current send generation */
+    byte receive_key = E;   /* current receive generation */
     bool updating = 0;
     bool accepted = 0;
     byte group = G_R;
@@ -126,19 +122,19 @@ START:
 WAIT_I_NKU:
     /* Step 4: receive initiator NKU (old keys), update RECEIVE */
     c_cli_to_srv ? NKU, 0;
-    rx = rx + 1; /* update receive generation */
+    receive_key = receive_key + 1; /* update receive generation */
 
     /* Send our NKU under OLD keys */
     c_srv_to_cli ! NKU, 0;
 
-    /* Immediately update SEND keys (tx := tx+1) */
-    tx = tx + 1;
+    /* Immediately update SEND keys (send_key := send_key+1) */
+    send_key = send_key + 1;
 
     updating = 0;
 
 FINISHED:
     if
-    :: (accepted) -> assert(tx == E+1 && rx == E+1)
+    :: (accepted) -> assert(send_key == E+1 && receive_key == E+1)
     :: else -> skip
     fi;
 
