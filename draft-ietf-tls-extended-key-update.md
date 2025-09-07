@@ -826,7 +826,7 @@ This section describes the initiator and responder state machines.
 
 ## Initiator State Machine
 
-~~~
+~~~ aasvg
 +----------------------+
 |   START              |
 |   send_key=current,  |
@@ -869,7 +869,7 @@ This section describes the initiator and responder state machines.
 
 ## Responder State Machine
 
-~~~
+~~~ aasvg
 +----------------------+
 |   START              |
 |   send_key=current,  |
@@ -963,7 +963,7 @@ APP acceptance rule (receiver): accept if e == rx or
 (retain_old && e == old_rx). If retain_old is set and an APP with the new
 rx arrives, clear retain_old.
 
-~~~
+~~~ aasvg
                        +---------------------+
                        |        START        |
                        | rx=tx=E, updating=0 |
@@ -1032,7 +1032,7 @@ Throughout the process:
 
 - Application data flows continuously, subject to epoch acceptance rules.
 
-~~~
+~~~ aasvg
                           +---------------------+
                           |         START       |
                           | rx=tx=E, updating=0 |
