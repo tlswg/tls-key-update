@@ -1580,7 +1580,7 @@ corresponding <code>ExtendedKeyUpdate(response)</code>. This prevents each
 side from advancing keys by two generations.<a href="#section-5-4" class="pilcrow">¶</a></p>
 <p id="section-5-5">The handshake framing uses a single <code>HandshakeType</code> for this message
 (see <a href="#fig-handshake" class="auto internal xref">Figure 2</a>).<a href="#section-5-5" class="pilcrow">¶</a></p>
-<span id="name-handshake-structure"></span><div id="fig-handshake">
+<span id="name-tls-13-handshake-structure"></span><div id="fig-handshake">
 <figure id="figure-2">
         <div class="alignLeft art-text artwork" id="section-5-6.1">
 <pre>
@@ -1604,7 +1604,7 @@ side from advancing keys by two generations.<a href="#section-5-4" class="pilcro
 </pre>
 </div>
 <figcaption><a href="#figure-2" class="selfRef">Figure 2</a>:
-<a href="#name-handshake-structure" class="selfRef">Handshake Structure.</a>
+<a href="#name-tls-13-handshake-structure" class="selfRef">TLS 1.3 Handshake Structure.</a>
         </figcaption></figure>
 </div>
 <div id="tls-13-extended-key-update-example">
@@ -1744,9 +1744,63 @@ that message, the initiator MUST also update its receive keys.<a href="#section-
 </li>
         <li id="section-6-4.10">
           <p id="section-6-4.10.1">On receipt of the ACK message, the responder updates its send key and epoch
-value. If this ACK is not received, the responder re-transmits ExtendedKeyUpdate(new_key_update) until ACK is received. The key update is complete once this ACK is processed by the responder.<a href="#section-6-4.10.1" class="pilcrow">¶</a></p>
+value. If this ACK is not received, the responder re-transmits
+ExtendedKeyUpdate(new_key_update) until ACK is received. The key update is
+complete once this ACK is processed by the responder.<a href="#section-6-4.10.1" class="pilcrow">¶</a></p>
 </li>
       </ol>
+<p id="section-6-5">The handshake framing uses a single <code>HandshakeType</code> for this message
+(see <a href="#fig-dtls-handshake" class="auto internal xref">Figure 4</a>).<a href="#section-6-5" class="pilcrow">¶</a></p>
+<span id="name-dtls-13-handshake-structure"></span><div id="fig-dtls-handshake">
+<figure id="figure-4">
+        <div class="alignLeft art-text artwork" id="section-6-6.1">
+<pre>
+       enum {
+           client_hello(1),
+           server_hello(2),
+           new_session_ticket(4),
+           end_of_early_data(5),
+           encrypted_extensions(8),
+           request_connection_id(9),
+           new_connection_id(10),
+           certificate(11),
+           certificate_request(13),
+           certificate_verify(15),
+           finished(20),
+           key_update(24),
+           extended_key_update(TBD),  /* new */
+           message_hash(254),
+           (255)
+       } HandshakeType;
+
+       struct {
+           HandshakeType msg_type;    /* handshake type */
+           uint24 length;             /* bytes in message */
+           uint16 message_seq;        /* DTLS-required field */
+           uint24 fragment_offset;    /* DTLS-required field */
+           uint24 fragment_length;    /* DTLS-required field */
+           select (msg_type) {
+               case client_hello:          ClientHello;
+               case server_hello:          ServerHello;
+               case end_of_early_data:     EndOfEarlyData;
+               case encrypted_extensions:  EncryptedExtensions;
+               case certificate_request:   CertificateRequest;
+               case certificate:           Certificate;
+               case certificate_verify:    CertificateVerify;
+               case finished:              Finished;
+               case new_session_ticket:    NewSessionTicket;
+               case key_update:            KeyUpdate;
+               case extended_key_update:   ExtendedKeyUpdate;
+               case request_connection_id: RequestConnectionId;
+               case new_connection_id:     NewConnectionId;
+           } body;
+       } DTLSHandshake;
+</pre>
+</div>
+<figcaption><a href="#figure-4" class="selfRef">Figure 4</a>:
+<a href="#name-dtls-13-handshake-structure" class="selfRef">DTLS 1.3 Handshake Structure.</a>
+        </figcaption></figure>
+</div>
 <div id="dtls-13-extended-key-update-example">
 <section id="section-6.1">
         <h3 id="name-dtls-13-extended-key-update">
@@ -1755,7 +1809,7 @@ value. If this ACK is not received, the responder re-transmits ExtendedKeyUpdate
 <p id="section-6.1-1">The following example illustrates a successful extended key update,
 including how the epochs change during the exchange.<a href="#section-6.1-1" class="pilcrow">¶</a></p>
 <span id="name-example-dtls-13-extended-ke"></span><div id="dtls-key-update">
-<figure id="figure-4">
+<figure id="figure-5">
           <div class="alignLeft art-text artwork" id="section-6.1-2.1">
 <pre>
 Client                            Server
@@ -1810,15 +1864,15 @@ Client                            Server
 [C: tx=4, rx=4]                   [S: tx=4, rx=4]
 </pre>
 </div>
-<figcaption><a href="#figure-4" class="selfRef">Figure 4</a>:
+<figcaption><a href="#figure-5" class="selfRef">Figure 5</a>:
 <a href="#name-example-dtls-13-extended-ke" class="selfRef">Example DTLS 1.3 Extended Key Update: Message Exchange.</a>
           </figcaption></figure>
 </div>
-<p id="section-6.1-3"><a href="#dtls-table" class="auto internal xref">Figure 5</a> shows the steps, the message in flight, and the epoch changes on both sides.
+<p id="section-6.1-3"><a href="#dtls-table" class="auto internal xref">Figure 6</a> shows the steps, the message in flight, and the epoch changes on both sides.
 The A/B -&gt; X/Y notation indicates the change of epoch values for tx/rx before and after
 the message transmission.<a href="#section-6.1-3" class="pilcrow">¶</a></p>
 <span id="name-example-dtls-13-extended-key"></span><div id="dtls-table">
-<figure id="figure-5">
+<figure id="figure-6">
           <div class="alignLeft art-text artwork" id="section-6.1-4.1">
 <pre>
 +--------------------+----------------+--------------+
@@ -1836,7 +1890,7 @@ the message transmission.<a href="#section-6.1-3" class="pilcrow">¶</a></p>
 +--------------------+----------------+--------------+
 </pre>
 </div>
-<figcaption><a href="#figure-5" class="selfRef">Figure 5</a>:
+<figcaption><a href="#figure-6" class="selfRef">Figure 6</a>:
 <a href="#name-example-dtls-13-extended-key" class="selfRef">Example DTLS 1.3 Extended Key Update: Epoch Changes.</a>
           </figcaption></figure>
 </div>
