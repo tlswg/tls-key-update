@@ -169,7 +169,7 @@ The following variables and abbreviations are used in the state machine diagrams
 - old_rx - the previous receive epoch remembered during retention.
 - retain_old - when true, receiver accepts tags old_rx and rx.
 - tag=... - the TX-epoch value written on an outgoing message.
-- e==... - the tag carried on an incoming message (what the peer sent).
+- e==... - the epoch tag carried on an incoming message (what the peer sent).
 - Protocol message types - ExtendedKeyUpdate(request) (Req) /
   ExtendedKeyUpdate(response) (Resp) / ExtendedKeyUpdate(new_key_update) (NKU) /
   ACK (from {{Section 7 of RFC9147}} / APP for application data.
