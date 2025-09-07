@@ -391,7 +391,7 @@ The handshake framing uses a single `HandshakeType` for this message
           };
       } Handshake;
 ~~~
-{: #fig-handshake title="Handshake Structure."}
+{: #fig-handshake title="TLS 1.3 Handshake Structure."}
 
 ## TLS 1.3 Extended Key Update Example
 
@@ -505,7 +505,56 @@ has the following steps:
    `ExtendedKeyUpdate(new_key_update)` with an ACK message.
 
 10. On receipt of the ACK message, the responder updates its send key and epoch
-    value. If this ACK is not received, the responder re-transmits ExtendedKeyUpdate(new_key_update) until ACK is received. The key update is complete once this ACK is processed by the responder.
+    value. If this ACK is not received, the responder re-transmits
+    ExtendedKeyUpdate(new_key_update) until ACK is received. The key update is
+    complete once this ACK is processed by the responder.
+
+The handshake framing uses a single `HandshakeType` for this message
+(see {{fig-dtls-handshake}}).
+
+~~~
+       enum {
+           client_hello(1),
+           server_hello(2),
+           new_session_ticket(4),
+           end_of_early_data(5),
+           encrypted_extensions(8),
+           request_connection_id(9),
+           new_connection_id(10),
+           certificate(11),
+           certificate_request(13),
+           certificate_verify(15),
+           finished(20),
+           key_update(24),
+           extended_key_update(TBD),  /* new */
+           message_hash(254),
+           (255)
+       } HandshakeType;
+
+       struct {
+           HandshakeType msg_type;    /* handshake type */
+           uint24 length;             /* bytes in message */
+           uint16 message_seq;        /* DTLS-required field */
+           uint24 fragment_offset;    /* DTLS-required field */
+           uint24 fragment_length;    /* DTLS-required field */
+           select (msg_type) {
+               case client_hello:          ClientHello;
+               case server_hello:          ServerHello;
+               case end_of_early_data:     EndOfEarlyData;
+               case encrypted_extensions:  EncryptedExtensions;
+               case certificate_request:   CertificateRequest;
+               case certificate:           Certificate;
+               case certificate_verify:    CertificateVerify;
+               case finished:              Finished;
+               case new_session_ticket:    NewSessionTicket;
+               case key_update:            KeyUpdate;
+               case extended_key_update:   ExtendedKeyUpdate;
+               case request_connection_id: RequestConnectionId;
+               case new_connection_id:     NewConnectionId;
+           } body;
+       } DTLSHandshake;
+~~~
+{: #fig-dtls-handshake title="DTLS 1.3 Handshake Structure."}
 
 ## DTLS 1.3 Extended Key Update Example
 
