@@ -162,8 +162,7 @@ from the key update procedure specified in this document, we use the terms
 
 Client and servers use the TLS flags extension
 {{I-D.ietf-tls-tlsflags}} to indicate support for the functionality
-defined in this document.  We call this the "extended_key_update"
-extension and the corresponding flag is called "Extended_Key_Update"
+defined in this document.  We call this flag "Extended_Key_Update"
 flag.
 
 The "Extended_Key_Update" flag proposed by the client in the
@@ -186,24 +185,34 @@ Implementations that receive a classic `KeyUpdate` message after
 successfully negotiating the Extended Key Update functionality MUST
 terminate the connection with an `"unexpected_message"` alert.
 
-The extended key update is carried in a single handshake message named
-`ExtendedKeyUpdate`, with an internal subtype indicating its role (request,
-response, or new key update). The extended key update process can be
-initiated by either peer after it has sent a `Finished` message.
-Implementations that receive an `ExtendedKeyUpdate` message prior to
-the sender having sent `Finished` MUST terminate the connection with
+The extended key update messages are signaled in a new handshake message named
+`PostHandshakeMessage` (PHM), with an internal uint16 message type indicating its role.
+This specification defines three PostHandshakeMessage types:
+
+- `key_update_request` (0)
+- `key_update_response` (1)
+- `new_key_update` (2)
+
+New PostHandshakeMessage types are assigned by IANA as described in {{iana-phm-registry}}.
+
+A TLS peer which receives a PostHandshakeMessage with an unexpected type MUST
+abort the connection with an `"unexpected_message"` alert.
+
+The extended key update process can be initiated by either peer after it has
+sent a `Finished` message. Implementations that receive an `PostHandshakeMessage`
+message prior to the sender having sent `Finished` MUST terminate the connection with
 an `"unexpected_message"` alert.
 
-The `KeyShareEntry` carried in a `ExtendedKeyUpdate(request)` and in
-a `ExtendedKeyUpdate(response)` MUST use a group that was mutually
-supported by the client and server during the initial handshake. An
-implementation that receives an algorithm not previously negotiated
-MUST terminate the connection with an `"illegal_parameter"` alert.
+The `KeyShareEntry` carried in a `key_update_request` and in
+a `key_update_response` MUST use the group that was negotiated by the client
+and server during the initial handshake. An implementation that receives an
+algorithm other than previously negotiated MUST terminate the connection
+with an `"illegal_parameter"` alert.
 
 {{fig-key-update}} shows the interaction graphically. First, support
 for the functionality in this specification is negotiated in the
 `ClientHello` and the `EncryptedExtensions` messages. Then, the
-`ExtendedKeyUpdate` exchange is sent to update the application traffic
+`PostHandshakeMessage` exchange is sent to update the application traffic
 secrets.
 
 The extended key update exchange is performed between the initiator
@@ -232,11 +241,10 @@ Auth | {CertificateVerify}
      v {Finished}              -------->
        [Application Data]N     <------->  [Application Data]N
                                   ...
-[ExtendedKeyUpdate(request)]N   -------->
-                               <-------- [ExtendedKeyUpdate(response)]N
-     [ExtendedKeyUpdate(new_key_update)]N   -------->
-                                           <--------
-                                   [ExtendedKeyUpdate(new_key_update)]N
+  [PHM(key_update_request)]N   -------->
+                               <--------  [PHM(key_update_response)]N
+      [PHM(new_key_update)]N   -------->
+                               <--------  [PHM(new_key_update)]N
                                   ...
        [Application Data]N+1   <------->  [Application Data]N+1
 
@@ -259,114 +267,78 @@ Legend:
 ~~~
 {: #fig-key-update title="Extended Key Update Message Exchange in TLS 1.3."}
 
-The `ExtendedKeyUpdate` wire format is:
+The `PostHandshakeMessage` wire format is:
 
 ~~~
 enum {
-   extended_key_update_request(0),
-   extended_key_update_response(1),
+   key_update_request(0),
+   key_update_response(1),
    new_key_update(2),
-   (255)
-} ExtendedKeyUpdateType;
-
-enum {
-  accepted(0),
-  retry(1),
-  rejected(2),
-  clashed(3),
-  (255)
-} ExtendedKeyUpdateResponseStatus;
+   (65535)
+} PostHandshakeMessageType;
 
 struct {
-   ExtendedKeyUpdateType update_type;
-   select (update_type) {
-      case extended_key_update_request: {
+   PostHandshakeMessageType phm_type;
+   select (phm_type) {
+      case key_update_request: {
           KeyShareEntry key_share;
       }
-      case extended_key_update_response: {
-          ExtendedKeyUpdateResponseStatus status;
-          select (status) {
-             case accepted: KeyShareEntry key_share;
-             case retry:    uint8 delay;
-          }
+      case key_update_response: {
+          KeyShareEntry key_share;
       }
       case new_key_update: {
           /* empty */
       }
    };
-} ExtendedKeyUpdate;
+} PostHandshakeMessage;
 ~~~
 
 Fields:
 
-* `update_type`: the subtype of the `ExtendedKeyUpdate` message.
+* `phm_type`: the subtype of the `PostHandshakeMessage` message.
 * `key_share`: key share information. The contents of this field are
 determined by the specified group and its corresponding definition
 (see {{I-D.ietf-tls-rfc8446bis}}).
-* `status`: response to an `extended_key_update_request`. Indicates
-whether the responder accepted or declined the request.
-* `delay`: delay in seconds for the initiator to retry the request
-when status is set to `retry`.
-
-There are three rejection reasons:
-
-1. `retry`: request declined temporarily (responder is too busy).
-In this case the message includes a `delay` in seconds. The initiator
-MUST NOT retry within this interval and SHOULD retry after it elapses.
-The responder MAY apply an overall rate limit not specific to a single
-TLS session. If the initiator cannot proceed without an immediate
-Extended Key Update it MUST terminate the connection with the TLS alert
-`"extended_key_update_required"` (alert number TBD).
-
-2. `rejected`: request declined permanently. The initiator MUST NOT
-retry and, if it cannot proceed without Extended Key Update, MUST
-terminate the connection with `"extended_key_update_required"`
-(alert number TBD).
-
-3. `clashed`: request declined because the responder has already
-initiated its own extended key update.
 
 # TLS 1.3 Considerations
 
 The following steps are taken by a TLS 1.3 implementation; the steps
 executed with DTLS 1.3 differ slightly.
 
-1. The initiator sends `ExtendedKeyUpdate(request)` carrying a
+1. The initiator sends `PostHandshakeMessage(key_update_request)` carrying a
 `KeyShareEntry`. While an extended key update is in progress, the
 initiator MUST NOT initiate another key update.
 
-2. Upon receipt, the responder sends `ExtendedKeyUpdate(response)`.
-If the responder accepts the request, it sets `status=accepted` and
-includes its own `KeyShareEntry`. If the responder declines, it sets
-an appropriate rejection status and omits the `KeyShareEntry`. While an extended
+1. Upon receipt, the responder sends its own `KeyShareEntry` in a
+`PostHandshakeMessage(key_update_response)` message. While an extended
 key update is in progress, the responder MUST NOT initiate another
-key update.
+key update. The responder MAY defer sending a response if system load or resource
+constraints prevent immediate processing. In such cases, the response MUST
+be sent once sufficient resources become available.
 
-3. Upon receipt of an `ExtendedKeyUpdate(response)` with
-status to `accepted`, the initiator derives the new secrets from the
-exchanged key shares. The initiator then sends an empty
-ExtendedKeyUpdate(new_key_update) message to trigger the switch to the
+1. Upon receipt of an `PostHandshakeMessage(key_update_response)` the initiator
+2. derives the new secrets from the exchanged key shares. The initiator then sends an empty
+PostHandshakeMessage(new_key_update) message to trigger the switch to the
 new keys.
 
-4. After the initiator sends `ExtendedKeyUpdate(new_key_update)` it
+1. After the initiator sends `PostHandshakeMessage(new_key_update)` it
 MUST update its send keys. Upon receipt of this message, the responder
 MUST update its receive keys and then send
-`ExtendedKeyUpdate(new_key_update)`, after which it MUST update its
+`PostHandshakeMessage(new_key_update)`, after which it MUST update its
 send keys.
 
-5. After receiving the responder’s `ExtendedKeyUpdate(new_key_update)`,
+1. After receiving the responder’s `PostHandshakeMessage(new_key_update)`,
 the initiator MUST update its receive keys.
 
 Both sender and receiver MUST encrypt their
-`ExtendedKeyUpdate(new_key_update)` messages with the old keys. Both
+`PostHandshakeMessage(new_key_update)` messages with the old keys. Both
 sides MUST ensure that the `new_key_update` encrypted with the old key
 is received before accepting any messages encrypted with the new key.
 
 If TLS peers independently initiate the extended key update and the
-requests cross in flight, the `ExtendedKeyUpdate(request)` with the
+requests cross in flight, the `PostHandshakeMessage(key_update_request)` with the
 lower lexicographic order of the `key_exchange` value in
-`KeyShareEntry` MUST be rejected with status set to `clashed` in the
-corresponding `ExtendedKeyUpdate(response)`. This prevents each
+`KeyShareEntry` MUST be ignored. This prevents each
 side from advancing keys by two generations.
 
 The handshake framing uses a single `HandshakeType` for this message
@@ -377,17 +349,17 @@ The handshake framing uses a single `HandshakeType` for this message
           HandshakeType msg_type;    /* handshake type */
           uint24 length;             /* bytes in message */
           select (Handshake.msg_type) {
-              case client_hello:          ClientHello;
-              case server_hello:          ServerHello;
-              case end_of_early_data:     EndOfEarlyData;
-              case encrypted_extensions:  EncryptedExtensions;
-              case certificate_request:   CertificateRequest;
-              case certificate:           Certificate;
-              case certificate_verify:    CertificateVerify;
-              case finished:              Finished;
-              case new_session_ticket:    NewSessionTicket;
-              case key_update:            KeyUpdate;
-              case extended_key_update:   ExtendedKeyUpdate;
+              case client_hello:            ClientHello;
+              case server_hello:            ServerHello;
+              case end_of_early_data:       EndOfEarlyData;
+              case encrypted_extensions:    EncryptedExtensions;
+              case certificate_request:     CertificateRequest;
+              case certificate:             Certificate;
+              case certificate_verify:      CertificateVerify;
+              case finished:                Finished;
+              case new_session_ticket:      NewSessionTicket;
+              case key_update:              KeyUpdate;
+              case post_handshake_message:  PostHandshakeMessage;
           };
       } Handshake;
 ~~~
@@ -435,18 +407,16 @@ Auth | {CertificateVerify}
                                   ...
                               some time later
                                   ...
- [ExtendedKeyUpdate(request     -------->
-  (with key_share))]
-                               <-------- [ExtendedKeyUpdate(response
-                                           (accepted, with key_share))]
+ [PHM(key_update_request       -------->
+       (with key_share))]
+                               <-------- [PHM(key_update_response
+                                           (with key_share))]
                                         # Server derives new secrets
 # Client derives new secrets			
- [ExtendedKeyUpdate(new_key_update)]
-                               -------->
+        [PHM(new_key_update)]  -------->
 # Client updates SEND keys here
                                     # Server updates RECEIVE keys here
-                               <--------
-                                    [ExtendedKeyUpdate(new_key_update)]
+                               <--------  [PHM(new_key_update)]
                                     # Server updates SEND keys here
 
 # Client updates RECEIVE keys here
@@ -458,7 +428,7 @@ Auth | {CertificateVerify}
 Unlike TLS 1.3, DTLS 1.3 implementations must take into account that handshake
 messages are not transmitted over a reliable transport protocol.
 
-Due to the possibility of an `ExtendedKeyUpdate(new_key_update)` message being
+Due to the possibility of an `PostHandshakeMessage(new_key_update)` message being
 lost and thereby preventing the sender of that message from updating its keying
 material, receivers MUST retain the pre-update keying material until receipt
 and successful decryption of a message using the new keys.
@@ -468,45 +438,41 @@ earlier epoch. If the necessary keys are available, implementations SHOULD attem
 to process such records; however, they MAY choose to discard them.The exchange
 has the following steps:
 
-1. The initiator sends an `ExtendedKeyUpdate(request)` message, which contains a
+1. The initiator sends an `PostHandshakeMessage(key_update_request)` message, which contains a
    key share. While an extended key update is in progress, the initiator MUST NOT
    initiate further key updates. This message is subject to DTLS handshake
-   retransmission, but delivery is only confirmed when the initiator receives the
-   corresponding `ExtendedKeyUpdate(response)`.
+   retransmission, but delivery is only confirmed when the initiator either receives the
+   corresponding `PostHandshakeMessage(key_update_response)` or an ACK.
 
-2. On receipt of the `ExtendedKeyUpdate(request)`, the responder either accepts
-   or declines the request. If the responder accepts the request, it sets the
-   status in `ExtendedKeyUpdate(response)` to `accepted`, includes its own key
-   share, and sets the local variable `accepted=1`. While an extended key update
-   is in progress, the responder MUST NOT initiate further key updates. If the
-   responder declines the request, it sets the status accordingly and does not
-   include a key share. Declining the request aborts the exchange.
+2. Upon receipt, the responder sends its own `KeyShareEntry` in a
+   `PostHandshakeMessage(key_update_response)` message. While an extended key update
+   is in progress, the responder MUST NOT initiate further key updates. The responder MAY defer
+   sending a response if system load or resource constraints prevent immediate processing.
+   In such cases, responder MUST confirm receipt of the the key_update_request with an ACK and
+   send an actual key_update_response once sufficient resources become available.
 
-3. If the status in `ExtendedKeyUpdate(response)` was set to `accepted`,
-   the responder transmits that message to the initiator.
+3. On receipt of `PostHandshakeMessage(key_update_response)` derives a secret key based on the
+   exchanged key shares. This message also serves as an implicit acknowledgment of the
+   initiators’s PostHandshakeMessage(key_update_request), so no separate ACK is required.
 
-4. On receipt of `ExtendedKeyUpdate(response)` with status `accepted`,
-   the initiator sets the local variable `accepted=1` and derives a secret key based on the
-   exchanged key shares. This message also serves as an implicit acknowledgment of the initiators’s ExtendedKeyUpdate(request), so no separate ACK is required.
+4. The initiator transmits an `PostHandshakeMessage(new_key_update)` message.
 
-5. The initiator transmits an `ExtendedKeyUpdate(new_key_update)` message.
-
-6. Upon receiving `ExtendedKeyUpdate(new_key_update)`, the responder MUST update
+5. Upon receiving `PostHandshakeMessage(new_key_update)`, the responder MUST update
    its receive keys and epoch value.
 
-7. The responder acknowledges the received message by sending its own
-   `ExtendedKeyUpdate(new_key_update)`.
+6. The responder acknowledges the received message by sending its own
+   `PostHandshakeMessage(new_key_update)`.
 
-8. After the initiator receives the responder’s `ExtendedKeyUpdate(new_key_update)`,
+7. After the initiator receives the responder’s `PostHandshakeMessage(new_key_update)`,
    the initiator MUST update its send key and epoch value. With the receipt of
    that message, the initiator MUST also update its receive keys.
 
-9. The initiator MUST acknowledge the responder’s
-   `ExtendedKeyUpdate(new_key_update)` with an ACK message.
+8. The initiator MUST acknowledge the responder’s
+   `PostHandshakeMessage(new_key_update)` with an ACK message.
 
-10. On receipt of the ACK message, the responder updates its send key and epoch
+9.  On receipt of the ACK message, the responder updates its send key and epoch
     value. If this ACK is not received, the responder re-transmits
-    ExtendedKeyUpdate(new_key_update) until ACK is received. The key update is
+    PostHandshakeMessage(new_key_update) until ACK is received. The key update is
     complete once this ACK is processed by the responder.
 
 The handshake framing uses a single `HandshakeType` for this message
@@ -526,7 +492,7 @@ The handshake framing uses a single `HandshakeType` for this message
            certificate_verify(15),
            finished(20),
            key_update(24),
-           extended_key_update(TBD),  /* new */
+           post_handshake_message(TBD),  /* new */
            message_hash(254),
            (255)
        } HandshakeType;
@@ -538,19 +504,19 @@ The handshake framing uses a single `HandshakeType` for this message
            uint24 fragment_offset;    /* DTLS-required field */
            uint24 fragment_length;    /* DTLS-required field */
            select (msg_type) {
-               case client_hello:          ClientHello;
-               case server_hello:          ServerHello;
-               case end_of_early_data:     EndOfEarlyData;
-               case encrypted_extensions:  EncryptedExtensions;
-               case certificate_request:   CertificateRequest;
-               case certificate:           Certificate;
-               case certificate_verify:    CertificateVerify;
-               case finished:              Finished;
-               case new_session_ticket:    NewSessionTicket;
-               case key_update:            KeyUpdate;
-               case extended_key_update:   ExtendedKeyUpdate;
-               case request_connection_id: RequestConnectionId;
-               case new_connection_id:     NewConnectionId;
+               case client_hello:            ClientHello;
+               case server_hello:            ServerHello;
+               case end_of_early_data:       EndOfEarlyData;
+               case encrypted_extensions:    EncryptedExtensions;
+               case certificate_request:     CertificateRequest;
+               case certificate:             Certificate;
+               case certificate_verify:      CertificateVerify;
+               case finished:                Finished;
+               case new_session_ticket:      NewSessionTicket;
+               case key_update:              KeyUpdate;
+               case post_handshake_message:  PostHandshakeMessage;
+               case request_connection_id:   RequestConnectionId;
+               case new_connection_id:       NewConnectionId;
            } body;
        } DTLSHandshake;
 ~~~
@@ -582,35 +548,35 @@ Client                            Server
   \---------------------------------------/
 
 [C: tx=3, rx=3]                   [S: tx=3, rx=3]
-[ExtendedKeyUpdate(request)]     -------->
+[PHM(key_update_request)]  -------->
                                   # no epoch change yet
 
-                           <-------- [ExtendedKeyUpdate(response)]
-                                  # accepted; still old epochs
+                           <-------- [PHM(key_update_response)]
+                                  # still old epochs
 
-[ExtendedKeyUpdate(new_key_update)] -------->
+[PHM(new_key_update)]      -------->
 # Sent under OLD epoch. Client does NOT bump yet.
 
 # Step 6: responder bumps RECEIVE epoch on NKU-in:
 # (rx:=rx+1; tx still old)
 [C: tx=3, rx=3]                   [S: tx=3, rx=4]
 
-                 <-------- [ExtendedKeyUpdate(new_key_update)]
+                           <-------- [PHM(new_key_update)]
 # Responder’s NKU is tagged with OLD tx (3).
 
 # Epoch switch point:
 # Step 8: initiator bumps BOTH tx and rx on NKU-in:
 [C: tx=4, rx=4]                   [S: tx=3, rx=4]
 
-[ACK] (tag=new)   -------->
+[ACK] (tag=new)            -------->
 
 # Step 10: responder bumps SEND epoch on ACK-in:
 [C: tx=4, rx=4]                   [S: tx=4, rx=4]
 
-                                  <--------   [Application Data]
+                           <--------   [Application Data]
 [C: tx=4, rx=4]                   [S: tx=4, rx=4]
 
-[Application Data]                -------->
+[Application Data]         -------->
 [C: tx=4, rx=4]                   [S: tx=4, rx=4]
 ~~~
 {: #dtls-key-update title="Example DTLS 1.3 Extended Key Update: Message Exchange."}
@@ -652,8 +618,8 @@ to include
 key exchange / PQ-KEM exchange),
 * a secret that allows the new key exchange to be cryptographically
 bound to the previously established secret,
-* the concatenation of the `ExtendedKeyUpdate(request)` and the
-`ExtendedKeyUpdate(response)` messages, which contain the key shares,
+* the concatenation of the `PostHandshakeMessage(key_update_request)` and the
+`PostHandshakeMessage(key_update_response)` messages, which contain the key shares,
 binding the encapsulated shared secret ciphertext to IKM in case of
 hybrid key exchange, providing MAL-BIND-K-CT security (see {{CDM23}}),
 and
@@ -672,23 +638,23 @@ The following diagram shows the key derivation hierarchy.
  (EC)DHE -> HKDF-Extract = Master Secret N+1
              |
              +-----> Derive-Secret(., "c ap traffic2",
-             |                ExtendedKeyUpdate(request) ||
-             |                ExtendedKeyUpdate(response))
+             |                PHM(key_update_request) ||
+             |                PHM(key_update_response))
              |                = client_application_traffic_secret_N+1
              |
              +-----> Derive-Secret(., "s ap traffic2",
-             |                ExtendedKeyUpdate(request) ||
-             |                ExtendedKeyUpdate(response))
+             |                PHM(key_update_request) ||
+             |                PHM(key_update_response))
              |                = server_application_traffic_secret_N+1
              |
              +-----> Derive-Secret(., "exp master2",
-             |                ExtendedKeyUpdate(request) ||
-             |                ExtendedKeyUpdate(response))
+             |                PHM(key_update_request) ||
+             |                PHM(key_update_response))
              |                = exporter_master_secret_N+1
              |
              +-----> Derive-Secret(., "res master2",
-             |                ExtendedKeyUpdate(request) ||
-             |                ExtendedKeyUpdate(response))
+             |                PHM(key_update_request) ||
+             |                PHM(key_update_response))
                               = resumption_master_secret_N+1
 ~~~
 
@@ -714,7 +680,7 @@ client_/server_application_traffic_secret_N and its associated
 traffic keys as soon as possible. Note: The
 client_/server_application_traffic_secret_N and its associated
 traffic keys can only be deleted after receiving the
-`ExtendedKeyUpdate(new_key_update)` message.
+`PostHandshakeMessage(new_key_update)` message.
 
 When using this extension, it is important to consider its interaction with
 ticket-based session resumption. If resumption occurs without a new (EC)DH
@@ -798,11 +764,6 @@ This entire document is about security.
 
 # IANA Considerations
 
-## TLS Alerts
-
-IANA is requested to allocate value TBD for the "extended_key_update_required"
-alert in the "TLS Alerts" registry. The value for the "DTLS-OK" column is "Y".
-
 ## TLS Flags
 
 IANA is requested to add the following entry to the "TLS Flags"
@@ -820,13 +781,26 @@ IANA is requested to add the following entry to the "TLS HandshakeType"
 registry {{TLS-Ext-Registry}}:
 
 *  Value: TBD2
-*  Description: extended_key_update
+*  Description: post_handshake_message
 *  DTLS-OK: Y
 *  Reference: [This document]
 
-Note: The subtypes `extended_key_update_request`, `extended_key_update_response`,
-and `new_key_update` are internal to the `ExtendedKeyUpdate` message and do not
-require separate HandshakeType code points.
+## PostHandshakeMessage Types Registry {#iana-phm-registry}
+
+IANA is requested to create a new registry "TLS PostHandshakeMessage Types", within the
+existing "Transport Layer Security (TLS) Parameters" registry {{TLS-Ext-Registry}}.
+This new registry reserves types used for Extended Key Update entries.
+The initial contents of this registry are as follows.
+
+| Value | Description | DTLS-OK | Reference |
+| --- | --- | --- | --- |
+| 0 | key_update_request | Y | This document |
+| 1 | key_update_response | Y | This document |
+| 2 | new_key_update | Y | This document |
+| 3-65535 | Unassigned | | |
+
+New assignments in the "TLS PostHandshakeMessage Types" registry will be administered by IANA through
+Standards Action procedure {{?RFC8126}}.
 
 --- back
 
@@ -866,17 +840,15 @@ The following variables and abbreviations are used in the state machine diagrams
 - tx - current transmit epoch used for tagging outgoing messages.
 - E - initial epoch value.
 - updating - true while a key-update handshake is in progress.
-- accepted - set to true after an accepted Resp; indicates the peer has
-  agreed to proceed with the update and that new key material can be derived.
 - old_rx - the previous receive epoch remembered during retention.
 - retain_old - when true, receiver accepts tags old_rx and rx.
 - tag=... - the TX-epoch value written on an outgoing message.
 - e==... - the epoch tag carried on an incoming message (what the peer sent).
-- Protocol message types - ExtendedKeyUpdate(request) (Req) /
-  ExtendedKeyUpdate(response) (Resp) / ExtendedKeyUpdate(new_key_update) (NKU) /
+- Protocol message types - PostHandshakeMessage(key_update_request) (Req) /
+  PostHandshakeMessage(key_update_response) (Resp) / PostHandshakeMessage(new_key_update) (NKU) /
   ACK (from {{Section 7 of RFC9147}} / APP for application data.
 - FINISHED / START/IDLE / WAIT_RESP / SENT_NKU / WAIT_R_NKU - diagram
-  states; FINISHED denotes the steady state after success or reject.
+  states; FINISHED denotes the steady state after the key update.
 
 ## DTLS 1.3 State Machines
 
@@ -889,11 +861,9 @@ It sends a Req and enters WAIT_RESP (updating=1). While waiting,
 APP data may be sent at any time (tagged with the current tx) and received
 according to the APP acceptance rule below.
 
-If the responder returns Resp(false), the update aborts and the initiator
-returns to FINISHED (no epoch change). If it returns Resp(true) with a
-tag matching the current rx, the initiator sets `accepted=1` and derives
-new key material. It then sends NKU still tagged with the old tx, moving to
-SENT_NKU/WAIT_R_NKU.
+Once the responder returns Resp with a tag matching the current rx, the
+initiator derives new key material. It then sends NKU still tagged with
+the old tx, moving to SENT_NKU/WAIT_R_NKU.
 
 Upon receiving the responder's NKU (tag equals the current rx, meaning
 the responder is still tagging with its old tx), the initiator:
@@ -927,39 +897,37 @@ rx arrives, clear retain_old.
                           |   WAIT_RESP    |
                           |  (updating=1)  |
                           +----------------+
-                         /|\  |          /|\ APP recv:
-                          |   |           |  accept if e==rx
- APP send (anytime) ------+   |           |  or (retain_old &&
- (APP, tag=tx)                |           |     e==old_rx);
-                              |           |  if e==rx and
-                              |           |     retain_old: clear
-                              |
-                 Resp(false) -+      Resp(true, e==rx):
-                |(reject)            (4) accepted=1
-                |set updating=0      (5) send NKU [tag=old tx]
-                +------------               v
-                |         +----------------------+
-                |         |  SENT_NKU /          |
-                |         |  WAIT_R_NKU          |
-                |         +----------------------+
-                |                  |         /|\ APP send/recv
-                |                  |             allowed
-                |                  |
-                |           (7) recv NKU [e==rx]
-                |                  | (Responder still tags old tx)
-                |                  v
-                |         +----------------------+
-                |         |  ACTIVATE RETENTION  |
-                |         |  old_rx=rx;          |
-                |         |  retain_old=1;       |
-                |         |  rx=rx+1; tx=tx+1    |
-                |         +----------------------+
-                |                  |
-                |       (9) send ACK [tag=tx]
-                |       set updating=0; assert tx==rx
-                |                  |
-                +-----------+      |
-                            v      v
+                         /|\             /|\ APP recv:
+                          |               |  accept if e==rx
+ APP send (anytime) ------+               |  or (retain_old &&
+ (APP, tag=tx)                            |     e==old_rx);
+                                          |  if e==rx and
+                                          |     retain_old: clear
+                                     Resp(e==rx):
+                                     (4) send NKU [tag=old tx]
+                                            v
+                          +----------------------+
+                          |  SENT_NKU /          |
+                          |  WAIT_R_NKU          |
+                          +----------------------+
+                                   |         /|\ APP send/recv
+                                   |             allowed
+                                   |
+                            (6) recv NKU [e==rx]
+                                   | (Responder still tags old tx)
+                                   v
+                          +----------------------+
+                          |  ACTIVATE RETENTION  |
+                          |  old_rx=rx;          |
+                          |  retain_old=1;       |
+                          |  rx=rx+1; tx=tx+1    |
+                          +----------------------+
+                                   |
+                        (8) send ACK [tag=tx]
+                        set updating=0; assert tx==rx
+                                   |
+                                   |
+                                   v
                           +----------------+
  APP send/recv allowed -- |   FINISHED     |
  retain_old=0 afterwards  +----------------+
@@ -969,7 +937,7 @@ rx arrives, clear retain_old.
 
 The responder starts in the START state with synchronized transmit and receive epochs (rx=tx=E) and no update in progress. Application data can be sent at any time with the current transmit epoch and is accepted if the epoch matches the receiver's view or, if retention is active, the previous epoch.
 
-Upon receiving an ExtendedKeyUpdate(request) (Req), the responder transitions to the RESPOND state, where it decides to either reject (acc=false, returning to FINISHED) or accept (acc=true). If accepted, it sets `accepted=1`, sends a positive response tagged with the current transmit epoch, and enters the WAIT_I_NKU state.
+Upon receiving an PostHandshakeMessage(key_update_request) (Req), the responder transitions to the RESPOND state, sends a response tagged with the current transmit epoch, and enters the WAIT_I_NKU state.
 
 When a new_key_update (NKU) is received with the correct epoch, the responder activates retention mode: the old epoch is remembered, the receive epoch is incremented, and application data is accepted under both epochs for a transition period. The responder then sends its own NKU tagged with the old transmit epoch and moves to the WAIT_ACK state.
 
@@ -996,41 +964,38 @@ Throughout the process:
                         | acc is true or false |
                         +----------+-----------+
                                    |
-                 +-----------------+-----------------+
-                 |                                   |
-                 v                                   v
-        (reject) acc=false                    (accept) acc=true
-        send Resp(false)                      send Resp(true) [tag=tx]
-        set updating=0                        set accepted=1
-                 |                                   |
-                 v                                   v
-          +-------------+                     +---------------+
-          |  FINISHED   |                     |  WAIT_I_NKU   |
-          +-------------+                     | (updating=1)  |
-                                              +-------+-------+
-                                                      |
-                                 (6) recv NKU [e==rx], assert accepted
-                                                      |
-                                                      v
-                                           +---------------------+
-                                           | ACTIVATE RETENTION  |
-                                           | old_rx=rx;          |
-                                           | retain_old=1; rx++  |
-                                           +----------+----------+
-                                                      |
-                                         (7) send NKU [tag=old tx]
-                                                      |
-                                                      v
-                                              +--------------+
-                                              |  WAIT_ACK    |
-                                              | (updating=1) |
-                                              +-------+------+
-                                                      |
-                                       (8/9) recv ACK [e==rx]
-                                       tx=rx; retain_old=0; updating=0
-                                                      |
-                                                      v
-                                                +-----------+
-                                                | FINISHED  |
-                                                +-----------+
+                                   v
+                            acc=true
+                            send Resp(true) [tag=tx]
+                                   |
+                                   v
+                            +---------------+
+                            |  WAIT_I_NKU   |
+                            | (updating=1)  |
+                            +-------+-------+
+                                    |
+               (5) recv NKU [e==rx], assert accepted
+                                    |
+                                    v
+                         +---------------------+
+                         | ACTIVATE RETENTION  |
+                         | old_rx=rx;          |
+                         | retain_old=1; rx++  |
+                         +----------+----------+
+                                    |
+                       (6) send NKU [tag=old tx]
+                                    |
+                                    v
+                            +--------------+
+                            |  WAIT_ACK    |
+                            | (updating=1) |
+                            +-------+------+
+                                    |
+                     (7/8) recv ACK [e==rx]
+                     tx=rx; retain_old=0; updating=0
+                                    |
+                                    v
+                              +-----------+
+                              | FINISHED  |
+                              +-----------+
 ~~~
