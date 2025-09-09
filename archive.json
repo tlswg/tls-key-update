@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2025-09-07T01:46:42.046152+00:00",
+  "timestamp": "2025-09-09T01:43:13.756651+00:00",
   "repo": "tlswg/tls-key-update",
   "labels": [
     {
@@ -134,7 +134,7 @@
       "labels": [],
       "body": "Working on the implementation I was wondering whether it would make sense to use a different key hierarchy. Here is what the TLS RFC specifies for the application traffic secrets, the exporter master secret and the resumption master secrets.\n\n>              |\n>              v\n>    0 -> HKDF-Extract = Master Secret\n>              |\n>              +-----> Derive-Secret(., \"c ap traffic\",\n>              |                     ClientHello...server Finished)\n>              |                     = client_application_traffic_secret_0\n>              |\n>              +-----> Derive-Secret(., \"s ap traffic\",\n>              |                     ClientHello...server Finished)\n>              |                     = server_application_traffic_secret_0\n>              |\n>              +-----> Derive-Secret(., \"exp master\",\n>              |                     ClientHello...server Finished)\n>              |                     = exporter_master_secret\n>              |\n>              +-----> Derive-Secret(., \"res master\",\n>                                    ClientHello...client Finished)\n>                                    = resumption_master_secret\n\nCurrently, draft version -04 uses the current application traffic secret and also computes a new exporter secret based on the following key hierarchy. The resumption_master_secret so far is left untouched.\n\nQuestion: \n1) Should also say something about the resumption master secret update?\n2) Should we recompute the master secret instead?",
       "createdAt": "2025-04-26T19:21:49Z",
-      "updatedAt": "2025-07-07T13:13:11Z",
+      "updatedAt": "2025-09-07T16:42:32Z",
       "closedAt": null,
       "comments": [
         {
@@ -185,6 +185,13 @@
           "body": "I leave this issue open althrough I provided an update to the draft. Based on the feedback from Joe I believe more text is needed.",
           "createdAt": "2025-07-07T13:13:11Z",
           "updatedAt": "2025-07-07T13:13:11Z"
+        },
+        {
+          "author": "ilaril",
+          "authorAssociation": "NONE",
+          "body": "With resumption secret, it is at least possible to make things work by defining the secret to be directional from server to client, since tickets are sent by server as handshake messages, and thus ordered with EKU.\n\nHowever, the exporter secret is fundamentally non-directional, and tied to application data, which is unordered relative to handshake messages (especially when running over unreliable transport); moreover, key updates are fundamentally directional. Merely notifying application on exporter secret changes does not work (which would already require explicit opt-in by application), the mechanism would require explicit protocol-level support (which no current protocol has). This is because current protocols assume that exporter yields the same results without regard to timing or endpoint, so changing the exporter secret mid-connection causes Undefined Behavior (which is not acceptable).\n\nAnd even having explicit epochs and the required protocol support would pose challenges with epoch management, as the keys must be kept as long as the application protocol is willing to re-transmit any application messages that depend on exporters.\n\n",
+          "createdAt": "2025-09-07T16:42:32Z",
+          "updatedAt": "2025-09-07T16:42:32Z"
         }
       ]
     },
@@ -385,15 +392,15 @@
       "id": "I_kwDOMJPqLM65PVfR",
       "title": "Missing references in introduction",
       "url": "https://github.com/tlswg/tls-key-update/issues/27",
-      "state": "OPEN",
+      "state": "CLOSED",
       "author": "muhammad-usama-sardar",
       "authorAssociation": "COLLABORATOR",
       "assignees": [],
       "labels": [],
       "body": "> For IPsec, US NIST, German BSI, and French ANSSI recommend to re-run Diffie-Hellman exchanges frequently to provide forward secrecy and force attackers to perform a dynamic key exfiltration [[RFC7624](https://tlswg.org/tls-key-update/draft-ietf-tls-extended-key-update.html#RFC7624)].\n\nThe mentioned reference RFC 7624 does not mention US NIST, German BSI, and French ANSSI. So this claim needs to be justified by corresponding references from US NIST, German BSI and French ANSSI. \n\nThe reference for French ANSSI is given in the next sentence, but references for US NIST and German BSI are missing. ",
       "createdAt": "2025-06-01T20:23:44Z",
-      "updatedAt": "2025-09-01T20:04:07Z",
-      "closedAt": null,
+      "updatedAt": "2025-09-07T09:53:57Z",
+      "closedAt": "2025-09-07T09:53:57Z",
       "comments": [
         {
           "author": "hannestschofenig",
@@ -408,6 +415,13 @@
           "body": "> Rewrote the introduction in https://github.com/tlswg/tls-key-update/pull/29 and included only the reference to ANSSI.\n\nThe given [ref](https://cyber.gouv.fr/uploads/2015/09/NT_IPsec_EN.pdf) for ANSSI is broken. \n\n> It is just an example and we do not have to be exhaustive.\n\nSure, but there should be at least one justified example.",
           "createdAt": "2025-09-01T20:04:07Z",
           "updatedAt": "2025-09-01T20:04:07Z"
+        },
+        {
+          "author": "hannestschofenig",
+          "authorAssociation": "COLLABORATOR",
+          "body": "Fixed reference",
+          "createdAt": "2025-09-07T09:53:57Z",
+          "updatedAt": "2025-09-07T09:53:57Z"
         }
       ]
     },
@@ -423,7 +437,7 @@
       "labels": [],
       "body": "Tiru wrote: I like the suggestion from Ekr to remove clashed, see his comment below:\n\nI see what \"clashed\" is trying to do, but I think there's another\nopportunity to simplify: because you are determining which side wins\nbased on information known both sides, they can each independently\ndetermine which EKURequest will be accepted and which one will be\nrejected [0]. So instead of having the winner send a EKUResponse\nrejecting the loser, I suggest it just wait for the EKUResponse\nfrom the loser. I.e.,\nClient Server\n\nEKURequest(share=1) -> <- EKURequest(share=2)\n[ignores EKURequest]\nEKUResponse(share=1) ->\n\nThis removes one message and simplifies the state machine because the\nlosing Initiator can transition directly to sending EKUResponse\nwithout having to have a state waiting for the EKUResponse(clashed)\nmessage.",
       "createdAt": "2025-08-29T12:48:31Z",
-      "updatedAt": "2025-09-01T14:41:21Z",
+      "updatedAt": "2025-09-07T19:32:27Z",
       "closedAt": null,
       "comments": [
         {
@@ -432,6 +446,20 @@
           "body": "I agree, the proposal to avoid the \"clashed\" is fine from my understanding and would reduce the number of states. \nAlso, when indicating the share in the response message, it is easy to identify the matching request. \nGiven the above, I would have expected the call flow differently, at least the response from the client would be a reaction on the  server provided share(2):\n~~~~\nClient                                       Server\n---------------------------------------------------\nEKURequest(share=1) ->       <- EKURequest(share=2)\n                               [ignores EKURequest]\nEKUResponse(share=2) ->\n~~~~\n\nIf I understand ecr right, avoiding to send EKUResponse(share=1) informs the client that share=1 has not been taken res. if the client sends EKUResponse(share=2) it would essentiall frop its own proposal and take the server's proposal instead. \n\nCould this lead to a race condition, if both accept the other side's proposal?\n",
           "createdAt": "2025-09-01T14:41:21Z",
           "updatedAt": "2025-09-01T14:41:21Z"
+        },
+        {
+          "author": "ilaril",
+          "authorAssociation": "NONE",
+          "body": "I do not think there is any need to indicate which share peer is responding to, because there can only ever be one outstanding EKU in progress. And if the winner is determined by some criteria that only depends on EKURequest contents and client/server roles, it is not possible to get into situation where both peers accept or both peers reject.\n\nWhen using DTLS (i.e., unreliable transport), the winner will still need to explicitly acknowledge the EKURequest from the loser, as there is no explicit reply message. Also, peer might still need to re-transmit EKURequest even after determining it will be the winner (until the loser acknowledges the EKURequest either via explicit ACK, or EKUResponse).\n\nHowever, there might be bad interactions with refusing EKU. I think it should be required that the loser MUST NOT refuse EKU. Refusing EKU is meant for handling overload, and a peer that starts EKU process is expected to be able to complete it.",
+          "createdAt": "2025-09-07T15:10:06Z",
+          "updatedAt": "2025-09-07T15:10:06Z"
+        },
+        {
+          "author": "yaroslavros",
+          "authorAssociation": "COLLABORATOR",
+          "body": "Addressed in https://github.com/tlswg/tls-key-update/pull/53",
+          "createdAt": "2025-09-07T19:32:27Z",
+          "updatedAt": "2025-09-07T19:32:27Z"
         }
       ]
     },
@@ -440,16 +468,24 @@
       "id": "I_kwDOMJPqLM7KGOWH",
       "title": "Move State Machines to the Appendix",
       "url": "https://github.com/tlswg/tls-key-update/issues/45",
-      "state": "OPEN",
+      "state": "CLOSED",
       "author": "hannestschofenig",
       "authorAssociation": "COLLABORATOR",
       "assignees": [],
       "labels": [],
       "body": "As it is, for instance, done in https://datatracker.ietf.org/doc/html/rfc8446#appendix-A.1",
       "createdAt": "2025-09-06T18:02:27Z",
-      "updatedAt": "2025-09-06T18:07:33Z",
-      "closedAt": null,
-      "comments": []
+      "updatedAt": "2025-09-07T10:32:48Z",
+      "closedAt": "2025-09-07T10:32:48Z",
+      "comments": [
+        {
+          "author": "hannestschofenig",
+          "authorAssociation": "COLLABORATOR",
+          "body": "See PR #49 ",
+          "createdAt": "2025-09-07T09:54:17Z",
+          "updatedAt": "2025-09-07T09:54:17Z"
+        }
+      ]
     },
     {
       "number": 46,
@@ -477,9 +513,25 @@
       "authorAssociation": "COLLABORATOR",
       "assignees": [],
       "labels": [],
-      "body": "",
+      "body": "Done with PR #51 ",
       "createdAt": "2025-09-06T18:05:25Z",
-      "updatedAt": "2025-09-06T18:05:25Z",
+      "updatedAt": "2025-09-07T10:33:02Z",
+      "closedAt": null,
+      "comments": []
+    },
+    {
+      "number": 48,
+      "id": "I_kwDOMJPqLM7KJMqS",
+      "title": "Steps #3 und #5 in DTLS 1.3 Considerations need more text",
+      "url": "https://github.com/tlswg/tls-key-update/issues/48",
+      "state": "OPEN",
+      "author": "hannestschofenig",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [],
+      "body": "Tiru wrote: \n\n> Step 3 does not specify what happens when the status in ExtendedKeyUpdate(response) is not set to \"accepted\". I don\u2019t see a need for Step 3, since the responder must send an ExtendedKeyUpdate(response) regardless of whether the status is \"accepted\" or not.\n\n> 5. The initiator transmits an `ExtendedKeyUpdate(new_key_update)` message. This message also serves as an implicit acknowledgment of the responder\u2019s ExtendedKeyUpdate(response), so no separate ACK is required.",
+      "createdAt": "2025-09-07T09:29:32Z",
+      "updatedAt": "2025-09-07T09:43:30Z",
       "closedAt": null,
       "comments": []
     }
@@ -2427,24 +2479,26 @@
       "id": "PR_kwDOMJPqLM6nAsm5",
       "title": "State machine",
       "url": "https://github.com/tlswg/tls-key-update/pull/44",
-      "state": "OPEN",
+      "state": "MERGED",
       "author": "hannestschofenig",
       "authorAssociation": "COLLABORATOR",
       "assignees": [],
       "labels": [],
       "body": "With this PR I added a state machine to the description in DTLS 1.3\r\n\r\nI also added the SPIN model used to verify correctness of the exchange",
       "createdAt": "2025-09-05T09:12:34Z",
-      "updatedAt": "2025-09-06T18:08:59Z",
+      "updatedAt": "2025-09-07T09:47:31Z",
       "baseRepository": "tlswg/tls-key-update",
       "baseRefName": "main",
       "baseRefOid": "f079df600c24e3bc650299ff7e3321341673422b",
       "headRepository": "tlswg/tls-key-update",
       "headRefName": "state-machine",
-      "headRefOid": "ce3a39dfba64f39e070f2ea728854252d70b385e",
-      "closedAt": null,
-      "mergedAt": null,
-      "mergedBy": null,
-      "mergeCommit": null,
+      "headRefOid": "e8b32216b89b4fd87846dbba322088b7110e89fa",
+      "closedAt": "2025-09-07T09:47:28Z",
+      "mergedAt": "2025-09-07T09:47:28Z",
+      "mergedBy": "hannestschofenig",
+      "mergeCommit": {
+        "oid": "5ff57d805cc569e29e0dde129168f7cda6dd8e55"
+      },
       "comments": [],
       "reviews": [
         {
@@ -2955,6 +3009,1112 @@
               "body": "New Key Update. I improved the description ",
               "createdAt": "2025-09-06T18:06:40Z",
               "updatedAt": "2025-09-06T18:06:40Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM6-ZbvU",
+          "commit": {
+            "abbreviatedOid": "3b0a70e"
+          },
+          "author": "hannestschofenig",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-09-07T09:45:20Z",
+          "updatedAt": "2025-09-07T09:45:20Z",
+          "comments": [
+            {
+              "originalPosition": 250,
+              "body": "Updated the text.",
+              "createdAt": "2025-09-07T09:45:20Z",
+              "updatedAt": "2025-09-07T09:45:20Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM6-ZbyD",
+          "commit": {
+            "abbreviatedOid": "3b0a70e"
+          },
+          "author": "hannestschofenig",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-09-07T09:45:55Z",
+          "updatedAt": "2025-09-07T09:45:55Z",
+          "comments": [
+            {
+              "originalPosition": 473,
+              "body": "I improved the text.",
+              "createdAt": "2025-09-07T09:45:55Z",
+              "updatedAt": "2025-09-07T09:45:55Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM6-Zb5C",
+          "commit": {
+            "abbreviatedOid": "3b0a70e"
+          },
+          "author": "hannestschofenig",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-09-07T09:46:36Z",
+          "updatedAt": "2025-09-07T09:46:36Z",
+          "comments": [
+            {
+              "originalPosition": 248,
+              "body": "Done.",
+              "createdAt": "2025-09-07T09:46:36Z",
+              "updatedAt": "2025-09-07T09:46:36Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM6-Zb71",
+          "commit": {
+            "abbreviatedOid": "3b0a70e"
+          },
+          "author": "hannestschofenig",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-09-07T09:46:58Z",
+          "updatedAt": "2025-09-07T09:46:58Z",
+          "comments": [
+            {
+              "originalPosition": 254,
+              "body": "Add separate issue.",
+              "createdAt": "2025-09-07T09:46:58Z",
+              "updatedAt": "2025-09-07T09:46:58Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM6-Zb-j",
+          "commit": {
+            "abbreviatedOid": "3b0a70e"
+          },
+          "author": "hannestschofenig",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-09-07T09:47:19Z",
+          "updatedAt": "2025-09-07T09:47:19Z",
+          "comments": [
+            {
+              "originalPosition": 508,
+              "body": "Updated table.",
+              "createdAt": "2025-09-07T09:47:19Z",
+              "updatedAt": "2025-09-07T09:47:19Z"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "number": 49,
+      "id": "PR_kwDOMJPqLM6nPv04",
+      "title": "Move State Machines to Appendix",
+      "url": "https://github.com/tlswg/tls-key-update/pull/49",
+      "state": "MERGED",
+      "author": "hannestschofenig",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [],
+      "body": "",
+      "createdAt": "2025-09-07T09:53:38Z",
+      "updatedAt": "2025-09-07T10:08:30Z",
+      "baseRepository": "tlswg/tls-key-update",
+      "baseRefName": "main",
+      "baseRefOid": "5ff57d805cc569e29e0dde129168f7cda6dd8e55",
+      "headRepository": "tlswg/tls-key-update",
+      "headRefName": "hannestschofenig-patch-6",
+      "headRefOid": "783b34c7795d4433eb8fd68176248163c3000bda",
+      "closedAt": "2025-09-07T10:08:27Z",
+      "mergedAt": "2025-09-07T10:08:27Z",
+      "mergedBy": "hannestschofenig",
+      "mergeCommit": {
+        "oid": "361eb6c136c5e15d4379ee3263e116220aaf3aa1"
+      },
+      "comments": [],
+      "reviews": []
+    },
+    {
+      "number": 50,
+      "id": "PR_kwDOMJPqLM6nP4QG",
+      "title": "Added DTLS Handshake Structure",
+      "url": "https://github.com/tlswg/tls-key-update/pull/50",
+      "state": "MERGED",
+      "author": "hannestschofenig",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [],
+      "body": "",
+      "createdAt": "2025-09-07T10:26:21Z",
+      "updatedAt": "2025-09-07T18:00:22Z",
+      "baseRepository": "tlswg/tls-key-update",
+      "baseRefName": "main",
+      "baseRefOid": "361eb6c136c5e15d4379ee3263e116220aaf3aa1",
+      "headRepository": "tlswg/tls-key-update",
+      "headRefName": "hannestschofenig-patch-6",
+      "headRefOid": "7bcb11ff851697b93b030b85932448b8eb27ae06",
+      "closedAt": "2025-09-07T18:00:18Z",
+      "mergedAt": "2025-09-07T18:00:18Z",
+      "mergedBy": "hannestschofenig",
+      "mergeCommit": {
+        "oid": "9f75ae4ed146b7ae57ad19048ae2917b245f78ff"
+      },
+      "comments": [],
+      "reviews": [
+        {
+          "id": "PRR_kwDOMJPqLM6-ZtxU",
+          "commit": {
+            "abbreviatedOid": "7bcb11f"
+          },
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "state": "APPROVED",
+          "body": "",
+          "createdAt": "2025-09-07T11:53:56Z",
+          "updatedAt": "2025-09-07T11:53:56Z",
+          "comments": []
+        }
+      ]
+    },
+    {
+      "number": 51,
+      "id": "PR_kwDOMJPqLM6nP5yk",
+      "title": "Added TLS 1.3 State Machine",
+      "url": "https://github.com/tlswg/tls-key-update/pull/51",
+      "state": "OPEN",
+      "author": "hannestschofenig",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [],
+      "body": "",
+      "createdAt": "2025-09-07T10:32:26Z",
+      "updatedAt": "2025-09-07T17:39:25Z",
+      "baseRepository": "tlswg/tls-key-update",
+      "baseRefName": "main",
+      "baseRefOid": "361eb6c136c5e15d4379ee3263e116220aaf3aa1",
+      "headRepository": "tlswg/tls-key-update",
+      "headRefName": "hannestschofenig-patch-6-1",
+      "headRefOid": "bf2c1b4e96533b885310dfff649a64b6a2178dd9",
+      "closedAt": null,
+      "mergedAt": null,
+      "mergedBy": null,
+      "mergeCommit": null,
+      "comments": [],
+      "reviews": [
+        {
+          "id": "PRR_kwDOMJPqLM6-Zuip",
+          "commit": {
+            "abbreviatedOid": "eec5d56"
+          },
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-09-07T12:02:23Z",
+          "updatedAt": "2025-09-07T12:02:23Z",
+          "comments": [
+            {
+              "originalPosition": 20,
+              "body": "tx and rx are DTLS epoch and are not applicable to TLS. Please replace tx/rx with send_key/receive_key and replace N/N+1 with current/new keying material.",
+              "createdAt": "2025-09-07T12:02:23Z",
+              "updatedAt": "2025-09-07T12:02:23Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM6-ZusE",
+          "commit": {
+            "abbreviatedOid": "eec5d56"
+          },
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-09-07T12:03:53Z",
+          "updatedAt": "2025-09-07T12:03:53Z",
+          "comments": [
+            {
+              "originalPosition": 30,
+              "body": "Same comment as above. ",
+              "createdAt": "2025-09-07T12:03:53Z",
+              "updatedAt": "2025-09-07T12:03:53Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM6-Zuul",
+          "commit": {
+            "abbreviatedOid": "eec5d56"
+          },
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "The state machine needs to be updated.",
+          "createdAt": "2025-09-07T12:04:18Z",
+          "updatedAt": "2025-09-07T12:04:18Z",
+          "comments": []
+        },
+        {
+          "id": "PRR_kwDOMJPqLM6-aHCw",
+          "commit": {
+            "abbreviatedOid": "eec5d56"
+          },
+          "author": "yaroslavros",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-09-07T16:31:40Z",
+          "updatedAt": "2025-09-07T16:44:33Z",
+          "comments": [
+            {
+              "originalPosition": 20,
+              "body": "Same applies to `rx`, `tx`, `E`, `old_rx`, `retain_old`, `tag` and `e` definitions in the section above. They need to be moved to DTLS specific sub-section otherwise it is confusing to the reader who do not care about DTLS that much",
+              "createdAt": "2025-09-07T16:31:41Z",
+              "updatedAt": "2025-09-07T16:44:33Z"
+            },
+            {
+              "originalPosition": 9,
+              "body": "Let's drop imaginary epoch from TLS. It is very confusing.",
+              "createdAt": "2025-09-07T16:34:11Z",
+              "updatedAt": "2025-09-07T16:44:33Z"
+            },
+            {
+              "originalPosition": 13,
+              "body": "I don't think we defined `NKU` anywhere. Worth defining this acronym.",
+              "createdAt": "2025-09-07T16:35:35Z",
+              "updatedAt": "2025-09-07T16:44:33Z"
+            },
+            {
+              "originalPosition": 13,
+              "body": "I thought the process starts with `extended_key_update_request`... Why do we talk about NKU here?",
+              "createdAt": "2025-09-07T16:40:03Z",
+              "updatedAt": "2025-09-07T16:44:33Z"
+            },
+            {
+              "originalPosition": 17,
+              "body": "Maybe use aasvg?",
+              "createdAt": "2025-09-07T16:40:52Z",
+              "updatedAt": "2025-09-07T16:44:33Z"
+            },
+            {
+              "originalPosition": 32,
+              "body": "FWIW based on feedback from the last meeting we will be removing retry or clashed. Perhaps it needs to be covered in a separate PR",
+              "createdAt": "2025-09-07T16:42:00Z",
+              "updatedAt": "2025-09-07T16:44:33Z"
+            },
+            {
+              "originalPosition": 30,
+              "body": "There is another potential outcome - timeout. That is, initiator sent the request and got tired of waiting for the response. In that case the only thing initiator can do is terminate the session.",
+              "createdAt": "2025-09-07T16:43:14Z",
+              "updatedAt": "2025-09-07T16:44:33Z"
+            },
+            {
+              "originalPosition": 58,
+              "body": "As above, would be great to start explanation with the beginning of the process.",
+              "createdAt": "2025-09-07T16:44:01Z",
+              "updatedAt": "2025-09-07T16:44:33Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM6-aLgs",
+          "commit": {
+            "abbreviatedOid": "bf2c1b4"
+          },
+          "author": "hannestschofenig",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-09-07T17:37:09Z",
+          "updatedAt": "2025-09-07T17:37:09Z",
+          "comments": [
+            {
+              "originalPosition": 32,
+              "body": "It definitely needs a separate PR",
+              "createdAt": "2025-09-07T17:37:09Z",
+              "updatedAt": "2025-09-07T17:37:09Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM6-aL6n",
+          "commit": {
+            "abbreviatedOid": "eec5d56"
+          },
+          "author": "hannestschofenig",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-09-07T17:38:37Z",
+          "updatedAt": "2025-09-07T17:38:37Z",
+          "comments": [
+            {
+              "originalPosition": 20,
+              "body": "I thought reusing the terms would be a good idea. From the feedback so far it does not seem so.\r\n\r\nHence, I have changed the text and I hope I didn't miss anything!",
+              "createdAt": "2025-09-07T17:38:37Z",
+              "updatedAt": "2025-09-07T17:38:37Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM6-aL9L",
+          "commit": {
+            "abbreviatedOid": "eec5d56"
+          },
+          "author": "hannestschofenig",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-09-07T17:39:16Z",
+          "updatedAt": "2025-09-07T17:39:17Z",
+          "comments": [
+            {
+              "originalPosition": 13,
+              "body": "I remove the brief description and added terminology at the start of the section.",
+              "createdAt": "2025-09-07T17:39:16Z",
+              "updatedAt": "2025-09-07T17:39:17Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM6-aL9g",
+          "commit": {
+            "abbreviatedOid": "eec5d56"
+          },
+          "author": "hannestschofenig",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-09-07T17:39:24Z",
+          "updatedAt": "2025-09-07T17:39:25Z",
+          "comments": [
+            {
+              "originalPosition": 17,
+              "body": "Done",
+              "createdAt": "2025-09-07T17:39:24Z",
+              "updatedAt": "2025-09-07T17:39:25Z"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "number": 52,
+      "id": "PR_kwDOMJPqLM6nP9RL",
+      "title": "Adding TLS 1.3 SPIN Model",
+      "url": "https://github.com/tlswg/tls-key-update/pull/52",
+      "state": "OPEN",
+      "author": "hannestschofenig",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [],
+      "body": "",
+      "createdAt": "2025-09-07T10:58:24Z",
+      "updatedAt": "2025-09-07T17:54:20Z",
+      "baseRepository": "tlswg/tls-key-update",
+      "baseRefName": "main",
+      "baseRefOid": "361eb6c136c5e15d4379ee3263e116220aaf3aa1",
+      "headRepository": "tlswg/tls-key-update",
+      "headRefName": "model-tls13",
+      "headRefOid": "0f31b8f564a3899f08632deb164f7c0ba1470b9e",
+      "closedAt": null,
+      "mergedAt": null,
+      "mergedBy": null,
+      "mergeCommit": null,
+      "comments": [
+        {
+          "author": "hannestschofenig",
+          "authorAssociation": "COLLABORATOR",
+          "body": "For the initial version I only provided a minimal version because Yaroslav wanted to make some further changes to the draft based on the error handling (see #41).",
+          "createdAt": "2025-09-07T17:47:50Z",
+          "updatedAt": "2025-09-07T17:47:50Z"
+        }
+      ],
+      "reviews": [
+        {
+          "id": "PRR_kwDOMJPqLM6-ZyFt",
+          "commit": {
+            "abbreviatedOid": "c940142"
+          },
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-09-07T12:39:02Z",
+          "updatedAt": "2025-09-07T12:39:03Z",
+          "comments": [
+            {
+              "originalPosition": 123,
+              "body": "It only tests positive case and not the failure scenarios, we need to test reject scenarios as well.\r\nif\r\n:: /* accept path */\r\n   accepted = 1;\r\n   c_srv_to_cli ! Resp_acc, group;\r\n:: /* retry path */\r\n   accepted = 0;\r\n   c_srv_to_cli ! Resp_retry, group;\r\n:: /* reject path */\r\n   accepted = 0;\r\n   c_srv_to_cli ! Resp_rej, group;\r\n:: /* clash path */\r\n   accepted = 0;\r\n   c_srv_to_cli ! Resp_clashed, group;\r\nfi;\r\n",
+              "createdAt": "2025-09-07T12:39:02Z",
+              "updatedAt": "2025-09-07T12:39:03Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM6-ZyLA",
+          "commit": {
+            "abbreviatedOid": "c940142"
+          },
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-09-07T12:39:55Z",
+          "updatedAt": "2025-09-07T12:39:55Z",
+          "comments": [
+            {
+              "originalPosition": 97,
+              "body": "if\r\n:: (accepted) ->\r\n     assert(tx == E+1 && rx == E+1) /* both sides advanced */\r\n:: else ->\r\n     assert(tx == E && rx == E)     /* no advancement if not accepted */\r\nfi;",
+              "createdAt": "2025-09-07T12:39:55Z",
+              "updatedAt": "2025-09-07T12:39:55Z"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "number": 53,
+      "id": "PR_kwDOMJPqLM6nRGrM",
+      "title": "Replaced ExtendedKeyUpdate with PostHandshakeMessage",
+      "url": "https://github.com/tlswg/tls-key-update/pull/53",
+      "state": "OPEN",
+      "author": "yaroslavros",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [],
+      "body": "For future extensibility I replaced ExtendedKeyUpdate with PostHandshakeMessage that defines its own 2-byte types driven by IANA registry. This way we won't be constrained by the total of 255 handshake and post-handshake message types and can be a bit more relaxed about extending post-handshake TLS for things such as Classic McEliece, attestation and whatever comes next.\r\n\r\nAs suggested by Ekr I also cleaned up response code down to 2 - accepted and rejected. Added text to describe what to do in case of limited resources on responder for both TLS and DTLS.",
+      "createdAt": "2025-09-07T19:31:30Z",
+      "updatedAt": "2025-09-08T13:09:52Z",
+      "baseRepository": "tlswg/tls-key-update",
+      "baseRefName": "main",
+      "baseRefOid": "9f75ae4ed146b7ae57ad19048ae2917b245f78ff",
+      "headRepository": "yaroslavros/tls-key-update",
+      "headRefName": "main",
+      "headRefOid": "72205896317b876f5dab925c9daca475c29e6ed6",
+      "closedAt": null,
+      "mergedAt": null,
+      "mergedBy": null,
+      "mergeCommit": null,
+      "comments": [],
+      "reviews": [
+        {
+          "id": "PRR_kwDOMJPqLM6-bz6L",
+          "commit": {
+            "abbreviatedOid": "08cbbb9"
+          },
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "Changes look good except for removing \"retry\". ",
+          "createdAt": "2025-09-08T04:56:49Z",
+          "updatedAt": "2025-09-08T05:05:57Z",
+          "comments": [
+            {
+              "originalPosition": 155,
+              "body": "It makes sense to remove \"clashed\" because the request with lower lexicographic order of the key_exchange value must be ignored but disagree with the change to remove \"retry\". \r\nwhy did you remove retry ? ",
+              "createdAt": "2025-09-08T04:56:49Z",
+              "updatedAt": "2025-09-08T05:05:57Z"
+            },
+            {
+              "originalPosition": 181,
+              "body": "The initiator will have no clue why the responder is not sending a response ?",
+              "createdAt": "2025-09-08T05:01:41Z",
+              "updatedAt": "2025-09-08T05:05:57Z"
+            },
+            {
+              "originalPosition": 306,
+              "body": "The imitator will have no clue when the responder will provide a response, I don't agree with this change. ",
+              "createdAt": "2025-09-08T05:05:11Z",
+              "updatedAt": "2025-09-08T05:05:57Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM6-cZiM",
+          "commit": {
+            "abbreviatedOid": "08cbbb9"
+          },
+          "author": "ilaril",
+          "authorAssociation": "NONE",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-09-08T06:24:12Z",
+          "updatedAt": "2025-09-08T06:24:12Z",
+          "comments": [
+            {
+              "originalPosition": 181,
+              "body": "Other than winning the clashed update election (and the peer knows if this happens), I do not think the initiator needs to know why the response is delayed. The delayed response will just freeze the EKU process.",
+              "createdAt": "2025-09-08T06:24:12Z",
+              "updatedAt": "2025-09-08T06:24:13Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM6-cbD7",
+          "commit": {
+            "abbreviatedOid": "08cbbb9"
+          },
+          "author": "ilaril",
+          "authorAssociation": "NONE",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-09-08T06:27:10Z",
+          "updatedAt": "2025-09-08T06:27:10Z",
+          "comments": [
+            {
+              "originalPosition": 306,
+              "body": "Note that the response can be delayed for other reasons beyond just responder not processing the request immediately. E.g., network delays (especially with unreliable/DTLS).",
+              "createdAt": "2025-09-08T06:27:10Z",
+              "updatedAt": "2025-09-08T06:27:10Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM6-cdWP",
+          "commit": {
+            "abbreviatedOid": "08cbbb9"
+          },
+          "author": "ilaril",
+          "authorAssociation": "NONE",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-09-08T06:31:16Z",
+          "updatedAt": "2025-09-08T06:31:17Z",
+          "comments": [
+            {
+              "originalPosition": 155,
+              "body": "I do not think retry is needed, as both sides can freeze the process by delaying the response. And because there can only ever be one outstanding EKU, the peers only ever need to buffer one key/ciphertext to do so.",
+              "createdAt": "2025-09-08T06:31:16Z",
+              "updatedAt": "2025-09-08T06:31:17Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM6-chGu",
+          "commit": {
+            "abbreviatedOid": "08cbbb9"
+          },
+          "author": "ilaril",
+          "authorAssociation": "NONE",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-09-08T06:37:56Z",
+          "updatedAt": "2025-09-08T06:37:57Z",
+          "comments": [
+            {
+              "originalPosition": 47,
+              "body": "This seems a bit unclear to me. \"a group that that was negotiated\" would suggest there may be multiple negotiated groups. What determines what groups are negotiated? I presume if using DHE, then the the DHE group used by the server is considered negotiated (even if it is actually a KEM). However, if the server sends supported_groups (which is optional!), are the overlapping groups with client also considered supported?",
+              "createdAt": "2025-09-08T06:37:57Z",
+              "updatedAt": "2025-09-08T06:37:57Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM6-ckmf",
+          "commit": {
+            "abbreviatedOid": "08cbbb9"
+          },
+          "author": "ilaril",
+          "authorAssociation": "NONE",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-09-08T06:43:29Z",
+          "updatedAt": "2025-09-08T06:43:30Z",
+          "comments": [
+            {
+              "originalPosition": 160,
+              "body": "\"rejected\" seems bit odd, as it would seemingly permanently jam the EKU mechanism in one direction. What are use-cases for that? I think overload can be handled by delaying response, and peers that spam EKU can be disconnected (as this is indistinguishable from an attack).",
+              "createdAt": "2025-09-08T06:43:29Z",
+              "updatedAt": "2025-09-08T06:43:30Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM6-cqLe",
+          "commit": {
+            "abbreviatedOid": "08cbbb9"
+          },
+          "author": "ilaril",
+          "authorAssociation": "NONE",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-09-08T06:50:39Z",
+          "updatedAt": "2025-09-08T06:50:39Z",
+          "comments": [
+            {
+              "originalPosition": 317,
+              "body": "If initiator gets in unexpected overload situation, it might make sense to freeze the process at this state until the overload ablates. If this happens, the initiator should send an immediate ACK, and then key_update_request after the overload has ended.",
+              "createdAt": "2025-09-08T06:50:39Z",
+              "updatedAt": "2025-09-08T06:50:39Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM6-cvXQ",
+          "commit": {
+            "abbreviatedOid": "08cbbb9"
+          },
+          "author": "ilaril",
+          "authorAssociation": "NONE",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-09-08T06:59:03Z",
+          "updatedAt": "2025-09-08T06:59:04Z",
+          "comments": [
+            {
+              "originalPosition": 510,
+              "body": "Why is this Standards Action? I do not see any >=16-bit TLS registries that are Standards Action (one seems to be IETF Review, all others seem to be Specification Required or Expert Review).",
+              "createdAt": "2025-09-08T06:59:03Z",
+              "updatedAt": "2025-09-08T06:59:04Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM6-frgJ",
+          "commit": {
+            "abbreviatedOid": "08cbbb9"
+          },
+          "author": "yaroslavros",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-09-08T10:45:00Z",
+          "updatedAt": "2025-09-08T10:45:00Z",
+          "comments": [
+            {
+              "originalPosition": 155,
+              "body": "Removing retry was discussed at last IETF meeting. Ekr's argument was that proposed retry mechanism create unnecessary complexity, it's easier for responder to simply delay the response.",
+              "createdAt": "2025-09-08T10:45:00Z",
+              "updatedAt": "2025-09-08T10:58:54Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM6-fsbT",
+          "commit": {
+            "abbreviatedOid": "08cbbb9"
+          },
+          "author": "yaroslavros",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-09-08T10:46:24Z",
+          "updatedAt": "2025-09-08T10:46:24Z",
+          "comments": [
+            {
+              "originalPosition": 181,
+              "body": "Correct. With TLS initiator knows that request will be delivered and needs to simply wait - and drop the connection if the wait was too long. In case of DTLS responder needs to confirm with an ACK so that initiator would not retransmit.",
+              "createdAt": "2025-09-08T10:46:24Z",
+              "updatedAt": "2025-09-08T10:46:24Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM6-ftx6",
+          "commit": {
+            "abbreviatedOid": "08cbbb9"
+          },
+          "author": "yaroslavros",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-09-08T10:48:22Z",
+          "updatedAt": "2025-09-08T10:48:22Z",
+          "comments": [
+            {
+              "originalPosition": 306,
+              "body": "Again, if the wait is too long, initiator can drop the connection (what else can it do?)",
+              "createdAt": "2025-09-08T10:48:22Z",
+              "updatedAt": "2025-09-08T10:48:22Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM6-fvA-",
+          "commit": {
+            "abbreviatedOid": "08cbbb9"
+          },
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-09-08T10:50:09Z",
+          "updatedAt": "2025-09-08T10:50:09Z",
+          "comments": [
+            {
+              "originalPosition": 155,
+              "body": "I had objected to this change at the WG meeting. The initiator will have no clue how long it will have to wait for the responder to respond. I don't get the complexity (it is similar to Retry-After in HTTP). ",
+              "createdAt": "2025-09-08T10:50:09Z",
+              "updatedAt": "2025-09-08T10:50:09Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM6-fw5K",
+          "commit": {
+            "abbreviatedOid": "08cbbb9"
+          },
+          "author": "yaroslavros",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-09-08T10:52:48Z",
+          "updatedAt": "2025-09-08T10:52:48Z",
+          "comments": [
+            {
+              "originalPosition": 47,
+              "body": "Actually this change was supposed to clarify the point. Previously it said\r\n```\r\nMUST use a group that was mutually supported by the client and server during the initial handshake.\r\n```\r\n\r\n\"supported\" does not necessarily mean the group that was used during the handshake - hence this could create a risk of downgrade attacks.\r\n\r\nWould\r\n```\r\nMUST use the group\r\n```\r\nmake it better?",
+              "createdAt": "2025-09-08T10:52:48Z",
+              "updatedAt": "2025-09-08T10:52:48Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM6-fzjN",
+          "commit": {
+            "abbreviatedOid": "08cbbb9"
+          },
+          "author": "yaroslavros",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-09-08T10:55:56Z",
+          "updatedAt": "2025-09-08T10:55:57Z",
+          "comments": [
+            {
+              "originalPosition": 160,
+              "body": "This is an interesting call. Given that now Extended Key Update always disables standard Key Update rejecting is perhaps no longer acceptable option.\r\nWhich means we can get rid of `ExtendedKeyUpdateResponseStatus` completely.",
+              "createdAt": "2025-09-08T10:55:57Z",
+              "updatedAt": "2025-09-08T10:55:57Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM6-f0o-",
+          "commit": {
+            "abbreviatedOid": "08cbbb9"
+          },
+          "author": "yaroslavros",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-09-08T10:57:29Z",
+          "updatedAt": "2025-09-08T10:57:29Z",
+          "comments": [
+            {
+              "originalPosition": 317,
+              "body": "I think this should go into a separate PR...",
+              "createdAt": "2025-09-08T10:57:29Z",
+              "updatedAt": "2025-09-08T10:57:29Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM6-f1U6",
+          "commit": {
+            "abbreviatedOid": "08cbbb9"
+          },
+          "author": "yaroslavros",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-09-08T10:58:27Z",
+          "updatedAt": "2025-09-08T10:58:27Z",
+          "comments": [
+            {
+              "originalPosition": 510,
+              "body": "I simply cloned policy from TLS HandshakeType which was perhaps short-sighted.\r\nWhich IANA policy would you suggest?",
+              "createdAt": "2025-09-08T10:58:27Z",
+              "updatedAt": "2025-09-08T10:58:27Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM6-gOFB",
+          "commit": {
+            "abbreviatedOid": "08cbbb9"
+          },
+          "author": "yaroslavros",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-09-08T11:31:00Z",
+          "updatedAt": "2025-09-08T11:31:00Z",
+          "comments": [
+            {
+              "originalPosition": 160,
+              "body": "Updated PR accordingly. Please review.",
+              "createdAt": "2025-09-08T11:31:00Z",
+              "updatedAt": "2025-09-08T11:31:00Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM6-gOYa",
+          "commit": {
+            "abbreviatedOid": "08cbbb9"
+          },
+          "author": "yaroslavros",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-09-08T11:31:25Z",
+          "updatedAt": "2025-09-08T11:31:25Z",
+          "comments": [
+            {
+              "originalPosition": 47,
+              "body": "Updated PR accordingly. Please suggest further improvement.",
+              "createdAt": "2025-09-08T11:31:25Z",
+              "updatedAt": "2025-09-08T11:31:25Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM6-gYWc",
+          "commit": {
+            "abbreviatedOid": "08cbbb9"
+          },
+          "author": "yaroslavros",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-09-08T11:45:07Z",
+          "updatedAt": "2025-09-08T11:45:07Z",
+          "comments": [
+            {
+              "originalPosition": 155,
+              "body": "I am working on a prototype implementation of EKU for rustls and I have to say that removing retry simplifies things dramatically from implementation perspective - especially given that rustls is abstracted away from IO or timers.\r\nThis seems to be quite straightforward to me given that implicit delay on responder accomplishes pretty much the same outcome as explicit retry but makes implementation much simpler.\r\nAnyone else have an opinion? @hannestschofenig , @tuexen , @stfries ?",
+              "createdAt": "2025-09-08T11:45:07Z",
+              "updatedAt": "2025-09-08T11:45:39Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM6-gf86",
+          "commit": {
+            "abbreviatedOid": "08cbbb9"
+          },
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-09-08T11:55:17Z",
+          "updatedAt": "2025-09-08T11:55:17Z",
+          "comments": [
+            {
+              "originalPosition": 306,
+              "body": "The initiator will keep re-transmitting the request until a timeout and the behavior is \r\n\r\n> Note that the response can be delayed for other reasons beyond just responder not processing the request immediately. E.g., network delays (especially with unreliable/DTLS).\r\n\r\nThe initiator will keep re-transmitting the request until a timeout and the behavior is defined is DTLS 1.3. ",
+              "createdAt": "2025-09-08T11:55:17Z",
+              "updatedAt": "2025-09-08T11:55:17Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM6-gm4B",
+          "commit": {
+            "abbreviatedOid": "08cbbb9"
+          },
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-09-08T12:04:26Z",
+          "updatedAt": "2025-09-08T12:04:26Z",
+          "comments": [
+            {
+              "originalPosition": 160,
+              "body": "ExtendedKeyUpdateResponseStatus helps to deal with various types of errors, for example, the initiator uses a group that is not negotiated during the initial handshake, ",
+              "createdAt": "2025-09-08T12:04:26Z",
+              "updatedAt": "2025-09-08T12:04:26Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM6-gqPw",
+          "commit": {
+            "abbreviatedOid": "08cbbb9"
+          },
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-09-08T12:08:45Z",
+          "updatedAt": "2025-09-08T12:08:45Z",
+          "comments": [
+            {
+              "originalPosition": 317,
+              "body": "> If initiator gets in unexpected overload situation, it might make sense to freeze the process at this state until the overload ablates. If this happens, the initiator should send an immediate ACK, and then key_update_request after the overload has ended.\r\n\r\nThe responder could get into a unexpected overload situation, why would the initiator get into an unexpected overload situation ?\r\nThe current mechanism \"retry\" allows the initiator to send the request again after the \"delay\" seconds conveyed by the responder.",
+              "createdAt": "2025-09-08T12:08:45Z",
+              "updatedAt": "2025-09-08T12:08:46Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM6-gtRA",
+          "commit": {
+            "abbreviatedOid": "7220589"
+          },
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "I suggest the authors have a call before committing this PR. ",
+          "createdAt": "2025-09-08T12:12:56Z",
+          "updatedAt": "2025-09-08T12:13:17Z",
+          "comments": [
+            {
+              "originalPosition": 6,
+              "body": "https://datatracker.ietf.org/doc/draft-ietf-tls-tlsflags/ is for new extensions only and this draft is now defining a new message type, It looks like a violation to me. This PR needs further discussion. ",
+              "createdAt": "2025-09-08T12:12:56Z",
+              "updatedAt": "2025-09-08T12:13:17Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM6-g7yy",
+          "commit": {
+            "abbreviatedOid": "08cbbb9"
+          },
+          "author": "ilaril",
+          "authorAssociation": "NONE",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-09-08T12:30:04Z",
+          "updatedAt": "2025-09-08T12:30:04Z",
+          "comments": [
+            {
+              "originalPosition": 155,
+              "body": "Yes, not having any things explicitly tied to time is easier when I/O and timers are abstracted away. Waiting for some duration is annoying in such architecture. Arranging a callback from internal thread is easy to get wrong in a way that sometimes deadlocks.\r\n\r\nFurthermore, the usual recommendations for re-keying have both time and data transferred, so connections that transfer data faster should re-key more often.",
+              "createdAt": "2025-09-08T12:30:04Z",
+              "updatedAt": "2025-09-08T12:31:45Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM6-hBnS",
+          "commit": {
+            "abbreviatedOid": "08cbbb9"
+          },
+          "author": "ilaril",
+          "authorAssociation": "NONE",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-09-08T12:36:57Z",
+          "updatedAt": "2025-09-08T12:36:57Z",
+          "comments": [
+            {
+              "originalPosition": 306,
+              "body": "If the responder is overloaded, it can buffer the public key (there can only be one, and keys are <2kB) and ACK the request. That stops re-transmits while still freezing the EKU process.",
+              "createdAt": "2025-09-08T12:36:57Z",
+              "updatedAt": "2025-09-08T12:36:57Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM6-hPwN",
+          "commit": {
+            "abbreviatedOid": "08cbbb9"
+          },
+          "author": "ilaril",
+          "authorAssociation": "NONE",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-09-08T12:49:22Z",
+          "updatedAt": "2025-09-08T12:49:23Z",
+          "comments": [
+            {
+              "originalPosition": 160,
+              "body": "The only error cases I can come up with are either explicitly or presumably fatal errors, I do not think there are any error cases that need to be recoverable.",
+              "createdAt": "2025-09-08T12:49:23Z",
+              "updatedAt": "2025-09-08T12:50:30Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM6-hVFd",
+          "commit": {
+            "abbreviatedOid": "08cbbb9"
+          },
+          "author": "yaroslavros",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-09-08T12:53:47Z",
+          "updatedAt": "2025-09-08T12:53:47Z",
+          "comments": [
+            {
+              "originalPosition": 160,
+              "body": "Initiator using a group that is not negotiated during the initial handshake is a potential downgrade attempt and is a fatal error. Connection must be killed if that happens.",
+              "createdAt": "2025-09-08T12:53:47Z",
+              "updatedAt": "2025-09-08T12:53:47Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM6-hXXA",
+          "commit": {
+            "abbreviatedOid": "08cbbb9"
+          },
+          "author": "ilaril",
+          "authorAssociation": "NONE",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-09-08T12:55:08Z",
+          "updatedAt": "2025-09-08T12:55:08Z",
+          "comments": [
+            {
+              "originalPosition": 317,
+              "body": "Retry would not help here, because it is initiator that is in overload, not responder.\r\n\r\nAnd as to why, the initiator might not have been in overload when it decided to start the EKU process, but then got into overload situation while waiting for response. And endpoints can have many connections open at once, so it might not be this connection that caused the overload (those connections might have not even existed yet).",
+              "createdAt": "2025-09-08T12:55:08Z",
+              "updatedAt": "2025-09-08T12:55:08Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM6-hak9",
+          "commit": {
+            "abbreviatedOid": "7220589"
+          },
+          "author": "yaroslavros",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-09-08T12:58:30Z",
+          "updatedAt": "2025-09-08T12:58:30Z",
+          "comments": [
+            {
+              "originalPosition": 6,
+              "body": "Not sure if I follow. We always defined a new message type. Which is an extension to the TLS 1.3 protocol.\r\nAlso why do you say that TLS flags are \"for new extensions only\"?\r\nSure, let's arrange a call.",
+              "createdAt": "2025-09-08T12:58:30Z",
+              "updatedAt": "2025-09-08T12:58:30Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM6-hkej",
+          "commit": {
+            "abbreviatedOid": "7220589"
+          },
+          "author": "ilaril",
+          "authorAssociation": "NONE",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-09-08T13:09:51Z",
+          "updatedAt": "2025-09-08T13:09:52Z",
+          "comments": [
+            {
+              "originalPosition": 6,
+              "body": "The only limitation of TLS flags with respect to TLS extensions is that there can be no request data (the lack of response data can be waived away, but doing this is very Bad Idea). And TLS extensions have extremely wide latitude to change things (there is a **really** blatant example of doing this).",
+              "createdAt": "2025-09-08T13:09:51Z",
+              "updatedAt": "2025-09-08T13:09:52Z"
             }
           ]
         }
