@@ -95,7 +95,7 @@ FINISHED:
 proctype Responder()
 {
     byte send_key = E;      /* send key */
-    byte receive_key = E;   /* receive generation counter */
+    byte receive_key = E;   /* receive key */
     bool updating = 0;
     bool accepted = 0;
     byte group = G_R;
