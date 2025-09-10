@@ -1,5 +1,23 @@
 /* 
  * TLS 1.3 Extended Key Update (EKU) - SPIN Model
+  *
+ * State/variable conventions (aligned with DTLS model where sensible):
+ *   - send_key, receive_key : generation counters of application_traffic_secret (current, new keying material, ...)
+ *   - E        : initial key
+ *   - updating : 1 while an EKU exchange is in progress
+ *   - accepted : 1 after responder accepts a request
+ *   - Messages: Req, Resp_* (accepted/retry/rejected/clashed), NKU
+ *
+ * TLS rules captured (reliable transport):
+ *   1) Initiator: send Req; wait Resp.
+ *   2) Responder: on Req, send Resp(accepted) or a rejection.
+ *   3) If accepted, initiator sends NKU (under OLD keys) and immediately
+ *      updates SEND keys (send_key := send_key+1).
+ *   4) Responder on NKU-in: updates RECEIVE keys (receive_key := receive_key+1), sends NKU
+ *      (under OLD keys), then updates SEND keys (send_key := send_key+1).
+ *   5) Initiator on responder NKU-in: updates RECEIVE keys (receive_key := receive_key+1).
+ *
+ * After success, both peers have send_key==receive_key==E+1 and updating==0.
  */
 
 #define E 3    /* initial application traffic secret generation */
