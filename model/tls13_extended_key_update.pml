@@ -1,6 +1,6 @@
 /* 
  * TLS 1.3 Extended Key Update (EKU) - SPIN Model
-  *
+ *
  * State/variable conventions (aligned with DTLS model where sensible):
  *   - send_key, receive_key : generation counters of application_traffic_secret (current, new keying material, ...)
  *   - E        : initial key
