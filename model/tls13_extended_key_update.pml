@@ -19,7 +19,7 @@ bool done_responder = 0;
 proctype Initiator()
 {
     byte send_key = E;      /* send generation counter, initially E */
-    byte receive_key = E;   /* receive generation counter, initially E */
+    byte receive_key = E;   /* receive key, initially E */
     bool updating = 0;      /* true while an EKU exchange is ongoing */
     bool accepted = 0;      /* true if responder accepted EKU */
     byte group = G_I;       /* group identifier */
