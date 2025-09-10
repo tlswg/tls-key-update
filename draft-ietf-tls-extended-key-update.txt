@@ -5,14 +5,14 @@
 Transport Layer Security                                   H. Tschofenig
 Internet-Draft                                                   Siemens
 Intended status: Standards Track                                M. Tüxen
-Expires: 11 March 2026                 Münster Univ. of Applied Sciences
+Expires: 14 March 2026                 Münster Univ. of Applied Sciences
                                                                 T. Reddy
                                                                    Nokia
                                                                 S. Fries
                                                                  Siemens
                                                             Y. Rosomakho
                                                                  Zscaler
-                                                        7 September 2025
+                                                       10 September 2025
 
 
        Extended Key Update for Transport Layer Security (TLS) 1.3
@@ -64,7 +64,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 11 March 2026.
+   This Internet-Draft will expire on 14 March 2026.
 
 Copyright Notice
 
@@ -104,10 +104,13 @@ Table of Contents
      13.2.  Informative References
    Appendix A.  Acknowledgments
    Appendix B.  State Machines
-     B.1.  Terms and Abbreviations
-     B.2.  DTLS 1.3 State Machines
-       B.2.1.  State Machine (Initiator)
-       B.2.2.  State Machine (Responder)
+     B.1.  TLS 1.3 State Machines
+     B.2.  Initiator State Machine
+     B.3.  Responder State Machine
+     B.4.  DTLS 1.3 State Machines
+       B.4.1.  Terms and Abbreviations
+       B.4.2.  State Machine (Initiator)
+       B.4.3.  State Machine (Responder)
    Authors' Addresses
 
 1.  Introduction
@@ -918,9 +921,9 @@ Table of Contents
    [I-D.ietf-tls-hybrid-design]
               Stebila, D., Fluhrer, S., and S. Gueron, "Hybrid key
               exchange in TLS 1.3", Work in Progress, Internet-Draft,
-              draft-ietf-tls-hybrid-design-15, 3 September 2025,
+              draft-ietf-tls-hybrid-design-16, 7 September 2025,
               <https://datatracker.ietf.org/doc/html/draft-ietf-tls-
-              hybrid-design-15>.
+              hybrid-design-16>.
 
    [I-D.ietf-tls-keylogfile]
               Thomson, M., Rosomakho, Y., and H. Tschofenig, "The
@@ -990,7 +993,112 @@ Appendix A.  Acknowledgments
 
 Appendix B.  State Machines
 
-B.1.  Terms and Abbreviations
+   The sections below describe the state machines for the extended key
+   update operation for TLS 1.3 and DTLS 1.3.
+
+   For editorial reasons we abbreviate the protocol message types:
+
+   *  Req - ExtendedKeyUpdate(request)
+
+   *  Resp - ExtendedKeyUpdate(response)
+
+   *  NKU - ExtendedKeyUpdate(new_key_update)
+
+   *  ACK - Acknowledgement message from Section 7 of [RFC9147]
+
+   *  APP - application data payloads
+
+B.1.  TLS 1.3 State Machines
+
+   This section describes the initiator and responder state machines.
+
+B.2.  Initiator State Machine
+
+   +----------------------+
+   |   START              |
+   |   send_key=current,  |
+   |   receive_key=current|
+   |   updating=0         |
+   +----------------------+
+             |
+    (1) send Req
+        set updating=1
+             v
+   +----------------------+
+   |      WAIT_RESP       |
+   |      updating=1      |
+   +----------------------+
+        |            |
+        | Resp(rejected/retry/clashed):
+        |   set updating=0
+        |   -> FINISHED (no change)
+        |
+        | Resp(accepted) with key_share:
+        |   derive new secrets
+        |   send NKU  (encrypted under old keys)
+        |   update SEND keys (send_key := new key)   <-- TLS step 4
+        v
+   +---------------------------+
+   |  SENT_NKU / WAIT_R_NKU    |
+   |  send_key=new,            |
+   |  receive_key=current,     |
+   |  updating=1               |
+   +---------------------------+
+             |
+    (5) recv NKU (encrypted under old keys)
+        update RECEIVE keys (receive_key := new key) <-- Step 5
+        set updating=0
+             v
+   +----------------------+
+   |       FINISHED       |
+   +----------------------+
+
+B.3.  Responder State Machine
+
+   +----------------------+
+   |   START              |
+   |   send_key=current,  |
+   |   receive_key=current|
+   |   updating=0         |
+   +----------------------+
+             |
+    (2) recv Req
+        set updating=1
+             v
+   +----------------------+
+   |       RESPOND        |
+   +----------------------+
+        |            |
+        | reject/retry/clashed:
+        |   send Resp(status)
+        |   set updating=0
+        |   -> FINISHED (no change)
+        |
+        | accept:
+        |   send Resp(accepted) with key_share
+        |   derive new secrets
+        |   -> WAIT_I_NKU
+        v
+   +----------------------+
+   |     WAIT_I_NKU       |
+   |     updating=1       |
+   +----------------------+
+             |
+    (4) recv NKU (encrypted under old keys)
+        update RECEIVE keys (receive_key := new key) <-- TLS step 4
+        send NKU (encrypted under old keys)
+        update SEND keys (send_key := new key)       <-- TLS step 4
+        set updating=0
+             v
+   +----------------------+
+   |       FINISHED       |
+   +----------------------+
+
+B.4.  DTLS 1.3 State Machines
+
+   This section describes the initiator and responder state machines.
+
+B.4.1.  Terms and Abbreviations
 
    The following variables and abbreviations are used in the state
    machine diagrams.
@@ -1016,20 +1124,11 @@ B.1.  Terms and Abbreviations
    *  e==... - the epoch tag carried on an incoming message (what the
       peer sent).
 
-   *  Protocol message types - ExtendedKeyUpdate(request) (Req) /
-      ExtendedKeyUpdate(response) (Resp) /
-      ExtendedKeyUpdate(new_key_update) (NKU) / ACK (from Section 7 of
-      [RFC9147] / APP for application data.
+   *  FINISHED / START / WAIT_RESP / SENT_NKU / WAIT_R_NKU / ACTIVATE
+      RETENTION - diagram states; FINISHED denotes the steady state
+      after success or reject.
 
-   *  FINISHED / START/IDLE / WAIT_RESP / SENT_NKU / WAIT_R_NKU -
-      diagram states; FINISHED denotes the steady state after success or
-      reject.
-
-B.2.  DTLS 1.3 State Machines
-
-   This section describes the initiator and responder state machines.
-
-B.2.1.  State Machine (Initiator)
+B.4.2.  State Machine (Initiator)
 
    The initiator starts in the START state with matching epochs
    (rx=tx=E).  It sends a Req and enters WAIT_RESP (updating=1).  While
@@ -1112,7 +1211,7 @@ B.2.1.  State Machine (Initiator)
     APP send/recv allowed -- |   FINISHED     |
     retain_old=0 afterwards  +----------------+
 
-B.2.2.  State Machine (Responder)
+B.4.3.  State Machine (Responder)
 
    The responder starts in the START state with synchronized transmit
    and receive epochs (rx=tx=E) and no update in progress.  Application
