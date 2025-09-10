@@ -94,7 +94,7 @@ FINISHED:
 /* ------------ Responder (TLS 1.3) ------------ */
 proctype Responder()
 {
-    byte send_key = E;      /* send generation counter */
+    byte send_key = E;      /* send key */
     byte receive_key = E;   /* receive generation counter */
     bool updating = 0;
     bool accepted = 0;
