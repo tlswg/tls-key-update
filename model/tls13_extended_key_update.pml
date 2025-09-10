@@ -18,7 +18,7 @@ bool done_responder = 0;
 /* ------------ Initiator (TLS 1.3) ------------ */
 proctype Initiator()
 {
-    byte send_key = E;      /* send generation counter, initially E */
+    byte send_key = E;      /* send key, initially E */
     byte receive_key = E;   /* receive key, initially E */
     bool updating = 0;      /* true while an EKU exchange is ongoing */
     bool accepted = 0;      /* true if responder accepted EKU */
