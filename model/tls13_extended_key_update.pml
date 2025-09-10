@@ -91,8 +91,12 @@ SENT_NKU_WAIT_R_NKU:
 FINISHED:
     /* Success condition: if accepted, both gens should be E+1 */
     if
-    :: (accepted) -> assert(send_key == E+1 && receive_key == E+1)
-    :: else -> skip
+    :: (accepted) ->
+        assert(send_key == E+1 && receive_key == E+1)
+        ; assert(!updating)
+    :: else ->
+        assert(send_key == E && receive_key == E)
+        ; assert(!updating)
     fi;
 
     done_initiator = 1;
