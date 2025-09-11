@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2025-09-09T01:43:13.756651+00:00",
+  "timestamp": "2025-09-11T01:42:31.458476+00:00",
   "repo": "tlswg/tls-key-update",
   "labels": [
     {
@@ -3189,24 +3189,26 @@
       "id": "PR_kwDOMJPqLM6nP5yk",
       "title": "Added TLS 1.3 State Machine",
       "url": "https://github.com/tlswg/tls-key-update/pull/51",
-      "state": "OPEN",
+      "state": "MERGED",
       "author": "hannestschofenig",
       "authorAssociation": "COLLABORATOR",
       "assignees": [],
       "labels": [],
       "body": "",
       "createdAt": "2025-09-07T10:32:26Z",
-      "updatedAt": "2025-09-07T17:39:25Z",
+      "updatedAt": "2025-09-10T16:11:11Z",
       "baseRepository": "tlswg/tls-key-update",
       "baseRefName": "main",
       "baseRefOid": "361eb6c136c5e15d4379ee3263e116220aaf3aa1",
       "headRepository": "tlswg/tls-key-update",
       "headRefName": "hannestschofenig-patch-6-1",
       "headRefOid": "bf2c1b4e96533b885310dfff649a64b6a2178dd9",
-      "closedAt": null,
-      "mergedAt": null,
-      "mergedBy": null,
-      "mergeCommit": null,
+      "closedAt": "2025-09-10T16:11:08Z",
+      "mergedAt": "2025-09-10T16:11:08Z",
+      "mergedBy": "hannestschofenig",
+      "mergeCommit": {
+        "oid": "6695fd1af6d6f17559c8dfdb439077570197ef8a"
+      },
       "comments": [],
       "reviews": [
         {
@@ -3411,24 +3413,26 @@
       "id": "PR_kwDOMJPqLM6nP9RL",
       "title": "Adding TLS 1.3 SPIN Model",
       "url": "https://github.com/tlswg/tls-key-update/pull/52",
-      "state": "OPEN",
+      "state": "MERGED",
       "author": "hannestschofenig",
       "authorAssociation": "COLLABORATOR",
       "assignees": [],
       "labels": [],
       "body": "",
       "createdAt": "2025-09-07T10:58:24Z",
-      "updatedAt": "2025-09-07T17:54:20Z",
+      "updatedAt": "2025-09-10T16:44:58Z",
       "baseRepository": "tlswg/tls-key-update",
       "baseRefName": "main",
       "baseRefOid": "361eb6c136c5e15d4379ee3263e116220aaf3aa1",
       "headRepository": "tlswg/tls-key-update",
       "headRefName": "model-tls13",
-      "headRefOid": "0f31b8f564a3899f08632deb164f7c0ba1470b9e",
-      "closedAt": null,
-      "mergedAt": null,
-      "mergedBy": null,
-      "mergeCommit": null,
+      "headRefOid": "5497ecb97c83f3b3e9c42fe89e69804bfecf85dd",
+      "closedAt": "2025-09-10T16:44:55Z",
+      "mergedAt": "2025-09-10T16:44:54Z",
+      "mergedBy": "hannestschofenig",
+      "mergeCommit": {
+        "oid": "a9f87d9baee2d22aac68031a7743aa12705939be"
+      },
       "comments": [
         {
           "author": "hannestschofenig",
@@ -3493,7 +3497,7 @@
       "labels": [],
       "body": "For future extensibility I replaced ExtendedKeyUpdate with PostHandshakeMessage that defines its own 2-byte types driven by IANA registry. This way we won't be constrained by the total of 255 handshake and post-handshake message types and can be a bit more relaxed about extending post-handshake TLS for things such as Classic McEliece, attestation and whatever comes next.\r\n\r\nAs suggested by Ekr I also cleaned up response code down to 2 - accepted and rejected. Added text to describe what to do in case of limited resources on responder for both TLS and DTLS.",
       "createdAt": "2025-09-07T19:31:30Z",
-      "updatedAt": "2025-09-08T13:09:52Z",
+      "updatedAt": "2025-09-10T16:00:10Z",
       "baseRepository": "tlswg/tls-key-update",
       "baseRefName": "main",
       "baseRefOid": "9f75ae4ed146b7ae57ad19048ae2917b245f78ff",
@@ -3504,7 +3508,15 @@
       "mergedAt": null,
       "mergedBy": null,
       "mergeCommit": null,
-      "comments": [],
+      "comments": [
+        {
+          "author": "hannestschofenig",
+          "authorAssociation": "COLLABORATOR",
+          "body": "It took me a while to read through this exchange. There a number of topics to discuss and a call might indeed be appropriate. ",
+          "createdAt": "2025-09-10T16:00:10Z",
+          "updatedAt": "2025-09-10T16:00:10Z"
+        }
+      ],
       "reviews": [
         {
           "id": "PRR_kwDOMJPqLM6-bz6L",
@@ -4115,6 +4127,335 @@
               "body": "The only limitation of TLS flags with respect to TLS extensions is that there can be no request data (the lack of response data can be waived away, but doing this is very Bad Idea). And TLS extensions have extremely wide latitude to change things (there is a **really** blatant example of doing this).",
               "createdAt": "2025-09-08T13:09:51Z",
               "updatedAt": "2025-09-08T13:09:52Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM6-uzKN",
+          "commit": {
+            "abbreviatedOid": "08cbbb9"
+          },
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-09-09T08:03:35Z",
+          "updatedAt": "2025-09-09T08:03:36Z",
+          "comments": [
+            {
+              "originalPosition": 160,
+              "body": "Yes and ExtendedKeyUpdateResponseStatus can be leveraged to convey that it is fatal error. ",
+              "createdAt": "2025-09-09T08:03:36Z",
+              "updatedAt": "2025-09-09T08:03:36Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM6-vPa0",
+          "commit": {
+            "abbreviatedOid": "7220589"
+          },
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-09-09T08:26:15Z",
+          "updatedAt": "2025-09-09T08:26:15Z",
+          "comments": [
+            {
+              "originalPosition": 6,
+              "body": "> Not sure if I follow. We always defined a new message type. Which is an extension to the TLS 1.3 protocol. Also why do you say that TLS flags are \"for new extensions only\"? Sure, let's arrange a call.\r\n\r\nThe TLS flags draft explicitly says it is for new extensions only.  Any other specification which defined a new message type that leveraged TLS flags ?",
+              "createdAt": "2025-09-09T08:26:15Z",
+              "updatedAt": "2025-09-09T08:58:36Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM6-vzXb",
+          "commit": {
+            "abbreviatedOid": "08cbbb9"
+          },
+          "author": "yaroslavros",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-09-09T08:55:02Z",
+          "updatedAt": "2025-09-09T08:55:02Z",
+          "comments": [
+            {
+              "originalPosition": 160,
+              "body": "In TLS alerts are used to convey errors, not extensions.",
+              "createdAt": "2025-09-09T08:55:02Z",
+              "updatedAt": "2025-09-09T08:55:02Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM6-v6fM",
+          "commit": {
+            "abbreviatedOid": "7220589"
+          },
+          "author": "yaroslavros",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-09-09T09:00:12Z",
+          "updatedAt": "2025-09-09T09:00:12Z",
+          "comments": [
+            {
+              "originalPosition": 6,
+              "body": "Certificate Update proposal that you and I co-authored did exactly that - in fact it introduced two new message types (Section 9.2 of draft-rosomakho-tls-cert-update)\r\n\r\nThere is no existing message that we could fit Extended Key Update into - that's why we are introducing at least one new message type. Idea behind `PostHandshakeMessage` is to simplify potential future post handshake additions and not eat into the very limited space of handshake message types every time someone wants to introduce something.",
+              "createdAt": "2025-09-09T09:00:12Z",
+              "updatedAt": "2025-09-09T09:00:12Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM6-wRPe",
+          "commit": {
+            "abbreviatedOid": "08cbbb9"
+          },
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-09-09T09:17:14Z",
+          "updatedAt": "2025-09-09T09:17:14Z",
+          "comments": [
+            {
+              "originalPosition": 160,
+              "body": "Yes, I was thinking if there would be the need to signal any type of warnings but can't think of any (like the no_renegotiation in TLS 1.2). ",
+              "createdAt": "2025-09-09T09:17:14Z",
+              "updatedAt": "2025-09-09T09:17:14Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM6-xFyx",
+          "commit": {
+            "abbreviatedOid": "7220589"
+          },
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-09-09T09:50:44Z",
+          "updatedAt": "2025-09-09T09:50:44Z",
+          "comments": [
+            {
+              "originalPosition": 6,
+              "body": "draft-ietf-tls-tlsflags prohibits the use of a flag to signal an actual extension, it says:\r\n\r\n   For a flag that does require a response, the only proper response is\r\n   the same flag in a flags extension.  This extension MUST NOT be used\r\n   to specify extensions where the response is a proper extension with\r\n   content.",
+              "createdAt": "2025-09-09T09:50:44Z",
+              "updatedAt": "2025-09-09T09:50:44Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM6-xxrq",
+          "commit": {
+            "abbreviatedOid": "7220589"
+          },
+          "author": "yaroslavros",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-09-09T10:20:57Z",
+          "updatedAt": "2025-09-09T10:20:58Z",
+          "comments": [
+            {
+              "originalPosition": 6,
+              "body": "\"flag that does require a response, the only proper response is the same flag in a flags extension\" to me does nto translate into \"prohibits the use of a flag to signal an actual extension\". If that was the case - what's the point at all in TLS flags? Use them to set a flag to respond with a flag and... do nothing?\r\n\r\nIn our case response to a flag in ClientHello is a flag in EncryptedExtensions. We are not proposing an extension response. In fact, we are not specifying any \"extensions with content\" for existing TLS messages.",
+              "createdAt": "2025-09-09T10:20:57Z",
+              "updatedAt": "2025-09-09T10:20:58Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM6-zwqM",
+          "commit": {
+            "abbreviatedOid": "7220589"
+          },
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-09-09T12:19:23Z",
+          "updatedAt": "2025-09-09T12:19:23Z",
+          "comments": [
+            {
+              "originalPosition": 6,
+              "body": "We will have to discuss this in the TLS WG. The draft is targeted for extensions that do not carry any content, except the 1-bit indication that a certain optional feature is supported.  The example given in the draft is ietf-tls-tls13-cert-with-extern-psk.  ",
+              "createdAt": "2025-09-09T12:19:23Z",
+              "updatedAt": "2025-09-09T12:19:23Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM6_JCRC",
+          "commit": {
+            "abbreviatedOid": "08cbbb9"
+          },
+          "author": "hannestschofenig",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-09-10T15:55:21Z",
+          "updatedAt": "2025-09-10T15:55:21Z",
+          "comments": [
+            {
+              "originalPosition": 510,
+              "body": "We could use the approach from the ClientCertificateType registry, which uses different policies for different ranges. I personally would be fine with a simple \"Specification Required\" policy.\r\n\r\n-  TLS ClientCertificateType Identifiers Registry: Future values in\r\n      the range 0-63 (decimal) inclusive are assigned via Standards\r\n      Action [[RFC2434](https://www.rfc-editor.org/rfc/rfc2434)].  Values in the range 64-223 (decimal) inclusive\r\n      are assigned via Specification Required [[RFC2434](https://www.rfc-editor.org/rfc/rfc2434)].  Values from\r\n      224-255 (decimal) inclusive are reserved for Private Use\r\n      [[RFC2434](https://www.rfc-editor.org/rfc/rfc2434)].",
+              "createdAt": "2025-09-10T15:55:21Z",
+              "updatedAt": "2025-09-10T15:55:21Z"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "number": 54,
+      "id": "PR_kwDOMJPqLM6n2kH_",
+      "title": "More comments to the TLS 1.3 model",
+      "url": "https://github.com/tlswg/tls-key-update/pull/54",
+      "state": "MERGED",
+      "author": "hannestschofenig",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [],
+      "body": "",
+      "createdAt": "2025-09-10T16:37:02Z",
+      "updatedAt": "2025-09-10T16:44:26Z",
+      "baseRepository": "tlswg/tls-key-update",
+      "baseRefName": "model-tls13",
+      "baseRefOid": "e7d5a7dadc551009aceb8727b63c1f2d7c098d19",
+      "headRepository": "tlswg/tls-key-update",
+      "headRefName": "hannestschofenig-patch-6",
+      "headRefOid": "d300a90cf0c042af7b92a7bf44de692dbeedcfa2",
+      "closedAt": "2025-09-10T16:44:22Z",
+      "mergedAt": "2025-09-10T16:44:22Z",
+      "mergedBy": "hannestschofenig",
+      "mergeCommit": {
+        "oid": "5497ecb97c83f3b3e9c42fe89e69804bfecf85dd"
+      },
+      "comments": [],
+      "reviews": [
+        {
+          "id": "PRR_kwDOMJPqLM6_Jj0p",
+          "commit": {
+            "abbreviatedOid": "9c13ab8"
+          },
+          "author": "hannestschofenig",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-09-10T16:38:51Z",
+          "updatedAt": "2025-09-10T16:38:51Z",
+          "comments": [
+            {
+              "originalPosition": 51,
+              "body": "```suggestion\r\n    byte send_key = E;      /* send key, initially E */\r\n```",
+              "createdAt": "2025-09-10T16:38:51Z",
+              "updatedAt": "2025-09-10T16:38:51Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM6_JkDy",
+          "commit": {
+            "abbreviatedOid": "9c13ab8"
+          },
+          "author": "hannestschofenig",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-09-10T16:39:06Z",
+          "updatedAt": "2025-09-10T16:39:06Z",
+          "comments": [
+            {
+              "originalPosition": 52,
+              "body": "```suggestion\r\n    byte receive_key = E;   /* receive key, initially E */\r\n```",
+              "createdAt": "2025-09-10T16:39:06Z",
+              "updatedAt": "2025-09-10T16:39:07Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM6_Jkl1",
+          "commit": {
+            "abbreviatedOid": "288d9e0"
+          },
+          "author": "hannestschofenig",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-09-10T16:39:50Z",
+          "updatedAt": "2025-09-10T16:39:50Z",
+          "comments": [
+            {
+              "originalPosition": 2,
+              "body": "```suggestion\r\n * TLS 1.3 Extended Key Update (EKU) - SPIN Model\r\n  *\r\n * State/variable conventions (aligned with DTLS model where sensible):\r\n *   - send_key, receive_key : generation counters of application_traffic_secret (current, new keying material, ...)\r\n *   - E        : initial key\r\n *   - updating : 1 while an EKU exchange is in progress\r\n *   - accepted : 1 after responder accepts a request\r\n *   - Messages: Req, Resp_* (accepted/retry/rejected/clashed), NKU\r\n *\r\n * TLS rules captured (reliable transport):\r\n *   1) Initiator: send Req; wait Resp.\r\n *   2) Responder: on Req, send Resp(accepted) or a rejection.\r\n *   3) If accepted, initiator sends NKU (under OLD keys) and immediately\r\n *      updates SEND keys (send_key := send_key+1).\r\n *   4) Responder on NKU-in: updates RECEIVE keys (receive_key := receive_key+1), sends NKU\r\n *      (under OLD keys), then updates SEND keys (send_key := send_key+1).\r\n *   5) Initiator on responder NKU-in: updates RECEIVE keys (receive_key := receive_key+1).\r\n *\r\n * After success, both peers have send_key==receive_key==E+1 and updating==0.\r\n```",
+              "createdAt": "2025-09-10T16:39:50Z",
+              "updatedAt": "2025-09-10T16:39:50Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM6_Jk9A",
+          "commit": {
+            "abbreviatedOid": "4371d20"
+          },
+          "author": "hannestschofenig",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-09-10T16:40:14Z",
+          "updatedAt": "2025-09-10T16:40:14Z",
+          "comments": [
+            {
+              "originalPosition": 4,
+              "body": "```suggestion\r\n *\r\n```",
+              "createdAt": "2025-09-10T16:40:14Z",
+              "updatedAt": "2025-09-10T16:40:14Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM6_JltO",
+          "commit": {
+            "abbreviatedOid": "be2c3fb"
+          },
+          "author": "hannestschofenig",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-09-10T16:41:11Z",
+          "updatedAt": "2025-09-10T16:41:12Z",
+          "comments": [
+            {
+              "originalPosition": 130,
+              "body": "```suggestion\r\n    byte send_key = E;      /* send key */\r\n```",
+              "createdAt": "2025-09-10T16:41:12Z",
+              "updatedAt": "2025-09-10T16:41:12Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM6_Jl_R",
+          "commit": {
+            "abbreviatedOid": "3c80bb9"
+          },
+          "author": "hannestschofenig",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-09-10T16:41:37Z",
+          "updatedAt": "2025-09-10T16:41:37Z",
+          "comments": [
+            {
+              "originalPosition": 131,
+              "body": "```suggestion\r\n    byte receive_key = E;   /* receive key */\r\n```",
+              "createdAt": "2025-09-10T16:41:37Z",
+              "updatedAt": "2025-09-10T16:41:37Z"
             }
           ]
         }
