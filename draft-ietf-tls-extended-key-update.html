@@ -1064,7 +1064,7 @@ svg :is([fill="white"], [fill^="#fff"]) {
 </tr></thead>
 <tfoot><tr>
 <td class="left">Tschofenig, et al.</td>
-<td class="center">Expires 14 March 2026</td>
+<td class="center">Expires 21 March 2026</td>
 <td class="right">[Page]</td>
 </tr></tfoot>
 </table>
@@ -1077,12 +1077,12 @@ svg :is([fill="white"], [fill^="#fff"]) {
 <dd class="internet-draft">draft-ietf-tls-extended-key-update-latest</dd>
 <dt class="label-published">Published:</dt>
 <dd class="published">
-<time datetime="2025-09-10" class="published">10 September 2025</time>
+<time datetime="2025-09-17" class="published">17 September 2025</time>
     </dd>
 <dt class="label-intended-status">Intended Status:</dt>
 <dd class="intended-status">Standards Track</dd>
 <dt class="label-expires">Expires:</dt>
-<dd class="expires"><time datetime="2026-03-14">14 March 2026</time></dd>
+<dd class="expires"><time datetime="2026-03-21">21 March 2026</time></dd>
 <dt class="label-authors">Authors:</dt>
 <dd class="authors">
 <div class="author">
@@ -1155,7 +1155,7 @@ and DTLS 1.3.<a href="#section-abstract-2" class="pilcrow">¶</a></p>
         time. It is inappropriate to use Internet-Drafts as reference
         material or to cite them other than as "work in progress."<a href="#section-boilerplate.1-3" class="pilcrow">¶</a></p>
 <p id="section-boilerplate.1-4">
-        This Internet-Draft will expire on 14 March 2026.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
+        This Internet-Draft will expire on 21 March 2026.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="copyright">
@@ -1231,13 +1231,13 @@ and DTLS 1.3.<a href="#section-abstract-2" class="pilcrow">¶</a></p>
             <p id="section-toc.1-1.12.1"><a href="#section-12" class="auto internal xref">12</a>. <a href="#name-iana-considerations" class="internal xref">IANA Considerations</a></p>
 <ul class="compact toc ulBare ulEmpty">
 <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.12.2.1">
-                <p id="section-toc.1-1.12.2.1.1"><a href="#section-12.1" class="auto internal xref">12.1</a>.  <a href="#name-tls-alerts" class="internal xref">TLS Alerts</a></p>
+                <p id="section-toc.1-1.12.2.1.1"><a href="#section-12.1" class="auto internal xref">12.1</a>.  <a href="#name-tls-flags" class="internal xref">TLS Flags</a></p>
 </li>
               <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.12.2.2">
-                <p id="section-toc.1-1.12.2.2.1"><a href="#section-12.2" class="auto internal xref">12.2</a>.  <a href="#name-tls-flags" class="internal xref">TLS Flags</a></p>
+                <p id="section-toc.1-1.12.2.2.1"><a href="#section-12.2" class="auto internal xref">12.2</a>.  <a href="#name-tls-handshaketype" class="internal xref">TLS HandshakeType</a></p>
 </li>
               <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.12.2.3">
-                <p id="section-toc.1-1.12.2.3.1"><a href="#section-12.3" class="auto internal xref">12.3</a>.  <a href="#name-tls-handshaketype" class="internal xref">TLS HandshakeType</a></p>
+                <p id="section-toc.1-1.12.2.3.1"><a href="#section-12.3" class="auto internal xref">12.3</a>.  <a href="#name-extendedkeyupdate-message-s" class="internal xref">ExtendedKeyUpdate Message Subtypes Registry</a></p>
 </li>
             </ul>
 </li>
@@ -1357,8 +1357,7 @@ from the key update procedure specified in this document, we use the terms
       </h2>
 <p id="section-3-1">Client and servers use the TLS flags extension
 <span>[<a href="#I-D.ietf-tls-tlsflags" class="cite xref">I-D.ietf-tls-tlsflags</a>]</span> to indicate support for the functionality
-defined in this document.  We call this the "extended_key_update"
-extension and the corresponding flag is called "Extended_Key_Update"
+defined in this document.  We call this flag "Extended_Key_Update"
 flag.<a href="#section-3-1" class="pilcrow">¶</a></p>
 <p id="section-3-2">The "Extended_Key_Update" flag proposed by the client in the
 ClientHello (CH) MUST be acknowledged in the EncryptedExtensions
@@ -1381,29 +1380,43 @@ update fully replaces the standard key update functionality.<a href="#section-4-
 <p id="section-4-2">Implementations that receive a classic <code>KeyUpdate</code> message after
 successfully negotiating the Extended Key Update functionality MUST
 terminate the connection with an <code>"unexpected_message"</code> alert.<a href="#section-4-2" class="pilcrow">¶</a></p>
-<p id="section-4-3">The extended key update is carried in a single handshake message named
-<code>ExtendedKeyUpdate</code>, with an internal subtype indicating its role (request,
-response, or new key update). The extended key update process can be
-initiated by either peer after it has sent a <code>Finished</code> message.
-Implementations that receive an <code>ExtendedKeyUpdate</code> message prior to
-the sender having sent <code>Finished</code> MUST terminate the connection with
-an <code>"unexpected_message"</code> alert.<a href="#section-4-3" class="pilcrow">¶</a></p>
-<p id="section-4-4">The <code>KeyShareEntry</code> carried in a <code>ExtendedKeyUpdate(request)</code> and in
-a <code>ExtendedKeyUpdate(response)</code> MUST use a group that was mutually
-supported by the client and server during the initial handshake. An
-implementation that receives an algorithm not previously negotiated
-MUST terminate the connection with an <code>"illegal_parameter"</code> alert.<a href="#section-4-4" class="pilcrow">¶</a></p>
-<p id="section-4-5"><a href="#fig-key-update" class="auto internal xref">Figure 1</a> shows the interaction graphically. First, support
+<p id="section-4-3">The extended key update messages are signaled in a new handshake message named
+<code>ExtendedKeyUpdate</code> (EKU), with an internal uint8 message subtype indicating its role.
+This specification defines three ExtendedKeyUpdate message subtypes:<a href="#section-4-3" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-4-4.1">
+          <p id="section-4-4.1.1"><code>key_update_request</code> (0)<a href="#section-4-4.1.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-4-4.2">
+          <p id="section-4-4.2.1"><code>key_update_response</code> (1)<a href="#section-4-4.2.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-4-4.3">
+          <p id="section-4-4.3.1"><code>new_key_update</code> (2)<a href="#section-4-4.3.1" class="pilcrow">¶</a></p>
+</li>
+      </ul>
+<p id="section-4-5">New ExtendedKeyUpdate message subtypes are assigned by IANA as described in <a href="#iana-eku-registry" class="auto internal xref">Section 12.3</a>.<a href="#section-4-5" class="pilcrow">¶</a></p>
+<p id="section-4-6">A TLS peer which receives a ExtendedKeyUpdate with an unexpected message subtype MUST
+abort the connection with an <code>"unexpected_message"</code> alert.<a href="#section-4-6" class="pilcrow">¶</a></p>
+<p id="section-4-7">The extended key update process can be initiated by either peer after it has
+sent a <code>Finished</code> message. Implementations that receive an <code>ExtendedKeyUpdate</code>
+message prior to the sender having sent <code>Finished</code> MUST terminate the connection with
+an <code>"unexpected_message"</code> alert.<a href="#section-4-7" class="pilcrow">¶</a></p>
+<p id="section-4-8">The <code>KeyShareEntry</code> carried in a <code>key_update_request</code> and in
+a <code>key_update_response</code> MUST use the group that was negotiated by the client
+and server during the initial handshake. An implementation that receives an
+algorithm other than previously negotiated MUST terminate the connection
+with an <code>"illegal_parameter"</code> alert.<a href="#section-4-8" class="pilcrow">¶</a></p>
+<p id="section-4-9"><a href="#fig-key-update" class="auto internal xref">Figure 1</a> shows the interaction graphically. First, support
 for the functionality in this specification is negotiated in the
 <code>ClientHello</code> and the <code>EncryptedExtensions</code> messages. Then, the
 <code>ExtendedKeyUpdate</code> exchange is sent to update the application traffic
-secrets.<a href="#section-4-5" class="pilcrow">¶</a></p>
-<p id="section-4-6">The extended key update exchange is performed between the initiator
+secrets.<a href="#section-4-9" class="pilcrow">¶</a></p>
+<p id="section-4-10">The extended key update exchange is performed between the initiator
 and the responder; either the TLS client or the TLS server may act
-as initiator.<a href="#section-4-6" class="pilcrow">¶</a></p>
+as initiator.<a href="#section-4-10" class="pilcrow">¶</a></p>
 <span id="name-extended-key-update-message-"></span><div id="fig-key-update">
 <figure id="figure-1">
-        <div class="alignLeft art-text artwork" id="section-4-7.1">
+        <div class="alignLeft art-text artwork" id="section-4-11.1">
 <pre>
        Client                                           Server
 
@@ -1426,11 +1439,10 @@ Auth | {CertificateVerify}
      v {Finished}              --------&gt;
        [Application Data]N     &lt;-------&gt;  [Application Data]N
                                   ...
-[ExtendedKeyUpdate(request)]N   --------&gt;
-                               &lt;-------- [ExtendedKeyUpdate(response)]N
-     [ExtendedKeyUpdate(new_key_update)]N   --------&gt;
-                                           &lt;--------
-                                   [ExtendedKeyUpdate(new_key_update)]N
+  [EKU(key_update_request)]N   --------&gt;
+                               &lt;--------  [EKU(key_update_response)]N
+      [EKU(new_key_update)]N   --------&gt;
+                               &lt;--------  [EKU(new_key_update)]N
                                   ...
        [Application Data]N+1   &lt;-------&gt;  [Application Data]N+1
 
@@ -1456,85 +1468,43 @@ Legend:
 <a href="#name-extended-key-update-message-" class="selfRef">Extended Key Update Message Exchange in TLS 1.3.</a>
         </figcaption></figure>
 </div>
-<p id="section-4-8">The <code>ExtendedKeyUpdate</code> wire format is:<a href="#section-4-8" class="pilcrow">¶</a></p>
-<div class="alignLeft art-text artwork" id="section-4-9">
+<p id="section-4-12">The <code>ExtendedKeyUpdate</code> wire format is:<a href="#section-4-12" class="pilcrow">¶</a></p>
+<div class="alignLeft art-text artwork" id="section-4-13">
 <pre>
 enum {
-   extended_key_update_request(0),
-   extended_key_update_response(1),
+   key_update_request(0),
+   key_update_response(1),
    new_key_update(2),
    (255)
 } ExtendedKeyUpdateType;
 
-enum {
-  accepted(0),
-  retry(1),
-  rejected(2),
-  clashed(3),
-  (255)
-} ExtendedKeyUpdateResponseStatus;
-
 struct {
-   ExtendedKeyUpdateType update_type;
-   select (update_type) {
-      case extended_key_update_request: {
+   ExtendedKeyUpdateType eku_type;
+   select (eku_type) {
+      case key_update_request: {
           KeyShareEntry key_share;
       }
-      case extended_key_update_response: {
-          ExtendedKeyUpdateResponseStatus status;
-          select (status) {
-             case accepted: KeyShareEntry key_share;
-             case retry:    uint8 delay;
-          }
+      case key_update_response: {
+          KeyShareEntry key_share;
       }
       case new_key_update: {
           /* empty */
       }
    };
 } ExtendedKeyUpdate;
-</pre><a href="#section-4-9" class="pilcrow">¶</a>
+</pre><a href="#section-4-13" class="pilcrow">¶</a>
 </div>
-<p id="section-4-10">Fields:<a href="#section-4-10" class="pilcrow">¶</a></p>
+<p id="section-4-14">Fields:<a href="#section-4-14" class="pilcrow">¶</a></p>
 <ul class="normal">
-<li class="normal" id="section-4-11.1">
-          <p id="section-4-11.1.1"><code>update_type</code>: the subtype of the <code>ExtendedKeyUpdate</code> message.<a href="#section-4-11.1.1" class="pilcrow">¶</a></p>
+<li class="normal" id="section-4-15.1">
+          <p id="section-4-15.1.1"><code>eku_type</code>: the subtype of the <code>ExtendedKeyUpdate</code> message.<a href="#section-4-15.1.1" class="pilcrow">¶</a></p>
 </li>
-        <li class="normal" id="section-4-11.2">
-          <p id="section-4-11.2.1"><code>key_share</code>: key share information. The contents of this field are
+        <li class="normal" id="section-4-15.2">
+          <p id="section-4-15.2.1"><code>key_share</code>: key share information. The contents of this field are
 determined by the specified group and its corresponding definition
-(see <span>[<a href="#I-D.ietf-tls-rfc8446bis" class="cite xref">I-D.ietf-tls-rfc8446bis</a>]</span>).<a href="#section-4-11.2.1" class="pilcrow">¶</a></p>
-</li>
-        <li class="normal" id="section-4-11.3">
-          <p id="section-4-11.3.1"><code>status</code>: response to an <code>extended_key_update_request</code>. Indicates
-whether the responder accepted or declined the request.<a href="#section-4-11.3.1" class="pilcrow">¶</a></p>
-</li>
-        <li class="normal" id="section-4-11.4">
-          <p id="section-4-11.4.1"><code>delay</code>: delay in seconds for the initiator to retry the request
-when status is set to <code>retry</code>.<a href="#section-4-11.4.1" class="pilcrow">¶</a></p>
+(see <span>[<a href="#I-D.ietf-tls-rfc8446bis" class="cite xref">I-D.ietf-tls-rfc8446bis</a>]</span>).<a href="#section-4-15.2.1" class="pilcrow">¶</a></p>
 </li>
       </ul>
-<p id="section-4-12">There are three rejection reasons:<a href="#section-4-12" class="pilcrow">¶</a></p>
-<ol start="1" type="1" class="normal type-1" id="section-4-13">
-<li id="section-4-13.1">
-          <p id="section-4-13.1.1"><code>retry</code>: request declined temporarily (responder is too busy).
-In this case the message includes a <code>delay</code> in seconds. The initiator
-MUST NOT retry within this interval and SHOULD retry after it elapses.
-The responder MAY apply an overall rate limit not specific to a single
-TLS session. If the initiator cannot proceed without an immediate
-Extended Key Update it MUST terminate the connection with the TLS alert
-<code>"extended_key_update_required"</code> (alert number TBD).<a href="#section-4-13.1.1" class="pilcrow">¶</a></p>
-</li>
-        <li id="section-4-13.2">
-          <p id="section-4-13.2.1"><code>rejected</code>: request declined permanently. The initiator MUST NOT
-retry and, if it cannot proceed without Extended Key Update, MUST
-terminate the connection with <code>"extended_key_update_required"</code>
-(alert number TBD).<a href="#section-4-13.2.1" class="pilcrow">¶</a></p>
-</li>
-        <li id="section-4-13.3">
-          <p id="section-4-13.3.1"><code>clashed</code>: request declined because the responder has already
-initiated its own extended key update.<a href="#section-4-13.3.1" class="pilcrow">¶</a></p>
-</li>
-      </ol>
 </section>
 </div>
 <div id="tls-13-considerations">
@@ -1546,35 +1516,36 @@ initiated its own extended key update.<a href="#section-4-13.3.1" class="pilcrow
 executed with DTLS 1.3 differ slightly.<a href="#section-5-1" class="pilcrow">¶</a></p>
 <ol start="1" type="1" class="normal type-1" id="section-5-2">
 <li id="section-5-2.1">
-          <p id="section-5-2.1.1">The initiator sends <code>ExtendedKeyUpdate(request)</code> carrying a
+          <p id="section-5-2.1.1">The initiator sends <code>ExtendedKeyUpdate(key_update_request)</code> carrying a
 <code>KeyShareEntry</code>. While an extended key update is in progress, the
 initiator MUST NOT initiate another key update.<a href="#section-5-2.1.1" class="pilcrow">¶</a></p>
 </li>
         <li id="section-5-2.2">
-          <p id="section-5-2.2.1">Upon receipt, the responder sends <code>ExtendedKeyUpdate(response)</code>.
-If the responder accepts the request, it sets <code>status=accepted</code> and
-includes its own <code>KeyShareEntry</code>. If the responder declines, it sets
-an appropriate rejection status and omits the <code>KeyShareEntry</code>. While an extended
+          <p id="section-5-2.2.1">Upon receipt, the responder sends its own <code>KeyShareEntry</code> in a
+<code>ExtendedKeyUpdate(key_update_response)</code> message. While an extended
 key update is in progress, the responder MUST NOT initiate another
-key update.<a href="#section-5-2.2.1" class="pilcrow">¶</a></p>
+key update. The responder MAY defer sending a response if system load or resource
+constraints prevent immediate processing. In such cases, the response MUST
+be sent once sufficient resources become available.<a href="#section-5-2.2.1" class="pilcrow">¶</a></p>
 </li>
         <li id="section-5-2.3">
-          <p id="section-5-2.3.1">Upon receipt of an <code>ExtendedKeyUpdate(response)</code> with
-status to <code>accepted</code>, the initiator derives the new secrets from the
-exchanged key shares. The initiator then sends an empty
-ExtendedKeyUpdate(new_key_update) message to trigger the switch to the
-new keys.<a href="#section-5-2.3.1" class="pilcrow">¶</a></p>
+          <p id="section-5-2.3.1">Upon receipt of an <code>ExtendedKeyUpdate(key_update_response)</code> the initiator<a href="#section-5-2.3.1" class="pilcrow">¶</a></p>
 </li>
         <li id="section-5-2.4">
-          <p id="section-5-2.4.1">After the initiator sends <code>ExtendedKeyUpdate(new_key_update)</code> it
+          <p id="section-5-2.4.1">derives the new secrets from the exchanged key shares. The initiator then sends an empty
+ExtendedKeyUpdate(new_key_update) message to trigger the switch to the
+new keys.<a href="#section-5-2.4.1" class="pilcrow">¶</a></p>
+</li>
+        <li id="section-5-2.5">
+          <p id="section-5-2.5.1">After the initiator sends <code>ExtendedKeyUpdate(new_key_update)</code> it
 MUST update its send keys. Upon receipt of this message, the responder
 MUST update its receive keys and then send
 <code>ExtendedKeyUpdate(new_key_update)</code>, after which it MUST update its
-send keys.<a href="#section-5-2.4.1" class="pilcrow">¶</a></p>
+send keys.<a href="#section-5-2.5.1" class="pilcrow">¶</a></p>
 </li>
-        <li id="section-5-2.5">
-          <p id="section-5-2.5.1">After receiving the responder’s <code>ExtendedKeyUpdate(new_key_update)</code>,
-the initiator MUST update its receive keys.<a href="#section-5-2.5.1" class="pilcrow">¶</a></p>
+        <li id="section-5-2.6">
+          <p id="section-5-2.6.1">After receiving the responder’s <code>ExtendedKeyUpdate(new_key_update)</code>,
+the initiator MUST update its receive keys.<a href="#section-5-2.6.1" class="pilcrow">¶</a></p>
 </li>
       </ol>
 <p id="section-5-3">Both sender and receiver MUST encrypt their
@@ -1582,10 +1553,9 @@ the initiator MUST update its receive keys.<a href="#section-5-2.5.1" class="pil
 sides MUST ensure that the <code>new_key_update</code> encrypted with the old key
 is received before accepting any messages encrypted with the new key.<a href="#section-5-3" class="pilcrow">¶</a></p>
 <p id="section-5-4">If TLS peers independently initiate the extended key update and the
-requests cross in flight, the <code>ExtendedKeyUpdate(request)</code> with the
+requests cross in flight, the <code>ExtendedKeyUpdate(key_update_request)</code> with the
 lower lexicographic order of the <code>key_exchange</code> value in
-<code>KeyShareEntry</code> MUST be rejected with status set to <code>clashed</code> in the
-corresponding <code>ExtendedKeyUpdate(response)</code>. This prevents each
+<code>KeyShareEntry</code> MUST be ignored. This prevents each
 side from advancing keys by two generations.<a href="#section-5-4" class="pilcrow">¶</a></p>
 <p id="section-5-5">The handshake framing uses a single <code>HandshakeType</code> for this message
 (see <a href="#fig-handshake" class="auto internal xref">Figure 2</a>).<a href="#section-5-5" class="pilcrow">¶</a></p>
@@ -1665,18 +1635,16 @@ Auth | {CertificateVerify}
                                   ...
                               some time later
                                   ...
- [ExtendedKeyUpdate(request     --------&gt;
-  (with key_share))]
-                               &lt;-------- [ExtendedKeyUpdate(response
-                                           (accepted, with key_share))]
+ [EKU(key_update_request       --------&gt;
+       (with key_share))]
+                               &lt;-------- [EKU(key_update_response
+                                           (with key_share))]
                                         # Server derives new secrets
 # Client derives new secrets
- [ExtendedKeyUpdate(new_key_update)]
-                               --------&gt;
+        [EKU(new_key_update)]  --------&gt;
 # Client updates SEND keys here
                                     # Server updates RECEIVE keys here
-                               &lt;--------
-                                    [ExtendedKeyUpdate(new_key_update)]
+                               &lt;--------  [EKU(new_key_update)]
                                     # Server updates SEND keys here
 
 # Client updates RECEIVE keys here
@@ -1707,55 +1675,50 @@ to process such records; however, they MAY choose to discard them.The exchange
 has the following steps:<a href="#section-6-3" class="pilcrow">¶</a></p>
 <ol start="1" type="1" class="normal type-1" id="section-6-4">
 <li id="section-6-4.1">
-          <p id="section-6-4.1.1">The initiator sends an <code>ExtendedKeyUpdate(request)</code> message, which contains a
+          <p id="section-6-4.1.1">The initiator sends an <code>ExtendedKeyUpdate(key_update_request)</code> message, which contains a
 key share. While an extended key update is in progress, the initiator MUST NOT
 initiate further key updates. This message is subject to DTLS handshake
-retransmission, but delivery is only confirmed when the initiator receives the
-corresponding <code>ExtendedKeyUpdate(response)</code>.<a href="#section-6-4.1.1" class="pilcrow">¶</a></p>
+retransmission, but delivery is only confirmed when the initiator either receives the
+corresponding <code>ExtendedKeyUpdate(key_update_response)</code> or an ACK.<a href="#section-6-4.1.1" class="pilcrow">¶</a></p>
 </li>
         <li id="section-6-4.2">
-          <p id="section-6-4.2.1">On receipt of the <code>ExtendedKeyUpdate(request)</code>, the responder either accepts
-or declines the request. If the responder accepts the request, it sets the
-status in <code>ExtendedKeyUpdate(response)</code> to <code>accepted</code>, includes its own key
-share, and sets the local variable <code>accepted=1</code>. While an extended key update
-is in progress, the responder MUST NOT initiate further key updates. If the
-responder declines the request, it sets the status accordingly and does not
-include a key share. Declining the request aborts the exchange.<a href="#section-6-4.2.1" class="pilcrow">¶</a></p>
+          <p id="section-6-4.2.1">Upon receipt, the responder sends its own <code>KeyShareEntry</code> in a
+<code>ExtendedKeyUpdate(key_update_response)</code> message. While an extended key update
+is in progress, the responder MUST NOT initiate further key updates. The responder MAY defer
+sending a response if system load or resource constraints prevent immediate processing.
+In such cases, responder MUST confirm receipt of the the key_update_request with an ACK and
+send an actual key_update_response once sufficient resources become available.<a href="#section-6-4.2.1" class="pilcrow">¶</a></p>
 </li>
         <li id="section-6-4.3">
-          <p id="section-6-4.3.1">If the status in <code>ExtendedKeyUpdate(response)</code> was set to <code>accepted</code>,
-the responder transmits that message to the initiator.<a href="#section-6-4.3.1" class="pilcrow">¶</a></p>
+          <p id="section-6-4.3.1">On receipt of <code>ExtendedKeyUpdate(key_update_response)</code> derives a secret key based on the
+exchanged key shares. This message also serves as an implicit acknowledgment of the
+initiators’s ExtendedKeyUpdate(key_update_request), so no separate ACK is required.<a href="#section-6-4.3.1" class="pilcrow">¶</a></p>
 </li>
         <li id="section-6-4.4">
-          <p id="section-6-4.4.1">On receipt of <code>ExtendedKeyUpdate(response)</code> with status <code>accepted</code>,
-the initiator sets the local variable <code>accepted=1</code> and derives a secret key based on the
-exchanged key shares. This message also serves as an implicit acknowledgment of the initiators’s ExtendedKeyUpdate(request), so no separate ACK is required.<a href="#section-6-4.4.1" class="pilcrow">¶</a></p>
+          <p id="section-6-4.4.1">The initiator transmits an <code>ExtendedKeyUpdate(new_key_update)</code> message.<a href="#section-6-4.4.1" class="pilcrow">¶</a></p>
 </li>
         <li id="section-6-4.5">
-          <p id="section-6-4.5.1">The initiator transmits an <code>ExtendedKeyUpdate(new_key_update)</code> message.<a href="#section-6-4.5.1" class="pilcrow">¶</a></p>
+          <p id="section-6-4.5.1">Upon receiving <code>ExtendedKeyUpdate(new_key_update)</code>, the responder MUST update
+its receive keys and epoch value.<a href="#section-6-4.5.1" class="pilcrow">¶</a></p>
 </li>
         <li id="section-6-4.6">
-          <p id="section-6-4.6.1">Upon receiving <code>ExtendedKeyUpdate(new_key_update)</code>, the responder MUST update
-its receive keys and epoch value.<a href="#section-6-4.6.1" class="pilcrow">¶</a></p>
+          <p id="section-6-4.6.1">The responder acknowledges the received message by sending its own
+<code>ExtendedKeyUpdate(new_key_update)</code>.<a href="#section-6-4.6.1" class="pilcrow">¶</a></p>
 </li>
         <li id="section-6-4.7">
-          <p id="section-6-4.7.1">The responder acknowledges the received message by sending its own
-<code>ExtendedKeyUpdate(new_key_update)</code>.<a href="#section-6-4.7.1" class="pilcrow">¶</a></p>
+          <p id="section-6-4.7.1">After the initiator receives the responder’s <code>ExtendedKeyUpdate(new_key_update)</code>,
+the initiator MUST update its send key and epoch value. With the receipt of
+that message, the initiator MUST also update its receive keys.<a href="#section-6-4.7.1" class="pilcrow">¶</a></p>
 </li>
         <li id="section-6-4.8">
-          <p id="section-6-4.8.1">After the initiator receives the responder’s <code>ExtendedKeyUpdate(new_key_update)</code>,
-the initiator MUST update its send key and epoch value. With the receipt of
-that message, the initiator MUST also update its receive keys.<a href="#section-6-4.8.1" class="pilcrow">¶</a></p>
+          <p id="section-6-4.8.1">The initiator MUST acknowledge the responder’s
+<code>ExtendedKeyUpdate(new_key_update)</code> with an ACK message.<a href="#section-6-4.8.1" class="pilcrow">¶</a></p>
 </li>
         <li id="section-6-4.9">
-          <p id="section-6-4.9.1">The initiator MUST acknowledge the responder’s
-<code>ExtendedKeyUpdate(new_key_update)</code> with an ACK message.<a href="#section-6-4.9.1" class="pilcrow">¶</a></p>
-</li>
-        <li id="section-6-4.10">
-          <p id="section-6-4.10.1">On receipt of the ACK message, the responder updates its send key and epoch
+          <p id="section-6-4.9.1">On receipt of the ACK message, the responder updates its send key and epoch
 value. If this ACK is not received, the responder re-transmits
 ExtendedKeyUpdate(new_key_update) until ACK is received. The key update is
-complete once this ACK is processed by the responder.<a href="#section-6-4.10.1" class="pilcrow">¶</a></p>
+complete once this ACK is processed by the responder.<a href="#section-6-4.9.1" class="pilcrow">¶</a></p>
 </li>
       </ol>
 <p id="section-6-5">The handshake framing uses a single <code>HandshakeType</code> for this message
@@ -1841,35 +1804,35 @@ Client                            Server
   \---------------------------------------/
 
 [C: tx=3, rx=3]                   [S: tx=3, rx=3]
-[ExtendedKeyUpdate(request)]     --------&gt;
+[EKU(key_update_request)]  --------&gt;
                                   # no epoch change yet
 
-                           &lt;-------- [ExtendedKeyUpdate(response)]
-                                  # accepted; still old epochs
+                           &lt;-------- [EKU(key_update_response)]
+                                  # still old epochs
 
-[ExtendedKeyUpdate(new_key_update)] --------&gt;
+[EKU(new_key_update)]      --------&gt;
 # Sent under OLD epoch. Client does NOT bump yet.
 
 # Step 6: responder bumps RECEIVE epoch on NKU-in:
 # (rx:=rx+1; tx still old)
 [C: tx=3, rx=3]                   [S: tx=3, rx=4]
 
-                 &lt;-------- [ExtendedKeyUpdate(new_key_update)]
+                           &lt;-------- [EKU(new_key_update)]
 # Responder’s NKU is tagged with OLD tx (3).
 
 # Epoch switch point:
 # Step 8: initiator bumps BOTH tx and rx on NKU-in:
 [C: tx=4, rx=4]                   [S: tx=3, rx=4]
 
-[ACK] (tag=new)   --------&gt;
+[ACK] (tag=new)            --------&gt;
 
 # Step 10: responder bumps SEND epoch on ACK-in:
 [C: tx=4, rx=4]                   [S: tx=4, rx=4]
 
-                                  &lt;--------   [Application Data]
+                           &lt;--------   [Application Data]
 [C: tx=4, rx=4]                   [S: tx=4, rx=4]
 
-[Application Data]                --------&gt;
+[Application Data]         --------&gt;
 [C: tx=4, rx=4]                   [S: tx=4, rx=4]
 </pre>
 </div>
@@ -1929,8 +1892,8 @@ key exchange / PQ-KEM exchange),<a href="#section-7-3.1.1" class="pilcrow">¶</a
 bound to the previously established secret,<a href="#section-7-3.2.1" class="pilcrow">¶</a></p>
 </li>
         <li class="normal" id="section-7-3.3">
-          <p id="section-7-3.3.1">the concatenation of the <code>ExtendedKeyUpdate(request)</code> and the
-<code>ExtendedKeyUpdate(response)</code> messages, which contain the key shares,
+          <p id="section-7-3.3.1">the concatenation of the <code>ExtendedKeyUpdate(key_update_request)</code> and the
+<code>ExtendedKeyUpdate(key_update_response)</code> messages, which contain the key shares,
 binding the encapsulated shared secret ciphertext to IKM in case of
 hybrid key exchange, providing MAL-BIND-K-CT security (see <span>[<a href="#CDM23" class="cite xref">CDM23</a>]</span>),
 and<a href="#section-7-3.3.1" class="pilcrow">¶</a></p>
@@ -1952,28 +1915,28 @@ TLS 1.3.<a href="#section-7-3.4.1" class="pilcrow">¶</a></p>
  (EC)DHE -&gt; HKDF-Extract = Master Secret N+1
              |
              +-----&gt; Derive-Secret(., "c ap traffic2",
-             |                ExtendedKeyUpdate(request) ||
-             |                ExtendedKeyUpdate(response))
+             |                EKU(key_update_request) ||
+             |                EKU(key_update_response))
              |                = client_application_traffic_secret_N+1
              |
              +-----&gt; Derive-Secret(., "s ap traffic2",
-             |                ExtendedKeyUpdate(request) ||
-             |                ExtendedKeyUpdate(response))
+             |                EKU(key_update_request) ||
+             |                EKU(key_update_response))
              |                = server_application_traffic_secret_N+1
              |
              +-----&gt; Derive-Secret(., "exp master2",
-             |                ExtendedKeyUpdate(request) ||
-             |                ExtendedKeyUpdate(response))
+             |                EKU(key_update_request) ||
+             |                EKU(key_update_response))
              |                = exporter_master_secret_N+1
              |
              +-----&gt; Derive-Secret(., "res master2",
-             |                ExtendedKeyUpdate(request) ||
-             |                ExtendedKeyUpdate(response))
+             |                EKU(key_update_request) ||
+             |                EKU(key_update_response))
                               = resumption_master_secret_N+1
 </pre><a href="#section-7-5" class="pilcrow">¶</a>
 </div>
 <p id="section-7-6">During the initial handshake, the Master Secret is generated (see
-<span><a href="https://datatracker.ietf.org/doc/html/draft-ietf-tls-rfc8446bis-13#section-7.1" class="relref">Section 7.1</a> of [<a href="#I-D.ietf-tls-rfc8446bis" class="cite xref">I-D.ietf-tls-rfc8446bis</a>]</span>). Since the Master Secret
+<span><a href="https://datatracker.ietf.org/doc/html/draft-ietf-tls-rfc8446bis-14#section-7.1" class="relref">Section 7.1</a> of [<a href="#I-D.ietf-tls-rfc8446bis" class="cite xref">I-D.ietf-tls-rfc8446bis</a>]</span>). Since the Master Secret
 is discarded during the key derivation procedure, a derived value is
 stored. This stored value then serves as the input salt to the first
 key update procedure that incorporates the ephemeral (EC)DHE-
@@ -1985,7 +1948,7 @@ process is repeated for each additional key update procedure.<a href="#section-7
 <p id="section-7-7">The traffic keys are re-derived from
 client_application_traffic_secret_N+1 and
 server_application_traffic_secret_N+1, as described in
-<span><a href="https://datatracker.ietf.org/doc/html/draft-ietf-tls-rfc8446bis-13#section-7.3" class="relref">Section 7.3</a> of [<a href="#I-D.ietf-tls-rfc8446bis" class="cite xref">I-D.ietf-tls-rfc8446bis</a>]</span>.<a href="#section-7-7" class="pilcrow">¶</a></p>
+<span><a href="https://datatracker.ietf.org/doc/html/draft-ietf-tls-rfc8446bis-14#section-7.3" class="relref">Section 7.3</a> of [<a href="#I-D.ietf-tls-rfc8446bis" class="cite xref">I-D.ietf-tls-rfc8446bis</a>]</span>.<a href="#section-7-7" class="pilcrow">¶</a></p>
 <p id="section-7-8">Once client_/server_application_traffic_secret_N+1 and its associated
 traffic keys have been computed, implementations SHOULD delete
 client_/server_application_traffic_secret_N and its associated
@@ -2070,12 +2033,12 @@ and <code>SERVER_TRAFFIC_SECRET_</code>.<a href="#section-9-5" class="pilcrow">�
 <p id="section-10-1">Protocols such as DTLS-SRTP and DTLS-over-SCTP rely on TLS or DTLS for
 key establishment, but reuse portions of the derived keying material for
 their own specific purposes.These protocols use the TLS exporter defined
-in <span><a href="https://datatracker.ietf.org/doc/html/draft-ietf-tls-rfc8446bis-13#section-7.5" class="relref">Section 7.5</a> of [<a href="#I-D.ietf-tls-rfc8446bis" class="cite xref">I-D.ietf-tls-rfc8446bis</a>]</span>.<a href="#section-10-1" class="pilcrow">¶</a></p>
+in <span><a href="https://datatracker.ietf.org/doc/html/draft-ietf-tls-rfc8446bis-14#section-7.5" class="relref">Section 7.5</a> of [<a href="#I-D.ietf-tls-rfc8446bis" class="cite xref">I-D.ietf-tls-rfc8446bis</a>]</span>.<a href="#section-10-1" class="pilcrow">¶</a></p>
 <p id="section-10-2">Once the Extended Key Update mechanism is complete, such protocols would
 need to use the newly derived key to generate Exported Keying Material
 (EKM) to protect packets. The "sk" derived in the <a href="#key_update" class="auto internal xref">Section 7</a> will be
 used as the "Secret" in the exporter function, defined in
-<span><a href="https://datatracker.ietf.org/doc/html/draft-ietf-tls-rfc8446bis-13#section-7.5" class="relref">Section 7.5</a> of [<a href="#I-D.ietf-tls-rfc8446bis" class="cite xref">I-D.ietf-tls-rfc8446bis</a>]</span>, to generate EKM, ensuring that
+<span><a href="https://datatracker.ietf.org/doc/html/draft-ietf-tls-rfc8446bis-14#section-7.5" class="relref">Section 7.5</a> of [<a href="#I-D.ietf-tls-rfc8446bis" class="cite xref">I-D.ietf-tls-rfc8446bis</a>]</span>, to generate EKM, ensuring that
 the exported keying material is aligned with the updated security context.<a href="#section-10-2" class="pilcrow">¶</a></p>
 </section>
 </div>
@@ -2092,65 +2055,109 @@ the exported keying material is aligned with the updated security context.<a hre
       <h2 id="name-iana-considerations">
 <a href="#section-12" class="section-number selfRef">12. </a><a href="#name-iana-considerations" class="section-name selfRef">IANA Considerations</a>
       </h2>
-<div id="tls-alerts">
-<section id="section-12.1">
-        <h3 id="name-tls-alerts">
-<a href="#section-12.1" class="section-number selfRef">12.1. </a><a href="#name-tls-alerts" class="section-name selfRef">TLS Alerts</a>
-        </h3>
-<p id="section-12.1-1">IANA is requested to allocate value TBD for the "extended_key_update_required"
-alert in the "TLS Alerts" registry. The value for the "DTLS-OK" column is "Y".<a href="#section-12.1-1" class="pilcrow">¶</a></p>
-</section>
-</div>
 <div id="tls-flags">
-<section id="section-12.2">
+<section id="section-12.1">
         <h3 id="name-tls-flags">
-<a href="#section-12.2" class="section-number selfRef">12.2. </a><a href="#name-tls-flags" class="section-name selfRef">TLS Flags</a>
+<a href="#section-12.1" class="section-number selfRef">12.1. </a><a href="#name-tls-flags" class="section-name selfRef">TLS Flags</a>
         </h3>
-<p id="section-12.2-1">IANA is requested to add the following entry to the "TLS Flags"
-extension registry <span>[<a href="#TLS-Ext-Registry" class="cite xref">TLS-Ext-Registry</a>]</span>:<a href="#section-12.2-1" class="pilcrow">¶</a></p>
+<p id="section-12.1-1">IANA is requested to add the following entry to the "TLS Flags"
+extension registry <span>[<a href="#TLS-Ext-Registry" class="cite xref">TLS-Ext-Registry</a>]</span>:<a href="#section-12.1-1" class="pilcrow">¶</a></p>
 <ul class="normal">
-<li class="normal" id="section-12.2-2.1">
-            <p id="section-12.2-2.1.1">Value: TBD1<a href="#section-12.2-2.1.1" class="pilcrow">¶</a></p>
+<li class="normal" id="section-12.1-2.1">
+            <p id="section-12.1-2.1.1">Value: TBD1<a href="#section-12.1-2.1.1" class="pilcrow">¶</a></p>
 </li>
-          <li class="normal" id="section-12.2-2.2">
-            <p id="section-12.2-2.2.1">Flag Name: extended_key_update<a href="#section-12.2-2.2.1" class="pilcrow">¶</a></p>
+          <li class="normal" id="section-12.1-2.2">
+            <p id="section-12.1-2.2.1">Flag Name: extended_key_update<a href="#section-12.1-2.2.1" class="pilcrow">¶</a></p>
 </li>
-          <li class="normal" id="section-12.2-2.3">
-            <p id="section-12.2-2.3.1">Messages: CH, EE<a href="#section-12.2-2.3.1" class="pilcrow">¶</a></p>
+          <li class="normal" id="section-12.1-2.3">
+            <p id="section-12.1-2.3.1">Messages: CH, EE<a href="#section-12.1-2.3.1" class="pilcrow">¶</a></p>
 </li>
-          <li class="normal" id="section-12.2-2.4">
-            <p id="section-12.2-2.4.1">Recommended: Y<a href="#section-12.2-2.4.1" class="pilcrow">¶</a></p>
+          <li class="normal" id="section-12.1-2.4">
+            <p id="section-12.1-2.4.1">Recommended: Y<a href="#section-12.1-2.4.1" class="pilcrow">¶</a></p>
 </li>
-          <li class="normal" id="section-12.2-2.5">
-            <p id="section-12.2-2.5.1">Reference: [This document]<a href="#section-12.2-2.5.1" class="pilcrow">¶</a></p>
+          <li class="normal" id="section-12.1-2.5">
+            <p id="section-12.1-2.5.1">Reference: [This document]<a href="#section-12.1-2.5.1" class="pilcrow">¶</a></p>
 </li>
         </ul>
 </section>
 </div>
 <div id="tls-handshaketype">
-<section id="section-12.3">
+<section id="section-12.2">
         <h3 id="name-tls-handshaketype">
-<a href="#section-12.3" class="section-number selfRef">12.3. </a><a href="#name-tls-handshaketype" class="section-name selfRef">TLS HandshakeType</a>
+<a href="#section-12.2" class="section-number selfRef">12.2. </a><a href="#name-tls-handshaketype" class="section-name selfRef">TLS HandshakeType</a>
         </h3>
-<p id="section-12.3-1">IANA is requested to add the following entry to the "TLS HandshakeType"
-registry <span>[<a href="#TLS-Ext-Registry" class="cite xref">TLS-Ext-Registry</a>]</span>:<a href="#section-12.3-1" class="pilcrow">¶</a></p>
+<p id="section-12.2-1">IANA is requested to add the following entry to the "TLS HandshakeType"
+registry <span>[<a href="#TLS-Ext-Registry" class="cite xref">TLS-Ext-Registry</a>]</span>:<a href="#section-12.2-1" class="pilcrow">¶</a></p>
 <ul class="normal">
-<li class="normal" id="section-12.3-2.1">
-            <p id="section-12.3-2.1.1">Value: TBD2<a href="#section-12.3-2.1.1" class="pilcrow">¶</a></p>
+<li class="normal" id="section-12.2-2.1">
+            <p id="section-12.2-2.1.1">Value: TBD2<a href="#section-12.2-2.1.1" class="pilcrow">¶</a></p>
 </li>
-          <li class="normal" id="section-12.3-2.2">
-            <p id="section-12.3-2.2.1">Description: extended_key_update<a href="#section-12.3-2.2.1" class="pilcrow">¶</a></p>
+          <li class="normal" id="section-12.2-2.2">
+            <p id="section-12.2-2.2.1">Description: extended_key_update<a href="#section-12.2-2.2.1" class="pilcrow">¶</a></p>
 </li>
-          <li class="normal" id="section-12.3-2.3">
-            <p id="section-12.3-2.3.1">DTLS-OK: Y<a href="#section-12.3-2.3.1" class="pilcrow">¶</a></p>
+          <li class="normal" id="section-12.2-2.3">
+            <p id="section-12.2-2.3.1">DTLS-OK: Y<a href="#section-12.2-2.3.1" class="pilcrow">¶</a></p>
 </li>
-          <li class="normal" id="section-12.3-2.4">
-            <p id="section-12.3-2.4.1">Reference: [This document]<a href="#section-12.3-2.4.1" class="pilcrow">¶</a></p>
+          <li class="normal" id="section-12.2-2.4">
+            <p id="section-12.2-2.4.1">Reference: [This document]<a href="#section-12.2-2.4.1" class="pilcrow">¶</a></p>
 </li>
         </ul>
-<p id="section-12.3-3">Note: The subtypes <code>extended_key_update_request</code>, <code>extended_key_update_response</code>,
-and <code>new_key_update</code> are internal to the <code>ExtendedKeyUpdate</code> message and do not
-require separate HandshakeType code points.<a href="#section-12.3-3" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="iana-eku-registry">
+<section id="section-12.3">
+        <h3 id="name-extendedkeyupdate-message-s">
+<a href="#section-12.3" class="section-number selfRef">12.3. </a><a href="#name-extendedkeyupdate-message-s" class="section-name selfRef">ExtendedKeyUpdate Message Subtypes Registry</a>
+        </h3>
+<p id="section-12.3-1">IANA is requested to create a new registry "TLS ExtendedKeyUpdate Message Subtypes", within the
+existing "Transport Layer Security (TLS) Parameters" registry <span>[<a href="#TLS-Ext-Registry" class="cite xref">TLS-Ext-Registry</a>]</span>.
+This new registry reserves types used for Extended Key Update entries.
+The initial contents of this registry are as follows.<a href="#section-12.3-1" class="pilcrow">¶</a></p>
+<table class="center" id="table-1">
+          <caption><a href="#table-1" class="selfRef">Table 1</a></caption>
+<thead>
+            <tr>
+              <th class="text-left" rowspan="1" colspan="1">Value</th>
+              <th class="text-left" rowspan="1" colspan="1">Description</th>
+              <th class="text-left" rowspan="1" colspan="1">DTLS-OK</th>
+              <th class="text-left" rowspan="1" colspan="1">Reference</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="text-left" rowspan="1" colspan="1">0</td>
+              <td class="text-left" rowspan="1" colspan="1">key_update_request</td>
+              <td class="text-left" rowspan="1" colspan="1">Y</td>
+              <td class="text-left" rowspan="1" colspan="1">This document</td>
+            </tr>
+            <tr>
+              <td class="text-left" rowspan="1" colspan="1">1</td>
+              <td class="text-left" rowspan="1" colspan="1">key_update_response</td>
+              <td class="text-left" rowspan="1" colspan="1">Y</td>
+              <td class="text-left" rowspan="1" colspan="1">This document</td>
+            </tr>
+            <tr>
+              <td class="text-left" rowspan="1" colspan="1">2</td>
+              <td class="text-left" rowspan="1" colspan="1">new_key_update</td>
+              <td class="text-left" rowspan="1" colspan="1">Y</td>
+              <td class="text-left" rowspan="1" colspan="1">This document</td>
+            </tr>
+            <tr>
+              <td class="text-left" rowspan="1" colspan="1">3-255</td>
+              <td class="text-left" rowspan="1" colspan="1">Unassigned</td>
+              <td class="text-left" rowspan="1" colspan="1"> </td>
+              <td class="text-left" rowspan="1" colspan="1"> </td>
+            </tr>
+          </tbody>
+        </table>
+<p id="section-12.3-3">New assignments in the "TLS ExtendedKeyUpdate Types" registry will be administered by
+IANA through Specification Required procedure <span>[<a href="#RFC8126" class="cite xref">RFC8126</a>]</span>.  The role of the
+designated expert is described in <span><a href="https://rfc-editor.org/rfc/rfc8447#section-17" class="relref">Section 17</a> of [<a href="#RFC8447" class="cite xref">RFC8447</a>]</span>.  The designated expert
+<span>[<a href="#RFC8126" class="cite xref">RFC8126</a>]</span> ensures that the specification is publicly available.  It is sufficient to
+have an Internet-Draft (that is posted and never published as an RFC) or to cite a
+document from another standards body, industry consortium, or any other location.
+An expert may provide more in-depth reviews, but their approval should not be taken as an
+endorsement of the ExtendedKeyUpdate Message Subtype.<a href="#section-12.3-3" class="pilcrow">¶</a></p>
 </section>
 </div>
 </section>
@@ -2168,11 +2175,11 @@ require separate HandshakeType code points.<a href="#section-12.3-3" class="pilc
 <dl class="references">
 <dt id="I-D.ietf-tls-rfc8446bis">[I-D.ietf-tls-rfc8446bis]</dt>
         <dd>
-<span class="refAuthor">Rescorla, E.</span>, <span class="refTitle">"The Transport Layer Security (TLS) Protocol Version 1.3"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-ietf-tls-rfc8446bis-13</span>, <time datetime="2025-07-21" class="refDate">21 July 2025</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-ietf-tls-rfc8446bis-13">https://datatracker.ietf.org/doc/html/draft-ietf-tls-rfc8446bis-13</a>&gt;</span>. </dd>
+<span class="refAuthor">Rescorla, E.</span>, <span class="refTitle">"The Transport Layer Security (TLS) Protocol Version 1.3"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-ietf-tls-rfc8446bis-14</span>, <time datetime="2025-09-13" class="refDate">13 September 2025</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-ietf-tls-rfc8446bis-14">https://datatracker.ietf.org/doc/html/draft-ietf-tls-rfc8446bis-14</a>&gt;</span>. </dd>
 <dd class="break"></dd>
 <dt id="I-D.ietf-tls-tlsflags">[I-D.ietf-tls-tlsflags]</dt>
         <dd>
-<span class="refAuthor">Nir, Y.</span>, <span class="refTitle">"A Flags Extension for TLS 1.3"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-ietf-tls-tlsflags-15</span>, <time datetime="2025-03-15" class="refDate">15 March 2025</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-ietf-tls-tlsflags-15">https://datatracker.ietf.org/doc/html/draft-ietf-tls-tlsflags-15</a>&gt;</span>. </dd>
+<span class="refAuthor">Nir, Y.</span>, <span class="refTitle">"A Flags Extension for TLS 1.3"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-ietf-tls-tlsflags-16</span>, <time datetime="2025-09-14" class="refDate">14 September 2025</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-ietf-tls-tlsflags-16">https://datatracker.ietf.org/doc/html/draft-ietf-tls-tlsflags-16</a>&gt;</span>. </dd>
 <dd class="break"></dd>
 <dt id="RFC2119">[RFC2119]</dt>
         <dd>
@@ -2222,6 +2229,14 @@ require separate HandshakeType code points.<a href="#section-12.3-3" class="pilc
 <dt id="RFC7624">[RFC7624]</dt>
         <dd>
 <span class="refAuthor">Barnes, R.</span>, <span class="refAuthor">Schneier, B.</span>, <span class="refAuthor">Jennings, C.</span>, <span class="refAuthor">Hardie, T.</span>, <span class="refAuthor">Trammell, B.</span>, <span class="refAuthor">Huitema, C.</span>, and <span class="refAuthor">D. Borkmann</span>, <span class="refTitle">"Confidentiality in the Face of Pervasive Surveillance: A Threat Model and Problem Statement"</span>, <span class="seriesInfo">RFC 7624</span>, <span class="seriesInfo">DOI 10.17487/RFC7624</span>, <time datetime="2015-08" class="refDate">August 2015</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc7624">https://www.rfc-editor.org/rfc/rfc7624</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC8126">[RFC8126]</dt>
+        <dd>
+<span class="refAuthor">Cotton, M.</span>, <span class="refAuthor">Leiba, B.</span>, and <span class="refAuthor">T. Narten</span>, <span class="refTitle">"Guidelines for Writing an IANA Considerations Section in RFCs"</span>, <span class="seriesInfo">BCP 26</span>, <span class="seriesInfo">RFC 8126</span>, <span class="seriesInfo">DOI 10.17487/RFC8126</span>, <time datetime="2017-06" class="refDate">June 2017</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc8126">https://www.rfc-editor.org/rfc/rfc8126</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC8447">[RFC8447]</dt>
+        <dd>
+<span class="refAuthor">Salowey, J.</span> and <span class="refAuthor">S. Turner</span>, <span class="refTitle">"IANA Registry Updates for TLS and DTLS"</span>, <span class="seriesInfo">RFC 8447</span>, <span class="seriesInfo">DOI 10.17487/RFC8447</span>, <time datetime="2018-08" class="refDate">August 2018</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc8447">https://www.rfc-editor.org/rfc/rfc8447</a>&gt;</span>. </dd>
 <dd class="break"></dd>
 <dt id="TLS-Ext-Registry">[TLS-Ext-Registry]</dt>
       <dd>
@@ -2556,24 +2571,20 @@ operation for TLS 1.3 and DTLS 1.3.<a href="#appendix-B-1" class="pilcrow">¶</a
               <p id="appendix-B.4.1-2.4.1">updating - true while a key-update handshake is in progress.<a href="#appendix-B.4.1-2.4.1" class="pilcrow">¶</a></p>
 </li>
             <li class="normal" id="appendix-B.4.1-2.5">
-              <p id="appendix-B.4.1-2.5.1">accepted - set to true after an accepted Resp; indicates the peer has
-agreed to proceed with the update and that new key material can be derived.<a href="#appendix-B.4.1-2.5.1" class="pilcrow">¶</a></p>
+              <p id="appendix-B.4.1-2.5.1">old_rx - the previous receive epoch remembered during retention.<a href="#appendix-B.4.1-2.5.1" class="pilcrow">¶</a></p>
 </li>
             <li class="normal" id="appendix-B.4.1-2.6">
-              <p id="appendix-B.4.1-2.6.1">old_rx - the previous receive epoch remembered during retention.<a href="#appendix-B.4.1-2.6.1" class="pilcrow">¶</a></p>
+              <p id="appendix-B.4.1-2.6.1">retain_old - when true, receiver accepts tags old_rx and rx.<a href="#appendix-B.4.1-2.6.1" class="pilcrow">¶</a></p>
 </li>
             <li class="normal" id="appendix-B.4.1-2.7">
-              <p id="appendix-B.4.1-2.7.1">retain_old - when true, receiver accepts tags old_rx and rx.<a href="#appendix-B.4.1-2.7.1" class="pilcrow">¶</a></p>
+              <p id="appendix-B.4.1-2.7.1">tag=... - the TX-epoch value written on an outgoing message.<a href="#appendix-B.4.1-2.7.1" class="pilcrow">¶</a></p>
 </li>
             <li class="normal" id="appendix-B.4.1-2.8">
-              <p id="appendix-B.4.1-2.8.1">tag=... - the TX-epoch value written on an outgoing message.<a href="#appendix-B.4.1-2.8.1" class="pilcrow">¶</a></p>
+              <p id="appendix-B.4.1-2.8.1">e==... - the epoch tag carried on an incoming message (what the peer sent).<a href="#appendix-B.4.1-2.8.1" class="pilcrow">¶</a></p>
 </li>
             <li class="normal" id="appendix-B.4.1-2.9">
-              <p id="appendix-B.4.1-2.9.1">e==... - the epoch tag carried on an incoming message (what the peer sent).<a href="#appendix-B.4.1-2.9.1" class="pilcrow">¶</a></p>
-</li>
-            <li class="normal" id="appendix-B.4.1-2.10">
-              <p id="appendix-B.4.1-2.10.1">FINISHED / START / WAIT_RESP / SENT_NKU / WAIT_R_NKU / ACTIVATE RETENTION -
-diagram states; FINISHED denotes the steady state after success or reject.<a href="#appendix-B.4.1-2.10.1" class="pilcrow">¶</a></p>
+              <p id="appendix-B.4.1-2.9.1">FINISHED / START / WAIT_RESP / SENT_NKU / WAIT_R_NKU / ACTIVATE RETENTION -
+diagram states; FINISHED denotes the steady state after success.<a href="#appendix-B.4.1-2.9.1" class="pilcrow">¶</a></p>
 </li>
           </ul>
 </section>
@@ -2587,11 +2598,9 @@ diagram states; FINISHED denotes the steady state after success or reject.<a hre
 It sends a Req and enters WAIT_RESP (updating=1). While waiting,
 APP data may be sent at any time (tagged with the current tx) and received
 according to the APP acceptance rule below.<a href="#appendix-B.4.2-1" class="pilcrow">¶</a></p>
-<p id="appendix-B.4.2-2">If the responder returns Resp(false), the update aborts and the initiator
-returns to FINISHED (no epoch change). If it returns Resp(true) with a
-tag matching the current rx, the initiator sets <code>accepted=1</code> and derives
-new key material. It then sends NKU still tagged with the old tx, moving to
-SENT_NKU/WAIT_R_NKU.<a href="#appendix-B.4.2-2" class="pilcrow">¶</a></p>
+<p id="appendix-B.4.2-2">Once the responder returns Resp with a tag matching the current rx, the
+initiator derives new key material. It then sends NKU still tagged with
+the old tx, moving to SENT_NKU/WAIT_R_NKU.<a href="#appendix-B.4.2-2" class="pilcrow">¶</a></p>
 <p id="appendix-B.4.2-3">Upon receiving the responder's NKU (tag equals the current rx, meaning
 the responder is still tagging with its old tx), the initiator:<a href="#appendix-B.4.2-3" class="pilcrow">¶</a></p>
 <ol start="1" type="1" class="normal type-1" id="appendix-B.4.2-4">
@@ -2616,42 +2625,36 @@ any time; reordering is tolerated by the acceptance rule.<a href="#appendix-B.4.
 rx arrives, clear retain_old.<a href="#appendix-B.4.2-6" class="pilcrow">¶</a></p>
 <div id="appendix-B.4.2-7">
             <div class="alignLeft art-svg artwork" id="appendix-B.4.2-7.1">
-<svg xmlns="http://www.w3.org/2000/svg" version="1.1" height="816" width="528" viewBox="0 0 528 816" class="diagram" text-anchor="middle" font-family="monospace" font-size="13px" stroke-linecap="round">
-                <path d="M 128,352 L 128,720" fill="none" stroke="black"></path>
+<svg xmlns="http://www.w3.org/2000/svg" version="1.1" height="784" width="528" viewBox="0 0 528 784" class="diagram" text-anchor="middle" font-family="monospace" font-size="13px" stroke-linecap="round">
                 <path d="M 184,32 L 184,80" fill="none" stroke="black"></path>
                 <path d="M 208,160 L 208,256" fill="none" stroke="black"></path>
-                <path d="M 208,400 L 208,448" fill="none" stroke="black"></path>
-                <path d="M 208,560 L 208,640" fill="none" stroke="black"></path>
-                <path d="M 208,752 L 208,784" fill="none" stroke="black"></path>
-                <path d="M 224,720 L 224,744" fill="none" stroke="black"></path>
-                <path d="M 240,216 L 240,336" fill="none" stroke="black"></path>
-                <path d="M 280,456 L 280,496" fill="none" stroke="black"></path>
-                <path d="M 280,528 L 280,552" fill="none" stroke="black"></path>
-                <path d="M 280,704 L 280,744" fill="none" stroke="black"></path>
+                <path d="M 208,368 L 208,416" fill="none" stroke="black"></path>
+                <path d="M 208,528 L 208,608" fill="none" stroke="black"></path>
+                <path d="M 208,720 L 208,752" fill="none" stroke="black"></path>
+                <path d="M 280,424 L 280,464" fill="none" stroke="black"></path>
+                <path d="M 280,496 L 280,520" fill="none" stroke="black"></path>
+                <path d="M 280,672 L 280,712" fill="none" stroke="black"></path>
                 <path d="M 336,216 L 336,304" fill="none" stroke="black"></path>
                 <path d="M 344,160 L 344,208" fill="none" stroke="black"></path>
-                <path d="M 344,752 L 344,784" fill="none" stroke="black"></path>
+                <path d="M 344,720 L 344,752" fill="none" stroke="black"></path>
                 <path d="M 360,32 L 360,80" fill="none" stroke="black"></path>
-                <path d="M 392,400 L 392,448" fill="none" stroke="black"></path>
-                <path d="M 392,560 L 392,640" fill="none" stroke="black"></path>
+                <path d="M 392,368 L 392,416" fill="none" stroke="black"></path>
+                <path d="M 392,528 L 392,608" fill="none" stroke="black"></path>
                 <path d="M 184,32 L 360,32" fill="none" stroke="black"></path>
                 <path d="M 184,80 L 360,80" fill="none" stroke="black"></path>
                 <path d="M 208,160 L 344,160" fill="none" stroke="black"></path>
                 <path d="M 208,208 L 344,208" fill="none" stroke="black"></path>
                 <path d="M 160,256 L 208,256" fill="none" stroke="black"></path>
-                <path d="M 128,384 L 224,384" fill="none" stroke="black"></path>
-                <path d="M 208,400 L 392,400" fill="none" stroke="black"></path>
-                <path d="M 208,448 L 392,448" fill="none" stroke="black"></path>
-                <path d="M 208,560 L 392,560" fill="none" stroke="black"></path>
-                <path d="M 208,640 L 392,640" fill="none" stroke="black"></path>
-                <path d="M 128,720 L 224,720" fill="none" stroke="black"></path>
+                <path d="M 208,368 L 392,368" fill="none" stroke="black"></path>
+                <path d="M 208,416 L 392,416" fill="none" stroke="black"></path>
+                <path d="M 208,528 L 392,528" fill="none" stroke="black"></path>
+                <path d="M 208,608 L 392,608" fill="none" stroke="black"></path>
+                <path d="M 208,720 L 344,720" fill="none" stroke="black"></path>
                 <path d="M 208,752 L 344,752" fill="none" stroke="black"></path>
-                <path d="M 208,784 L 344,784" fill="none" stroke="black"></path>
                 <path d="M 208,208 L 216,224" fill="none" stroke="black"></path>
                 <path d="M 200,224 L 208,208" fill="none" stroke="black"></path>
-                <polygon class="arrowhead" points="288,744 276,738.4 276,749.6" fill="black" transform="rotate(90,280,744)"></polygon>
-                <polygon class="arrowhead" points="288,552 276,546.4 276,557.6" fill="black" transform="rotate(90,280,552)"></polygon>
-                <polygon class="arrowhead" points="232,744 220,738.4 220,749.6" fill="black" transform="rotate(90,224,744)"></polygon>
+                <polygon class="arrowhead" points="288,712 276,706.4 276,717.6" fill="black" transform="rotate(90,280,712)"></polygon>
+                <polygon class="arrowhead" points="288,520 276,514.4 276,525.6" fill="black" transform="rotate(90,280,520)"></polygon>
                 <g class="text">
                   <text x="272" y="52">START</text>
                   <text x="228" y="68">rx=tx=E,</text>
@@ -2687,60 +2690,52 @@ rx arrives, clear retain_old.<a href="#appendix-B.4.2-6" class="pilcrow">¶</a><
                   <text x="440" y="292">and</text>
                   <text x="424" y="308">retain_old:</text>
                   <text x="496" y="308">clear</text>
-                  <text x="176" y="340">Resp(false)</text>
-                  <text x="232" y="340">-</text>
-                  <text x="332" y="340">Resp(true,</text>
-                  <text x="408" y="340">e==rx):</text>
-                  <text x="164" y="356">(reject)</text>
-                  <text x="304" y="356">(4)</text>
-                  <text x="364" y="356">accepted=1</text>
-                  <text x="144" y="372">set</text>
-                  <text x="204" y="372">updating=0</text>
-                  <text x="304" y="372">(5)</text>
-                  <text x="340" y="372">send</text>
-                  <text x="376" y="372">NKU</text>
-                  <text x="428" y="372">[tag=old</text>
-                  <text x="480" y="372">tx]</text>
-                  <text x="352" y="388">v</text>
-                  <text x="260" y="420">SENT_NKU</text>
-                  <text x="304" y="420">/</text>
-                  <text x="268" y="436">WAIT_R_NKU</text>
-                  <text x="368" y="468">/|\</text>
-                  <text x="400" y="468">APP</text>
-                  <text x="456" y="468">send/recv</text>
-                  <text x="416" y="484">allowed</text>
-                  <text x="232" y="516">(7)</text>
-                  <text x="268" y="516">recv</text>
-                  <text x="304" y="516">NKU</text>
-                  <text x="352" y="516">[e==rx]</text>
-                  <text x="332" y="532">(Responder</text>
-                  <text x="400" y="532">still</text>
-                  <text x="444" y="532">tags</text>
-                  <text x="480" y="532">old</text>
-                  <text x="512" y="532">tx)</text>
-                  <text x="260" y="580">ACTIVATE</text>
-                  <text x="336" y="580">RETENTION</text>
-                  <text x="268" y="596">old_rx=rx;</text>
-                  <text x="280" y="612">retain_old=1;</text>
-                  <text x="248" y="628">rx=rx</text>
-                  <text x="284" y="628">1;</text>
-                  <text x="328" y="628">tx=tx+1</text>
-                  <text x="280" y="660">|</text>
-                  <text x="200" y="676">(9)</text>
-                  <text x="236" y="676">send</text>
-                  <text x="272" y="676">ACK</text>
-                  <text x="324" y="676">[tag=tx]</text>
-                  <text x="200" y="692">set</text>
-                  <text x="264" y="692">updating=0;</text>
-                  <text x="340" y="692">assert</text>
-                  <text x="396" y="692">tx==rx</text>
-                  <text x="16" y="772">APP</text>
-                  <text x="72" y="772">send/recv</text>
-                  <text x="144" y="772">allowed</text>
-                  <text x="188" y="772">--</text>
-                  <text x="268" y="772">FINISHED</text>
-                  <text x="52" y="788">retain_old=0</text>
-                  <text x="148" y="788">afterwards</text>
+                  <text x="340" y="324">Resp(e==rx):</text>
+                  <text x="304" y="340">(4)</text>
+                  <text x="340" y="340">send</text>
+                  <text x="376" y="340">NKU</text>
+                  <text x="428" y="340">[tag=old</text>
+                  <text x="480" y="340">tx]</text>
+                  <text x="352" y="356">v</text>
+                  <text x="260" y="388">SENT_NKU</text>
+                  <text x="304" y="388">/</text>
+                  <text x="268" y="404">WAIT_R_NKU</text>
+                  <text x="368" y="436">/|\</text>
+                  <text x="400" y="436">APP</text>
+                  <text x="456" y="436">send/recv</text>
+                  <text x="416" y="452">allowed</text>
+                  <text x="232" y="484">(6)</text>
+                  <text x="268" y="484">recv</text>
+                  <text x="304" y="484">NKU</text>
+                  <text x="352" y="484">[e==rx]</text>
+                  <text x="332" y="500">(Responder</text>
+                  <text x="400" y="500">still</text>
+                  <text x="444" y="500">tags</text>
+                  <text x="480" y="500">old</text>
+                  <text x="512" y="500">tx)</text>
+                  <text x="260" y="548">ACTIVATE</text>
+                  <text x="336" y="548">RETENTION</text>
+                  <text x="268" y="564">old_rx=rx;</text>
+                  <text x="280" y="580">retain_old=1;</text>
+                  <text x="248" y="596">rx=rx</text>
+                  <text x="284" y="596">1;</text>
+                  <text x="328" y="596">tx=tx+1</text>
+                  <text x="280" y="628">|</text>
+                  <text x="200" y="644">(8)</text>
+                  <text x="236" y="644">send</text>
+                  <text x="272" y="644">ACK</text>
+                  <text x="324" y="644">[tag=tx]</text>
+                  <text x="200" y="660">set</text>
+                  <text x="264" y="660">updating=0;</text>
+                  <text x="340" y="660">assert</text>
+                  <text x="396" y="660">tx==rx</text>
+                  <text x="16" y="740">APP</text>
+                  <text x="72" y="740">send/recv</text>
+                  <text x="144" y="740">allowed</text>
+                  <text x="188" y="740">--</text>
+                  <text x="268" y="740">FINISHED</text>
+                  <text x="52" y="756">retain_old=0</text>
+                  <text x="148" y="756">afterwards</text>
                 </g>
               </svg><a href="#appendix-B.4.2-7.1" class="pilcrow">¶</a>
 </div>
@@ -2753,7 +2748,7 @@ rx arrives, clear retain_old.<a href="#appendix-B.4.2-6" class="pilcrow">¶</a><
 <a href="#appendix-B.4.3" class="section-number selfRef">B.4.3. </a><a href="#name-state-machine-responder" class="section-name selfRef">State Machine (Responder)</a>
           </h4>
 <p id="appendix-B.4.3-1">The responder starts in the START state with synchronized transmit and receive epochs (rx=tx=E) and no update in progress. Application data can be sent at any time with the current transmit epoch and is accepted if the epoch matches the receiver's view or, if retention is active, the previous epoch.<a href="#appendix-B.4.3-1" class="pilcrow">¶</a></p>
-<p id="appendix-B.4.3-2">Upon receiving an ExtendedKeyUpdate(request) (Req), the responder transitions to the RESPOND state, where it decides to either reject (acc=false, returning to FINISHED) or accept (acc=true). If accepted, it sets <code>accepted=1</code>, sends a positive response tagged with the current transmit epoch, and enters the WAIT_I_NKU state.<a href="#appendix-B.4.3-2" class="pilcrow">¶</a></p>
+<p id="appendix-B.4.3-2">Upon receiving an ExtendedKeyUpdate(key_update_request) (Req), the responder transitions to the RESPOND state, sends a response tagged with the current transmit epoch, and enters the WAIT_I_NKU state.<a href="#appendix-B.4.3-2" class="pilcrow">¶</a></p>
 <p id="appendix-B.4.3-3">When a new_key_update (NKU) is received with the correct epoch, the responder activates retention mode: the old epoch is remembered, the receive epoch is incremented, and application data is accepted under both epochs for a transition period. The responder then sends its own NKU tagged with the old transmit epoch and moves to the WAIT_ACK state.<a href="#appendix-B.4.3-3" class="pilcrow">¶</a></p>
 <p id="appendix-B.4.3-4">Finally, upon receipt of an ACK matching the updated epoch, the responder completes the transition by synchronizing transmit and receive epochs (tx=rx), disabling retention, and clearing the update flag. The state machine returns to FINISHED, ready for subsequent updates.<a href="#appendix-B.4.3-4" class="pilcrow">¶</a></p>
 <p id="appendix-B.4.3-5">Throughout the process:<a href="#appendix-B.4.3-5" class="pilcrow">¶</a></p>
@@ -2770,114 +2765,94 @@ rx arrives, clear retain_old.<a href="#appendix-B.4.2-6" class="pilcrow">¶</a><
           </ul>
 <div id="appendix-B.4.3-7">
             <div class="alignLeft art-svg artwork" id="appendix-B.4.3-7.1">
-<svg xmlns="http://www.w3.org/2000/svg" version="1.1" height="832" width="504" viewBox="0 0 504 832" class="diagram" text-anchor="middle" font-family="monospace" font-size="13px" stroke-linecap="round">
-                <path d="M 24,352 L 24,384" fill="none" stroke="black"></path>
-                <path d="M 80,224 L 80,256" fill="none" stroke="black"></path>
-                <path d="M 80,320 L 80,344" fill="none" stroke="black"></path>
-                <path d="M 136,144 L 136,192" fill="none" stroke="black"></path>
-                <path d="M 136,352 L 136,384" fill="none" stroke="black"></path>
-                <path d="M 152,32 L 152,80" fill="none" stroke="black"></path>
-                <path d="M 160,88 L 160,136" fill="none" stroke="black"></path>
-                <path d="M 224,192 L 224,224" fill="none" stroke="black"></path>
-                <path d="M 288,480 L 288,544" fill="none" stroke="black"></path>
-                <path d="M 312,352 L 312,400" fill="none" stroke="black"></path>
-                <path d="M 312,624 L 312,672" fill="none" stroke="black"></path>
-                <path d="M 320,144 L 320,192" fill="none" stroke="black"></path>
-                <path d="M 328,32 L 328,80" fill="none" stroke="black"></path>
-                <path d="M 328,768 L 328,800" fill="none" stroke="black"></path>
-                <path d="M 368,224 L 368,264" fill="none" stroke="black"></path>
-                <path d="M 368,320 L 368,344" fill="none" stroke="black"></path>
-                <path d="M 376,400 L 376,416" fill="none" stroke="black"></path>
-                <path d="M 376,448 L 376,472" fill="none" stroke="black"></path>
-                <path d="M 376,544 L 376,560" fill="none" stroke="black"></path>
-                <path d="M 376,592 L 376,616" fill="none" stroke="black"></path>
-                <path d="M 376,672 L 376,688" fill="none" stroke="black"></path>
-                <path d="M 376,736 L 376,760" fill="none" stroke="black"></path>
-                <path d="M 424,768 L 424,800" fill="none" stroke="black"></path>
-                <path d="M 432,624 L 432,672" fill="none" stroke="black"></path>
-                <path d="M 440,352 L 440,400" fill="none" stroke="black"></path>
-                <path d="M 464,480 L 464,544" fill="none" stroke="black"></path>
-                <path d="M 152,32 L 328,32" fill="none" stroke="black"></path>
-                <path d="M 152,80 L 328,80" fill="none" stroke="black"></path>
-                <path d="M 136,144 L 320,144" fill="none" stroke="black"></path>
-                <path d="M 136,192 L 320,192" fill="none" stroke="black"></path>
-                <path d="M 80,224 L 368,224" fill="none" stroke="black"></path>
-                <path d="M 24,352 L 136,352" fill="none" stroke="black"></path>
-                <path d="M 312,352 L 440,352" fill="none" stroke="black"></path>
-                <path d="M 24,384 L 136,384" fill="none" stroke="black"></path>
-                <path d="M 312,400 L 440,400" fill="none" stroke="black"></path>
-                <path d="M 288,480 L 464,480" fill="none" stroke="black"></path>
-                <path d="M 288,544 L 464,544" fill="none" stroke="black"></path>
-                <path d="M 312,624 L 432,624" fill="none" stroke="black"></path>
-                <path d="M 312,672 L 432,672" fill="none" stroke="black"></path>
-                <path d="M 328,768 L 424,768" fill="none" stroke="black"></path>
-                <path d="M 328,800 L 424,800" fill="none" stroke="black"></path>
-                <polygon class="arrowhead" points="384,760 372,754.4 372,765.6" fill="black" transform="rotate(90,376,760)"></polygon>
-                <polygon class="arrowhead" points="384,616 372,610.4 372,621.6" fill="black" transform="rotate(90,376,616)"></polygon>
-                <polygon class="arrowhead" points="384,472 372,466.4 372,477.6" fill="black" transform="rotate(90,376,472)"></polygon>
-                <polygon class="arrowhead" points="376,344 364,338.4 364,349.6" fill="black" transform="rotate(90,368,344)"></polygon>
-                <polygon class="arrowhead" points="376,264 364,258.4 364,269.6" fill="black" transform="rotate(90,368,264)"></polygon>
-                <polygon class="arrowhead" points="168,136 156,130.4 156,141.6" fill="black" transform="rotate(90,160,136)"></polygon>
-                <polygon class="arrowhead" points="88,344 76,338.4 76,349.6" fill="black" transform="rotate(90,80,344)"></polygon>
-                <polygon class="arrowhead" points="88,256 76,250.4 76,261.6" fill="black" transform="rotate(90,80,256)"></polygon>
+<svg xmlns="http://www.w3.org/2000/svg" version="1.1" height="784" width="304" viewBox="0 0 304 784" class="diagram" text-anchor="middle" font-family="monospace" font-size="13px" stroke-linecap="round">
+                <path d="M 80,144 L 80,192" fill="none" stroke="black"></path>
+                <path d="M 88,432 L 88,496" fill="none" stroke="black"></path>
+                <path d="M 96,32 L 96,80" fill="none" stroke="black"></path>
+                <path d="M 104,88 L 104,136" fill="none" stroke="black"></path>
+                <path d="M 112,304 L 112,352" fill="none" stroke="black"></path>
+                <path d="M 112,576 L 112,624" fill="none" stroke="black"></path>
+                <path d="M 128,720 L 128,752" fill="none" stroke="black"></path>
+                <path d="M 168,192 L 168,224" fill="none" stroke="black"></path>
+                <path d="M 168,272 L 168,296" fill="none" stroke="black"></path>
+                <path d="M 176,352 L 176,368" fill="none" stroke="black"></path>
+                <path d="M 176,400 L 176,424" fill="none" stroke="black"></path>
+                <path d="M 176,496 L 176,512" fill="none" stroke="black"></path>
+                <path d="M 176,544 L 176,568" fill="none" stroke="black"></path>
+                <path d="M 176,624 L 176,640" fill="none" stroke="black"></path>
+                <path d="M 176,688 L 176,712" fill="none" stroke="black"></path>
+                <path d="M 224,720 L 224,752" fill="none" stroke="black"></path>
+                <path d="M 232,576 L 232,624" fill="none" stroke="black"></path>
+                <path d="M 240,304 L 240,352" fill="none" stroke="black"></path>
+                <path d="M 264,144 L 264,192" fill="none" stroke="black"></path>
+                <path d="M 264,432 L 264,496" fill="none" stroke="black"></path>
+                <path d="M 272,32 L 272,80" fill="none" stroke="black"></path>
+                <path d="M 96,32 L 272,32" fill="none" stroke="black"></path>
+                <path d="M 96,80 L 272,80" fill="none" stroke="black"></path>
+                <path d="M 80,144 L 264,144" fill="none" stroke="black"></path>
+                <path d="M 80,192 L 264,192" fill="none" stroke="black"></path>
+                <path d="M 112,304 L 240,304" fill="none" stroke="black"></path>
+                <path d="M 112,352 L 240,352" fill="none" stroke="black"></path>
+                <path d="M 88,432 L 264,432" fill="none" stroke="black"></path>
+                <path d="M 88,496 L 264,496" fill="none" stroke="black"></path>
+                <path d="M 112,576 L 232,576" fill="none" stroke="black"></path>
+                <path d="M 112,624 L 232,624" fill="none" stroke="black"></path>
+                <path d="M 128,720 L 224,720" fill="none" stroke="black"></path>
+                <path d="M 128,752 L 224,752" fill="none" stroke="black"></path>
+                <polygon class="arrowhead" points="184,712 172,706.4 172,717.6" fill="black" transform="rotate(90,176,712)"></polygon>
+                <polygon class="arrowhead" points="184,568 172,562.4 172,573.6" fill="black" transform="rotate(90,176,568)"></polygon>
+                <polygon class="arrowhead" points="184,424 172,418.4 172,429.6" fill="black" transform="rotate(90,176,424)"></polygon>
+                <polygon class="arrowhead" points="176,296 164,290.4 164,301.6" fill="black" transform="rotate(90,168,296)"></polygon>
+                <polygon class="arrowhead" points="176,224 164,218.4 164,229.6" fill="black" transform="rotate(90,168,224)"></polygon>
+                <polygon class="arrowhead" points="112,136 100,130.4 100,141.6" fill="black" transform="rotate(90,104,136)"></polygon>
                 <g class="text">
-                  <text x="248" y="52">START</text>
-                  <text x="196" y="68">rx=tx=E,</text>
-                  <text x="276" y="68">updating=0</text>
-                  <text x="192" y="100">(3)</text>
-                  <text x="228" y="100">recv</text>
-                  <text x="264" y="100">Req</text>
-                  <text x="312" y="100">[e==rx]</text>
-                  <text x="192" y="116">set</text>
-                  <text x="252" y="116">updating=1</text>
-                  <text x="224" y="164">RESPOND</text>
-                  <text x="160" y="180">acc</text>
-                  <text x="188" y="180">is</text>
-                  <text x="220" y="180">true</text>
-                  <text x="252" y="180">or</text>
-                  <text x="288" y="180">false</text>
-                  <text x="36" y="276">(reject)</text>
-                  <text x="112" y="276">acc=false</text>
-                  <text x="340" y="276">(accept)</text>
-                  <text x="412" y="276">acc=true</text>
-                  <text x="20" y="292">send</text>
-                  <text x="88" y="292">Resp(false)</text>
-                  <text x="324" y="292">send</text>
-                  <text x="388" y="292">Resp(true)</text>
-                  <text x="468" y="292">[tag=tx]</text>
-                  <text x="16" y="308">set</text>
-                  <text x="76" y="308">updating=0</text>
-                  <text x="320" y="308">set</text>
-                  <text x="380" y="308">accepted=1</text>
-                  <text x="76" y="372">FINISHED</text>
-                  <text x="372" y="372">WAIT_I_NKU</text>
-                  <text x="372" y="388">(updating=1)</text>
-                  <text x="216" y="436">(6)</text>
-                  <text x="252" y="436">recv</text>
-                  <text x="288" y="436">NKU</text>
-                  <text x="340" y="436">[e==rx],</text>
-                  <text x="404" y="436">assert</text>
-                  <text x="468" y="436">accepted</text>
-                  <text x="332" y="500">ACTIVATE</text>
-                  <text x="408" y="500">RETENTION</text>
-                  <text x="340" y="516">old_rx=rx;</text>
-                  <text x="352" y="532">retain_old=1;</text>
-                  <text x="428" y="532">rx++</text>
-                  <text x="280" y="580">(7)</text>
-                  <text x="316" y="580">send</text>
-                  <text x="352" y="580">NKU</text>
-                  <text x="404" y="580">[tag=old</text>
-                  <text x="456" y="580">tx]</text>
-                  <text x="364" y="644">WAIT_ACK</text>
-                  <text x="372" y="660">(updating=1)</text>
-                  <text x="272" y="708">(8/9)</text>
-                  <text x="316" y="708">recv</text>
-                  <text x="352" y="708">ACK</text>
-                  <text x="400" y="708">[e==rx]</text>
-                  <text x="276" y="724">tx=rx;</text>
-                  <text x="360" y="724">retain_old=0;</text>
-                  <text x="460" y="724">updating=0</text>
-                  <text x="372" y="788">FINISHED</text>
+                  <text x="192" y="52">START</text>
+                  <text x="140" y="68">rx=tx=E,</text>
+                  <text x="220" y="68">updating=0</text>
+                  <text x="136" y="100">(3)</text>
+                  <text x="172" y="100">recv</text>
+                  <text x="208" y="100">Req</text>
+                  <text x="256" y="100">[e==rx]</text>
+                  <text x="136" y="116">set</text>
+                  <text x="196" y="116">updating=1</text>
+                  <text x="168" y="164">RESPOND</text>
+                  <text x="104" y="180">acc</text>
+                  <text x="132" y="180">is</text>
+                  <text x="164" y="180">true</text>
+                  <text x="196" y="180">or</text>
+                  <text x="232" y="180">false</text>
+                  <text x="140" y="244">acc=true</text>
+                  <text x="124" y="260">send</text>
+                  <text x="188" y="260">Resp(true)</text>
+                  <text x="268" y="260">[tag=tx]</text>
+                  <text x="172" y="324">WAIT_I_NKU</text>
+                  <text x="172" y="340">(updating=1)</text>
+                  <text x="16" y="388">(5)</text>
+                  <text x="52" y="388">recv</text>
+                  <text x="88" y="388">NKU</text>
+                  <text x="140" y="388">[e==rx],</text>
+                  <text x="204" y="388">assert</text>
+                  <text x="268" y="388">accepted</text>
+                  <text x="132" y="452">ACTIVATE</text>
+                  <text x="208" y="452">RETENTION</text>
+                  <text x="140" y="468">old_rx=rx;</text>
+                  <text x="152" y="484">retain_old=1;</text>
+                  <text x="228" y="484">rx++</text>
+                  <text x="80" y="532">(6)</text>
+                  <text x="116" y="532">send</text>
+                  <text x="152" y="532">NKU</text>
+                  <text x="204" y="532">[tag=old</text>
+                  <text x="256" y="532">tx]</text>
+                  <text x="164" y="596">WAIT_ACK</text>
+                  <text x="172" y="612">(updating=1)</text>
+                  <text x="72" y="660">(7/8)</text>
+                  <text x="116" y="660">recv</text>
+                  <text x="152" y="660">ACK</text>
+                  <text x="200" y="660">[e==rx]</text>
+                  <text x="76" y="676">tx=rx;</text>
+                  <text x="160" y="676">retain_old=0;</text>
+                  <text x="260" y="676">updating=0</text>
+                  <text x="172" y="740">FINISHED</text>
                 </g>
               </svg><a href="#appendix-B.4.3-7.1" class="pilcrow">¶</a>
 </div>
