@@ -839,7 +839,112 @@ and Thom Wiggers for their review comments.
 
 # State Machines
 
-## Terms and Abbreviations
+The sections below describe the state machines for the extended key update
+operation for TLS 1.3 and DTLS 1.3.
+
+For editorial reasons we abbreviate the protocol message types:
+
+ * Req - ExtendedKeyUpdate(request)
+ * Resp - ExtendedKeyUpdate(response)
+ * NKU - ExtendedKeyUpdate(new_key_update)
+ * ACK - Acknowledgement message from {{Section 7 of RFC9147}}
+ * APP - application data payloads
+
+## TLS 1.3 State Machines
+
+This section describes the initiator and responder state machines.
+
+## Initiator State Machine
+
+~~~ aasvg
++----------------------+
+|   START              |
+|   send_key=current,  |
+|   receive_key=current|
+|   updating=0         |
++----------------------+
+          |
+ (1) send Req
+     set updating=1
+          v
++----------------------+
+|      WAIT_RESP       |
+|      updating=1      |
++----------------------+
+     |            |
+     | Resp(rejected/retry/clashed):
+     |   set updating=0
+     |   -> FINISHED (no change)
+     |
+     | Resp(accepted) with key_share:
+     |   derive new secrets
+     |   send NKU  (encrypted under old keys)
+     |   update SEND keys (send_key := new key)   <-- TLS step 4
+     v
++---------------------------+
+|  SENT_NKU / WAIT_R_NKU    |
+|  send_key=new,            |
+|  receive_key=current,     |
+|  updating=1               |
++---------------------------+
+          |
+ (5) recv NKU (encrypted under old keys)
+     update RECEIVE keys (receive_key := new key) <-- Step 5
+     set updating=0
+          v
++----------------------+
+|       FINISHED       |
++----------------------+
+~~~
+
+## Responder State Machine
+
+~~~ aasvg
++----------------------+
+|   START              |
+|   send_key=current,  |
+|   receive_key=current|
+|   updating=0         |
++----------------------+
+          |
+ (2) recv Req
+     set updating=1
+          v
++----------------------+
+|       RESPOND        |
++----------------------+
+     |            |
+     | reject/retry/clashed:
+     |   send Resp(status)
+     |   set updating=0
+     |   -> FINISHED (no change)
+     |
+     | accept:
+     |   send Resp(accepted) with key_share
+     |   derive new secrets
+     |   -> WAIT_I_NKU
+     v
++----------------------+
+|     WAIT_I_NKU       |
+|     updating=1       |
++----------------------+
+          |
+ (4) recv NKU (encrypted under old keys)
+     update RECEIVE keys (receive_key := new key) <-- TLS step 4
+     send NKU (encrypted under old keys)
+     update SEND keys (send_key := new key)       <-- TLS step 4
+     set updating=0
+          v
++----------------------+
+|       FINISHED       |
++----------------------+
+~~~
+
+## DTLS 1.3 State Machines
+
+This section describes the initiator and responder state machines.
+
+### Terms and Abbreviations
 
 The following variables and abbreviations are used in the state machine diagrams.
 
@@ -851,15 +956,8 @@ The following variables and abbreviations are used in the state machine diagrams
 - retain_old - when true, receiver accepts tags old_rx and rx.
 - tag=... - the TX-epoch value written on an outgoing message.
 - e==... - the epoch tag carried on an incoming message (what the peer sent).
-- Protocol message types - ExtendedKeyUpdate(key_update_request) (Req) /
-  ExtendedKeyUpdate(key_update_response) (Resp) / ExtendedKeyUpdate(new_key_update) (NKU) /
-  ACK (from {{Section 7 of RFC9147}} / APP for application data.
-- FINISHED / START/IDLE / WAIT_RESP / SENT_NKU / WAIT_R_NKU - diagram
-  states; FINISHED denotes the steady state after the key update.
-
-## DTLS 1.3 State Machines
-
-This section describes the initiator and responder state machines.
+- FINISHED / START / WAIT_RESP / SENT_NKU / WAIT_R_NKU / ACTIVATE RETENTION -
+  diagram states; FINISHED denotes the steady state after success.
 
 ### State Machine (Initiator)
 
@@ -891,7 +989,7 @@ APP acceptance rule (receiver): accept if e == rx or
 (retain_old && e == old_rx). If retain_old is set and an APP with the new
 rx arrives, clear retain_old.
 
-~~~
+~~~ aasvg
                        +---------------------+
                        |        START        |
                        | rx=tx=E, updating=0 |
@@ -958,7 +1056,7 @@ Throughout the process:
 
 - Application data flows continuously, subject to epoch acceptance rules.
 
-~~~
+~~~ aasvg
                           +---------------------+
                           |         START       |
                           | rx=tx=E, updating=0 |
