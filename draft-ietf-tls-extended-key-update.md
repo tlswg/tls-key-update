@@ -504,19 +504,19 @@ The handshake framing uses a single `HandshakeType` for this message
            uint24 fragment_offset;    /* DTLS-required field */
            uint24 fragment_length;    /* DTLS-required field */
            select (msg_type) {
-               case client_hello:           ClientHello;
-               case server_hello:           ServerHello;
-               case end_of_early_data:      EndOfEarlyData;
-               case encrypted_extensions:   EncryptedExtensions;
-               case certificate_request:    CertificateRequest;
-               case certificate:            Certificate;
-               case certificate_verify:     CertificateVerify;
-               case finished:               Finished;
-               case new_session_ticket:     NewSessionTicket;
-               case key_update:             KeyUpdate;
-               case extended_key_update:    ExtendedKeyUpdate;
-               case request_connection_id:  RequestConnectionId;
-               case new_connection_id:      NewConnectionId;
+               case client_hello:          ClientHello;
+               case server_hello:          ServerHello;
+               case end_of_early_data:     EndOfEarlyData;
+               case encrypted_extensions:  EncryptedExtensions;
+               case certificate_request:   CertificateRequest;
+               case certificate:           Certificate;
+               case certificate_verify:    CertificateVerify;
+               case finished:              Finished;
+               case new_session_ticket:    NewSessionTicket;
+               case key_update:            KeyUpdate;
+               case extended_key_update:   ExtendedKeyUpdate;
+               case request_connection_id: RequestConnectionId;
+               case new_connection_id:     NewConnectionId;
            } body;
        } DTLSHandshake;
 ~~~
