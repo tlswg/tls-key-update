@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2025-09-11T01:42:31.458476+00:00",
+  "timestamp": "2025-09-18T01:39:33.499015+00:00",
   "repo": "tlswg/tls-key-update",
   "labels": [
     {
@@ -430,15 +430,15 @@
       "id": "I_kwDOMJPqLM7IrO5V",
       "title": "Remove \"Clashed\"",
       "url": "https://github.com/tlswg/tls-key-update/issues/41",
-      "state": "OPEN",
+      "state": "CLOSED",
       "author": "hannestschofenig",
       "authorAssociation": "COLLABORATOR",
       "assignees": [],
       "labels": [],
       "body": "Tiru wrote: I like the suggestion from Ekr to remove clashed, see his comment below:\n\nI see what \"clashed\" is trying to do, but I think there's another\nopportunity to simplify: because you are determining which side wins\nbased on information known both sides, they can each independently\ndetermine which EKURequest will be accepted and which one will be\nrejected [0]. So instead of having the winner send a EKUResponse\nrejecting the loser, I suggest it just wait for the EKUResponse\nfrom the loser. I.e.,\nClient Server\n\nEKURequest(share=1) -> <- EKURequest(share=2)\n[ignores EKURequest]\nEKUResponse(share=1) ->\n\nThis removes one message and simplifies the state machine because the\nlosing Initiator can transition directly to sending EKUResponse\nwithout having to have a state waiting for the EKUResponse(clashed)\nmessage.",
       "createdAt": "2025-08-29T12:48:31Z",
-      "updatedAt": "2025-09-07T19:32:27Z",
-      "closedAt": null,
+      "updatedAt": "2025-09-17T19:18:11Z",
+      "closedAt": "2025-09-17T19:18:11Z",
       "comments": [
         {
           "author": "stfries",
@@ -532,6 +532,54 @@
       "body": "Tiru wrote: \n\n> Step 3 does not specify what happens when the status in ExtendedKeyUpdate(response) is not set to \"accepted\". I don\u2019t see a need for Step 3, since the responder must send an ExtendedKeyUpdate(response) regardless of whether the status is \"accepted\" or not.\n\n> 5. The initiator transmits an `ExtendedKeyUpdate(new_key_update)` message. This message also serves as an implicit acknowledgment of the responder\u2019s ExtendedKeyUpdate(response), so no separate ACK is required.",
       "createdAt": "2025-09-07T09:29:32Z",
       "updatedAt": "2025-09-07T09:43:30Z",
+      "closedAt": null,
+      "comments": []
+    },
+    {
+      "number": 55,
+      "id": "I_kwDOMJPqLM7MS7b2",
+      "title": "Clashing requests with equal keyshare",
+      "url": "https://github.com/tlswg/tls-key-update/issues/55",
+      "state": "OPEN",
+      "author": "yaroslavros",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [],
+      "body": "As discussed, an artificial clash with a reflected key share could be used to confuse the peer. We should spell out that this is an incorrect behaviour.",
+      "createdAt": "2025-09-17T19:19:34Z",
+      "updatedAt": "2025-09-17T19:19:34Z",
+      "closedAt": null,
+      "comments": []
+    },
+    {
+      "number": 56,
+      "id": "I_kwDOMJPqLM7MS8FX",
+      "title": "DTLS retransmit",
+      "url": "https://github.com/tlswg/tls-key-update/issues/56",
+      "state": "OPEN",
+      "author": "yaroslavros",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [],
+      "body": "We need to clarify who retransmits what in DTLS flows in case there is a suspicion that a message was lost.",
+      "createdAt": "2025-09-17T19:20:24Z",
+      "updatedAt": "2025-09-17T19:20:24Z",
+      "closedAt": null,
+      "comments": []
+    },
+    {
+      "number": 57,
+      "id": "I_kwDOMJPqLM7MS8Ww",
+      "title": "DoS security considerations",
+      "url": "https://github.com/tlswg/tls-key-update/issues/57",
+      "state": "OPEN",
+      "author": "yaroslavros",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [],
+      "body": "We should add DoS security considerations",
+      "createdAt": "2025-09-17T19:20:44Z",
+      "updatedAt": "2025-09-17T19:20:44Z",
       "closedAt": null,
       "comments": []
     }
@@ -3490,24 +3538,26 @@
       "id": "PR_kwDOMJPqLM6nRGrM",
       "title": "Replaced ExtendedKeyUpdate with PostHandshakeMessage",
       "url": "https://github.com/tlswg/tls-key-update/pull/53",
-      "state": "OPEN",
+      "state": "MERGED",
       "author": "yaroslavros",
       "authorAssociation": "COLLABORATOR",
       "assignees": [],
       "labels": [],
       "body": "For future extensibility I replaced ExtendedKeyUpdate with PostHandshakeMessage that defines its own 2-byte types driven by IANA registry. This way we won't be constrained by the total of 255 handshake and post-handshake message types and can be a bit more relaxed about extending post-handshake TLS for things such as Classic McEliece, attestation and whatever comes next.\r\n\r\nAs suggested by Ekr I also cleaned up response code down to 2 - accepted and rejected. Added text to describe what to do in case of limited resources on responder for both TLS and DTLS.",
       "createdAt": "2025-09-07T19:31:30Z",
-      "updatedAt": "2025-09-10T16:00:10Z",
+      "updatedAt": "2025-09-17T19:16:52Z",
       "baseRepository": "tlswg/tls-key-update",
       "baseRefName": "main",
-      "baseRefOid": "9f75ae4ed146b7ae57ad19048ae2917b245f78ff",
+      "baseRefOid": "a9f87d9baee2d22aac68031a7743aa12705939be",
       "headRepository": "yaroslavros/tls-key-update",
       "headRefName": "main",
-      "headRefOid": "72205896317b876f5dab925c9daca475c29e6ed6",
-      "closedAt": null,
-      "mergedAt": null,
-      "mergedBy": null,
-      "mergeCommit": null,
+      "headRefOid": "b4f1747a93edc9eca0ac19cfc5c83e8218b60d7a",
+      "closedAt": "2025-09-17T19:16:51Z",
+      "mergedAt": "2025-09-17T19:16:51Z",
+      "mergedBy": "yaroslavros",
+      "mergeCommit": {
+        "oid": "dcb5c89c0eb17c60ff37b4ca673eafe5d93e35e0"
+      },
       "comments": [
         {
           "author": "hannestschofenig",
@@ -3515,6 +3565,13 @@
           "body": "It took me a while to read through this exchange. There a number of topics to discuss and a call might indeed be appropriate. ",
           "createdAt": "2025-09-10T16:00:10Z",
           "updatedAt": "2025-09-10T16:00:10Z"
+        },
+        {
+          "author": "yaroslavros",
+          "authorAssociation": "COLLABORATOR",
+          "body": "As discussed, merging the PR after updates",
+          "createdAt": "2025-09-17T19:16:46Z",
+          "updatedAt": "2025-09-17T19:16:46Z"
         }
       ],
       "reviews": [
@@ -4307,6 +4364,46 @@
               "body": "We could use the approach from the ClientCertificateType registry, which uses different policies for different ranges. I personally would be fine with a simple \"Specification Required\" policy.\r\n\r\n-  TLS ClientCertificateType Identifiers Registry: Future values in\r\n      the range 0-63 (decimal) inclusive are assigned via Standards\r\n      Action [[RFC2434](https://www.rfc-editor.org/rfc/rfc2434)].  Values in the range 64-223 (decimal) inclusive\r\n      are assigned via Specification Required [[RFC2434](https://www.rfc-editor.org/rfc/rfc2434)].  Values from\r\n      224-255 (decimal) inclusive are reserved for Private Use\r\n      [[RFC2434](https://www.rfc-editor.org/rfc/rfc2434)].",
               "createdAt": "2025-09-10T15:55:21Z",
               "updatedAt": "2025-09-10T15:55:21Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM7A3-8A",
+          "commit": {
+            "abbreviatedOid": "8224dba"
+          },
+          "author": "yaroslavros",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-09-17T19:14:27Z",
+          "updatedAt": "2025-09-17T19:14:28Z",
+          "comments": [
+            {
+              "originalPosition": 219,
+              "body": "```suggestion\r\n              case client_hello:          ClientHello;\r\n              case server_hello:          ServerHello;\r\n              case end_of_early_data:     EndOfEarlyData;\r\n              case encrypted_extensions:  EncryptedExtensions;\r\n              case certificate_request:   CertificateRequest;\r\n              case certificate:           Certificate;\r\n              case certificate_verify:    CertificateVerify;\r\n              case finished:              Finished;\r\n              case new_session_ticket:    NewSessionTicket;\r\n              case key_update:            KeyUpdate;\r\n              case extended_key_update:   ExtendedKeyUpdate;\r\n```",
+              "createdAt": "2025-09-17T19:14:28Z",
+              "updatedAt": "2025-09-17T19:14:28Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM7A3_j5",
+          "commit": {
+            "abbreviatedOid": "19d5e70"
+          },
+          "author": "yaroslavros",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-09-17T19:15:30Z",
+          "updatedAt": "2025-09-17T19:15:31Z",
+          "comments": [
+            {
+              "originalPosition": 310,
+              "body": "```suggestion\r\n               case client_hello:          ClientHello;\r\n               case server_hello:          ServerHello;\r\n               case end_of_early_data:     EndOfEarlyData;\r\n               case encrypted_extensions:  EncryptedExtensions;\r\n               case certificate_request:   CertificateRequest;\r\n               case certificate:           Certificate;\r\n               case certificate_verify:    CertificateVerify;\r\n               case finished:              Finished;\r\n               case new_session_ticket:    NewSessionTicket;\r\n               case key_update:            KeyUpdate;\r\n               case extended_key_update:   ExtendedKeyUpdate;\r\n               case request_connection_id: RequestConnectionId;\r\n               case new_connection_id:     NewConnectionId;\r\n```",
+              "createdAt": "2025-09-17T19:15:30Z",
+              "updatedAt": "2025-09-17T19:15:31Z"
             }
           ]
         }
