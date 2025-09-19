@@ -86,8 +86,8 @@ informative:
 TLS 1.3 ensures forward secrecy by performing an ephemeral Diffie-Hellman key exchange
 during the initial handshake, protecting past communications even if a party's
 long-term keys are later compromised. While the built-in KeyUpdate mechanism allows
-traffic keys to be refreshed during a session, it does not incorporate 
-fresh entropy from a new key exchange and therefore does not provide post-compromise security. 
+traffic keys to be refreshed during a session, it does not incorporate
+fresh entropy from a new key exchange and therefore does not provide post-compromise security.
 This limitation can pose a security risk in long-lived sessions, such as
 those found in industrial IoT or telecommunications environments.
 
@@ -134,7 +134,7 @@ key exfiltration refers to attack scenarios where an adversary must repeatedly
 extract fresh keying material to maintain access to protected data, increasing
 operational cost and risk for the attacker. In contrast, static key exfiltration,
 where a long-term secret is extracted once and reused, poses a greater long-term
-threat, especially when session keys are not refreshed with fresh key exchange input 
+threat, especially when session keys are not refreshed with fresh key exchange input
 rather than key derivation.
 
 This specification defines a TLS extension that introduces an extended key update
@@ -311,25 +311,25 @@ executed with DTLS 1.3 differ slightly.
 `KeyShareEntry`. While an extended key update is in progress, the
 initiator MUST NOT initiate another key update.
 
-2. Upon receipt, the responder sends its own `KeyShareEntry` in a
+1. Upon receipt, the responder sends its own `KeyShareEntry` in a
 `ExtendedKeyUpdate(key_update_response)` message. While an extended
 key update is in progress, the responder MUST NOT initiate another
 key update. The responder MAY defer sending a response if system load or resource
 constraints prevent immediate processing. In such cases, the response MUST
 be sent once sufficient resources become available.
 
-3. Upon receipt of an `ExtendedKeyUpdate(key_update_response)` the initiator
+1. Upon receipt of an `ExtendedKeyUpdate(key_update_response)` the initiator
 derives the new secrets from the exchanged key shares. The initiator then sends an empty
 ExtendedKeyUpdate(new_key_update) message to trigger the switch to the
 new keys.
 
-4. After the initiator sends `ExtendedKeyUpdate(new_key_update)` it
+1. After the initiator sends `ExtendedKeyUpdate(new_key_update)` it
 MUST update its send keys. Upon receipt of this message, the responder
 MUST update its receive keys and then send
 `ExtendedKeyUpdate(new_key_update)`, after which it MUST update its
 send keys.
 
-5. After receiving the responder’s `ExtendedKeyUpdate(new_key_update)`,
+1. After receiving the responder’s `ExtendedKeyUpdate(new_key_update)`,
 the initiator MUST update its receive keys.
 
 Both sender and receiver MUST encrypt their
@@ -453,19 +453,19 @@ has the following steps:
    In such cases, responder MUST confirm receipt of the key_update_request with an ACK and
    later retransmit the key_update_response until the initiator acknowledges it, once sufficient
    resources become available.
-   
+
 3. On receipt of `ExtendedKeyUpdate(key_update_response)` the initiator derives a secret key based on the
    exchanged key shares. This message also serves as an implicit acknowledgment of the
    initiator’s ExtendedKeyUpdate(key_update_request), so no separate ACK is required.
 
-4. The initiator transmits an `ExtendedKeyUpdate(new_key_update)` message. This message is subject to DTLS    
+4. The initiator transmits an `ExtendedKeyUpdate(new_key_update)` message. This message is subject to DTLS
    retransmission until acknowledged.
 
 5. Upon receiving `ExtendedKeyUpdate(new_key_update)`, the responder MUST update
    its receive keys and epoch value.
 
 6. The responder acknowledges the received message by sending its own
-   `ExtendedKeyUpdate(new_key_update)`. 
+   `ExtendedKeyUpdate(new_key_update)`.
 
 7. After the initiator receives the responder’s `ExtendedKeyUpdate(new_key_update)`,
    the initiator MUST update its send key and epoch value. With the receipt of
