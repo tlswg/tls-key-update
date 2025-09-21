@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2025-09-18T01:39:33.499015+00:00",
+  "timestamp": "2025-09-21T01:49:09.278186+00:00",
   "repo": "tlswg/tls-key-update",
   "labels": [
     {
@@ -4553,6 +4553,99 @@
               "body": "```suggestion\r\n    byte receive_key = E;   /* receive key */\r\n```",
               "createdAt": "2025-09-10T16:41:37Z",
               "updatedAt": "2025-09-10T16:41:37Z"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "number": 58,
+      "id": "PR_kwDOMJPqLM6pNkcd",
+      "title": "Address comments from WG and nits",
+      "url": "https://github.com/tlswg/tls-key-update/pull/58",
+      "state": "OPEN",
+      "author": "tireddy2",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [],
+      "body": "",
+      "createdAt": "2025-09-18T06:35:51Z",
+      "updatedAt": "2025-09-19T04:52:10Z",
+      "baseRepository": "tlswg/tls-key-update",
+      "baseRefName": "main",
+      "baseRefOid": "dcb5c89c0eb17c60ff37b4ca673eafe5d93e35e0",
+      "headRepository": "tlswg/tls-key-update",
+      "headRefName": "tireddy2-patch-3",
+      "headRefOid": "ba569e803d9a49cb5aecc49738a8982f7a737ffa",
+      "closedAt": null,
+      "mergedAt": null,
+      "mergedBy": null,
+      "mergeCommit": null,
+      "comments": [],
+      "reviews": [
+        {
+          "id": "PRR_kwDOMJPqLM7BJX2g",
+          "commit": {
+            "abbreviatedOid": "102feca"
+          },
+          "author": "yaroslavros",
+          "authorAssociation": "COLLABORATOR",
+          "state": "CHANGES_REQUESTED",
+          "body": "",
+          "createdAt": "2025-09-18T15:22:17Z",
+          "updatedAt": "2025-09-18T15:23:31Z",
+          "comments": [
+            {
+              "originalPosition": 75,
+              "body": "Please revert the numbering. Markdown is supposed to correctly re-number list when every element starts with `1. `",
+              "createdAt": "2025-09-18T15:22:17Z",
+              "updatedAt": "2025-09-18T15:23:31Z"
+            },
+            {
+              "originalPosition": 105,
+              "body": "Why add trailing whitespace? It breaks automation...",
+              "createdAt": "2025-09-18T15:23:21Z",
+              "updatedAt": "2025-09-18T15:23:31Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM7BSxqn",
+          "commit": {
+            "abbreviatedOid": "102feca"
+          },
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-09-19T04:48:00Z",
+          "updatedAt": "2025-09-19T04:48:00Z",
+          "comments": [
+            {
+              "originalPosition": 105,
+              "body": "It was added by mistake, removed it. ",
+              "createdAt": "2025-09-19T04:48:00Z",
+              "updatedAt": "2025-09-19T04:48:00Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM7BSxzS",
+          "commit": {
+            "abbreviatedOid": "102feca"
+          },
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-09-19T04:48:04Z",
+          "updatedAt": "2025-09-19T04:48:05Z",
+          "comments": [
+            {
+              "originalPosition": 75,
+              "body": "Fixed. ",
+              "createdAt": "2025-09-19T04:48:05Z",
+              "updatedAt": "2025-09-19T04:48:05Z"
             }
           ]
         }
