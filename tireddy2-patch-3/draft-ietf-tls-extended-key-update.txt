@@ -5,14 +5,14 @@
 Transport Layer Security                                   H. Tschofenig
 Internet-Draft                                                   Siemens
 Intended status: Standards Track                                M. Tüxen
-Expires: 23 March 2026                 Münster Univ. of Applied Sciences
+Expires: 26 March 2026                 Münster Univ. of Applied Sciences
                                                                 T. Reddy
                                                                    Nokia
                                                                 S. Fries
                                                                  Siemens
                                                             Y. Rosomakho
                                                                  Zscaler
-                                                       19 September 2025
+                                                       22 September 2025
 
 
        Extended Key Update for Transport Layer Security (TLS) 1.3
@@ -23,16 +23,16 @@ Abstract
    TLS 1.3 ensures forward secrecy by performing an ephemeral Diffie-
    Hellman key exchange during the initial handshake, protecting past
    communications even if a party's long-term keys are later
-   compromised.  While the built-in KeyUpdate mechanism allows traffic
-   keys to be refreshed during a session, it does not incorporate fresh
-   entropy from a new key exchange and therefore does not provide post-
-   compromise security.  This limitation can pose a security risk in
-   long-lived sessions, such as those found in industrial IoT or
-   telecommunications environments.
+   compromised.  While the built-in KeyUpdate mechanism allows
+   application traffic keys to be refreshed during a session, it does
+   not incorporate fresh entropy from a new key exchange and therefore
+   does not provide post-compromise security.  This limitation can pose
+   a security risk in long-lived sessions, such as those found in
+   industrial IoT or telecommunications environments.
 
    To address this, this specification defines an extended key update
    mechanism that performs a fresh Diffie-Hellman exchange within an
-   active session, thereby providing post-compromise security.  By
+   active session, thereby ensuring post-compromise security.  By
    forcing attackers to exfiltrate new key material repeatedly, this
    approach mitigates the risks associated with static key compromise.
    Regular renewal of session keys helps contain the impact of such
@@ -65,7 +65,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 23 March 2026.
+   This Internet-Draft will expire on 26 March 2026.
 
 Copyright Notice
 
@@ -483,10 +483,10 @@ Table of Contents
        extended key update is in progress, the responder MUST NOT
        initiate further key updates.  The responder MAY defer sending a
        response if system load or resource constraints prevent immediate
-       processing.  In such cases, responder MUST confirm receipt of the
-       key_update_request with an ACK and later retransmit the
-       key_update_response until the initiator acknowledges it, once
-       sufficient resources become available.
+       processing.  In such cases, the responder MUST acknowledge
+       receipt of the key_update_request with an ACK and, once
+       sufficient resources become available, retransmit the
+       key_update_response until it is acknowledged by the initiator.
 
    3.  On receipt of ExtendedKeyUpdate(key_update_response) the
        initiator derives a secret key based on the exchanged key shares.
