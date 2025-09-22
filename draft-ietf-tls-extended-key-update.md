@@ -86,14 +86,14 @@ informative:
 TLS 1.3 ensures forward secrecy by performing an ephemeral Diffie-Hellman key exchange
 during the initial handshake, protecting past communications even if a party's
 long-term keys are later compromised. While the built-in KeyUpdate mechanism allows
-traffic keys to be refreshed during a session, it does not incorporate
+application traffic keys to be refreshed during a session, it does not incorporate
 fresh entropy from a new key exchange and therefore does not provide post-compromise security.
 This limitation can pose a security risk in long-lived sessions, such as
 those found in industrial IoT or telecommunications environments.
 
 To address this, this specification defines an extended key update mechanism that
 performs a fresh Diffie-Hellman exchange within an active session, thereby
-providing post-compromise security. By forcing attackers
+ensuring post-compromise security. By forcing attackers
 to exfiltrate new key material repeatedly, this approach mitigates the risks
 associated with static key compromise. Regular renewal of session keys helps
 contain the impact of such compromises. The extension is applicable to both TLS 1.3
@@ -450,9 +450,9 @@ has the following steps:
    `ExtendedKeyUpdate(key_update_response)` message. While an extended key update
    is in progress, the responder MUST NOT initiate further key updates. The responder MAY defer
    sending a response if system load or resource constraints prevent immediate processing.
-   In such cases, responder MUST confirm receipt of the key_update_request with an ACK and
-   later retransmit the key_update_response until the initiator acknowledges it, once sufficient
-   resources become available.
+   In such cases, the responder MUST acknowledge receipt of the key_update_request with an ACK and, once
+   sufficient resources become available, retransmit the key_update_response until it is acknowledged by the
+   initiator.
 
 3. On receipt of `ExtendedKeyUpdate(key_update_response)` the initiator derives a secret key based on the
    exchanged key shares. This message also serves as an implicit acknowledgment of the
