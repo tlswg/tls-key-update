@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2025-09-21T01:49:09.278186+00:00",
+  "timestamp": "2025-09-23T01:40:23.567060+00:00",
   "repo": "tlswg/tls-key-update",
   "labels": [
     {
@@ -4570,13 +4570,13 @@
       "labels": [],
       "body": "",
       "createdAt": "2025-09-18T06:35:51Z",
-      "updatedAt": "2025-09-19T04:52:10Z",
+      "updatedAt": "2025-09-22T09:44:32Z",
       "baseRepository": "tlswg/tls-key-update",
       "baseRefName": "main",
       "baseRefOid": "dcb5c89c0eb17c60ff37b4ca673eafe5d93e35e0",
       "headRepository": "tlswg/tls-key-update",
       "headRefName": "tireddy2-patch-3",
-      "headRefOid": "ba569e803d9a49cb5aecc49738a8982f7a737ffa",
+      "headRefOid": "d2ee6ac93b4fbb43f0a4e63989f447e563c88cd5",
       "closedAt": null,
       "mergedAt": null,
       "mergedBy": null,
@@ -4646,6 +4646,106 @@
               "body": "Fixed. ",
               "createdAt": "2025-09-19T04:48:05Z",
               "updatedAt": "2025-09-19T04:48:05Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM7Bsfy4",
+          "commit": {
+            "abbreviatedOid": "ba569e8"
+          },
+          "author": "muhammad-usama-sardar",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-09-21T07:57:54Z",
+          "updatedAt": "2025-09-21T07:57:54Z",
+          "comments": [
+            {
+              "originalPosition": 6,
+              "body": "`traffic keys` is ambiguous. Specify handshake traffic keys or application traffic keys. ",
+              "createdAt": "2025-09-21T07:57:54Z",
+              "updatedAt": "2025-09-21T07:57:54Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM7BzANf",
+          "commit": {
+            "abbreviatedOid": "ba569e8"
+          },
+          "author": "Frosne",
+          "authorAssociation": "NONE",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-09-22T09:22:19Z",
+          "updatedAt": "2025-09-22T09:22:19Z",
+          "comments": [
+            {
+              "originalPosition": 14,
+              "body": "Nit: I think \"ensuring post-compromise security\" might be a better wording",
+              "createdAt": "2025-09-22T09:22:19Z",
+              "updatedAt": "2025-09-22T09:22:20Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM7BzDpz",
+          "commit": {
+            "abbreviatedOid": "ba569e8"
+          },
+          "author": "Frosne",
+          "authorAssociation": "NONE",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-09-22T09:25:32Z",
+          "updatedAt": "2025-09-22T09:25:33Z",
+          "comments": [
+            {
+              "originalPosition": 63,
+              "body": "nit: maybe \"In such cases, the responder MUST acknowledge receipt of the key_update_request with an ACK and, once sufficient resources become available, retransmit the key_update_response until it is acknowledged by the initiator.\". \r\n\r\nOr does it change the logic? ",
+              "createdAt": "2025-09-22T09:25:33Z",
+              "updatedAt": "2025-09-22T09:25:33Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM7BzYLZ",
+          "commit": {
+            "abbreviatedOid": "ba569e8"
+          },
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-09-22T09:44:11Z",
+          "updatedAt": "2025-09-22T09:44:12Z",
+          "comments": [
+            {
+              "originalPosition": 6,
+              "body": "Thanks, fixed. ",
+              "createdAt": "2025-09-22T09:44:11Z",
+              "updatedAt": "2025-09-22T09:44:12Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM7BzYoy",
+          "commit": {
+            "abbreviatedOid": "ba569e8"
+          },
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-09-22T09:44:32Z",
+          "updatedAt": "2025-09-22T09:44:32Z",
+          "comments": [
+            {
+              "originalPosition": 63,
+              "body": "Proposed text looks to me. ",
+              "createdAt": "2025-09-22T09:44:32Z",
+              "updatedAt": "2025-09-22T09:44:32Z"
             }
           ]
         }
