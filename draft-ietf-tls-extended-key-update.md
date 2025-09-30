@@ -160,6 +160,11 @@ To distinguish the key update procedure defined in {{I-D.ietf-tls-rfc8446bis}}
 from the key update procedure specified in this document, we use the terms
 "standard key update" and "extended key update", respectively.
 
+In this document, we use the term post-compromise security, as defined in
+{{?CCG16=DOI.10.1109/CSF.2016.19}}. We assume that an adversary may obtain
+access to the application traffic secrets but is unable to compromise the
+long-term secret.
+
 # Negotiating the Extended Key Update
 
 Client and servers use the TLS flags extension
