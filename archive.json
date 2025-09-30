@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2025-09-23T01:40:23.567060+00:00",
+  "timestamp": "2025-09-30T01:39:41.764266+00:00",
   "repo": "tlswg/tls-key-update",
   "labels": [
     {
@@ -4570,7 +4570,7 @@
       "labels": [],
       "body": "",
       "createdAt": "2025-09-18T06:35:51Z",
-      "updatedAt": "2025-09-22T09:44:32Z",
+      "updatedAt": "2025-09-29T22:35:35Z",
       "baseRepository": "tlswg/tls-key-update",
       "baseRefName": "main",
       "baseRefOid": "dcb5c89c0eb17c60ff37b4ca673eafe5d93e35e0",
@@ -4581,7 +4581,15 @@
       "mergedAt": null,
       "mergedBy": null,
       "mergeCommit": null,
-      "comments": [],
+      "comments": [
+        {
+          "author": "muhammad-usama-sardar",
+          "authorAssociation": "COLLABORATOR",
+          "body": "> the definition does not distinguish between compromise of the application traffic secrets and the long-term secret\r\n\r\nI agree that's actually an important distinction. Could that be clarified in the terminology section?",
+          "createdAt": "2025-09-29T22:35:35Z",
+          "updatedAt": "2025-09-29T22:35:35Z"
+        }
+      ],
       "reviews": [
         {
           "id": "PRR_kwDOMJPqLM7BJX2g",
@@ -4748,6 +4756,19 @@
               "updatedAt": "2025-09-22T09:44:32Z"
             }
           ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM7DmqI_",
+          "commit": {
+            "abbreviatedOid": "d2ee6ac"
+          },
+          "author": "hannestschofenig",
+          "authorAssociation": "COLLABORATOR",
+          "state": "APPROVED",
+          "body": "While I am not a fan of the term \"post-compromise security\" since the definition does not distinguish between compromise of the application traffic secrets and the long-term secret I am OK with the changes.",
+          "createdAt": "2025-09-29T20:32:24Z",
+          "updatedAt": "2025-09-29T20:32:24Z",
+          "comments": []
         }
       ]
     }
