@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2025-09-30T01:39:41.764266+00:00",
+  "timestamp": "2025-10-02T01:39:52.630873+00:00",
   "repo": "tlswg/tls-key-update",
   "labels": [
     {
@@ -4570,13 +4570,13 @@
       "labels": [],
       "body": "",
       "createdAt": "2025-09-18T06:35:51Z",
-      "updatedAt": "2025-09-29T22:35:35Z",
+      "updatedAt": "2025-09-30T21:50:31Z",
       "baseRepository": "tlswg/tls-key-update",
       "baseRefName": "main",
       "baseRefOid": "dcb5c89c0eb17c60ff37b4ca673eafe5d93e35e0",
       "headRepository": "tlswg/tls-key-update",
       "headRefName": "tireddy2-patch-3",
-      "headRefOid": "d2ee6ac93b4fbb43f0a4e63989f447e563c88cd5",
+      "headRefOid": "9014101a78e24e628e1c90f152488d735419f8dc",
       "closedAt": null,
       "mergedAt": null,
       "mergedBy": null,
@@ -4588,6 +4588,20 @@
           "body": "> the definition does not distinguish between compromise of the application traffic secrets and the long-term secret\r\n\r\nI agree that's actually an important distinction. Could that be clarified in the terminology section?",
           "createdAt": "2025-09-29T22:35:35Z",
           "updatedAt": "2025-09-29T22:35:35Z"
+        },
+        {
+          "author": "hannestschofenig",
+          "authorAssociation": "COLLABORATOR",
+          "body": "I added a note to the terminology section in response to Usama's remark.",
+          "createdAt": "2025-09-30T16:49:22Z",
+          "updatedAt": "2025-09-30T16:49:22Z"
+        },
+        {
+          "author": "hannestschofenig",
+          "authorAssociation": "COLLABORATOR",
+          "body": "I think this PR is ready to go.",
+          "createdAt": "2025-09-30T16:49:44Z",
+          "updatedAt": "2025-09-30T16:49:44Z"
         }
       ],
       "reviews": [
@@ -4768,6 +4782,19 @@
           "body": "While I am not a fan of the term \"post-compromise security\" since the definition does not distinguish between compromise of the application traffic secrets and the long-term secret I am OK with the changes.",
           "createdAt": "2025-09-29T20:32:24Z",
           "updatedAt": "2025-09-29T20:32:24Z",
+          "comments": []
+        },
+        {
+          "id": "PRR_kwDOMJPqLM7D6Mad",
+          "commit": {
+            "abbreviatedOid": "9014101"
+          },
+          "author": "yaroslavros",
+          "authorAssociation": "COLLABORATOR",
+          "state": "APPROVED",
+          "body": "LGTM",
+          "createdAt": "2025-09-30T21:50:31Z",
+          "updatedAt": "2025-09-30T21:50:31Z",
           "comments": []
         }
       ]
