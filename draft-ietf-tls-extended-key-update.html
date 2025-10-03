@@ -14,22 +14,23 @@
        TLS 1.3 ensures forward secrecy by performing an ephemeral Diffie-Hellman key exchange
 during the initial handshake, protecting past communications even if a party's
 long-term keys are later compromised. While the built-in KeyUpdate mechanism allows
-traffic keys to be refreshed during a session, it does not introduce new forward-secret
-key material. This limitation can pose a security risk in long-lived sessions, such as
+application traffic keys to be refreshed during a session, it does not incorporate
+fresh entropy from a new key exchange and therefore does not provide post-compromise security.
+This limitation can pose a security risk in long-lived sessions, such as
 those found in industrial IoT or telecommunications environments. 
        To address this, this specification defines an extended key update mechanism that
 performs a fresh Diffie-Hellman exchange within an active session, thereby
-re-establishing forward secrecy beyond the initial handshake. By forcing attackers
+ensuring post-compromise security. By forcing attackers
 to exfiltrate new key material repeatedly, this approach mitigates the risks
 associated with static key compromise. Regular renewal of session keys helps
 contain the impact of such compromises. The extension is applicable to both TLS 1.3
 and DTLS 1.3. 
     " name="description">
-<meta content="xml2rfc 3.30.1" name="generator">
+<meta content="xml2rfc 3.30.2" name="generator">
 <meta content="Internet-Draft" name="keyword">
 <meta content="draft-ietf-tls-extended-key-update-latest" name="ietf.draft">
 <!-- Generator version information:
-  xml2rfc 3.30.1
+  xml2rfc 3.30.2
     Python 3.12.11
     ConfigArgParse 1.7
     google-i18n-address 3.1.1
@@ -41,7 +42,7 @@ and DTLS 1.3.
     PyYAML 6.0.2
     requests 2.32.5
     setuptools 80.9.0
-    wcwidth 0.2.13
+    wcwidth 0.2.14
 -->
 <link href="draft-ietf-tls-extended-key-update.xml" rel="alternate" type="application/rfc+xml">
 <link href="#copyright" rel="license">
@@ -1060,11 +1061,11 @@ svg :is([fill="white"], [fill^="#fff"]) {
 <thead><tr>
 <td class="left">Internet-Draft</td>
 <td class="center">Extended Key Update for TLS</td>
-<td class="right">September 2025</td>
+<td class="right">October 2025</td>
 </tr></thead>
 <tfoot><tr>
 <td class="left">Tschofenig, et al.</td>
-<td class="center">Expires 21 March 2026</td>
+<td class="center">Expires 6 April 2026</td>
 <td class="right">[Page]</td>
 </tr></tfoot>
 </table>
@@ -1077,12 +1078,12 @@ svg :is([fill="white"], [fill^="#fff"]) {
 <dd class="internet-draft">draft-ietf-tls-extended-key-update-latest</dd>
 <dt class="label-published">Published:</dt>
 <dd class="published">
-<time datetime="2025-09-17" class="published">17 September 2025</time>
+<time datetime="2025-10-03" class="published">3 October 2025</time>
     </dd>
 <dt class="label-intended-status">Intended Status:</dt>
 <dd class="intended-status">Standards Track</dd>
 <dt class="label-expires">Expires:</dt>
-<dd class="expires"><time datetime="2026-03-21">21 March 2026</time></dd>
+<dd class="expires"><time datetime="2026-04-06">6 April 2026</time></dd>
 <dt class="label-authors">Authors:</dt>
 <dd class="authors">
 <div class="author">
@@ -1114,12 +1115,13 @@ svg :is([fill="white"], [fill^="#fff"]) {
 <p id="section-abstract-1">TLS 1.3 ensures forward secrecy by performing an ephemeral Diffie-Hellman key exchange
 during the initial handshake, protecting past communications even if a party's
 long-term keys are later compromised. While the built-in KeyUpdate mechanism allows
-traffic keys to be refreshed during a session, it does not introduce new forward-secret
-key material. This limitation can pose a security risk in long-lived sessions, such as
+application traffic keys to be refreshed during a session, it does not incorporate
+fresh entropy from a new key exchange and therefore does not provide post-compromise security.
+This limitation can pose a security risk in long-lived sessions, such as
 those found in industrial IoT or telecommunications environments.<a href="#section-abstract-1" class="pilcrow">¶</a></p>
 <p id="section-abstract-2">To address this, this specification defines an extended key update mechanism that
 performs a fresh Diffie-Hellman exchange within an active session, thereby
-re-establishing forward secrecy beyond the initial handshake. By forcing attackers
+ensuring post-compromise security. By forcing attackers
 to exfiltrate new key material repeatedly, this approach mitigates the risks
 associated with static key compromise. Regular renewal of session keys helps
 contain the impact of such compromises. The extension is applicable to both TLS 1.3
@@ -1155,7 +1157,7 @@ and DTLS 1.3.<a href="#section-abstract-2" class="pilcrow">¶</a></p>
         time. It is inappropriate to use Internet-Drafts as reference
         material or to cite them other than as "work in progress."<a href="#section-boilerplate.1-3" class="pilcrow">¶</a></p>
 <p id="section-boilerplate.1-4">
-        This Internet-Draft will expire on 21 March 2026.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
+        This Internet-Draft will expire on 6 April 2026.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="copyright">
@@ -1301,8 +1303,8 @@ ensures that encrypted communication remains confidential even if an attacker
 later obtains a party's long-term private key, protecting against passive adversaries
 who record encrypted traffic for later decryption.<a href="#section-1-1" class="pilcrow">¶</a></p>
 <p id="section-1-2">TLS 1.3 also includes a KeyUpdate mechanism that allows traffic keys to be refreshed
-during an established session. However, this mechanism does not introduce new
-forward-secret key material, as it applies only a key derivation function to the
+during an established session. However, this mechanism does not provide
+post-compromise security, as it applies only a key derivation function to the
 previous application traffic secret as input. While this design is generally sufficient
 for short-lived connections, it may present security limitations in scenarios where
 sessions persist for extended periods, such as in industrial IoT or telecommunications
@@ -1323,7 +1325,8 @@ key exfiltration refers to attack scenarios where an adversary must repeatedly
 extract fresh keying material to maintain access to protected data, increasing
 operational cost and risk for the attacker. In contrast, static key exfiltration,
 where a long-term secret is extracted once and reused, poses a greater long-term
-threat, especially when session keys are not refreshed with forward-secret input.<a href="#section-1-4" class="pilcrow">¶</a></p>
+threat, especially when session keys are not refreshed with fresh key exchange input
+rather than key derivation.<a href="#section-1-4" class="pilcrow">¶</a></p>
 <p id="section-1-5">This specification defines a TLS extension that introduces an extended key update
 mechanism. Unlike the standard key update, this mechanism allows peers to perform a
 fresh Diffie-Hellman exchange within an active session using one of the groups
@@ -1348,6 +1351,10 @@ document are to be interpreted as described in RFC 2119 <span>[<a href="#RFC2119
 <p id="section-2-2">To distinguish the key update procedure defined in <span>[<a href="#I-D.ietf-tls-rfc8446bis" class="cite xref">I-D.ietf-tls-rfc8446bis</a>]</span>
 from the key update procedure specified in this document, we use the terms
 "standard key update" and "extended key update", respectively.<a href="#section-2-2" class="pilcrow">¶</a></p>
+<p id="section-2-3">In this document, we use the term post-compromise security, as defined in
+<span>[<a href="#CCG16" class="cite xref">CCG16</a>]</span>. We assume that an adversary may obtain
+access to the application traffic secrets but is unable to compromise the
+long-term secret.<a href="#section-2-3" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="negotiating-the-extended-key-update">
@@ -1365,7 +1372,7 @@ ClientHello (CH) MUST be acknowledged in the EncryptedExtensions
 document and is configured to use it.<a href="#section-3-2" class="pilcrow">¶</a></p>
 <p id="section-3-3">If the "Extended_Key_Update" flag is not set, servers ignore any of the
 functionality specified in this document and applications that
-require perfect forward security will have to initiate a full
+require post-compromise security will have to initiate a full
 handshake.<a href="#section-3-3" class="pilcrow">¶</a></p>
 </section>
 </div>
@@ -1529,23 +1536,21 @@ constraints prevent immediate processing. In such cases, the response MUST
 be sent once sufficient resources become available.<a href="#section-5-2.2.1" class="pilcrow">¶</a></p>
 </li>
         <li id="section-5-2.3">
-          <p id="section-5-2.3.1">Upon receipt of an <code>ExtendedKeyUpdate(key_update_response)</code> the initiator<a href="#section-5-2.3.1" class="pilcrow">¶</a></p>
+          <p id="section-5-2.3.1">Upon receipt of an <code>ExtendedKeyUpdate(key_update_response)</code> the initiator
+derives the new secrets from the exchanged key shares. The initiator then sends an empty
+ExtendedKeyUpdate(new_key_update) message to trigger the switch to the
+new keys.<a href="#section-5-2.3.1" class="pilcrow">¶</a></p>
 </li>
         <li id="section-5-2.4">
-          <p id="section-5-2.4.1">derives the new secrets from the exchanged key shares. The initiator then sends an empty
-ExtendedKeyUpdate(new_key_update) message to trigger the switch to the
-new keys.<a href="#section-5-2.4.1" class="pilcrow">¶</a></p>
-</li>
-        <li id="section-5-2.5">
-          <p id="section-5-2.5.1">After the initiator sends <code>ExtendedKeyUpdate(new_key_update)</code> it
+          <p id="section-5-2.4.1">After the initiator sends <code>ExtendedKeyUpdate(new_key_update)</code> it
 MUST update its send keys. Upon receipt of this message, the responder
 MUST update its receive keys and then send
 <code>ExtendedKeyUpdate(new_key_update)</code>, after which it MUST update its
-send keys.<a href="#section-5-2.5.1" class="pilcrow">¶</a></p>
+send keys.<a href="#section-5-2.4.1" class="pilcrow">¶</a></p>
 </li>
-        <li id="section-5-2.6">
-          <p id="section-5-2.6.1">After receiving the responder’s <code>ExtendedKeyUpdate(new_key_update)</code>,
-the initiator MUST update its receive keys.<a href="#section-5-2.6.1" class="pilcrow">¶</a></p>
+        <li id="section-5-2.5">
+          <p id="section-5-2.5.1">After receiving the responder’s <code>ExtendedKeyUpdate(new_key_update)</code>,
+the initiator MUST update its receive keys.<a href="#section-5-2.5.1" class="pilcrow">¶</a></p>
 </li>
       </ol>
 <p id="section-5-3">Both sender and receiver MUST encrypt their
@@ -1686,16 +1691,18 @@ corresponding <code>ExtendedKeyUpdate(key_update_response)</code> or an ACK.<a h
 <code>ExtendedKeyUpdate(key_update_response)</code> message. While an extended key update
 is in progress, the responder MUST NOT initiate further key updates. The responder MAY defer
 sending a response if system load or resource constraints prevent immediate processing.
-In such cases, responder MUST confirm receipt of the the key_update_request with an ACK and
-send an actual key_update_response once sufficient resources become available.<a href="#section-6-4.2.1" class="pilcrow">¶</a></p>
+In such cases, the responder MUST acknowledge receipt of the key_update_request with an ACK and, once
+sufficient resources become available, retransmit the key_update_response until it is acknowledged by the
+initiator.<a href="#section-6-4.2.1" class="pilcrow">¶</a></p>
 </li>
         <li id="section-6-4.3">
-          <p id="section-6-4.3.1">On receipt of <code>ExtendedKeyUpdate(key_update_response)</code> derives a secret key based on the
+          <p id="section-6-4.3.1">On receipt of <code>ExtendedKeyUpdate(key_update_response)</code> the initiator derives a secret key based on the
 exchanged key shares. This message also serves as an implicit acknowledgment of the
-initiators’s ExtendedKeyUpdate(key_update_request), so no separate ACK is required.<a href="#section-6-4.3.1" class="pilcrow">¶</a></p>
+initiator’s ExtendedKeyUpdate(key_update_request), so no separate ACK is required.<a href="#section-6-4.3.1" class="pilcrow">¶</a></p>
 </li>
         <li id="section-6-4.4">
-          <p id="section-6-4.4.1">The initiator transmits an <code>ExtendedKeyUpdate(new_key_update)</code> message.<a href="#section-6-4.4.1" class="pilcrow">¶</a></p>
+          <p id="section-6-4.4.1">The initiator transmits an <code>ExtendedKeyUpdate(new_key_update)</code> message. This message is subject to DTLS
+retransmission until acknowledged.<a href="#section-6-4.4.1" class="pilcrow">¶</a></p>
 </li>
         <li id="section-6-4.5">
           <p id="section-6-4.5.1">Upon receiving <code>ExtendedKeyUpdate(new_key_update)</code>, the responder MUST update
@@ -1716,7 +1723,7 @@ that message, the initiator MUST also update its receive keys.<a href="#section-
 </li>
         <li id="section-6-4.9">
           <p id="section-6-4.9.1">On receipt of the ACK message, the responder updates its send key and epoch
-value. If this ACK is not received, the responder re-transmits
+value. If this ACK is not received, the responder re-transmits its
 ExtendedKeyUpdate(new_key_update) until ACK is received. The key update is
 complete once this ACK is processed by the responder.<a href="#section-6-4.9.1" class="pilcrow">¶</a></p>
 </li>
@@ -2202,13 +2209,17 @@ endorsement of the ExtendedKeyUpdate Message Subtype.<a href="#section-12.3-3" c
         <dd>
 <span class="refAuthor">ANSSI</span>, <span class="refTitle">"Recommendations for securing networks with IPsec, Technical Report"</span>, <time datetime="2015-08" class="refDate">August 2015</time>, <span>&lt;<a href="https://cyber.gouv.fr/sites/default/files/2012/09/NT_IPsec_EN.pdf">https://cyber.gouv.fr/sites/default/files/2012/09/NT_IPsec_EN.pdf</a>&gt;</span>. </dd>
 <dd class="break"></dd>
+<dt id="CCG16">[CCG16]</dt>
+        <dd>
+<span class="refAuthor">Cohn-Gordon, K.</span>, <span class="refAuthor">Cremers, C.</span>, and <span class="refAuthor">L. Garratt</span>, <span class="refTitle">"On Post-compromise Security"</span>, <span class="refContent">IEEE</span>, <span class="seriesInfo">2016 IEEE 29th Computer Security Foundations Symposium (CSF) pp. 164-178</span>, <span class="seriesInfo">DOI 10.1109/csf.2016.19</span>, <time datetime="2016-06" class="refDate">June 2016</time>, <span>&lt;<a href="https://doi.org/10.1109/csf.2016.19">https://doi.org/10.1109/csf.2016.19</a>&gt;</span>. </dd>
+<dd class="break"></dd>
 <dt id="CDM23">[CDM23]</dt>
         <dd>
 <span class="refAuthor">ACM</span>, <span class="refTitle">"Keeping Up with the KEMs: Stronger Security Notions for KEMs and automated analysis of KEM-based protocols"</span>, <time datetime="2023-11" class="refDate">November 2023</time>, <span>&lt;<a href="https://eprint.iacr.org/2023/1933.pdf">https://eprint.iacr.org/2023/1933.pdf</a>&gt;</span>. </dd>
 <dd class="break"></dd>
 <dt id="I-D.ietf-tls-ecdhe-mlkem">[I-D.ietf-tls-ecdhe-mlkem]</dt>
         <dd>
-<span class="refAuthor">Kwiatkowski, K.</span>, <span class="refAuthor">Kampanakis, P.</span>, <span class="refAuthor">Westerbaan, B.</span>, and <span class="refAuthor">D. Stebila</span>, <span class="refTitle">"Post-quantum hybrid ECDHE-MLKEM Key Agreement for TLSv1.3"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-ietf-tls-ecdhe-mlkem-00</span>, <time datetime="2025-03-23" class="refDate">23 March 2025</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-ietf-tls-ecdhe-mlkem-00">https://datatracker.ietf.org/doc/html/draft-ietf-tls-ecdhe-mlkem-00</a>&gt;</span>. </dd>
+<span class="refAuthor">Kwiatkowski, K.</span>, <span class="refAuthor">Kampanakis, P.</span>, <span class="refAuthor">Westerbaan, B.</span>, and <span class="refAuthor">D. Stebila</span>, <span class="refTitle">"Post-quantum hybrid ECDHE-MLKEM Key Agreement for TLSv1.3"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-ietf-tls-ecdhe-mlkem-01</span>, <time datetime="2025-09-29" class="refDate">29 September 2025</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-ietf-tls-ecdhe-mlkem-01">https://datatracker.ietf.org/doc/html/draft-ietf-tls-ecdhe-mlkem-01</a>&gt;</span>. </dd>
 <dd class="break"></dd>
 <dt id="I-D.ietf-tls-hybrid-design">[I-D.ietf-tls-hybrid-design]</dt>
         <dd>
