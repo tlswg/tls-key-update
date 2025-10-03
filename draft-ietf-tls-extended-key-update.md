@@ -86,13 +86,14 @@ informative:
 TLS 1.3 ensures forward secrecy by performing an ephemeral Diffie-Hellman key exchange
 during the initial handshake, protecting past communications even if a party's
 long-term keys are later compromised. While the built-in KeyUpdate mechanism allows
-traffic keys to be refreshed during a session, it does not introduce new forward-secret
-key material. This limitation can pose a security risk in long-lived sessions, such as
+application traffic keys to be refreshed during a session, it does not incorporate
+fresh entropy from a new key exchange and therefore does not provide post-compromise security.
+This limitation can pose a security risk in long-lived sessions, such as
 those found in industrial IoT or telecommunications environments.
 
 To address this, this specification defines an extended key update mechanism that
 performs a fresh Diffie-Hellman exchange within an active session, thereby
-re-establishing forward secrecy beyond the initial handshake. By forcing attackers
+ensuring post-compromise security. By forcing attackers
 to exfiltrate new key material repeatedly, this approach mitigates the risks
 associated with static key compromise. Regular renewal of session keys helps
 contain the impact of such compromises. The extension is applicable to both TLS 1.3
@@ -109,8 +110,8 @@ later obtains a party's long-term private key, protecting against passive advers
 who record encrypted traffic for later decryption.
 
 TLS 1.3 also includes a KeyUpdate mechanism that allows traffic keys to be refreshed
-during an established session. However, this mechanism does not introduce new
-forward-secret key material, as it applies only a key derivation function to the
+during an established session. However, this mechanism does not provide
+post-compromise security, as it applies only a key derivation function to the
 previous application traffic secret as input. While this design is generally sufficient
 for short-lived connections, it may present security limitations in scenarios where
 sessions persist for extended periods, such as in industrial IoT or telecommunications
@@ -133,7 +134,8 @@ key exfiltration refers to attack scenarios where an adversary must repeatedly
 extract fresh keying material to maintain access to protected data, increasing
 operational cost and risk for the attacker. In contrast, static key exfiltration,
 where a long-term secret is extracted once and reused, poses a greater long-term
-threat, especially when session keys are not refreshed with forward-secret input.
+threat, especially when session keys are not refreshed with fresh key exchange input
+rather than key derivation.
 
 This specification defines a TLS extension that introduces an extended key update
 mechanism. Unlike the standard key update, this mechanism allows peers to perform a
@@ -158,6 +160,11 @@ To distinguish the key update procedure defined in {{I-D.ietf-tls-rfc8446bis}}
 from the key update procedure specified in this document, we use the terms
 "standard key update" and "extended key update", respectively.
 
+In this document, we use the term post-compromise security, as defined in
+{{?CCG16=DOI.10.1109/CSF.2016.19}}. We assume that an adversary may obtain
+access to the application traffic secrets but is unable to compromise the
+long-term secret.
+
 # Negotiating the Extended Key Update
 
 Client and servers use the TLS flags extension
@@ -172,7 +179,7 @@ document and is configured to use it.
 
 If the "Extended_Key_Update" flag is not set, servers ignore any of the
 functionality specified in this document and applications that
-require perfect forward security will have to initiate a full
+require post-compromise security will have to initiate a full
 handshake.
 
 # Extended Key Update Messages {#ext-key-update}
@@ -317,7 +324,7 @@ constraints prevent immediate processing. In such cases, the response MUST
 be sent once sufficient resources become available.
 
 1. Upon receipt of an `ExtendedKeyUpdate(key_update_response)` the initiator
-2. derives the new secrets from the exchanged key shares. The initiator then sends an empty
+derives the new secrets from the exchanged key shares. The initiator then sends an empty
 ExtendedKeyUpdate(new_key_update) message to trigger the switch to the
 new keys.
 
@@ -448,14 +455,16 @@ has the following steps:
    `ExtendedKeyUpdate(key_update_response)` message. While an extended key update
    is in progress, the responder MUST NOT initiate further key updates. The responder MAY defer
    sending a response if system load or resource constraints prevent immediate processing.
-   In such cases, responder MUST confirm receipt of the the key_update_request with an ACK and
-   send an actual key_update_response once sufficient resources become available.
+   In such cases, the responder MUST acknowledge receipt of the key_update_request with an ACK and, once
+   sufficient resources become available, retransmit the key_update_response until it is acknowledged by the
+   initiator.
 
-3. On receipt of `ExtendedKeyUpdate(key_update_response)` derives a secret key based on the
+3. On receipt of `ExtendedKeyUpdate(key_update_response)` the initiator derives a secret key based on the
    exchanged key shares. This message also serves as an implicit acknowledgment of the
-   initiators’s ExtendedKeyUpdate(key_update_request), so no separate ACK is required.
+   initiator’s ExtendedKeyUpdate(key_update_request), so no separate ACK is required.
 
-4. The initiator transmits an `ExtendedKeyUpdate(new_key_update)` message.
+4. The initiator transmits an `ExtendedKeyUpdate(new_key_update)` message. This message is subject to DTLS
+   retransmission until acknowledged.
 
 5. Upon receiving `ExtendedKeyUpdate(new_key_update)`, the responder MUST update
    its receive keys and epoch value.
@@ -471,7 +480,7 @@ has the following steps:
    `ExtendedKeyUpdate(new_key_update)` with an ACK message.
 
 9.  On receipt of the ACK message, the responder updates its send key and epoch
-    value. If this ACK is not received, the responder re-transmits
+    value. If this ACK is not received, the responder re-transmits its
     ExtendedKeyUpdate(new_key_update) until ACK is received. The key update is
     complete once this ACK is processed by the responder.
 
