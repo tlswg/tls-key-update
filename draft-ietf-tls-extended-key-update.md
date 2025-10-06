@@ -335,7 +335,10 @@ If TLS peers independently initiate the extended key update and the
 requests cross in flight, the `ExtendedKeyUpdate(key_update_request)` with the
 lower lexicographic order of the `key_exchange` value in
 `KeyShareEntry` MUST be ignored. This prevents each
-side from advancing keys by two generations.
+side from advancing keys by two generations. If the tie-break comparison yields
+equality (an event that should be impossible for genuine
+asymmetric key pairs), the endpoint MUST treat this as a protocol violation,
+send an "unexpected_message" alert, and close the connection.
 
 The handshake framing uses a single `HandshakeType` for this message
 (see {{fig-handshake}}).
@@ -761,7 +764,31 @@ the exported keying material is aligned with the updated security context.
 
 #  Security Considerations
 
-This entire document is about security.
+This section discusses additional security and operational aspects introduced by the Extended Key Update mechanism. All security considerations of TLS 1.3 {{TLS}} continue to apply.
+
+## Post-Compromise Security
+
+Extended Key Update provides post-compromise security for long-lived TLS sessions.
+To maintain PCS guarantees:
+
+* Each update MUST use freshly generated ephemeral key-exchange material. Implementations MUST NOT reuse
+  ephemeral key-exchange material across updates or across TLS sessions.
+* Compromise of current application traffic keys MUST NOT allow prediction of future
+  application traffic keys.
+
+## Denial-of-Service (DoS)
+
+Extended Key Update introduces additional computation and state management. A malicious peer could attempt to exhaust CPU or memory resources by initiating frequent updates.
+
+Implementations SHOULD apply the following mitigations:
+
+* Restrict how often Extended Key Update requests are accepted per session.
+* A peer that has sent an Extended Key Update MUST NOT initiate another until the previous update completes.
+  If a peer violates this rule, the receiving peer MUST treat it as a protocol violation, send an "unexpected_message" alert, and terminate the connection.
+
+## Operational Guidance
+
+Deployments SHOULD evaluate Extended Key Update performance under load and fault conditions such as high-frequency updates or simultaneous extended key updates. Policies SHOULD define explicit rate limits and resource thresholds balancing post-compromise security benefits against potential DoS exposure.
 
 # IANA Considerations
 
@@ -883,7 +910,7 @@ This section describes the initiator and responder state machines.
 |      updating=1      |
 +----------------------+
      |            |
-     | Resp(rejected/retry/clashed):
+     | Resp(rejected/clashed):
      |   set updating=0
      |   -> FINISHED (no change)
      |
@@ -925,7 +952,7 @@ This section describes the initiator and responder state machines.
 |       RESPOND        |
 +----------------------+
      |            |
-     | reject/retry/clashed:
+     | reject/clashed:
      |   send Resp(status)
      |   set updating=0
      |   -> FINISHED (no change)
