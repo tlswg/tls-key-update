@@ -51,17 +51,8 @@ author:
       email: yrosomakho@zscaler.com
 
 normative:
-  RFC2119:
-  I-D.ietf-tls-rfc8446bis:
-  RFC9147:
-  I-D.ietf-tls-tlsflags:
+
 informative:
-  I-D.ietf-tls-ecdhe-mlkem:
-  I-D.ietf-tls-mlkem:
-  RFC7624:
-  I-D.ietf-tls-hybrid-design:
-  I-D.ietf-tls-keylogfile:
-  RFC5746:
   ANSSI:
      author:
         org: ANSSI
@@ -121,7 +112,7 @@ is impractical.
 Earlier versions of TLS supported session renegotiation, which allowed peers to negotiate
 fresh keying material, including performing new Diffie-Hellman exchanges during the
 session lifetime. Due to protocol complexity and known vulnerabilities, renegotiation
-was first restricted by {{RFC5746}} and ultimately removed in TLS 1.3. While the
+was first restricted by {{?TLS-RENEGOTIATION=RFC5746}} and ultimately removed in TLS 1.3. While the
 KeyUpdate message was introduced to offer limited rekeying functionality, it does
 not fulfill the same cryptographic role as renegotiation and cannot refresh
 long-term secrets or derive new secrets from fresh DHE input.
@@ -129,7 +120,7 @@ long-term secrets or derive new secrets from fresh DHE input.
 Security guidance from national agencies, such as ANSSI (France {{ANSSI}}), recommends the
 periodic renewal of cryptographic keys during long-lived sessions to limit the
 impact of key compromise. This approach encourages designs that force an
-attacker to perform dynamic key exfiltration, as defined in {{RFC7624}}. Dynamic
+attacker to perform dynamic key exfiltration, as defined in {{?CONFIDENTIALITY=RFC7624}}. Dynamic
 key exfiltration refers to attack scenarios where an adversary must repeatedly
 extract fresh keying material to maintain access to protected data, increasing
 operational cost and risk for the attacker. In contrast, static key exfiltration,
@@ -142,21 +133,19 @@ mechanism. Unlike the standard key update, this mechanism allows peers to perfor
 fresh Diffie-Hellman exchange within an active session using one of the groups
 negotiated during the initial handshake. By periodically rerunning (EC)DHE, this
 extension enables the derivation of new traffic secrets that are independent of
-prior key material. As noted in Appendix F of {{I-D.ietf-tls-rfc8446bis}}, this
+prior key material. As noted in {{Appendix F of !TLS=I-D.ietf-tls-rfc8446bis}}, this
 approach mitigates the risk of static key exfiltration and shifts the attacker
 burden toward dynamic key exfiltration.
 
-The proposed extension is applicable to both TLS 1.3 {{I-D.ietf-tls-rfc8446bis}} and DTLS 1.3  {{RFC9147}}. For clarity,
+The proposed extension is applicable to both TLS 1.3 {{TLS}} and DTLS 1.3  {{!DTLS=RFC9147}}. For clarity,
 the term "TLS" is used throughout this document to refer to both protocols unless
 otherwise specified.
 
 # Terminology and Requirements Language
 
-The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT",
-"SHOULD", "SHOULD NOT", "RECOMMENDED", "MAY", and "OPTIONAL" in this
-document are to be interpreted as described in RFC 2119 {{RFC2119}}.
+{::boilerplate bcp14-tagged}
 
-To distinguish the key update procedure defined in {{I-D.ietf-tls-rfc8446bis}}
+To distinguish the key update procedure defined in {{TLS}}
 from the key update procedure specified in this document, we use the terms
 "standard key update" and "extended key update", respectively.
 
@@ -168,7 +157,7 @@ long-term secret.
 # Negotiating the Extended Key Update
 
 Client and servers use the TLS flags extension
-{{I-D.ietf-tls-tlsflags}} to indicate support for the functionality
+{{!TLS-FLAGS=I-D.ietf-tls-tlsflags}} to indicate support for the functionality
 defined in this document.  We call this flag "Extended_Key_Update"
 flag.
 
@@ -303,9 +292,9 @@ struct {
 Fields:
 
 * `eku_type`: the subtype of the `ExtendedKeyUpdate` message.
-* `key_share`: key share information. The contents of this field are
+* `key_share`: key share information. The contents of this field is
 determined by the specified group and its corresponding definition
-(see {{I-D.ietf-tls-rfc8446bis}}).
+(see {{Section 4.2.8 of TLS}}).
 
 # TLS 1.3 Considerations
 
@@ -668,7 +657,7 @@ The following diagram shows the key derivation hierarchy.
 ~~~
 
 During the initial handshake, the Master Secret is generated (see
-{{Section 7.1 of I-D.ietf-tls-rfc8446bis}}). Since the Master Secret
+{{Section 7.1 of TLS}}). Since the Master Secret
 is discarded during the key derivation procedure, a derived value is
 stored. This stored value then serves as the input salt to the first
 key update procedure that incorporates the ephemeral (EC)DHE-
@@ -681,7 +670,7 @@ process is repeated for each additional key update procedure.
 The traffic keys are re-derived from
 client_application_traffic_secret_N+1 and
 server_application_traffic_secret_N+1, as described in
-{{Section 7.3 of I-D.ietf-tls-rfc8446bis}}.
+{{Section 7.3 of TLS}}.
 
 Once client_/server_application_traffic_secret_N+1 and its associated
 traffic keys have been computed, implementations SHOULD delete
@@ -714,15 +703,15 @@ to be vulnerable.
 
 The transition to post-quantum cryptography has motivated the adoption of
 hybrid key exchanges in TLS, as described in
-{{I-D.ietf-tls-hybrid-design}}. Specific hybrid groups
-have been registered in {{I-D.ietf-tls-ecdhe-mlkem}}.
+{{?TLS-HYBRID=I-D.ietf-tls-hybrid-design}}. Specific hybrid groups
+have been registered in {{?TLS-ECDHE-MLKEM=I-D.ietf-tls-ecdhe-mlkem}}.
 When hybrid key exchange is used, the `key_exchange` field of each
 `KeyShareEntry` in the initial handshake is formed by concatenating
 the `key_exchange` fields of the constituent algorithms. This same
 approach is reused during the Extended Key Update, when new key
 shares are exchanged.
 
-The specification in {{I-D.ietf-tls-mlkem}} registers the lattice-based
+The specification in {{?TLS-MLKEM=I-D.ietf-tls-mlkem}} registers the lattice-based
 ML-KEM algorithm and its variants, such as ML-KEM-512, ML-KEM-768 and
 ML-KEM-1024. The KEM encapsulation key or KEM ciphertext is represented
 as a 'KeyShareEntry' field. This same approach is reused during the
@@ -731,8 +720,8 @@ Extended Key Update, when new key shares are exchanged.
 # SSLKEYLOGFILE Update
 
 As a successful extended key update exchange invalidates previous secrets,
-SSLKEYLOGFILE {{I-D.ietf-tls-keylogfile}} needs to be populated with new
-entries. As a result, three additional secret labels are utilized in the
+SSLKEYLOGFILE {{?TLS-KEYLOGFILE=I-D.ietf-tls-keylogfile}} needs to be populated with new
+entries. As a result, two additional secret labels are utilized in the
 SSLKEYLOGFILE:
 
 1. `CLIENT_TRAFFIC_SECRET_N+1`: identifies the
@@ -761,13 +750,13 @@ SSLKEYLOGFILE secrets including past iterations of `CLIENT_TRAFFIC_SECRET_`,
 Protocols such as DTLS-SRTP and DTLS-over-SCTP rely on TLS or DTLS for
 key establishment, but reuse portions of the derived keying material for
 their own specific purposes.These protocols use the TLS exporter defined
-in {{Section 7.5 of I-D.ietf-tls-rfc8446bis}}.
+in {{Section 7.5 of TLS}}.
 
 Once the Extended Key Update mechanism is complete, such protocols would
 need to use the newly derived key to generate Exported Keying Material
 (EKM) to protect packets. The "sk" derived in the {{key_update}} will be
 used as the "Secret" in the exporter function, defined in
-{{Section 7.5 of I-D.ietf-tls-rfc8446bis}}, to generate EKM, ensuring that
+{{Section 7.5 of TLS}}, to generate EKM, ensuring that
 the exported keying material is aligned with the updated security context.
 
 #  Security Considerations
@@ -869,7 +858,7 @@ For editorial reasons we abbreviate the protocol message types:
  * Req - ExtendedKeyUpdate(request)
  * Resp - ExtendedKeyUpdate(response)
  * NKU - ExtendedKeyUpdate(new_key_update)
- * ACK - Acknowledgement message from {{Section 7 of RFC9147}}
+ * ACK - Acknowledgement message from {{Section 7 of DTLS}}
  * APP - application data payloads
 
 ## TLS 1.3 State Machines
