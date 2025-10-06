@@ -1241,6 +1241,9 @@ and DTLS 1.3.<a href="#section-abstract-2" class="pilcrow">¶</a></p>
               <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.12.2.3">
                 <p id="section-toc.1-1.12.2.3.1"><a href="#section-12.3" class="auto internal xref">12.3</a>.  <a href="#name-extendedkeyupdate-message-s" class="internal xref">ExtendedKeyUpdate Message Subtypes Registry</a></p>
 </li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.12.2.4">
+                <p id="section-toc.1-1.12.2.4.1"><a href="#section-12.4" class="auto internal xref">12.4</a>.  <a href="#name-sslkeylogfile-labels" class="internal xref">SSLKEYLOGFILE labels</a></p>
+</li>
             </ul>
 </li>
           <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.13">
@@ -2021,6 +2024,10 @@ client_application_traffic_secret_N+1 in the key schedule<a href="#section-9-2.1
           <p id="section-9-2.2.1"><code>SERVER_TRAFFIC_SECRET_N+1</code>: identifies the
 server_application_traffic_secret_N+1 in the key schedule<a href="#section-9-2.2.1" class="pilcrow">¶</a></p>
 </li>
+        <li id="section-9-2.3">
+          <p id="section-9-2.3.1"><code>EXPORTER_SECRET_N+1</code>: identifies the
+exporter_master_secret_N+1 in the key schedule<a href="#section-9-2.3.1" class="pilcrow">¶</a></p>
+</li>
       </ol>
 <p id="section-9-3">Similar to other entries in the SSLKEYLOGFILE, the label is followed by the
 32-byte value of the Random field from the ClientHello message that
@@ -2029,8 +2036,8 @@ hexadecimal.<a href="#section-9-3" class="pilcrow">¶</a></p>
 <p id="section-9-4">SSLKEYLOGFILE entries for the extended key update <span class="bcp14">MUST NOT</span> be produced if
 SSLKEYLOGFILE was not used for other secrets in the handshake.<a href="#section-9-4" class="pilcrow">¶</a></p>
 <p id="section-9-5">Note that each successful Extended Key Update invalidates all previous
-SSLKEYLOGFILE secrets including past iterations of <code>CLIENT_TRAFFIC_SECRET_</code>
-and <code>SERVER_TRAFFIC_SECRET_</code>.<a href="#section-9-5" class="pilcrow">¶</a></p>
+SSLKEYLOGFILE secrets including past iterations of <code>CLIENT_TRAFFIC_SECRET_</code>,
+<code>SERVER_TRAFFIC_SECRET_</code> and <code>EXPORTER_SECRET_</code>.<a href="#section-9-5" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="exporter">
@@ -2166,6 +2173,46 @@ have an Internet-Draft (that is posted and never published as an RFC) or to cite
 document from another standards body, industry consortium, or any other location.
 An expert may provide more in-depth reviews, but their approval should not be taken as an
 endorsement of the ExtendedKeyUpdate Message Subtype.<a href="#section-12.3-3" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="sslkeylogfile-labels">
+<section id="section-12.4">
+        <h3 id="name-sslkeylogfile-labels">
+<a href="#section-12.4" class="section-number selfRef">12.4. </a><a href="#name-sslkeylogfile-labels" class="section-name selfRef">SSLKEYLOGFILE labels</a>
+        </h3>
+<p id="section-12.4-1">IANA is requested to add the following entries to the "TLS SSLKEYLOGFILE Labels"
+extension registry <span>[<a href="#TLS-Ext-Registry" class="cite xref">TLS-Ext-Registry</a>]</span>:<a href="#section-12.4-1" class="pilcrow">¶</a></p>
+<table class="center" id="table-2">
+          <caption><a href="#table-2" class="selfRef">Table 2</a></caption>
+<thead>
+            <tr>
+              <th class="text-left" rowspan="1" colspan="1">Value</th>
+              <th class="text-left" rowspan="1" colspan="1">Description</th>
+              <th class="text-left" rowspan="1" colspan="1">Reference</th>
+              <th class="text-left" rowspan="1" colspan="1">Comment</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="text-left" rowspan="1" colspan="1">CLIENT_TRAFFIC_SECRET_N+1</td>
+              <td class="text-left" rowspan="1" colspan="1">Secret protecting client records after Extended Key Update</td>
+              <td class="text-left" rowspan="1" colspan="1">This document</td>
+              <td class="text-left" rowspan="1" colspan="1">N represents iteration of Extended Key Update</td>
+            </tr>
+            <tr>
+              <td class="text-left" rowspan="1" colspan="1">SERVER_TRAFFIC_SECRET_N+1</td>
+              <td class="text-left" rowspan="1" colspan="1">Secret protecting server records after Extended Key Update</td>
+              <td class="text-left" rowspan="1" colspan="1">This document</td>
+              <td class="text-left" rowspan="1" colspan="1">N represents iteration of Extended Key Update</td>
+            </tr>
+            <tr>
+              <td class="text-left" rowspan="1" colspan="1">EXPORTER_SECRET_N+1</td>
+              <td class="text-left" rowspan="1" colspan="1">Exporter secret after Extended Key Update</td>
+              <td class="text-left" rowspan="1" colspan="1">This document</td>
+              <td class="text-left" rowspan="1" colspan="1">N represents iteration of Extended Key Update</td>
+            </tr>
+          </tbody>
+        </table>
 </section>
 </div>
 </section>

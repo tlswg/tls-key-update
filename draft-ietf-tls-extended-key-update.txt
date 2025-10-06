@@ -100,6 +100,7 @@ Table of Contents
      12.1.  TLS Flags
      12.2.  TLS HandshakeType
      12.3.  ExtendedKeyUpdate Message Subtypes Registry
+     12.4.  SSLKEYLOGFILE labels
    13. References
      13.1.  Normative References
      13.2.  Informative References
@@ -776,6 +777,9 @@ Table of Contents
    2.  SERVER_TRAFFIC_SECRET_N+1: identifies the
        server_application_traffic_secret_N+1 in the key schedule
 
+   3.  EXPORTER_SECRET_N+1: identifies the exporter_master_secret_N+1 in
+       the key schedule
+
    Similar to other entries in the SSLKEYLOGFILE, the label is followed
    by the 32-byte value of the Random field from the ClientHello message
    that established the TLS connection, and the corresponding secret
@@ -787,7 +791,7 @@ Table of Contents
 
    Note that each successful Extended Key Update invalidates all
    previous SSLKEYLOGFILE secrets including past iterations of
-   CLIENT_TRAFFIC_SECRET_ and SERVER_TRAFFIC_SECRET_.
+   CLIENT_TRAFFIC_SECRET_, SERVER_TRAFFIC_SECRET_ and EXPORTER_SECRET_.
 
 10.  Exporter
 
@@ -869,6 +873,40 @@ Table of Contents
    consortium, or any other location.  An expert may provide more in-
    depth reviews, but their approval should not be taken as an
    endorsement of the ExtendedKeyUpdate Message Subtype.
+
+12.4.  SSLKEYLOGFILE labels
+
+   IANA is requested to add the following entries to the "TLS
+   SSLKEYLOGFILE Labels" extension registry [TLS-Ext-Registry]:
+
+   +===========================+=============+===========+============+
+   | Value                     | Description | Reference | Comment    |
+   +===========================+=============+===========+============+
+   | CLIENT_TRAFFIC_SECRET_N+1 | Secret      | This      | N          |
+   |                           | protecting  | document  | represents |
+   |                           | client      |           | iteration  |
+   |                           | records     |           | of         |
+   |                           | after       |           | Extended   |
+   |                           | Extended    |           | Key Update |
+   |                           | Key Update  |           |            |
+   +---------------------------+-------------+-----------+------------+
+   | SERVER_TRAFFIC_SECRET_N+1 | Secret      | This      | N          |
+   |                           | protecting  | document  | represents |
+   |                           | server      |           | iteration  |
+   |                           | records     |           | of         |
+   |                           | after       |           | Extended   |
+   |                           | Extended    |           | Key Update |
+   |                           | Key Update  |           |            |
+   +---------------------------+-------------+-----------+------------+
+   | EXPORTER_SECRET_N+1       | Exporter    | This      | N          |
+   |                           | secret      | document  | represents |
+   |                           | after       |           | iteration  |
+   |                           | Extended    |           | of         |
+   |                           | Key Update  |           | Extended   |
+   |                           |             |           | Key Update |
+   +---------------------------+-------------+-----------+------------+
+
+                                 Table 2
 
 13.  References
 
