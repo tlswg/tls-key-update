@@ -727,8 +727,11 @@ SSLKEYLOGFILE:
 1. `CLIENT_TRAFFIC_SECRET_N+1`: identifies the
 client_application_traffic_secret_N+1 in the key schedule
 
-2. `SERVER_TRAFFIC_SECRET_N+1`: identifies the
+1. `SERVER_TRAFFIC_SECRET_N+1`: identifies the
 server_application_traffic_secret_N+1 in the key schedule
+
+1. `EXPORTER_SECRET_N+1`: identifies the
+exporter_master_secret_N+1 in the key schedule
 
 Similar to other entries in the SSLKEYLOGFILE, the label is followed by the
 32-byte value of the Random field from the ClientHello message that
@@ -739,8 +742,8 @@ SSLKEYLOGFILE entries for the extended key update MUST NOT be produced if
 SSLKEYLOGFILE was not used for other secrets in the handshake.
 
 Note that each successful Extended Key Update invalidates all previous
-SSLKEYLOGFILE secrets including past iterations of `CLIENT_TRAFFIC_SECRET_`
-and `SERVER_TRAFFIC_SECRET_`.
+SSLKEYLOGFILE secrets including past iterations of `CLIENT_TRAFFIC_SECRET_`,
+`SERVER_TRAFFIC_SECRET_` and `EXPORTER_SECRET_`.
 
 # Exporter
 
@@ -806,6 +809,16 @@ document from another standards body, industry consortium, or any other location
 An expert may provide more in-depth reviews, but their approval should not be taken as an
 endorsement of the ExtendedKeyUpdate Message Subtype.
 
+## SSLKEYLOGFILE labels
+
+IANA is requested to add the following entries to the "TLS SSLKEYLOGFILE Labels"
+extension registry {{TLS-Ext-Registry}}:
+
+| Value | Description | Reference | Comment |
+| --- | --- | --- | --- |
+| CLIENT_TRAFFIC_SECRET_N+1 | Secret protecting client records after Extended Key Update | This document | N represents iteration of Extended Key Update |
+| SERVER_TRAFFIC_SECRET_N+1 | Secret protecting server records after Extended Key Update | This document | N represents iteration of Extended Key Update |
+| EXPORTER_SECRET_N+1 | Exporter secret after Extended Key Update | This document | N represents iteration of Extended Key Update |
 
 --- back
 
