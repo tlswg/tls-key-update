@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2025-10-05T01:49:23.434626+00:00",
+  "timestamp": "2025-10-07T01:40:29.034996+00:00",
   "repo": "tlswg/tls-key-update",
   "labels": [
     {
@@ -4822,46 +4822,112 @@
       "id": "PR_kwDOMJPqLM6sFlnH",
       "title": "Adjusted referencing",
       "url": "https://github.com/tlswg/tls-key-update/pull/60",
-      "state": "OPEN",
+      "state": "MERGED",
       "author": "yaroslavros",
       "authorAssociation": "COLLABORATOR",
       "assignees": [],
       "labels": [],
       "body": "Adjusted referencing to more modern style with better readability",
       "createdAt": "2025-10-04T12:09:03Z",
-      "updatedAt": "2025-10-04T12:09:03Z",
+      "updatedAt": "2025-10-06T10:48:01Z",
       "baseRepository": "tlswg/tls-key-update",
       "baseRefName": "main",
       "baseRefOid": "7946d2d4d8cbdbdd4a3e997267fd4a6823b627a5",
       "headRepository": "yaroslavros/tls-key-update",
       "headRefName": "main",
       "headRefOid": "d7a4174f2d95c0dd3c9a750aa667c0f97627560a",
-      "closedAt": null,
-      "mergedAt": null,
-      "mergedBy": null,
-      "mergeCommit": null,
+      "closedAt": "2025-10-06T10:48:01Z",
+      "mergedAt": "2025-10-06T10:48:01Z",
+      "mergedBy": "tireddy2",
+      "mergeCommit": {
+        "oid": "8841fcf2c22f3b6711fc877163da274a9b04b05f"
+      },
       "comments": [],
-      "reviews": []
+      "reviews": [
+        {
+          "id": "PRR_kwDOMJPqLM7E7Hi0",
+          "commit": {
+            "abbreviatedOid": "d7a4174"
+          },
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "state": "APPROVED",
+          "body": "",
+          "createdAt": "2025-10-06T10:47:49Z",
+          "updatedAt": "2025-10-06T10:47:49Z",
+          "comments": []
+        }
+      ]
     },
     {
       "number": 61,
       "id": "PR_kwDOMJPqLM6sFnJx",
       "title": "SSLKEYLOGFILE update",
       "url": "https://github.com/tlswg/tls-key-update/pull/61",
-      "state": "OPEN",
+      "state": "MERGED",
       "author": "yaroslavros",
       "authorAssociation": "COLLABORATOR",
       "assignees": [],
       "labels": [],
       "body": "Added missing EXPORTER_SECRET_N+1 label and SSLKEYLOGFILE IANA considerations",
       "createdAt": "2025-10-04T12:17:28Z",
-      "updatedAt": "2025-10-04T12:17:28Z",
+      "updatedAt": "2025-10-06T10:51:18Z",
       "baseRepository": "tlswg/tls-key-update",
       "baseRefName": "main",
-      "baseRefOid": "7946d2d4d8cbdbdd4a3e997267fd4a6823b627a5",
+      "baseRefOid": "8841fcf2c22f3b6711fc877163da274a9b04b05f",
       "headRepository": "yaroslavros/tls-key-update",
       "headRefName": "sslkeylog-update",
-      "headRefOid": "bedec61f46d2937c322a45076c901efbadb77cb3",
+      "headRefOid": "8b6443c59a2dd6e8c7fc5db6f2576ca1d28a5965",
+      "closedAt": "2025-10-06T10:51:18Z",
+      "mergedAt": "2025-10-06T10:51:18Z",
+      "mergedBy": "tireddy2",
+      "mergeCommit": {
+        "oid": "e1f4dc5ec641fe1c226ce76d49680c3ad1400557"
+      },
+      "comments": [
+        {
+          "author": "Frosne",
+          "authorAssociation": "NONE",
+          "body": "I'm curious if we should state that \"N represents iteration of Extended Key Update\" in SSLKEYLOGFILE Update section",
+          "createdAt": "2025-10-06T09:10:11Z",
+          "updatedAt": "2025-10-06T09:10:11Z"
+        }
+      ],
+      "reviews": [
+        {
+          "id": "PRR_kwDOMJPqLM7E7IyP",
+          "commit": {
+            "abbreviatedOid": "bedec61"
+          },
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "state": "APPROVED",
+          "body": "",
+          "createdAt": "2025-10-06T10:49:29Z",
+          "updatedAt": "2025-10-06T10:49:29Z",
+          "comments": []
+        }
+      ]
+    },
+    {
+      "number": 62,
+      "id": "PR_kwDOMJPqLM6sP7lH",
+      "title": "Update to Security Considerations",
+      "url": "https://github.com/tlswg/tls-key-update/pull/62",
+      "state": "OPEN",
+      "author": "tireddy2",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [],
+      "body": "",
+      "createdAt": "2025-10-06T11:38:29Z",
+      "updatedAt": "2025-10-06T11:38:39Z",
+      "baseRepository": "tlswg/tls-key-update",
+      "baseRefName": "main",
+      "baseRefOid": "e1f4dc5ec641fe1c226ce76d49680c3ad1400557",
+      "headRepository": "tlswg/tls-key-update",
+      "headRefName": "tireddy2-patch-4",
+      "headRefOid": "f961dfa60278622c5ca3b1c6f2a2c4e14e142753",
       "closedAt": null,
       "mergedAt": null,
       "mergedBy": null,
