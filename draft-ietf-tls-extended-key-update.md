@@ -769,12 +769,11 @@ This section discusses additional security and operational aspects introduced by
 ## Post-Compromise Security
 
 Extended Key Update provides post-compromise security for long-lived TLS sessions.
-To maintain PCS guarantees:
+To maintain post-compromise security guarantees:
 
 * Each update MUST use freshly generated ephemeral key-exchange material. Implementations MUST NOT reuse
   ephemeral key-exchange material across updates or across TLS sessions.
-* Compromise of current application traffic keys MUST NOT allow prediction of future
-  application traffic keys.
+
 
 ## Denial-of-Service (DoS)
 
@@ -788,7 +787,7 @@ Implementations SHOULD apply the following mitigations:
 
 ## Operational Guidance
 
-Deployments SHOULD evaluate Extended Key Update performance under load and fault conditions such as high-frequency updates or simultaneous extended key updates. Policies SHOULD define explicit rate limits and resource thresholds balancing post-compromise security benefits against potential DoS exposure.
+Deployments SHOULD evaluate Extended Key Update performance under load and fault conditions such as high-frequency updates or simultaneous extended key updates. TLS policies SHOULD define explicit rate limits balancing post-compromise security benefits against potential DoS exposure.
 
 # IANA Considerations
 
