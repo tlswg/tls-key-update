@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2025-10-07T01:40:29.034996+00:00",
+  "timestamp": "2025-10-09T01:41:26.622387+00:00",
   "repo": "tlswg/tls-key-update",
   "labels": [
     {
@@ -4921,13 +4921,13 @@
       "labels": [],
       "body": "",
       "createdAt": "2025-10-06T11:38:29Z",
-      "updatedAt": "2025-10-06T11:38:39Z",
+      "updatedAt": "2025-10-07T05:43:25Z",
       "baseRepository": "tlswg/tls-key-update",
       "baseRefName": "main",
       "baseRefOid": "e1f4dc5ec641fe1c226ce76d49680c3ad1400557",
       "headRepository": "tlswg/tls-key-update",
       "headRefName": "tireddy2-patch-4",
-      "headRefOid": "f961dfa60278622c5ca3b1c6f2a2c4e14e142753",
+      "headRefOid": "8dfaad5561729031f40aede38838ebf02ae97a3b",
       "closedAt": null,
       "mergedAt": null,
       "mergedBy": null,
