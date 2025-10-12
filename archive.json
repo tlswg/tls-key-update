@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2025-10-09T01:41:26.622387+00:00",
+  "timestamp": "2025-10-12T01:45:13.622886+00:00",
   "repo": "tlswg/tls-key-update",
   "labels": [
     {
@@ -4921,7 +4921,7 @@
       "labels": [],
       "body": "",
       "createdAt": "2025-10-06T11:38:29Z",
-      "updatedAt": "2025-10-07T05:43:25Z",
+      "updatedAt": "2025-10-11T17:57:00Z",
       "baseRepository": "tlswg/tls-key-update",
       "baseRefName": "main",
       "baseRefOid": "e1f4dc5ec641fe1c226ce76d49680c3ad1400557",
@@ -4933,7 +4933,101 @@
       "mergedBy": null,
       "mergeCommit": null,
       "comments": [],
-      "reviews": []
+      "reviews": [
+        {
+          "id": "PRR_kwDOMJPqLM7GVbPj",
+          "commit": {
+            "abbreviatedOid": "8dfaad5"
+          },
+          "author": "hannestschofenig",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-10-11T17:52:41Z",
+          "updatedAt": "2025-10-11T17:52:42Z",
+          "comments": [
+            {
+              "originalPosition": 22,
+              "body": "```suggestion\r\nTo ensure post-compromise security guarantees:\r\n```",
+              "createdAt": "2025-10-11T17:52:41Z",
+              "updatedAt": "2025-10-11T17:52:42Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM7GVbYk",
+          "commit": {
+            "abbreviatedOid": "8dfaad5"
+          },
+          "author": "hannestschofenig",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-10-11T17:54:32Z",
+          "updatedAt": "2025-10-11T17:54:33Z",
+          "comments": [
+            {
+              "originalPosition": 30,
+              "body": "```suggestion\r\nThe Extended Key Update mechanism increases computational and state-management overhead. A malicious peer could attempt to exhaust CPU or memory resources by initiating excessive update requests.\r\n```",
+              "createdAt": "2025-10-11T17:54:32Z",
+              "updatedAt": "2025-10-11T17:54:33Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM7GVbZ0",
+          "commit": {
+            "abbreviatedOid": "8dfaad5"
+          },
+          "author": "hannestschofenig",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-10-11T17:54:54Z",
+          "updatedAt": "2025-10-11T17:54:54Z",
+          "comments": [
+            {
+              "originalPosition": 34,
+              "body": "```suggestion\r\n* Limit the frequency of accepted Extended Key Update requests per session.\r\n```",
+              "createdAt": "2025-10-11T17:54:54Z",
+              "updatedAt": "2025-10-11T17:54:54Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM7GVbwg",
+          "commit": {
+            "abbreviatedOid": "8dfaad5"
+          },
+          "author": "hannestschofenig",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-10-11T17:56:19Z",
+          "updatedAt": "2025-10-11T17:56:20Z",
+          "comments": [
+            {
+              "originalPosition": 40,
+              "body": "```suggestion\r\nDeployments SHOULD evaluate Extended Key Update performance under load and fault conditions, such as high-frequency or concurrent updates. TLS policies SHOULD define explicit rate limits that balance post-compromise security benefits against potential DoS exposure.\r\n```",
+              "createdAt": "2025-10-11T17:56:19Z",
+              "updatedAt": "2025-10-11T17:56:20Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM7GVb6j",
+          "commit": {
+            "abbreviatedOid": "8dfaad5"
+          },
+          "author": "hannestschofenig",
+          "authorAssociation": "COLLABORATOR",
+          "state": "APPROVED",
+          "body": "I have added a few minor wording improvements but the text is good otherwise.\r\nThanks for the update!",
+          "createdAt": "2025-10-11T17:57:00Z",
+          "updatedAt": "2025-10-11T17:57:00Z",
+          "comments": []
+        }
+      ]
     }
   ]
 }
