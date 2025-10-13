@@ -837,7 +837,7 @@ Table of Contents
 
    Implementations SHOULD apply the following mitigations:
 
-   *  Restrict how often Extended Key Update requests are accepted per
+   *  Limit the frequency of accepted Extended Key Update requests per
       session.
 
    *  A peer that has sent an Extended Key Update MUST NOT initiate
