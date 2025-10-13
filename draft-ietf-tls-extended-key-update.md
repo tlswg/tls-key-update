@@ -781,7 +781,7 @@ The Extended Key Update mechanism increases computational and state-management o
 
 Implementations SHOULD apply the following mitigations:
 
-* Restrict how often Extended Key Update requests are accepted per session.
+* Limit the frequency of accepted Extended Key Update requests per session.
 * A peer that has sent an Extended Key Update MUST NOT initiate another until the previous update completes.
   If a peer violates this rule, the receiving peer MUST treat it as a protocol violation, send an "unexpected_message" alert, and terminate the connection.
 
