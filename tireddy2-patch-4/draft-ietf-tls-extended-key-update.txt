@@ -5,14 +5,14 @@
 Transport Layer Security                                   H. Tschofenig
 Internet-Draft                                                   Siemens
 Intended status: Standards Track                                M. Tüxen
-Expires: 10 April 2026                 Münster Univ. of Applied Sciences
+Expires: 16 April 2026                 Münster Univ. of Applied Sciences
                                                                 T. Reddy
                                                                    Nokia
                                                                 S. Fries
                                                                  Siemens
                                                             Y. Rosomakho
                                                                  Zscaler
-                                                          7 October 2025
+                                                         13 October 2025
 
 
        Extended Key Update for Transport Layer Security (TLS) 1.3
@@ -65,7 +65,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 10 April 2026.
+   This Internet-Draft will expire on 16 April 2026.
 
 Copyright Notice
 
@@ -823,7 +823,7 @@ Table of Contents
 11.1.  Post-Compromise Security
 
    Extended Key Update provides post-compromise security for long-lived
-   TLS sessions.  To maintain post-compromise security guarantees:
+   TLS sessions.  To ensure post-compromise security guarantees:
 
    *  Each update MUST use freshly generated ephemeral key-exchange
       material.  Implementations MUST NOT reuse ephemeral key-exchange
@@ -831,9 +831,9 @@ Table of Contents
 
 11.2.  Denial-of-Service (DoS)
 
-   Extended Key Update introduces additional computation and state
-   management.  A malicious peer could attempt to exhaust CPU or memory
-   resources by initiating frequent updates.
+   The Extended Key Update mechanism increases computational and state-
+   management overhead.  A malicious peer could attempt to exhaust CPU
+   or memory resources by initiating excessive update requests.
 
    Implementations SHOULD apply the following mitigations:
 
