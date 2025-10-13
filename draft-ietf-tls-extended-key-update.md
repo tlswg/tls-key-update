@@ -787,7 +787,7 @@ Implementations SHOULD apply the following mitigations:
 
 ## Operational Guidance
 
-Deployments SHOULD evaluate Extended Key Update performance under load and fault conditions such as high-frequency updates or simultaneous extended key updates. TLS policies SHOULD define explicit rate limits balancing post-compromise security benefits against potential DoS exposure.
+Deployments SHOULD evaluate Extended Key Update performance under load and fault conditions, such as high-frequency or concurrent updates. TLS policies SHOULD define explicit rate limits that balance post-compromise security benefits against potential DoS exposure.
 
 # IANA Considerations
 
