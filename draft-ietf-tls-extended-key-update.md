@@ -777,7 +777,7 @@ To maintain post-compromise security guarantees:
 
 ## Denial-of-Service (DoS)
 
-Extended Key Update introduces additional computation and state management. A malicious peer could attempt to exhaust CPU or memory resources by initiating frequent updates.
+The Extended Key Update mechanism increases computational and state-management overhead. A malicious peer could attempt to exhaust CPU or memory resources by initiating excessive update requests.
 
 Implementations SHOULD apply the following mitigations:
 
