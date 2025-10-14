@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2025-10-12T01:45:13.622886+00:00",
+  "timestamp": "2025-10-14T01:42:03.000389+00:00",
   "repo": "tlswg/tls-key-update",
   "labels": [
     {
@@ -118,9 +118,17 @@
       "labels": [],
       "body": "Hi Hannes, \n\nAs per our discussion, I would like to discuss a potential change to the exchange sequence to accommodate a different use case, as follows:\n\nThe exchange has the following steps:\n\n   1.  Initiator sends a ExtendedKeyUpdateRequest message, which\n       contains a key share.  While an extended key update is in\n       progress, the initiator MUST NOT initiate further key updates.\n\n   2.  On receipt of the ExtendedKeyUpdateRequest message, the responder\n       sends the ExtendedKeyUpdateResponse message.  \n       \n       If the responder accepts the request, it sets the status to accepted \n       and includes its own key share. At this point, the responder is able\n       to derive a secret key based on the exchanged key shares, and the application\n       is able to obtain the Exported Keying Material (EKM).\n       \n       If the responder declines the request, it sets the status accordingly \n       and does not include the key share.\n\n       While an extended key update is in progress, the responder MUST\n       NOT initiate further key updates.\n\n\n   3.  On receipt of the ExtendedKeyUpdateResponse message with accepted\n       status, the initiator is able to derive a secret key based on the\n       exchanged key shares, and the application is able to obtain the EKM.\n       \n   4.  At this point, the application is able to use the EKM to derive\n       additional keys and be ready to send them to HW that will use them for\n       encryption/decryption. When the initiator is ready to start using the\n       new keys, the initiator sends a NewKeyUpdate message and MUST update\n       its traffic keys and MUST send all its traffic using the next\n       generation of keys.  \n       \n       The NewKeyUpdate message is intentionally an empty structure that\n       triggers the transition to new keying material.\n\nHappy to discuss this further, if needed.\n",
       "createdAt": "2025-04-25T18:10:59Z",
-      "updatedAt": "2025-04-25T18:10:59Z",
+      "updatedAt": "2025-10-13T06:57:57Z",
       "closedAt": null,
-      "comments": []
+      "comments": [
+        {
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "body": "@rifaat-ietf - The exchange sequence has gone through significant changes, please go through it and let us know if you have any issues. ",
+          "createdAt": "2025-10-13T06:57:57Z",
+          "updatedAt": "2025-10-13T06:57:57Z"
+        }
+      ]
     },
     {
       "number": 20,
@@ -540,16 +548,24 @@
       "id": "I_kwDOMJPqLM7MS7b2",
       "title": "Clashing requests with equal keyshare",
       "url": "https://github.com/tlswg/tls-key-update/issues/55",
-      "state": "OPEN",
+      "state": "CLOSED",
       "author": "yaroslavros",
       "authorAssociation": "COLLABORATOR",
       "assignees": [],
       "labels": [],
       "body": "As discussed, an artificial clash with a reflected key share could be used to confuse the peer. We should spell out that this is an incorrect behaviour.",
       "createdAt": "2025-09-17T19:19:34Z",
-      "updatedAt": "2025-09-17T19:19:34Z",
-      "closedAt": null,
-      "comments": []
+      "updatedAt": "2025-10-13T06:55:30Z",
+      "closedAt": "2025-10-13T06:55:30Z",
+      "comments": [
+        {
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "body": "Addressed in https://github.com/tlswg/tls-key-update/pull/62",
+          "createdAt": "2025-10-13T06:55:30Z",
+          "updatedAt": "2025-10-13T06:55:30Z"
+        }
+      ]
     },
     {
       "number": 56,
@@ -563,7 +579,7 @@
       "labels": [],
       "body": "We need to clarify who retransmits what in DTLS flows in case there is a suspicion that a message was lost.",
       "createdAt": "2025-09-17T19:20:24Z",
-      "updatedAt": "2025-09-17T19:20:24Z",
+      "updatedAt": "2025-10-13T06:59:30Z",
       "closedAt": null,
       "comments": []
     },
@@ -572,16 +588,24 @@
       "id": "I_kwDOMJPqLM7MS8Ww",
       "title": "DoS security considerations",
       "url": "https://github.com/tlswg/tls-key-update/issues/57",
-      "state": "OPEN",
+      "state": "CLOSED",
       "author": "yaroslavros",
       "authorAssociation": "COLLABORATOR",
       "assignees": [],
       "labels": [],
       "body": "We should add DoS security considerations",
       "createdAt": "2025-09-17T19:20:44Z",
-      "updatedAt": "2025-09-17T19:20:44Z",
-      "closedAt": null,
-      "comments": []
+      "updatedAt": "2025-10-13T06:55:17Z",
+      "closedAt": "2025-10-13T06:55:17Z",
+      "comments": [
+        {
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "body": "Addressed in https://github.com/tlswg/tls-key-update/pull/62",
+          "createdAt": "2025-10-13T06:55:17Z",
+          "updatedAt": "2025-10-13T06:55:17Z"
+        }
+      ]
     },
     {
       "number": 59,
@@ -595,9 +619,17 @@
       "labels": [],
       "body": "### 0. General comments:\n- s/Master Secret/Main Secret (to be consistent with [RFC8446bis](https://www.ietf.org/archive/id/draft-ietf-tls-rfc8446bis-14.html))\n- Clarify all uses of \"traffic keys\" to specify whether that means `handshake_traffic_secret`, `application_traffic_secret`, or something else.\n\n---\n### 1. Threat model \n- Clarify the threat model: Precisely which keys are compromised and how?\n  - Is `application_traffic_secret` compromised because of the compromise of (EC)DHE shared secret `g^xy` or something else?\n  - Is `handshake_traffic_secret` compromised or not? If yes, which one: client or server or both?\n  - LTK is not compromised. (This was clarified [here](https://github.com/tlswg/tls-key-update/pull/58#issuecomment-3353027736), Thank you Hannes)\n\n---\n### 2. Informal security goals\nStating the following is insufficient. \n> \"This entire document is about security.\"\n- State as clearly as possible what do you want to achieve with this spec, such that with formal analysis it can be checked whether these goals are met or not. \n\n---\n### 3. Protocol diagram\n- Define `SEND keys` and `RECEIVE keys` precisely as used in [Figure 3 in the current editor's draft](https://tlswg.org/tls-key-update/draft-ietf-tls-extended-key-update.html#figure-3).\n- State machines in Appendix B: DTLS state machines have some explanation, but an explanation is missing for TLS state machines. ",
       "createdAt": "2025-10-02T21:40:51Z",
-      "updatedAt": "2025-10-02T21:40:51Z",
+      "updatedAt": "2025-10-13T06:59:13Z",
       "closedAt": null,
-      "comments": []
+      "comments": [
+        {
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "body": "Security considerations in updated in https://github.com/tlswg/tls-key-update/pull/62",
+          "createdAt": "2025-10-13T06:59:13Z",
+          "updatedAt": "2025-10-13T06:59:13Z"
+        }
+      ]
     }
   ],
   "pulls": [
@@ -4914,24 +4946,26 @@
       "id": "PR_kwDOMJPqLM6sP7lH",
       "title": "Update to Security Considerations",
       "url": "https://github.com/tlswg/tls-key-update/pull/62",
-      "state": "OPEN",
+      "state": "MERGED",
       "author": "tireddy2",
       "authorAssociation": "COLLABORATOR",
       "assignees": [],
       "labels": [],
       "body": "",
       "createdAt": "2025-10-06T11:38:29Z",
-      "updatedAt": "2025-10-11T17:57:00Z",
+      "updatedAt": "2025-10-13T06:54:41Z",
       "baseRepository": "tlswg/tls-key-update",
       "baseRefName": "main",
       "baseRefOid": "e1f4dc5ec641fe1c226ce76d49680c3ad1400557",
       "headRepository": "tlswg/tls-key-update",
       "headRefName": "tireddy2-patch-4",
-      "headRefOid": "8dfaad5561729031f40aede38838ebf02ae97a3b",
-      "closedAt": null,
-      "mergedAt": null,
-      "mergedBy": null,
-      "mergeCommit": null,
+      "headRefOid": "6fac6ccea30b62de0ad8e30a8e0a315d0434ec4a",
+      "closedAt": "2025-10-13T06:54:41Z",
+      "mergedAt": "2025-10-13T06:54:41Z",
+      "mergedBy": "tireddy2",
+      "mergeCommit": {
+        "oid": "c008abf218d356d5df85617e22b284fff1e751ab"
+      },
       "comments": [],
       "reviews": [
         {
@@ -5028,6 +5062,58 @@
           "comments": []
         }
       ]
+    },
+    {
+      "number": 63,
+      "id": "PR_kwDOMJPqLM6thPwg",
+      "title": "Update to the TLS State Machine (Appendix)",
+      "url": "https://github.com/tlswg/tls-key-update/pull/63",
+      "state": "OPEN",
+      "author": "hannestschofenig",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [],
+      "body": "This is still work in progress.\r\n",
+      "createdAt": "2025-10-13T18:44:46Z",
+      "updatedAt": "2025-10-13T19:33:28Z",
+      "baseRepository": "tlswg/tls-key-update",
+      "baseRefName": "main",
+      "baseRefOid": "c008abf218d356d5df85617e22b284fff1e751ab",
+      "headRepository": "tlswg/tls-key-update",
+      "headRefName": "hannestschofenig-patch-6",
+      "headRefOid": "55a56b891e34f97487fea5fd34faeff1b502ff8e",
+      "closedAt": null,
+      "mergedAt": null,
+      "mergedBy": null,
+      "mergeCommit": null,
+      "comments": [],
+      "reviews": []
+    },
+    {
+      "number": 64,
+      "id": "PR_kwDOMJPqLM6thsXa",
+      "title": "Update to the DTLS State Machine (Appendix)",
+      "url": "https://github.com/tlswg/tls-key-update/pull/64",
+      "state": "OPEN",
+      "author": "hannestschofenig",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [],
+      "body": "This is still work in progress.",
+      "createdAt": "2025-10-13T19:32:51Z",
+      "updatedAt": "2025-10-13T19:33:16Z",
+      "baseRepository": "tlswg/tls-key-update",
+      "baseRefName": "main",
+      "baseRefOid": "c008abf218d356d5df85617e22b284fff1e751ab",
+      "headRepository": "tlswg/tls-key-update",
+      "headRefName": "hannestschofenig-patch-7",
+      "headRefOid": "1ef8d0182822ee6cffda909294666d4d946d5359",
+      "closedAt": null,
+      "mergedAt": null,
+      "mergedBy": null,
+      "mergeCommit": null,
+      "comments": [],
+      "reviews": []
     }
   ]
 }
