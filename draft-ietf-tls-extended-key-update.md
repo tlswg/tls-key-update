@@ -630,13 +630,13 @@ TLS 1.3.
 The following diagram shows the key derivation hierarchy.
 
 ~~~
-       Master Secret N
+       Main Secret N
              |
              v
        Derive-Secret(., "key derived", "")
              |
              v
- (EC)DHE -> HKDF-Extract = Master Secret N+1
+ (EC)DHE -> HKDF-Extract = Main Secret N+1
              |
              +-----> Derive-Secret(., "c ap traffic2",
              |                EKU(key_update_request) ||
@@ -648,24 +648,24 @@ The following diagram shows the key derivation hierarchy.
              |                EKU(key_update_response))
              |                = server_application_traffic_secret_N+1
              |
-             +-----> Derive-Secret(., "exp master2",
+             +-----> Derive-Secret(., "exp main2",
              |                EKU(key_update_request) ||
              |                EKU(key_update_response))
-             |                = exporter_master_secret_N+1
+             |                = exporter_main_secret_N+1
              |
-             +-----> Derive-Secret(., "res master2",
+             +-----> Derive-Secret(., "res main2",
              |                EKU(key_update_request) ||
              |                EKU(key_update_response))
-                              = resumption_master_secret_N+1
+                              = resumption_main_secret_N+1
 ~~~
 
-During the initial handshake, the Master Secret is generated (see
-{{Section 7.1 of TLS}}). Since the Master Secret
+During the initial handshake, the Main Secret is generated (see
+{{Section 7.1 of TLS}}). Since the Main Secret
 is discarded during the key derivation procedure, a derived value is
 stored. This stored value then serves as the input salt to the first
 key update procedure that incorporates the ephemeral (EC)DHE-
 established value as input keying material (IKM) to produce
-master_secret_{N+1}. The derived value from this new master secret
+main_secret_{N+1}. The derived value from this new master secret
 serves as input salt to the subsequent key update procedure, which
 also incorporates a fresh ephemeral (EC)DHE value as IKM. This
 process is repeated for each additional key update procedure.
@@ -734,7 +734,7 @@ client_application_traffic_secret_N+1 in the key schedule
 server_application_traffic_secret_N+1 in the key schedule
 
 1. `EXPORTER_SECRET_N+1`: identifies the
-exporter_master_secret_N+1 in the key schedule
+exporter_main_secret_N+1 in the key schedule
 
 Similar to other entries in the SSLKEYLOGFILE, the label is followed by the
 32-byte value of the Random field from the ClientHello message that
@@ -765,6 +765,18 @@ the exported keying material is aligned with the updated security context.
 #  Security Considerations
 
 This section discusses additional security and operational aspects introduced by the Extended Key Update mechanism. All security considerations of TLS 1.3 {{TLS}} continue to apply.
+
+## Scope of Key Compromise
+
+Extended Key Update assumes a transient compromise of the current application
+traffic secrets, not a persistent attacker with ongoing access to key material.
+Long-term private keys are assumed secure, and post-compromise security
+therefore remains achievable.
+
+If a compromise occurs before the handshake completes, both client_handshake_traffic_secret
+and server_handshake_traffic_secret could be exposed, only the initial full handshake
+can be decrypted. The Extended Key Update procedure derives fresh application traffic secrets
+from a new key exchange ensuring that all subsequent application data remains confidential.
 
 ## Post-Compromise Security
 
@@ -886,6 +898,11 @@ For editorial reasons we abbreviate the protocol message types:
  * NKU - ExtendedKeyUpdate(new_key_update)
  * ACK - Acknowledgement message from {{Section 7 of DTLS}}
  * APP - application data payloads
+
+In the (D)TLS 1.3 state machines discussed below, SEND keys are the keys used by a peer to encrypt
+outbound records and RECEIVE keys are the keys used to decrypt inbound records. They are derived
+from the current application traffic secrets as defined in (D)TLS 1.3, and are replaced with
+the new ones after each successful Extended Key Update.
 
 ## TLS 1.3 State Machines
 
