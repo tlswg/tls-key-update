@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2025-10-14T01:42:03.000389+00:00",
+  "timestamp": "2025-10-16T01:43:58.772925+00:00",
   "repo": "tlswg/tls-key-update",
   "labels": [
     {
@@ -5075,7 +5075,7 @@
       "labels": [],
       "body": "This is still work in progress.\r\n",
       "createdAt": "2025-10-13T18:44:46Z",
-      "updatedAt": "2025-10-13T19:33:28Z",
+      "updatedAt": "2025-10-15T05:55:24Z",
       "baseRepository": "tlswg/tls-key-update",
       "baseRefName": "main",
       "baseRefOid": "c008abf218d356d5df85617e22b284fff1e751ab",
@@ -5087,7 +5087,41 @@
       "mergedBy": null,
       "mergeCommit": null,
       "comments": [],
-      "reviews": []
+      "reviews": [
+        {
+          "id": "PRR_kwDOMJPqLM7G_OmS",
+          "commit": {
+            "abbreviatedOid": "55a56b8"
+          },
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-10-15T05:55:12Z",
+          "updatedAt": "2025-10-15T05:55:13Z",
+          "comments": [
+            {
+              "originalPosition": 157,
+              "body": "```suggestion\r\n- Responder may defer Resp under load (no status reply), then must send it once resources are free.\r\n```",
+              "createdAt": "2025-10-15T05:55:12Z",
+              "updatedAt": "2025-10-15T05:55:13Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM7G_OsK",
+          "commit": {
+            "abbreviatedOid": "55a56b8"
+          },
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "state": "APPROVED",
+          "body": "",
+          "createdAt": "2025-10-15T05:55:24Z",
+          "updatedAt": "2025-10-15T05:55:24Z",
+          "comments": []
+        }
+      ]
     },
     {
       "number": 64,
@@ -5101,13 +5135,93 @@
       "labels": [],
       "body": "This is still work in progress.",
       "createdAt": "2025-10-13T19:32:51Z",
-      "updatedAt": "2025-10-13T19:33:16Z",
+      "updatedAt": "2025-10-15T09:59:08Z",
       "baseRepository": "tlswg/tls-key-update",
       "baseRefName": "main",
       "baseRefOid": "c008abf218d356d5df85617e22b284fff1e751ab",
       "headRepository": "tlswg/tls-key-update",
       "headRefName": "hannestschofenig-patch-7",
       "headRefOid": "1ef8d0182822ee6cffda909294666d4d946d5359",
+      "closedAt": null,
+      "mergedAt": null,
+      "mergedBy": null,
+      "mergeCommit": null,
+      "comments": [],
+      "reviews": [
+        {
+          "id": "PRR_kwDOMJPqLM7HAJnQ",
+          "commit": {
+            "abbreviatedOid": "1ef8d01"
+          },
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-10-15T07:01:11Z",
+          "updatedAt": "2025-10-15T07:01:11Z",
+          "comments": [
+            {
+              "originalPosition": 8,
+              "body": "Appendix is typically for informational purpose only, can it use RFC2119 keywords like \"MUST\" ? ",
+              "createdAt": "2025-10-15T07:01:11Z",
+              "updatedAt": "2025-10-15T07:01:11Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM7HDH6K",
+          "commit": {
+            "abbreviatedOid": "1ef8d01"
+          },
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-10-15T09:58:02Z",
+          "updatedAt": "2025-10-15T09:58:02Z",
+          "comments": [
+            {
+              "originalPosition": 154,
+              "body": "I can't parse the last line. you may want to say:\r\nApplication data can be transmitted at any time using the sender\u2019s current transmit epoch. A receiver must accept application data if the epoch tag on the DTLS record equals the receiver\u2019s current receive epoch. If the receiver has retention active (retain_old == true), the receiver must also accept DTLS records whose epoch tag equals the remembered previous epoch.\r\n",
+              "createdAt": "2025-10-15T09:58:02Z",
+              "updatedAt": "2025-10-15T09:58:02Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM7HDI_X",
+          "commit": {
+            "abbreviatedOid": "1ef8d01"
+          },
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "Thanks, update looks good to me. ",
+          "createdAt": "2025-10-15T09:59:08Z",
+          "updatedAt": "2025-10-15T09:59:08Z",
+          "comments": []
+        }
+      ]
+    },
+    {
+      "number": 65,
+      "id": "PR_kwDOMJPqLM6t5Bdq",
+      "title": "Address comments from Usama",
+      "url": "https://github.com/tlswg/tls-key-update/pull/65",
+      "state": "OPEN",
+      "author": "tireddy2",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [],
+      "body": "https://github.com/tlswg/tls-key-update/issues/59",
+      "createdAt": "2025-10-15T13:48:19Z",
+      "updatedAt": "2025-10-15T13:48:29Z",
+      "baseRepository": "tlswg/tls-key-update",
+      "baseRefName": "main",
+      "baseRefOid": "c008abf218d356d5df85617e22b284fff1e751ab",
+      "headRepository": "tlswg/tls-key-update",
+      "headRefName": "tireddy2-patch-5",
+      "headRefOid": "2cafa9f04980705f6d0d07d5e34dfdfcc0c3d488",
       "closedAt": null,
       "mergedAt": null,
       "mergedBy": null,
