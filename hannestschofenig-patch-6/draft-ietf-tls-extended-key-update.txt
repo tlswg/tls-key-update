@@ -5,14 +5,14 @@
 Transport Layer Security                                   H. Tschofenig
 Internet-Draft                                                   Siemens
 Intended status: Standards Track                                M. Tüxen
-Expires: 16 April 2026                 Münster Univ. of Applied Sciences
+Expires: 22 April 2026                 Münster Univ. of Applied Sciences
                                                                 T. Reddy
                                                                    Nokia
                                                                 S. Fries
                                                                  Siemens
                                                             Y. Rosomakho
                                                                  Zscaler
-                                                         13 October 2025
+                                                         19 October 2025
 
 
        Extended Key Update for Transport Layer Security (TLS) 1.3
@@ -65,7 +65,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 16 April 2026.
+   This Internet-Draft will expire on 22 April 2026.
 
 Copyright Notice
 
@@ -1211,7 +1211,7 @@ B.3.  Responder State Machine
       KeyShareEntry.
 
    *  Responder may defer Resp under load (no status reply), then must
-      send it.
+      send it once resources are free.
 
    *  If a classic KeyUpdate arrives (EKU negotiated), ABORT
       "unexpected_message".
