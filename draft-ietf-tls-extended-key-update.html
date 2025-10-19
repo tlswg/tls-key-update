@@ -2758,10 +2758,11 @@ must be received before accepting traffic under new keys.<a href="#appendix-B.2-
               <p id="appendix-B.4.1-2.8.1">e==... - the epoch tag carried on an incoming message (what the peer sent).<a href="#appendix-B.4.1-2.8.1" class="pilcrow">¶</a></p>
 </li>
             <li class="normal" id="appendix-B.4.1-2.9">
-              <p id="appendix-B.4.1-2.9.1">FINISHED / START / WAIT_RESP / SENT_NKU / WAIT_R_NKU / ACTIVATE RETENTION -
-diagram states; FINISHED denotes the steady state after success.<a href="#appendix-B.4.1-2.9.1" class="pilcrow">¶</a></p>
+              <p id="appendix-B.4.1-2.9.1">FINISHED / START / WAIT_RESP / WAIT_I_NKU / WAIT_R_NKU / ACTIVATE RETENTION / RESPOND / WAIT_ACK - diagram states; FINISHED denotes the steady state after success.<a href="#appendix-B.4.1-2.9.1" class="pilcrow">¶</a></p>
 </li>
           </ul>
+<p id="appendix-B.4.1-3">Crossed requests. If both peers independently initiate the extended key update and the key_update_request messages cross in flight, compare the KeyShareEntry.key_exchange values. The request with the lower lexicographic value must be ignored. If the values are equal, the endpoint must abort with an "unexpected_message" alert. If the peer's value is higher than the local one, the endpoint abandons its in-flight update and processes the peer's request as responder.<a href="#appendix-B.4.1-3" class="pilcrow">¶</a></p>
+<p id="appendix-B.4.1-4">No status in responses. ExtendedKeyUpdate(key_update_response) carries only a KeyShareEntry; there is no accept/reject/status field in the wire format. Implementations either proceed normally or abort on error; there is no benign "reject" reply.<a href="#appendix-B.4.1-4" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="state-machine-initiator">
@@ -2769,150 +2770,194 @@ diagram states; FINISHED denotes the steady state after success.<a href="#append
           <h4 id="name-state-machine-initiator">
 <a href="#appendix-B.4.2" class="section-number selfRef">B.4.2. </a><a href="#name-state-machine-initiator" class="section-name selfRef">State Machine (Initiator)</a>
           </h4>
-<p id="appendix-B.4.2-1">The initiator starts in the START state with matching epochs (rx=tx=E).
-It sends a Req and enters WAIT_RESP (updating=1). While waiting,
-APP data may be sent at any time (tagged with the current tx) and received
-according to the APP acceptance rule below.<a href="#appendix-B.4.2-1" class="pilcrow">¶</a></p>
-<p id="appendix-B.4.2-2">Once the responder returns Resp with a tag matching the current rx, the
-initiator derives new key material. It then sends NKU still tagged with
-the old tx, moving to SENT_NKU/WAIT_R_NKU.<a href="#appendix-B.4.2-2" class="pilcrow">¶</a></p>
-<p id="appendix-B.4.2-3">Upon receiving the responder's NKU (tag equals the current rx, meaning
-the responder is still tagging with its old tx), the initiator:<a href="#appendix-B.4.2-3" class="pilcrow">¶</a></p>
-<ol start="1" type="1" class="normal type-1" id="appendix-B.4.2-4">
-<li id="appendix-B.4.2-4.1">
-              <p id="appendix-B.4.2-4.1.1">activates retention (old_rx=rx; retain_old=1),<a href="#appendix-B.4.2-4.1.1" class="pilcrow">¶</a></p>
+<p id="appendix-B.4.2-1">The initiator starts in the START state with matching epochs (rx := E; tx := E). It sends a Req and enters WAIT_RESP (updating := 1). While waiting, APP data may be sent at any time (tagged with the current tx) and received according to the APP acceptance rule below.<a href="#appendix-B.4.2-1" class="pilcrow">¶</a></p>
+<p id="appendix-B.4.2-2">Once the responder returns Resp with a tag matching the current rx, the initiator derives new key material. It then sends NKU still tagged with the old tx, moving to WAIT_R_NKU.<a href="#appendix-B.4.2-2" class="pilcrow">¶</a></p>
+<p id="appendix-B.4.2-3">If a peer key_update_request arrives while in WAIT_RESP (crossed updates), apply the crossed-request rule above. If the peer's key_exchange is higher, abandon the local update (updating := 0) and continue as responder: send key_update_response, derive new secrets, then proceed with the responder flow. If lower, ignore the peer's request; if equal, abort with "unexpected_message".<a href="#appendix-B.4.2-3" class="pilcrow">¶</a></p>
+<p id="appendix-B.4.2-4">Upon receiving the responder's NKU (tag equals the current rx, meaning the responder is still tagging with its old tx), the initiator:<a href="#appendix-B.4.2-4" class="pilcrow">¶</a></p>
+<ol start="1" type="1" class="normal type-1" id="appendix-B.4.2-5">
+<li id="appendix-B.4.2-5.1">
+              <p id="appendix-B.4.2-5.1.1">activates retention (old_rx := rx; retain_old := 1),<a href="#appendix-B.4.2-5.1.1" class="pilcrow">¶</a></p>
 </li>
-            <li id="appendix-B.4.2-4.2">
-              <p id="appendix-B.4.2-4.2.1">increments both epochs (rx++, tx++),<a href="#appendix-B.4.2-4.2.1" class="pilcrow">¶</a></p>
+            <li id="appendix-B.4.2-5.2">
+              <p id="appendix-B.4.2-5.2.1">increments both epochs (rx++, tx++),<a href="#appendix-B.4.2-5.2.1" class="pilcrow">¶</a></p>
 </li>
-            <li id="appendix-B.4.2-4.3">
-              <p id="appendix-B.4.2-4.3.1">sends ACK tagged with the new tx (which now equals the new rx),<a href="#appendix-B.4.2-4.3.1" class="pilcrow">¶</a></p>
+            <li id="appendix-B.4.2-5.3">
+              <p id="appendix-B.4.2-5.3.1">sends ACK tagged with the new tx (which now equals the new rx),<a href="#appendix-B.4.2-5.3.1" class="pilcrow">¶</a></p>
 </li>
-            <li id="appendix-B.4.2-4.4">
-              <p id="appendix-B.4.2-4.4.1">clears updating and enters FINISHED.<a href="#appendix-B.4.2-4.4.1" class="pilcrow">¶</a></p>
+            <li id="appendix-B.4.2-5.4">
+              <p id="appendix-B.4.2-5.4.1">clears updating and enters FINISHED.<a href="#appendix-B.4.2-5.4.1" class="pilcrow">¶</a></p>
 </li>
           </ol>
-<p id="appendix-B.4.2-5">Retention at the initiator ends automatically on the first APP received under
-the new rx (then retain_old := 0). APP traffic is otherwise permitted at
-any time; reordering is tolerated by the acceptance rule.<a href="#appendix-B.4.2-5" class="pilcrow">¶</a></p>
-<p id="appendix-B.4.2-6">APP acceptance rule (receiver): accept if e == rx or
-(retain_old &amp;&amp; e == old_rx). If retain_old is set and an APP with the new
-rx arrives, clear retain_old.<a href="#appendix-B.4.2-6" class="pilcrow">¶</a></p>
-<div id="appendix-B.4.2-7">
-            <div class="alignLeft art-svg artwork" id="appendix-B.4.2-7.1">
-<svg xmlns="http://www.w3.org/2000/svg" version="1.1" height="784" width="528" viewBox="0 0 528 784" class="diagram" text-anchor="middle" font-family="monospace" font-size="13px" stroke-linecap="round">
-                <path d="M 184,32 L 184,80" fill="none" stroke="black"></path>
-                <path d="M 208,160 L 208,256" fill="none" stroke="black"></path>
-                <path d="M 208,368 L 208,416" fill="none" stroke="black"></path>
-                <path d="M 208,528 L 208,608" fill="none" stroke="black"></path>
-                <path d="M 208,720 L 208,752" fill="none" stroke="black"></path>
-                <path d="M 280,424 L 280,464" fill="none" stroke="black"></path>
-                <path d="M 280,496 L 280,520" fill="none" stroke="black"></path>
-                <path d="M 280,672 L 280,712" fill="none" stroke="black"></path>
-                <path d="M 336,216 L 336,304" fill="none" stroke="black"></path>
-                <path d="M 344,160 L 344,208" fill="none" stroke="black"></path>
-                <path d="M 344,720 L 344,752" fill="none" stroke="black"></path>
-                <path d="M 360,32 L 360,80" fill="none" stroke="black"></path>
-                <path d="M 392,368 L 392,416" fill="none" stroke="black"></path>
-                <path d="M 392,528 L 392,608" fill="none" stroke="black"></path>
-                <path d="M 184,32 L 360,32" fill="none" stroke="black"></path>
-                <path d="M 184,80 L 360,80" fill="none" stroke="black"></path>
-                <path d="M 208,160 L 344,160" fill="none" stroke="black"></path>
-                <path d="M 208,208 L 344,208" fill="none" stroke="black"></path>
-                <path d="M 160,256 L 208,256" fill="none" stroke="black"></path>
-                <path d="M 208,368 L 392,368" fill="none" stroke="black"></path>
-                <path d="M 208,416 L 392,416" fill="none" stroke="black"></path>
-                <path d="M 208,528 L 392,528" fill="none" stroke="black"></path>
-                <path d="M 208,608 L 392,608" fill="none" stroke="black"></path>
-                <path d="M 208,720 L 344,720" fill="none" stroke="black"></path>
-                <path d="M 208,752 L 344,752" fill="none" stroke="black"></path>
-                <path d="M 208,208 L 216,224" fill="none" stroke="black"></path>
-                <path d="M 200,224 L 208,208" fill="none" stroke="black"></path>
-                <polygon class="arrowhead" points="288,712 276,706.4 276,717.6" fill="black" transform="rotate(90,280,712)"></polygon>
-                <polygon class="arrowhead" points="288,520 276,514.4 276,525.6" fill="black" transform="rotate(90,280,520)"></polygon>
+<p id="appendix-B.4.2-6">Retention at the initiator ends automatically on the first APP received under the new rx (then retain_old := 0). APP traffic is otherwise permitted at any time; reordering is tolerated by the acceptance rule.<a href="#appendix-B.4.2-6" class="pilcrow">¶</a></p>
+<p id="appendix-B.4.2-7">APP acceptance rule (receiver): accept if e == rx or (retain_old &amp;&amp; e == old_rx). If retain_old is set and an APP with the new rx arrives, clear retain_old.<a href="#appendix-B.4.2-7" class="pilcrow">¶</a></p>
+<div id="appendix-B.4.2-8">
+            <div class="alignLeft art-svg artwork" id="appendix-B.4.2-8.1">
+<svg xmlns="http://www.w3.org/2000/svg" version="1.1" height="880" width="584" viewBox="0 0 584 880" class="diagram" text-anchor="middle" font-family="monospace" font-size="13px" stroke-linecap="round">
+                <path d="M 8,32 L 8,80" fill="none" stroke="black"></path>
+                <path d="M 8,160 L 8,192" fill="none" stroke="black"></path>
+                <path d="M 8,512 L 8,544" fill="none" stroke="black"></path>
+                <path d="M 8,656 L 8,736" fill="none" stroke="black"></path>
+                <path d="M 8,816 L 8,864" fill="none" stroke="black"></path>
+                <path d="M 16,200 L 16,432" fill="none" stroke="black"></path>
+                <path d="M 56,200 L 56,320" fill="none" stroke="black"></path>
+                <path d="M 56,352 L 56,400" fill="none" stroke="black"></path>
+                <path d="M 56,552 L 56,592" fill="none" stroke="black"></path>
+                <path d="M 88,464 L 88,504" fill="none" stroke="black"></path>
+                <path d="M 96,200 L 96,320" fill="none" stroke="black"></path>
+                <path d="M 96,352 L 96,368" fill="none" stroke="black"></path>
+                <path d="M 192,200 L 192,256" fill="none" stroke="black"></path>
+                <path d="M 192,656 L 192,736" fill="none" stroke="black"></path>
+                <path d="M 256,160 L 256,192" fill="none" stroke="black"></path>
+                <path d="M 256,512 L 256,544" fill="none" stroke="black"></path>
+                <path d="M 280,32 L 280,80" fill="none" stroke="black"></path>
+                <path d="M 352,816 L 352,864" fill="none" stroke="black"></path>
+                <path d="M 8,32 L 280,32" fill="none" stroke="black"></path>
+                <path d="M 8,80 L 280,80" fill="none" stroke="black"></path>
+                <path d="M 8,160 L 256,160" fill="none" stroke="black"></path>
+                <path d="M 8,192 L 256,192" fill="none" stroke="black"></path>
+                <path d="M 192,256 L 208,256" fill="none" stroke="black"></path>
+                <path d="M 96,368 L 112,368" fill="none" stroke="black"></path>
+                <path d="M 56,400 L 72,400" fill="none" stroke="black"></path>
+                <path d="M 16,432 L 32,432" fill="none" stroke="black"></path>
+                <path d="M 8,512 L 256,512" fill="none" stroke="black"></path>
+                <path d="M 8,544 L 256,544" fill="none" stroke="black"></path>
+                <path d="M 8,656 L 192,656" fill="none" stroke="black"></path>
+                <path d="M 8,736 L 192,736" fill="none" stroke="black"></path>
+                <path d="M 8,816 L 352,816" fill="none" stroke="black"></path>
+                <path d="M 8,864 L 352,864" fill="none" stroke="black"></path>
+                <polygon class="arrowhead" points="200,200 188,194.4 188,205.6" fill="black" transform="rotate(270,192,200)"></polygon>
+                <polygon class="arrowhead" points="104,200 92,194.4 92,205.6" fill="black" transform="rotate(270,96,200)"></polygon>
+                <polygon class="arrowhead" points="96,504 84,498.4 84,509.6" fill="black" transform="rotate(90,88,504)"></polygon>
+                <polygon class="arrowhead" points="64,200 52,194.4 52,205.6" fill="black" transform="rotate(270,56,200)"></polygon>
+                <polygon class="arrowhead" points="24,200 12,194.4 12,205.6" fill="black" transform="rotate(270,16,200)"></polygon>
                 <g class="text">
-                  <text x="272" y="52">START</text>
-                  <text x="228" y="68">rx=tx=E,</text>
-                  <text x="308" y="68">updating=0</text>
-                  <text x="280" y="100">|</text>
-                  <text x="192" y="116">(1)</text>
-                  <text x="228" y="116">send</text>
-                  <text x="264" y="116">Req</text>
-                  <text x="316" y="116">[tag=tx]</text>
-                  <text x="192" y="132">set</text>
-                  <text x="252" y="132">updating=1</text>
-                  <text x="280" y="148">v</text>
-                  <text x="272" y="180">WAIT_RESP</text>
-                  <text x="276" y="196">(updating=1)</text>
-                  <text x="328" y="228">/</text>
-                  <text x="344" y="228">\</text>
-                  <text x="368" y="228">APP</text>
-                  <text x="408" y="228">recv:</text>
-                  <text x="380" y="244">accept</text>
-                  <text x="420" y="244">if</text>
-                  <text x="456" y="244">e==rx</text>
-                  <text x="16" y="260">APP</text>
-                  <text x="52" y="260">send</text>
-                  <text x="112" y="260">(anytime)</text>
-                  <text x="364" y="260">or</text>
-                  <text x="424" y="260">(retain_old</text>
-                  <text x="484" y="260">&amp;&amp;</text>
-                  <text x="24" y="276">(APP,</text>
-                  <text x="80" y="276">tag=tx)</text>
-                  <text x="424" y="276">e==old_rx);</text>
-                  <text x="364" y="292">if</text>
-                  <text x="400" y="292">e==rx</text>
-                  <text x="440" y="292">and</text>
-                  <text x="424" y="308">retain_old:</text>
-                  <text x="496" y="308">clear</text>
-                  <text x="340" y="324">Resp(e==rx):</text>
-                  <text x="304" y="340">(4)</text>
-                  <text x="340" y="340">send</text>
-                  <text x="376" y="340">NKU</text>
-                  <text x="428" y="340">[tag=old</text>
-                  <text x="480" y="340">tx]</text>
-                  <text x="352" y="356">v</text>
-                  <text x="260" y="388">SENT_NKU</text>
-                  <text x="304" y="388">/</text>
-                  <text x="268" y="404">WAIT_R_NKU</text>
-                  <text x="368" y="436">/|\</text>
-                  <text x="400" y="436">APP</text>
-                  <text x="456" y="436">send/recv</text>
-                  <text x="416" y="452">allowed</text>
-                  <text x="232" y="484">(6)</text>
-                  <text x="268" y="484">recv</text>
-                  <text x="304" y="484">NKU</text>
-                  <text x="352" y="484">[e==rx]</text>
-                  <text x="332" y="500">(Responder</text>
-                  <text x="400" y="500">still</text>
-                  <text x="444" y="500">tags</text>
-                  <text x="480" y="500">old</text>
-                  <text x="512" y="500">tx)</text>
-                  <text x="260" y="548">ACTIVATE</text>
-                  <text x="336" y="548">RETENTION</text>
-                  <text x="268" y="564">old_rx=rx;</text>
-                  <text x="280" y="580">retain_old=1;</text>
-                  <text x="248" y="596">rx=rx</text>
-                  <text x="284" y="596">1;</text>
-                  <text x="328" y="596">tx=tx+1</text>
-                  <text x="280" y="628">|</text>
-                  <text x="200" y="644">(8)</text>
-                  <text x="236" y="644">send</text>
-                  <text x="272" y="644">ACK</text>
-                  <text x="324" y="644">[tag=tx]</text>
-                  <text x="200" y="660">set</text>
-                  <text x="264" y="660">updating=0;</text>
-                  <text x="340" y="660">assert</text>
-                  <text x="396" y="660">tx==rx</text>
-                  <text x="16" y="740">APP</text>
-                  <text x="72" y="740">send/recv</text>
-                  <text x="144" y="740">allowed</text>
-                  <text x="188" y="740">--</text>
-                  <text x="268" y="740">FINISHED</text>
-                  <text x="52" y="756">retain_old=0</text>
-                  <text x="148" y="756">afterwards</text>
+                  <text x="40" y="52">START</text>
+                  <text x="28" y="68">rx</text>
+                  <text x="52" y="68">:=</text>
+                  <text x="76" y="68">E;</text>
+                  <text x="100" y="68">tx</text>
+                  <text x="124" y="68">:=</text>
+                  <text x="148" y="68">E,</text>
+                  <text x="196" y="68">updating</text>
+                  <text x="244" y="68">:=</text>
+                  <text x="264" y="68">0</text>
+                  <text x="56" y="100">|</text>
+                  <text x="16" y="116">(1)</text>
+                  <text x="52" y="116">send</text>
+                  <text x="88" y="116">Req</text>
+                  <text x="140" y="116">[tag=tx]</text>
+                  <text x="48" y="132">set</text>
+                  <text x="100" y="132">updating</text>
+                  <text x="148" y="132">:=</text>
+                  <text x="168" y="132">1</text>
+                  <text x="56" y="148">v</text>
+                  <text x="56" y="180">WAIT_RESP</text>
+                  <text x="232" y="260">(A)</text>
+                  <text x="268" y="260">recv</text>
+                  <text x="308" y="260">peer</text>
+                  <text x="344" y="260">Req</text>
+                  <text x="404" y="260">(crossed):</text>
+                  <text x="236" y="276">if</text>
+                  <text x="268" y="276">peer</text>
+                  <text x="296" y="276">&lt;</text>
+                  <text x="328" y="276">local</text>
+                  <text x="372" y="276">-&gt;</text>
+                  <text x="412" y="276">IGNORE</text>
+                  <text x="488" y="276">(Self-Loop)</text>
+                  <text x="236" y="292">if</text>
+                  <text x="268" y="292">peer</text>
+                  <text x="300" y="292">==</text>
+                  <text x="336" y="292">local</text>
+                  <text x="372" y="292">-&gt;</text>
+                  <text x="408" y="292">ABORT</text>
+                  <text x="472" y="292">(Error)</text>
+                  <text x="236" y="308">if</text>
+                  <text x="268" y="308">peer</text>
+                  <text x="296" y="308">&gt;</text>
+                  <text x="328" y="308">local</text>
+                  <text x="372" y="308">-&gt;</text>
+                  <text x="416" y="308">ABANDON</text>
+                  <text x="480" y="308">update;</text>
+                  <text x="420" y="324">updating</text>
+                  <text x="468" y="324">:=</text>
+                  <text x="492" y="324">0;</text>
+                  <text x="88" y="340">|</text>
+                  <text x="160" y="340">|</text>
+                  <text x="464" y="340">act</text>
+                  <text x="492" y="340">as</text>
+                  <text x="544" y="340">RESPONDER</text>
+                  <text x="136" y="372">APP</text>
+                  <text x="172" y="372">send</text>
+                  <text x="232" y="372">(anytime)</text>
+                  <text x="400" y="372">(Self-Loop)</text>
+                  <text x="96" y="404">APP</text>
+                  <text x="136" y="404">recv:</text>
+                  <text x="204" y="404">retain_old</text>
+                  <text x="260" y="404">&amp;&amp;</text>
+                  <text x="280" y="404">e</text>
+                  <text x="300" y="404">==</text>
+                  <text x="340" y="404">old_rx</text>
+                  <text x="432" y="404">(Self-Loop)</text>
+                  <text x="56" y="436">APP</text>
+                  <text x="96" y="436">recv:</text>
+                  <text x="128" y="436">e</text>
+                  <text x="148" y="436">==</text>
+                  <text x="172" y="436">rx</text>
+                  <text x="440" y="436">(Self-Loop)</text>
+                  <text x="116" y="468">recv</text>
+                  <text x="156" y="468">Resp</text>
+                  <text x="188" y="468">[e</text>
+                  <text x="212" y="468">==</text>
+                  <text x="240" y="468">rx]</text>
+                  <text x="124" y="484">derive</text>
+                  <text x="188" y="484">secrets;</text>
+                  <text x="244" y="484">send</text>
+                  <text x="280" y="484">NKU</text>
+                  <text x="332" y="484">[tag=old</text>
+                  <text x="384" y="484">tx]</text>
+                  <text x="60" y="532">WAIT_R_NKU</text>
+                  <text x="88" y="580">APP</text>
+                  <text x="144" y="580">send/recv</text>
+                  <text x="216" y="580">allowed</text>
+                  <text x="16" y="612">(6)</text>
+                  <text x="52" y="612">recv</text>
+                  <text x="88" y="612">NKU</text>
+                  <text x="136" y="612">[e==rx]</text>
+                  <text x="44" y="628">(Responder</text>
+                  <text x="112" y="628">still</text>
+                  <text x="156" y="628">tags</text>
+                  <text x="192" y="628">old</text>
+                  <text x="224" y="628">tx)</text>
+                  <text x="56" y="644">v</text>
+                  <text x="52" y="676">ACTIVATE</text>
+                  <text x="128" y="676">RETENTION</text>
+                  <text x="60" y="692">old_rx=rx;</text>
+                  <text x="72" y="708">retain_old=1;</text>
+                  <text x="40" y="724">rx=rx</text>
+                  <text x="76" y="724">1;</text>
+                  <text x="120" y="724">tx=tx+1</text>
+                  <text x="56" y="756">|</text>
+                  <text x="16" y="772">(8)</text>
+                  <text x="52" y="772">send</text>
+                  <text x="88" y="772">ACK</text>
+                  <text x="140" y="772">[tag=tx]</text>
+                  <text x="48" y="788">set</text>
+                  <text x="100" y="788">updating</text>
+                  <text x="148" y="788">:=</text>
+                  <text x="172" y="788">0;</text>
+                  <text x="212" y="788">assert</text>
+                  <text x="268" y="788">tx==rx</text>
+                  <text x="56" y="804">v</text>
+                  <text x="52" y="836">FINISHED</text>
+                  <text x="72" y="852">(retain_old=0</text>
+                  <text x="152" y="852">after</text>
+                  <text x="200" y="852">first</text>
+                  <text x="240" y="852">APP</text>
+                  <text x="268" y="852">at</text>
+                  <text x="296" y="852">new</text>
+                  <text x="328" y="852">rx)</text>
                 </g>
-              </svg><a href="#appendix-B.4.2-7.1" class="pilcrow">¶</a>
+              </svg><a href="#appendix-B.4.2-8.1" class="pilcrow">¶</a>
 </div>
 </div>
 </section>
@@ -2922,10 +2967,10 @@ rx arrives, clear retain_old.<a href="#appendix-B.4.2-6" class="pilcrow">¶</a><
           <h4 id="name-state-machine-responder">
 <a href="#appendix-B.4.3" class="section-number selfRef">B.4.3. </a><a href="#name-state-machine-responder" class="section-name selfRef">State Machine (Responder)</a>
           </h4>
-<p id="appendix-B.4.3-1">The responder starts in the START state with synchronized transmit and receive epochs (rx=tx=E) and no update in progress. Application data can be sent at any time with the current transmit epoch and is accepted if the epoch matches the receiver's view or, if retention is active, the previous epoch.<a href="#appendix-B.4.3-1" class="pilcrow">¶</a></p>
-<p id="appendix-B.4.3-2">Upon receiving an ExtendedKeyUpdate(key_update_request) (Req), the responder transitions to the RESPOND state, sends a response tagged with the current transmit epoch, and enters the WAIT_I_NKU state.<a href="#appendix-B.4.3-2" class="pilcrow">¶</a></p>
-<p id="appendix-B.4.3-3">When a new_key_update (NKU) is received with the correct epoch, the responder activates retention mode: the old epoch is remembered, the receive epoch is incremented, and application data is accepted under both epochs for a transition period. The responder then sends its own NKU tagged with the old transmit epoch and moves to the WAIT_ACK state.<a href="#appendix-B.4.3-3" class="pilcrow">¶</a></p>
-<p id="appendix-B.4.3-4">Finally, upon receipt of an ACK matching the updated epoch, the responder completes the transition by synchronizing transmit and receive epochs (tx=rx), disabling retention, and clearing the update flag. The state machine returns to FINISHED, ready for subsequent updates.<a href="#appendix-B.4.3-4" class="pilcrow">¶</a></p>
+<p id="appendix-B.4.3-1">The responder starts in the START state with synchronized transmit and receive epochs (rx := E; tx := E) and no update in progress. Application data can be transmitted at any time using the sender's current transmit epoch. A receiver must accept application data if the epoch tag on the DTLS record equals the receiver's current receive epoch. If the receiver has retention active (retain_old == true), the receiver must also accept DTLS records whose epoch tag equals the remembered previous epoch.<a href="#appendix-B.4.3-1" class="pilcrow">¶</a></p>
+<p id="appendix-B.4.3-2">Upon receiving an ExtendedKeyUpdate(key_update_request) (Req), the responder transitions to RESPOND. The responder may defer sending key_update_response under load; in that case it must acknowledge the request with an ACK and retransmit the response until it is acknowledged by the initiator, as specified in DTLS considerations. When sent, key_update_response is tagged with the current tx. After sending the response, the responder enters WAIT_I_NKU.<a href="#appendix-B.4.3-2" class="pilcrow">¶</a></p>
+<p id="appendix-B.4.3-3">When a new_key_update (NKU) is received with the correct epoch, the responder activates retention mode: the old epoch is remembered, the receive epoch is incremented, and application data is accepted under both epochs for a transition period. The responder then sends its own NKU tagged with the old transmit epoch and moves to WAIT_ACK.<a href="#appendix-B.4.3-3" class="pilcrow">¶</a></p>
+<p id="appendix-B.4.3-4">Finally, upon receipt of an ACK matching the updated epoch, the responder completes the transition by synchronizing transmit and receive epochs (tx := rx), disabling retention, and clearing the update flag. The state machine returns to FINISHED, ready for subsequent updates.<a href="#appendix-B.4.3-4" class="pilcrow">¶</a></p>
 <p id="appendix-B.4.3-5">Throughout the process:<a href="#appendix-B.4.3-5" class="pilcrow">¶</a></p>
 <ul class="normal">
 <li class="normal" id="appendix-B.4.3-6.1">
@@ -2940,94 +2985,110 @@ rx arrives, clear retain_old.<a href="#appendix-B.4.2-6" class="pilcrow">¶</a><
           </ul>
 <div id="appendix-B.4.3-7">
             <div class="alignLeft art-svg artwork" id="appendix-B.4.3-7.1">
-<svg xmlns="http://www.w3.org/2000/svg" version="1.1" height="784" width="304" viewBox="0 0 304 784" class="diagram" text-anchor="middle" font-family="monospace" font-size="13px" stroke-linecap="round">
-                <path d="M 80,144 L 80,192" fill="none" stroke="black"></path>
-                <path d="M 88,432 L 88,496" fill="none" stroke="black"></path>
-                <path d="M 96,32 L 96,80" fill="none" stroke="black"></path>
-                <path d="M 104,88 L 104,136" fill="none" stroke="black"></path>
-                <path d="M 112,304 L 112,352" fill="none" stroke="black"></path>
-                <path d="M 112,576 L 112,624" fill="none" stroke="black"></path>
-                <path d="M 128,720 L 128,752" fill="none" stroke="black"></path>
-                <path d="M 168,192 L 168,224" fill="none" stroke="black"></path>
-                <path d="M 168,272 L 168,296" fill="none" stroke="black"></path>
-                <path d="M 176,352 L 176,368" fill="none" stroke="black"></path>
-                <path d="M 176,400 L 176,424" fill="none" stroke="black"></path>
-                <path d="M 176,496 L 176,512" fill="none" stroke="black"></path>
-                <path d="M 176,544 L 176,568" fill="none" stroke="black"></path>
-                <path d="M 176,624 L 176,640" fill="none" stroke="black"></path>
-                <path d="M 176,688 L 176,712" fill="none" stroke="black"></path>
-                <path d="M 224,720 L 224,752" fill="none" stroke="black"></path>
-                <path d="M 232,576 L 232,624" fill="none" stroke="black"></path>
-                <path d="M 240,304 L 240,352" fill="none" stroke="black"></path>
-                <path d="M 264,144 L 264,192" fill="none" stroke="black"></path>
-                <path d="M 264,432 L 264,496" fill="none" stroke="black"></path>
-                <path d="M 272,32 L 272,80" fill="none" stroke="black"></path>
-                <path d="M 96,32 L 272,32" fill="none" stroke="black"></path>
-                <path d="M 96,80 L 272,80" fill="none" stroke="black"></path>
-                <path d="M 80,144 L 264,144" fill="none" stroke="black"></path>
-                <path d="M 80,192 L 264,192" fill="none" stroke="black"></path>
-                <path d="M 112,304 L 240,304" fill="none" stroke="black"></path>
-                <path d="M 112,352 L 240,352" fill="none" stroke="black"></path>
-                <path d="M 88,432 L 264,432" fill="none" stroke="black"></path>
-                <path d="M 88,496 L 264,496" fill="none" stroke="black"></path>
-                <path d="M 112,576 L 232,576" fill="none" stroke="black"></path>
-                <path d="M 112,624 L 232,624" fill="none" stroke="black"></path>
-                <path d="M 128,720 L 224,720" fill="none" stroke="black"></path>
-                <path d="M 128,752 L 224,752" fill="none" stroke="black"></path>
-                <polygon class="arrowhead" points="184,712 172,706.4 172,717.6" fill="black" transform="rotate(90,176,712)"></polygon>
-                <polygon class="arrowhead" points="184,568 172,562.4 172,573.6" fill="black" transform="rotate(90,176,568)"></polygon>
-                <polygon class="arrowhead" points="184,424 172,418.4 172,429.6" fill="black" transform="rotate(90,176,424)"></polygon>
-                <polygon class="arrowhead" points="176,296 164,290.4 164,301.6" fill="black" transform="rotate(90,168,296)"></polygon>
-                <polygon class="arrowhead" points="176,224 164,218.4 164,229.6" fill="black" transform="rotate(90,168,224)"></polygon>
-                <polygon class="arrowhead" points="112,136 100,130.4 100,141.6" fill="black" transform="rotate(90,104,136)"></polygon>
+<svg xmlns="http://www.w3.org/2000/svg" version="1.1" height="704" width="536" viewBox="0 0 536 704" class="diagram" text-anchor="middle" font-family="monospace" font-size="13px" stroke-linecap="round">
+                <path d="M 8,32 L 8,80" fill="none" stroke="black"></path>
+                <path d="M 8,160 L 8,192" fill="none" stroke="black"></path>
+                <path d="M 8,288 L 8,336" fill="none" stroke="black"></path>
+                <path d="M 8,400 L 8,464" fill="none" stroke="black"></path>
+                <path d="M 8,528 L 8,576" fill="none" stroke="black"></path>
+                <path d="M 8,656 L 8,688" fill="none" stroke="black"></path>
+                <path d="M 56,200 L 56,280" fill="none" stroke="black"></path>
+                <path d="M 104,656 L 104,688" fill="none" stroke="black"></path>
+                <path d="M 128,528 L 128,576" fill="none" stroke="black"></path>
+                <path d="M 136,288 L 136,304" fill="none" stroke="black"></path>
+                <path d="M 184,400 L 184,464" fill="none" stroke="black"></path>
+                <path d="M 192,160 L 192,192" fill="none" stroke="black"></path>
+                <path d="M 280,32 L 280,80" fill="none" stroke="black"></path>
+                <path d="M 8,32 L 280,32" fill="none" stroke="black"></path>
+                <path d="M 8,80 L 280,80" fill="none" stroke="black"></path>
+                <path d="M 8,160 L 192,160" fill="none" stroke="black"></path>
+                <path d="M 8,192 L 192,192" fill="none" stroke="black"></path>
+                <path d="M 8,288 L 136,288" fill="none" stroke="black"></path>
+                <path d="M 8,336 L 136,336" fill="none" stroke="black"></path>
+                <path d="M 8,400 L 184,400" fill="none" stroke="black"></path>
+                <path d="M 8,464 L 184,464" fill="none" stroke="black"></path>
+                <path d="M 8,528 L 128,528" fill="none" stroke="black"></path>
+                <path d="M 8,576 L 128,576" fill="none" stroke="black"></path>
+                <path d="M 8,656 L 104,656" fill="none" stroke="black"></path>
+                <path d="M 8,688 L 104,688" fill="none" stroke="black"></path>
+                <polygon class="arrowhead" points="64,280 52,274.4 52,285.6" fill="black" transform="rotate(90,56,280)"></polygon>
                 <g class="text">
-                  <text x="192" y="52">START</text>
-                  <text x="140" y="68">rx=tx=E,</text>
-                  <text x="220" y="68">updating=0</text>
-                  <text x="136" y="100">(3)</text>
-                  <text x="172" y="100">recv</text>
-                  <text x="208" y="100">Req</text>
-                  <text x="256" y="100">[e==rx]</text>
-                  <text x="136" y="116">set</text>
-                  <text x="196" y="116">updating=1</text>
-                  <text x="168" y="164">RESPOND</text>
-                  <text x="104" y="180">acc</text>
-                  <text x="132" y="180">is</text>
-                  <text x="164" y="180">true</text>
-                  <text x="196" y="180">or</text>
-                  <text x="232" y="180">false</text>
-                  <text x="140" y="244">acc=true</text>
-                  <text x="124" y="260">send</text>
-                  <text x="188" y="260">Resp(true)</text>
-                  <text x="268" y="260">[tag=tx]</text>
-                  <text x="172" y="324">WAIT_I_NKU</text>
-                  <text x="172" y="340">(updating=1)</text>
-                  <text x="16" y="388">(5)</text>
-                  <text x="52" y="388">recv</text>
-                  <text x="88" y="388">NKU</text>
-                  <text x="140" y="388">[e==rx],</text>
-                  <text x="204" y="388">assert</text>
-                  <text x="268" y="388">accepted</text>
-                  <text x="132" y="452">ACTIVATE</text>
-                  <text x="208" y="452">RETENTION</text>
-                  <text x="140" y="468">old_rx=rx;</text>
-                  <text x="152" y="484">retain_old=1;</text>
-                  <text x="228" y="484">rx++</text>
-                  <text x="80" y="532">(6)</text>
-                  <text x="116" y="532">send</text>
-                  <text x="152" y="532">NKU</text>
-                  <text x="204" y="532">[tag=old</text>
-                  <text x="256" y="532">tx]</text>
-                  <text x="164" y="596">WAIT_ACK</text>
-                  <text x="172" y="612">(updating=1)</text>
-                  <text x="72" y="660">(7/8)</text>
-                  <text x="116" y="660">recv</text>
-                  <text x="152" y="660">ACK</text>
-                  <text x="200" y="660">[e==rx]</text>
-                  <text x="76" y="676">tx=rx;</text>
-                  <text x="160" y="676">retain_old=0;</text>
-                  <text x="260" y="676">updating=0</text>
-                  <text x="172" y="740">FINISHED</text>
+                  <text x="40" y="52">START</text>
+                  <text x="28" y="68">rx</text>
+                  <text x="52" y="68">:=</text>
+                  <text x="76" y="68">E;</text>
+                  <text x="100" y="68">tx</text>
+                  <text x="124" y="68">:=</text>
+                  <text x="148" y="68">E,</text>
+                  <text x="196" y="68">updating</text>
+                  <text x="244" y="68">:=</text>
+                  <text x="264" y="68">0</text>
+                  <text x="56" y="100">|</text>
+                  <text x="16" y="116">(3)</text>
+                  <text x="52" y="116">recv</text>
+                  <text x="88" y="116">Req</text>
+                  <text x="136" y="116">[e==rx]</text>
+                  <text x="48" y="132">set</text>
+                  <text x="100" y="132">updating</text>
+                  <text x="148" y="132">:=</text>
+                  <text x="168" y="132">1</text>
+                  <text x="56" y="148">v</text>
+                  <text x="48" y="180">RESPOND</text>
+                  <text x="84" y="228">send</text>
+                  <text x="124" y="228">Resp</text>
+                  <text x="180" y="228">[tag=tx]</text>
+                  <text x="84" y="244">(may</text>
+                  <text x="132" y="244">defer;</text>
+                  <text x="172" y="244">if</text>
+                  <text x="224" y="244">deferred,</text>
+                  <text x="280" y="244">ACK</text>
+                  <text x="312" y="244">Req</text>
+                  <text x="344" y="244">and</text>
+                  <text x="384" y="244">later</text>
+                  <text x="452" y="244">retransmit</text>
+                  <text x="516" y="244">Resp</text>
+                  <text x="96" y="260">until</text>
+                  <text x="172" y="260">acknowledged</text>
+                  <text x="236" y="260">by</text>
+                  <text x="264" y="260">the</text>
+                  <text x="324" y="260">initiator)</text>
+                  <text x="60" y="308">WAIT_I_NKU</text>
+                  <text x="68" y="324">(updating=1)</text>
+                  <text x="128" y="324">|</text>
+                  <text x="56" y="356">|</text>
+                  <text x="16" y="372">(5)</text>
+                  <text x="52" y="372">recv</text>
+                  <text x="88" y="372">NKU</text>
+                  <text x="136" y="372">[e==rx]</text>
+                  <text x="240" y="372">(assert</text>
+                  <text x="312" y="372">accepted)</text>
+                  <text x="56" y="388">v</text>
+                  <text x="52" y="420">ACTIVATE</text>
+                  <text x="128" y="420">RETENTION</text>
+                  <text x="60" y="436">old_rx=rx;</text>
+                  <text x="72" y="452">retain_old=1;</text>
+                  <text x="148" y="452">rx++</text>
+                  <text x="56" y="484">|</text>
+                  <text x="16" y="500">(6)</text>
+                  <text x="52" y="500">send</text>
+                  <text x="88" y="500">NKU</text>
+                  <text x="140" y="500">[tag=old</text>
+                  <text x="192" y="500">tx]</text>
+                  <text x="56" y="516">v</text>
+                  <text x="52" y="548">WAIT_ACK</text>
+                  <text x="68" y="564">(updating=1)</text>
+                  <text x="56" y="596">|</text>
+                  <text x="24" y="612">(7/8)</text>
+                  <text x="68" y="612">recv</text>
+                  <text x="104" y="612">ACK</text>
+                  <text x="152" y="612">[e==rx]</text>
+                  <text x="60" y="628">tx=rx;</text>
+                  <text x="144" y="628">retain_old=0;</text>
+                  <text x="236" y="628">updating</text>
+                  <text x="284" y="628">:=</text>
+                  <text x="304" y="628">0</text>
+                  <text x="56" y="644">v</text>
+                  <text x="52" y="676">FINISHED</text>
                 </g>
               </svg><a href="#appendix-B.4.3-7.1" class="pilcrow">¶</a>
 </div>
