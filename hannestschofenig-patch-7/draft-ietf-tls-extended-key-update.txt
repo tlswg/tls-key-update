@@ -1226,8 +1226,8 @@ B.4.1.  Terms and Abbreviations
    Crossed requests.  If both peers independently initiate the extended
    key update and the key_update_request messages cross in flight,
    compare the KeyShareEntry.key_exchange values.  The request with the
-   lower lexicographic value MUST be ignored.  If the values are equal,
-   the endpoint MUST abort with an "unexpected_message" alert.  If the
+   lower lexicographic value must be ignored.  If the values are equal,
+   the endpoint must abort with an "unexpected_message" alert.  If the
    peer's value is higher than the local one, the endpoint abandons its
    in-flight update and processes the peer's request as responder.
 
