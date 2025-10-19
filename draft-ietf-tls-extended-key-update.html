@@ -1229,13 +1229,16 @@ and DTLS 1.3.<a href="#section-abstract-2" class="pilcrow">¶</a></p>
             <p id="section-toc.1-1.11.1"><a href="#section-11" class="auto internal xref">11</a>. <a href="#name-security-considerations" class="internal xref">Security Considerations</a></p>
 <ul class="compact toc ulBare ulEmpty">
 <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.11.2.1">
-                <p id="section-toc.1-1.11.2.1.1"><a href="#section-11.1" class="auto internal xref">11.1</a>.  <a href="#name-post-compromise-security" class="internal xref">Post-Compromise Security</a></p>
+                <p id="section-toc.1-1.11.2.1.1"><a href="#section-11.1" class="auto internal xref">11.1</a>.  <a href="#name-scope-of-key-compromise" class="internal xref">Scope of Key Compromise</a></p>
 </li>
               <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.11.2.2">
-                <p id="section-toc.1-1.11.2.2.1"><a href="#section-11.2" class="auto internal xref">11.2</a>.  <a href="#name-denial-of-service-dos" class="internal xref">Denial-of-Service (DoS)</a></p>
+                <p id="section-toc.1-1.11.2.2.1"><a href="#section-11.2" class="auto internal xref">11.2</a>.  <a href="#name-post-compromise-security" class="internal xref">Post-Compromise Security</a></p>
 </li>
               <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.11.2.3">
-                <p id="section-toc.1-1.11.2.3.1"><a href="#section-11.3" class="auto internal xref">11.3</a>.  <a href="#name-operational-guidance" class="internal xref">Operational Guidance</a></p>
+                <p id="section-toc.1-1.11.2.3.1"><a href="#section-11.3" class="auto internal xref">11.3</a>.  <a href="#name-denial-of-service-dos" class="internal xref">Denial-of-Service (DoS)</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.11.2.4">
+                <p id="section-toc.1-1.11.2.4.1"><a href="#section-11.4" class="auto internal xref">11.4</a>.  <a href="#name-operational-guidance" class="internal xref">Operational Guidance</a></p>
 </li>
             </ul>
 </li>
@@ -1930,13 +1933,13 @@ TLS 1.3.<a href="#section-7-3.4.1" class="pilcrow">¶</a></p>
 <p id="section-7-4">The following diagram shows the key derivation hierarchy.<a href="#section-7-4" class="pilcrow">¶</a></p>
 <div class="alignLeft art-text artwork" id="section-7-5">
 <pre>
-       Master Secret N
+       Main Secret N
              |
              v
        Derive-Secret(., "key derived", "")
              |
              v
- (EC)DHE -&gt; HKDF-Extract = Master Secret N+1
+ (EC)DHE -&gt; HKDF-Extract = Main Secret N+1
              |
              +-----&gt; Derive-Secret(., "c ap traffic2",
              |                EKU(key_update_request) ||
@@ -1948,24 +1951,24 @@ TLS 1.3.<a href="#section-7-3.4.1" class="pilcrow">¶</a></p>
              |                EKU(key_update_response))
              |                = server_application_traffic_secret_N+1
              |
-             +-----&gt; Derive-Secret(., "exp master2",
+             +-----&gt; Derive-Secret(., "exp main2",
              |                EKU(key_update_request) ||
              |                EKU(key_update_response))
-             |                = exporter_master_secret_N+1
+             |                = exporter_main_secret_N+1
              |
-             +-----&gt; Derive-Secret(., "res master2",
+             +-----&gt; Derive-Secret(., "res main2",
              |                EKU(key_update_request) ||
              |                EKU(key_update_response))
-                              = resumption_master_secret_N+1
+                              = resumption_main_secret_N+1
 </pre><a href="#section-7-5" class="pilcrow">¶</a>
 </div>
-<p id="section-7-6">During the initial handshake, the Master Secret is generated (see
-<span><a href="https://datatracker.ietf.org/doc/html/draft-ietf-tls-rfc8446bis-14#section-7.1" class="relref">Section 7.1</a> of [<a href="#TLS" class="cite xref">TLS</a>]</span>). Since the Master Secret
+<p id="section-7-6">During the initial handshake, the Main Secret is generated (see
+<span><a href="https://datatracker.ietf.org/doc/html/draft-ietf-tls-rfc8446bis-14#section-7.1" class="relref">Section 7.1</a> of [<a href="#TLS" class="cite xref">TLS</a>]</span>). Since the Main Secret
 is discarded during the key derivation procedure, a derived value is
 stored. This stored value then serves as the input salt to the first
 key update procedure that incorporates the ephemeral (EC)DHE-
 established value as input keying material (IKM) to produce
-master_secret_{N+1}. The derived value from this new master secret
+main_secret_{N+1}. The derived value from this new master secret
 serves as input salt to the subsequent key update procedure, which
 also incorporates a fresh ephemeral (EC)DHE value as IKM. This
 process is repeated for each additional key update procedure.<a href="#section-7-6" class="pilcrow">¶</a></p>
@@ -2039,7 +2042,7 @@ server_application_traffic_secret_N+1 in the key schedule<a href="#section-9-2.2
 </li>
         <li id="section-9-2.3">
           <p id="section-9-2.3.1"><code>EXPORTER_SECRET_N+1</code>: identifies the
-exporter_master_secret_N+1 in the key schedule<a href="#section-9-2.3.1" class="pilcrow">¶</a></p>
+exporter_main_secret_N+1 in the key schedule<a href="#section-9-2.3.1" class="pilcrow">¶</a></p>
 </li>
       </ol>
 <p id="section-9-3">Similar to other entries in the SSLKEYLOGFILE, the label is followed by the
@@ -2076,45 +2079,60 @@ the exported keying material is aligned with the updated security context.<a hre
 <a href="#section-11" class="section-number selfRef">11. </a><a href="#name-security-considerations" class="section-name selfRef">Security Considerations</a>
       </h2>
 <p id="section-11-1">This section discusses additional security and operational aspects introduced by the Extended Key Update mechanism. All security considerations of TLS 1.3 <span>[<a href="#TLS" class="cite xref">TLS</a>]</span> continue to apply.<a href="#section-11-1" class="pilcrow">¶</a></p>
-<div id="post-compromise-security">
+<div id="scope-of-key-compromise">
 <section id="section-11.1">
-        <h3 id="name-post-compromise-security">
-<a href="#section-11.1" class="section-number selfRef">11.1. </a><a href="#name-post-compromise-security" class="section-name selfRef">Post-Compromise Security</a>
+        <h3 id="name-scope-of-key-compromise">
+<a href="#section-11.1" class="section-number selfRef">11.1. </a><a href="#name-scope-of-key-compromise" class="section-name selfRef">Scope of Key Compromise</a>
         </h3>
-<p id="section-11.1-1">Extended Key Update provides post-compromise security for long-lived TLS sessions.
-To ensure post-compromise security guarantees:<a href="#section-11.1-1" class="pilcrow">¶</a></p>
+<p id="section-11.1-1">Extended Key Update assumes a transient compromise of the current application
+traffic secrets, not a persistent attacker with ongoing access to key material.
+Long-term private keys are assumed secure, and post-compromise security
+therefore remains achievable.<a href="#section-11.1-1" class="pilcrow">¶</a></p>
+<p id="section-11.1-2">If a compromise occurs before the handshake completes, both client_handshake_traffic_secret
+and server_handshake_traffic_secret could be exposed, only the initial full handshake
+can be decrypted. The Extended Key Update procedure derives fresh application traffic secrets
+from a new key exchange ensuring that all subsequent application data remains confidential.<a href="#section-11.1-2" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="post-compromise-security">
+<section id="section-11.2">
+        <h3 id="name-post-compromise-security">
+<a href="#section-11.2" class="section-number selfRef">11.2. </a><a href="#name-post-compromise-security" class="section-name selfRef">Post-Compromise Security</a>
+        </h3>
+<p id="section-11.2-1">Extended Key Update provides post-compromise security for long-lived TLS sessions.
+To ensure post-compromise security guarantees:<a href="#section-11.2-1" class="pilcrow">¶</a></p>
 <ul class="normal">
-<li class="normal" id="section-11.1-2.1">
-            <p id="section-11.1-2.1.1">Each update <span class="bcp14">MUST</span> use freshly generated ephemeral key-exchange material. Implementations <span class="bcp14">MUST NOT</span> reuse
-ephemeral key-exchange material across updates or across TLS sessions.<a href="#section-11.1-2.1.1" class="pilcrow">¶</a></p>
+<li class="normal" id="section-11.2-2.1">
+            <p id="section-11.2-2.1.1">Each update <span class="bcp14">MUST</span> use freshly generated ephemeral key-exchange material. Implementations <span class="bcp14">MUST NOT</span> reuse
+ephemeral key-exchange material across updates or across TLS sessions.<a href="#section-11.2-2.1.1" class="pilcrow">¶</a></p>
 </li>
         </ul>
 </section>
 </div>
 <div id="denial-of-service-dos">
-<section id="section-11.2">
+<section id="section-11.3">
         <h3 id="name-denial-of-service-dos">
-<a href="#section-11.2" class="section-number selfRef">11.2. </a><a href="#name-denial-of-service-dos" class="section-name selfRef">Denial-of-Service (DoS)</a>
+<a href="#section-11.3" class="section-number selfRef">11.3. </a><a href="#name-denial-of-service-dos" class="section-name selfRef">Denial-of-Service (DoS)</a>
         </h3>
-<p id="section-11.2-1">The Extended Key Update mechanism increases computational and state-management overhead. A malicious peer could attempt to exhaust CPU or memory resources by initiating excessive update requests.<a href="#section-11.2-1" class="pilcrow">¶</a></p>
-<p id="section-11.2-2">Implementations <span class="bcp14">SHOULD</span> apply the following mitigations:<a href="#section-11.2-2" class="pilcrow">¶</a></p>
+<p id="section-11.3-1">The Extended Key Update mechanism increases computational and state-management overhead. A malicious peer could attempt to exhaust CPU or memory resources by initiating excessive update requests.<a href="#section-11.3-1" class="pilcrow">¶</a></p>
+<p id="section-11.3-2">Implementations <span class="bcp14">SHOULD</span> apply the following mitigations:<a href="#section-11.3-2" class="pilcrow">¶</a></p>
 <ul class="normal">
-<li class="normal" id="section-11.2-3.1">
-            <p id="section-11.2-3.1.1">Limit the frequency of accepted Extended Key Update requests per session.<a href="#section-11.2-3.1.1" class="pilcrow">¶</a></p>
+<li class="normal" id="section-11.3-3.1">
+            <p id="section-11.3-3.1.1">Limit the frequency of accepted Extended Key Update requests per session.<a href="#section-11.3-3.1.1" class="pilcrow">¶</a></p>
 </li>
-          <li class="normal" id="section-11.2-3.2">
-            <p id="section-11.2-3.2.1">A peer that has sent an Extended Key Update <span class="bcp14">MUST NOT</span> initiate another until the previous update completes.
-If a peer violates this rule, the receiving peer <span class="bcp14">MUST</span> treat it as a protocol violation, send an "unexpected_message" alert, and terminate the connection.<a href="#section-11.2-3.2.1" class="pilcrow">¶</a></p>
+          <li class="normal" id="section-11.3-3.2">
+            <p id="section-11.3-3.2.1">A peer that has sent an Extended Key Update <span class="bcp14">MUST NOT</span> initiate another until the previous update completes.
+If a peer violates this rule, the receiving peer <span class="bcp14">MUST</span> treat it as a protocol violation, send an "unexpected_message" alert, and terminate the connection.<a href="#section-11.3-3.2.1" class="pilcrow">¶</a></p>
 </li>
         </ul>
 </section>
 </div>
 <div id="operational-guidance">
-<section id="section-11.3">
+<section id="section-11.4">
         <h3 id="name-operational-guidance">
-<a href="#section-11.3" class="section-number selfRef">11.3. </a><a href="#name-operational-guidance" class="section-name selfRef">Operational Guidance</a>
+<a href="#section-11.4" class="section-number selfRef">11.4. </a><a href="#name-operational-guidance" class="section-name selfRef">Operational Guidance</a>
         </h3>
-<p id="section-11.3-1">Deployments <span class="bcp14">SHOULD</span> evaluate Extended Key Update performance under load and fault conditions, such as high-frequency or concurrent updates. TLS policies <span class="bcp14">SHOULD</span> define explicit rate limits that balance post-compromise security benefits against potential DoS exposure.<a href="#section-11.3-1" class="pilcrow">¶</a></p>
+<p id="section-11.4-1">Deployments <span class="bcp14">SHOULD</span> evaluate Extended Key Update performance under load and fault conditions, such as high-frequency or concurrent updates. TLS policies <span class="bcp14">SHOULD</span> define explicit rate limits that balance post-compromise security benefits against potential DoS exposure.<a href="#section-11.4-1" class="pilcrow">¶</a></p>
 </section>
 </div>
 </section>
@@ -2438,6 +2456,10 @@ operation for TLS 1.3 and DTLS 1.3.<a href="#appendix-B-1" class="pilcrow">¶</a
           <p id="appendix-B-3.5.1">APP - application data payloads<a href="#appendix-B-3.5.1" class="pilcrow">¶</a></p>
 </li>
       </ul>
+<p id="appendix-B-4">In the (D)TLS 1.3 state machines discussed below, SEND keys are the keys used by a peer to encrypt
+outbound records and RECEIVE keys are the keys used to decrypt inbound records. They are derived
+from the current application traffic secrets as defined in (D)TLS 1.3, and are replaced with
+the new ones after each successful Extended Key Update.<a href="#appendix-B-4" class="pilcrow">¶</a></p>
 <div id="tls-13-state-machines">
 <section id="appendix-B.1">
         <h3 id="name-tls-13-state-machines">
