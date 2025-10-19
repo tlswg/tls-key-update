@@ -988,7 +988,7 @@ Notes:
 Notes:
 
 - No "accept/reject" or status in Resp; wire format has only a KeyShareEntry.
-- Responder may defer Resp under load (no status reply), then must send it.
+- Responder may defer Resp under load (no status reply), then must send it once resources are free.
 - If a classic KeyUpdate arrives (EKU negotiated), ABORT "unexpected_message".
 
 ## DTLS 1.3 State Machines
