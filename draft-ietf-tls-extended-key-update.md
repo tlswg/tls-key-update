@@ -995,7 +995,7 @@ The following variables and abbreviations are used in the state machine diagrams
 - e==... - the epoch tag carried on an incoming message (what the peer sent).
 - FINISHED / START / WAIT_RESP / WAIT_I_NKU / WAIT_R_NKU / ACTIVATE RETENTION / RESPOND / WAIT_ACK - diagram states; FINISHED denotes the steady state after success.
 
-Crossed requests. If both peers independently initiate the extended key update and the key_update_request messages cross in flight, compare the KeyShareEntry.key_exchange values. The request with the lower lexicographic value MUST be ignored. If the values are equal, the endpoint MUST abort with an "unexpected_message" alert. If the peer's value is higher than the local one, the endpoint abandons its in-flight update and processes the peer's request as responder.
+Crossed requests. If both peers independently initiate the extended key update and the key_update_request messages cross in flight, compare the KeyShareEntry.key_exchange values. The request with the lower lexicographic value must be ignored. If the values are equal, the endpoint must abort with an "unexpected_message" alert. If the peer's value is higher than the local one, the endpoint abandons its in-flight update and processes the peer's request as responder.
 
 No status in responses. ExtendedKeyUpdate(key_update_response) carries only a KeyShareEntry; there is no accept/reject/status field in the wire format. Implementations either proceed normally or abort on error; there is no benign "reject" reply.
 
