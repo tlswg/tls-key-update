@@ -895,87 +895,101 @@ This section describes the initiator and responder state machines.
 
 ~~~ aasvg
 +----------------------+
-|   START              |
-|   send_key=current,  |
-|   receive_key=current|
-|   updating=0         |
+| START                |
+| send_key=current,    |
+| receive_key=current  |
+| updating=0           |
 +----------------------+
-          |
- (1) send Req
-     set updating=1
-          v
+      |
+(1) send Req with local KeyShareEntry
+    set updating=1
+      v
 +----------------------+
-|      WAIT_RESP       |
-|      updating=1      |
+| WAIT_RESP            |
+| updating=1           |
 +----------------------+
-     |            |
-     | Resp(rejected/clashed):
-     |   set updating=0
-     |   -> FINISHED (no change)
-     |
-     | Resp(accepted) with key_share:
-     |   derive new secrets
-     |   send NKU  (encrypted under old keys)
-     |   update SEND keys (send_key := new key)   <-- TLS step 4
-     v
+|  \
+|   \ (A) recv peer Req (crossed updates):
+|    \  compare peer.key_exchange to local.key_exchange
+|     \  - if peer < local: IGNORE peer Req (send nothing)
+|      \ - if peer == local: ABORT "unexpected_message"
+|       \ - if peer > local: ABANDON local update:
+|          * set updating=0
+|          * act as RESPONDER: send Resp with KeyShareEntry,
+|            derive new secrets, then proceed as in responder flow
+|
+|  (B) recv Resp with key_share:
+|      derive new secrets
+|      send NKU (encrypted under old keys)
+|      update SEND keys (send_key := new)
+\      --> WAIT_R_NKU
+ v
 +---------------------------+
-|  SENT_NKU / WAIT_R_NKU    |
-|  send_key=new,            |
-|  receive_key=current,     |
-|  updating=1               |
+| SENT_NKU / WAIT_R_NKU     |
+| send_key=new,             |
+| receive_key=current,      |
+| updating=1                |
 +---------------------------+
-          |
- (5) recv NKU (encrypted under old keys)
-     update RECEIVE keys (receive_key := new key) <-- Step 5
-     set updating=0
-          v
+      |
+(5) recv NKU (encrypted under old keys)
+    update RECEIVE keys (receive_key := new)
+    set updating=0
+      v
 +----------------------+
-|       FINISHED       |
+| FINISHED             |
 +----------------------+
 ~~~
+
+Notes:
+
+- Both NKU messages are sent under old keys. The old-key NKU
+  must be received before accepting traffic under new keys.
+- If a classic KeyUpdate arrives (EKU negotiated), ABORT "unexpected_message".
+- Crossed-requests: ignore the request with LOWER lexicographic key_exchange; if equal, abort.
 
 ## Responder State Machine
 
 ~~~ aasvg
 +----------------------+
-|   START              |
-|   send_key=current,  |
-|   receive_key=current|
-|   updating=0         |
+| START                |
+| send_key=current,    |
+| receive_key=current  |
+| updating=0           |
 +----------------------+
-          |
- (2) recv Req
-     set updating=1
-          v
+      |
+(2) recv Req
+    set updating=1
+      v
 +----------------------+
-|       RESPOND        |
+| RESPOND              |
 +----------------------+
-     |            |
-     | reject/clashed:
-     |   send Resp(status)
-     |   set updating=0
-     |   -> FINISHED (no change)
-     |
-     | accept:
-     |   send Resp(accepted) with key_share
-     |   derive new secrets
-     |   -> WAIT_I_NKU
-     v
+|  send Resp with KeyShareEntry
+|  (may defer sending if under load;
+|   must send once resources free)
+|  derive new secrets
+|  --> WAIT_I_NKU
+      v
 +----------------------+
-|     WAIT_I_NKU       |
-|     updating=1       |
+| WAIT_I_NKU           |
+| updating=1           |
 +----------------------+
-          |
- (4) recv NKU (encrypted under old keys)
-     update RECEIVE keys (receive_key := new key) <-- TLS step 4
-     send NKU (encrypted under old keys)
-     update SEND keys (send_key := new key)       <-- TLS step 4
-     set updating=0
-          v
+      |
+(4) recv NKU (encrypted under old keys)
+    update RECEIVE keys (receive_key := new)
+    send NKU (encrypted under old keys)
+    update SEND keys (send_key := new)
+    set updating=0
+      v
 +----------------------+
-|       FINISHED       |
+| FINISHED             |
 +----------------------+
 ~~~
+
+Notes:
+
+- No "accept/reject" or status in Resp; wire format has only a KeyShareEntry.
+- Responder may defer Resp under load (no status reply), then must send it once resources are free.
+- If a classic KeyUpdate arrives (EKU negotiated), ABORT "unexpected_message".
 
 ## DTLS 1.3 State Machines
 
