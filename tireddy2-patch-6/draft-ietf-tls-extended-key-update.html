@@ -2071,6 +2071,19 @@ need to use the newly derived key to generate Exported Keying Material
 used as the "Secret" in the exporter function, defined in
 <span><a href="https://datatracker.ietf.org/doc/html/draft-ietf-tls-rfc8446bis-14#section-7.5" class="relref">Section 7.5</a> of [<a href="#TLS" class="cite xref">TLS</a>]</span>, to generate EKM, ensuring that
 the exported keying material is aligned with the updated security context.<a href="#section-10-2" class="pilcrow">¶</a></p>
+<p id="section-10-3">When the exporter master secret is updated following a successful Extended Key Update,
+the TLS/DTLS implementation will have to notify the application that a
+new exporter secret is available.<a href="#section-10-3" class="pilcrow">¶</a></p>
+<p id="section-10-4">To prevent desynchronization, the application will have to retain both the
+previous and the newly derived exporter secrets for a short period. For TLS,
+the previous exporter secret would be discarded once data derived from the
+new exporter has been successfully processed. For DTLS, the previous exporter
+secret needs to be retained until the retention timer expires, to allow for
+processing of packets that may arrive out of order.  The retention policy
+for exporter secrets is application-specific. For example, in DTLS-SRTP,
+the application might retain the previous exporter secret until its
+replay window no longer accepts packets protected with keys derived from that
+secret, as described in Section 3.3.2 of <span>[<a href="#RFC3711" class="cite xref">RFC3711</a>]</span>.<a href="#section-10-4" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="security-considerations">
@@ -2307,6 +2320,10 @@ extension registry <span>[<a href="#TLS-Ext-Registry" class="cite xref">TLS-Ext-
 <dt id="RFC2119">[RFC2119]</dt>
         <dd>
 <span class="refAuthor">Bradner, S.</span>, <span class="refTitle">"Key words for use in RFCs to Indicate Requirement Levels"</span>, <span class="seriesInfo">BCP 14</span>, <span class="seriesInfo">RFC 2119</span>, <span class="seriesInfo">DOI 10.17487/RFC2119</span>, <time datetime="1997-03" class="refDate">March 1997</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc2119">https://www.rfc-editor.org/rfc/rfc2119</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC3711">[RFC3711]</dt>
+        <dd>
+<span class="refAuthor">Baugher, M.</span>, <span class="refAuthor">McGrew, D.</span>, <span class="refAuthor">Naslund, M.</span>, <span class="refAuthor">Carrara, E.</span>, and <span class="refAuthor">K. Norrman</span>, <span class="refTitle">"The Secure Real-time Transport Protocol (SRTP)"</span>, <span class="seriesInfo">RFC 3711</span>, <span class="seriesInfo">DOI 10.17487/RFC3711</span>, <time datetime="2004-03" class="refDate">March 2004</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc3711">https://www.rfc-editor.org/rfc/rfc3711</a>&gt;</span>. </dd>
 <dd class="break"></dd>
 <dt id="RFC8174">[RFC8174]</dt>
         <dd>

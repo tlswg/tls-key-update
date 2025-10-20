@@ -815,6 +815,22 @@ Table of Contents
    Section 7.5 of [TLS], to generate EKM, ensuring that the exported
    keying material is aligned with the updated security context.
 
+   When the exporter master secret is updated following a successful
+   Extended Key Update, the TLS/DTLS implementation will have to notify
+   the application that a new exporter secret is available.
+
+   To prevent desynchronization, the application will have to retain
+   both the previous and the newly derived exporter secrets for a short
+   period.  For TLS, the previous exporter secret would be discarded
+   once data derived from the new exporter has been successfully
+   processed.  For DTLS, the previous exporter secret needs to be
+   retained until the retention timer expires, to allow for processing
+   of packets that may arrive out of order.  The retention policy for
+   exporter secrets is application-specific.  For example, in DTLS-SRTP,
+   the application might retain the previous exporter secret until its
+   replay window no longer accepts packets protected with keys derived
+   from that secret, as described in Section 3.3.2 of [RFC3711].
+
 11.  Security Considerations
 
    This section discusses additional security and operational aspects
@@ -979,6 +995,11 @@ Table of Contents
               Requirement Levels", BCP 14, RFC 2119,
               DOI 10.17487/RFC2119, March 1997,
               <https://www.rfc-editor.org/rfc/rfc2119>.
+
+   [RFC3711]  Baugher, M., McGrew, D., Naslund, M., Carrara, E., and K.
+              Norrman, "The Secure Real-time Transport Protocol (SRTP)",
+              RFC 3711, DOI 10.17487/RFC3711, March 2004,
+              <https://www.rfc-editor.org/rfc/rfc3711>.
 
    [RFC8174]  Leiba, B., "Ambiguity of Uppercase vs Lowercase in RFC
               2119 Key Words", BCP 14, RFC 8174, DOI 10.17487/RFC8174,
