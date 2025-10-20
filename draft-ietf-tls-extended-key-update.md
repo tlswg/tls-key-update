@@ -762,7 +762,7 @@ used as the "Secret" in the exporter function, defined in
 {{Section 7.5 of TLS}}, to generate EKM, ensuring that
 the exported keying material is aligned with the updated security context.
 
-When the exporter master secret is updated following a successful Extended Key Update,
+When the exporter main secret is updated following a successful Extended Key Update,
 the TLS/DTLS implementation will have to notify the application that a
 new exporter secret is available.
 
