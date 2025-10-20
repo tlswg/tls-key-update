@@ -762,9 +762,36 @@ used as the "Secret" in the exporter function, defined in
 {{Section 7.5 of TLS}}, to generate EKM, ensuring that
 the exported keying material is aligned with the updated security context.
 
+When the exporter master secret is updated following a successful Extended Key Update,
+the TLS/DTLS implementation will have to notify the application that a
+new exporter secret is available.
+
+To prevent desynchronization, the application will have to retain both the
+previous and the newly derived exporter secrets for a short period. For TLS,
+the previous exporter secret would be discarded once data derived from the
+new exporter has been successfully processed. For DTLS, the previous exporter
+secret needs to be retained until the retention timer expires, to allow for
+processing of packets that may arrive out of order.  The retention policy
+for exporter secrets is application-specific. For example, in DTLS-SRTP,
+the application might retain the previous exporter secret until its
+replay window no longer accepts packets protected with keys derived from that
+secret, as described in Section 3.3.2 of {{!RFC3711}}.
+
 #  Security Considerations
 
-This section discusses additional security and operational aspects introduced by the Extended Key Update mechanism. All security considerations of TLS 1.3 {{TLS}} continue to apply.
+This section discusses additional security and operational aspects introduced by the Extended Key Update mechanism. All security considerations of TLS 1.3 {{TLS}} and DTLS.13 {{!DTLS=RFC9147}} continue to apply.
+
+## Scope of Key Compromise
+
+Extended Key Update assumes a transient compromise of the current application
+traffic secrets, not a persistent attacker with ongoing access to key material.
+Long-term private keys are assumed secure, and post-compromise security
+therefore remains achievable.
+
+If a compromise occurs before the handshake completes, both client_handshake_traffic_secret
+and server_handshake_traffic_secret could be exposed, only the initial full handshake
+can be decrypted. The Extended Key Update procedure derives fresh application traffic secrets
+from a new key exchange ensuring that all subsequent application data remains confidential.
 
 ## Scope of Key Compromise
 
