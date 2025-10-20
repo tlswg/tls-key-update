@@ -1064,7 +1064,7 @@ svg :is([fill="white"], [fill^="#fff"]) {
 </tr></thead>
 <tfoot><tr>
 <td class="left">Tschofenig, et al.</td>
-<td class="center">Expires 22 April 2026</td>
+<td class="center">Expires 23 April 2026</td>
 <td class="right">[Page]</td>
 </tr></tfoot>
 </table>
@@ -1077,12 +1077,12 @@ svg :is([fill="white"], [fill^="#fff"]) {
 <dd class="internet-draft">draft-ietf-tls-extended-key-update-latest</dd>
 <dt class="label-published">Published:</dt>
 <dd class="published">
-<time datetime="2025-10-19" class="published">19 October 2025</time>
+<time datetime="2025-10-20" class="published">20 October 2025</time>
     </dd>
 <dt class="label-intended-status">Intended Status:</dt>
 <dd class="intended-status">Standards Track</dd>
 <dt class="label-expires">Expires:</dt>
-<dd class="expires"><time datetime="2026-04-22">22 April 2026</time></dd>
+<dd class="expires"><time datetime="2026-04-23">23 April 2026</time></dd>
 <dt class="label-authors">Authors:</dt>
 <dd class="authors">
 <div class="author">
@@ -1156,7 +1156,7 @@ and DTLS 1.3.<a href="#section-abstract-2" class="pilcrow">¶</a></p>
         time. It is inappropriate to use Internet-Drafts as reference
         material or to cite them other than as "work in progress."<a href="#section-boilerplate.1-3" class="pilcrow">¶</a></p>
 <p id="section-boilerplate.1-4">
-        This Internet-Draft will expire on 22 April 2026.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
+        This Internet-Draft will expire on 23 April 2026.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="copyright">
@@ -1232,13 +1232,16 @@ and DTLS 1.3.<a href="#section-abstract-2" class="pilcrow">¶</a></p>
                 <p id="section-toc.1-1.11.2.1.1"><a href="#section-11.1" class="auto internal xref">11.1</a>.  <a href="#name-scope-of-key-compromise" class="internal xref">Scope of Key Compromise</a></p>
 </li>
               <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.11.2.2">
-                <p id="section-toc.1-1.11.2.2.1"><a href="#section-11.2" class="auto internal xref">11.2</a>.  <a href="#name-post-compromise-security" class="internal xref">Post-Compromise Security</a></p>
+                <p id="section-toc.1-1.11.2.2.1"><a href="#section-11.2" class="auto internal xref">11.2</a>.  <a href="#name-scope-of-key-compromise-2" class="internal xref">Scope of Key Compromise</a></p>
 </li>
               <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.11.2.3">
-                <p id="section-toc.1-1.11.2.3.1"><a href="#section-11.3" class="auto internal xref">11.3</a>.  <a href="#name-denial-of-service-dos" class="internal xref">Denial-of-Service (DoS)</a></p>
+                <p id="section-toc.1-1.11.2.3.1"><a href="#section-11.3" class="auto internal xref">11.3</a>.  <a href="#name-post-compromise-security" class="internal xref">Post-Compromise Security</a></p>
 </li>
               <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.11.2.4">
-                <p id="section-toc.1-1.11.2.4.1"><a href="#section-11.4" class="auto internal xref">11.4</a>.  <a href="#name-operational-guidance" class="internal xref">Operational Guidance</a></p>
+                <p id="section-toc.1-1.11.2.4.1"><a href="#section-11.4" class="auto internal xref">11.4</a>.  <a href="#name-denial-of-service-dos" class="internal xref">Denial-of-Service (DoS)</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.11.2.5">
+                <p id="section-toc.1-1.11.2.5.1"><a href="#section-11.5" class="auto internal xref">11.5</a>.  <a href="#name-operational-guidance" class="internal xref">Operational Guidance</a></p>
 </li>
             </ul>
 </li>
@@ -2071,6 +2074,19 @@ need to use the newly derived key to generate Exported Keying Material
 used as the "Secret" in the exporter function, defined in
 <span><a href="https://datatracker.ietf.org/doc/html/draft-ietf-tls-rfc8446bis-14#section-7.5" class="relref">Section 7.5</a> of [<a href="#TLS" class="cite xref">TLS</a>]</span>, to generate EKM, ensuring that
 the exported keying material is aligned with the updated security context.<a href="#section-10-2" class="pilcrow">¶</a></p>
+<p id="section-10-3">When the exporter master secret is updated following a successful Extended Key Update,
+the TLS/DTLS implementation will have to notify the application that a
+new exporter secret is available.<a href="#section-10-3" class="pilcrow">¶</a></p>
+<p id="section-10-4">To prevent desynchronization, the application will have to retain both the
+previous and the newly derived exporter secrets for a short period. For TLS,
+the previous exporter secret would be discarded once data derived from the
+new exporter has been successfully processed. For DTLS, the previous exporter
+secret needs to be retained until the retention timer expires, to allow for
+processing of packets that may arrive out of order.  The retention policy
+for exporter secrets is application-specific. For example, in DTLS-SRTP,
+the application might retain the previous exporter secret until its
+replay window no longer accepts packets protected with keys derived from that
+secret, as described in Section 3.3.2 of <span>[<a href="#RFC3711" class="cite xref">RFC3711</a>]</span>.<a href="#section-10-4" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="security-considerations">
@@ -2078,7 +2094,7 @@ the exported keying material is aligned with the updated security context.<a hre
       <h2 id="name-security-considerations">
 <a href="#section-11" class="section-number selfRef">11. </a><a href="#name-security-considerations" class="section-name selfRef">Security Considerations</a>
       </h2>
-<p id="section-11-1">This section discusses additional security and operational aspects introduced by the Extended Key Update mechanism. All security considerations of TLS 1.3 <span>[<a href="#TLS" class="cite xref">TLS</a>]</span> continue to apply.<a href="#section-11-1" class="pilcrow">¶</a></p>
+<p id="section-11-1">This section discusses additional security and operational aspects introduced by the Extended Key Update mechanism. All security considerations of TLS 1.3 <span>[<a href="#TLS" class="cite xref">TLS</a>]</span> and DTLS.13 <span>[<a href="#DTLS" class="cite xref">DTLS</a>]</span> continue to apply.<a href="#section-11-1" class="pilcrow">¶</a></p>
 <div id="scope-of-key-compromise">
 <section id="section-11.1">
         <h3 id="name-scope-of-key-compromise">
@@ -2094,45 +2110,60 @@ can be decrypted. The Extended Key Update procedure derives fresh application tr
 from a new key exchange ensuring that all subsequent application data remains confidential.<a href="#section-11.1-2" class="pilcrow">¶</a></p>
 </section>
 </div>
-<div id="post-compromise-security">
+<div id="scope-of-key-compromise-1">
 <section id="section-11.2">
-        <h3 id="name-post-compromise-security">
-<a href="#section-11.2" class="section-number selfRef">11.2. </a><a href="#name-post-compromise-security" class="section-name selfRef">Post-Compromise Security</a>
+        <h3 id="name-scope-of-key-compromise-2">
+<a href="#section-11.2" class="section-number selfRef">11.2. </a><a href="#name-scope-of-key-compromise-2" class="section-name selfRef">Scope of Key Compromise</a>
         </h3>
-<p id="section-11.2-1">Extended Key Update provides post-compromise security for long-lived TLS sessions.
-To ensure post-compromise security guarantees:<a href="#section-11.2-1" class="pilcrow">¶</a></p>
+<p id="section-11.2-1">Extended Key Update assumes a transient compromise of the current application
+traffic secrets, not a persistent attacker with ongoing access to key material.
+Long-term private keys are assumed secure, and post-compromise security
+therefore remains achievable.<a href="#section-11.2-1" class="pilcrow">¶</a></p>
+<p id="section-11.2-2">If a compromise occurs before the handshake completes, both client_handshake_traffic_secret
+and server_handshake_traffic_secret could be exposed, only the initial full handshake
+can be decrypted. The Extended Key Update procedure derives fresh application traffic secrets
+from a new key exchange ensuring that all subsequent application data remains confidential.<a href="#section-11.2-2" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="post-compromise-security">
+<section id="section-11.3">
+        <h3 id="name-post-compromise-security">
+<a href="#section-11.3" class="section-number selfRef">11.3. </a><a href="#name-post-compromise-security" class="section-name selfRef">Post-Compromise Security</a>
+        </h3>
+<p id="section-11.3-1">Extended Key Update provides post-compromise security for long-lived TLS sessions.
+To ensure post-compromise security guarantees:<a href="#section-11.3-1" class="pilcrow">¶</a></p>
 <ul class="normal">
-<li class="normal" id="section-11.2-2.1">
-            <p id="section-11.2-2.1.1">Each update <span class="bcp14">MUST</span> use freshly generated ephemeral key-exchange material. Implementations <span class="bcp14">MUST NOT</span> reuse
-ephemeral key-exchange material across updates or across TLS sessions.<a href="#section-11.2-2.1.1" class="pilcrow">¶</a></p>
+<li class="normal" id="section-11.3-2.1">
+            <p id="section-11.3-2.1.1">Each update <span class="bcp14">MUST</span> use freshly generated ephemeral key-exchange material. Implementations <span class="bcp14">MUST NOT</span> reuse
+ephemeral key-exchange material across updates or across TLS sessions.<a href="#section-11.3-2.1.1" class="pilcrow">¶</a></p>
 </li>
         </ul>
 </section>
 </div>
 <div id="denial-of-service-dos">
-<section id="section-11.3">
+<section id="section-11.4">
         <h3 id="name-denial-of-service-dos">
-<a href="#section-11.3" class="section-number selfRef">11.3. </a><a href="#name-denial-of-service-dos" class="section-name selfRef">Denial-of-Service (DoS)</a>
+<a href="#section-11.4" class="section-number selfRef">11.4. </a><a href="#name-denial-of-service-dos" class="section-name selfRef">Denial-of-Service (DoS)</a>
         </h3>
-<p id="section-11.3-1">The Extended Key Update mechanism increases computational and state-management overhead. A malicious peer could attempt to exhaust CPU or memory resources by initiating excessive update requests.<a href="#section-11.3-1" class="pilcrow">¶</a></p>
-<p id="section-11.3-2">Implementations <span class="bcp14">SHOULD</span> apply the following mitigations:<a href="#section-11.3-2" class="pilcrow">¶</a></p>
+<p id="section-11.4-1">The Extended Key Update mechanism increases computational and state-management overhead. A malicious peer could attempt to exhaust CPU or memory resources by initiating excessive update requests.<a href="#section-11.4-1" class="pilcrow">¶</a></p>
+<p id="section-11.4-2">Implementations <span class="bcp14">SHOULD</span> apply the following mitigations:<a href="#section-11.4-2" class="pilcrow">¶</a></p>
 <ul class="normal">
-<li class="normal" id="section-11.3-3.1">
-            <p id="section-11.3-3.1.1">Limit the frequency of accepted Extended Key Update requests per session.<a href="#section-11.3-3.1.1" class="pilcrow">¶</a></p>
+<li class="normal" id="section-11.4-3.1">
+            <p id="section-11.4-3.1.1">Limit the frequency of accepted Extended Key Update requests per session.<a href="#section-11.4-3.1.1" class="pilcrow">¶</a></p>
 </li>
-          <li class="normal" id="section-11.3-3.2">
-            <p id="section-11.3-3.2.1">A peer that has sent an Extended Key Update <span class="bcp14">MUST NOT</span> initiate another until the previous update completes.
-If a peer violates this rule, the receiving peer <span class="bcp14">MUST</span> treat it as a protocol violation, send an "unexpected_message" alert, and terminate the connection.<a href="#section-11.3-3.2.1" class="pilcrow">¶</a></p>
+          <li class="normal" id="section-11.4-3.2">
+            <p id="section-11.4-3.2.1">A peer that has sent an Extended Key Update <span class="bcp14">MUST NOT</span> initiate another until the previous update completes.
+If a peer violates this rule, the receiving peer <span class="bcp14">MUST</span> treat it as a protocol violation, send an "unexpected_message" alert, and terminate the connection.<a href="#section-11.4-3.2.1" class="pilcrow">¶</a></p>
 </li>
         </ul>
 </section>
 </div>
 <div id="operational-guidance">
-<section id="section-11.4">
+<section id="section-11.5">
         <h3 id="name-operational-guidance">
-<a href="#section-11.4" class="section-number selfRef">11.4. </a><a href="#name-operational-guidance" class="section-name selfRef">Operational Guidance</a>
+<a href="#section-11.5" class="section-number selfRef">11.5. </a><a href="#name-operational-guidance" class="section-name selfRef">Operational Guidance</a>
         </h3>
-<p id="section-11.4-1">Deployments <span class="bcp14">SHOULD</span> evaluate Extended Key Update performance under load and fault conditions, such as high-frequency or concurrent updates. TLS policies <span class="bcp14">SHOULD</span> define explicit rate limits that balance post-compromise security benefits against potential DoS exposure.<a href="#section-11.4-1" class="pilcrow">¶</a></p>
+<p id="section-11.5-1">Deployments <span class="bcp14">SHOULD</span> evaluate Extended Key Update performance under load and fault conditions, such as high-frequency or concurrent updates. TLS policies <span class="bcp14">SHOULD</span> define explicit rate limits that balance post-compromise security benefits against potential DoS exposure.<a href="#section-11.5-1" class="pilcrow">¶</a></p>
 </section>
 </div>
 </section>
@@ -2307,6 +2338,10 @@ extension registry <span>[<a href="#TLS-Ext-Registry" class="cite xref">TLS-Ext-
 <dt id="RFC2119">[RFC2119]</dt>
         <dd>
 <span class="refAuthor">Bradner, S.</span>, <span class="refTitle">"Key words for use in RFCs to Indicate Requirement Levels"</span>, <span class="seriesInfo">BCP 14</span>, <span class="seriesInfo">RFC 2119</span>, <span class="seriesInfo">DOI 10.17487/RFC2119</span>, <time datetime="1997-03" class="refDate">March 1997</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc2119">https://www.rfc-editor.org/rfc/rfc2119</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC3711">[RFC3711]</dt>
+        <dd>
+<span class="refAuthor">Baugher, M.</span>, <span class="refAuthor">McGrew, D.</span>, <span class="refAuthor">Naslund, M.</span>, <span class="refAuthor">Carrara, E.</span>, and <span class="refAuthor">K. Norrman</span>, <span class="refTitle">"The Secure Real-time Transport Protocol (SRTP)"</span>, <span class="seriesInfo">RFC 3711</span>, <span class="seriesInfo">DOI 10.17487/RFC3711</span>, <time datetime="2004-03" class="refDate">March 2004</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc3711">https://www.rfc-editor.org/rfc/rfc3711</a>&gt;</span>. </dd>
 <dd class="break"></dd>
 <dt id="RFC8174">[RFC8174]</dt>
         <dd>

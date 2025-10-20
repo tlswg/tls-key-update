@@ -5,14 +5,14 @@
 Transport Layer Security                                   H. Tschofenig
 Internet-Draft                                                   Siemens
 Intended status: Standards Track                                M. Tüxen
-Expires: 22 April 2026                 Münster Univ. of Applied Sciences
+Expires: 23 April 2026                 Münster Univ. of Applied Sciences
                                                                 T. Reddy
                                                                    Nokia
                                                                 S. Fries
                                                                  Siemens
                                                             Y. Rosomakho
                                                                  Zscaler
-                                                         19 October 2025
+                                                         20 October 2025
 
 
        Extended Key Update for Transport Layer Security (TLS) 1.3
@@ -65,7 +65,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 22 April 2026.
+   This Internet-Draft will expire on 23 April 2026.
 
 Copyright Notice
 
@@ -97,9 +97,10 @@ Table of Contents
    10. Exporter
    11. Security Considerations
      11.1.  Scope of Key Compromise
-     11.2.  Post-Compromise Security
-     11.3.  Denial-of-Service (DoS)
-     11.4.  Operational Guidance
+     11.2.  Scope of Key Compromise
+     11.3.  Post-Compromise Security
+     11.4.  Denial-of-Service (DoS)
+     11.5.  Operational Guidance
    12. IANA Considerations
      12.1.  TLS Flags
      12.2.  TLS HandshakeType
@@ -815,11 +816,27 @@ Table of Contents
    Section 7.5 of [TLS], to generate EKM, ensuring that the exported
    keying material is aligned with the updated security context.
 
+   When the exporter master secret is updated following a successful
+   Extended Key Update, the TLS/DTLS implementation will have to notify
+   the application that a new exporter secret is available.
+
+   To prevent desynchronization, the application will have to retain
+   both the previous and the newly derived exporter secrets for a short
+   period.  For TLS, the previous exporter secret would be discarded
+   once data derived from the new exporter has been successfully
+   processed.  For DTLS, the previous exporter secret needs to be
+   retained until the retention timer expires, to allow for processing
+   of packets that may arrive out of order.  The retention policy for
+   exporter secrets is application-specific.  For example, in DTLS-SRTP,
+   the application might retain the previous exporter secret until its
+   replay window no longer accepts packets protected with keys derived
+   from that secret, as described in Section 3.3.2 of [RFC3711].
+
 11.  Security Considerations
 
    This section discusses additional security and operational aspects
    introduced by the Extended Key Update mechanism.  All security
-   considerations of TLS 1.3 [TLS] continue to apply.
+   considerations of TLS 1.3 [TLS] and DTLS.13 [DTLS] continue to apply.
 
 11.1.  Scope of Key Compromise
 
@@ -835,7 +852,21 @@ Table of Contents
    secrets from a new key exchange ensuring that all subsequent
    application data remains confidential.
 
-11.2.  Post-Compromise Security
+11.2.  Scope of Key Compromise
+
+   Extended Key Update assumes a transient compromise of the current
+   application traffic secrets, not a persistent attacker with ongoing
+   access to key material.  Long-term private keys are assumed secure,
+   and post-compromise security therefore remains achievable.
+
+   If a compromise occurs before the handshake completes, both
+   client_handshake_traffic_secret and server_handshake_traffic_secret
+   could be exposed, only the initial full handshake can be decrypted.
+   The Extended Key Update procedure derives fresh application traffic
+   secrets from a new key exchange ensuring that all subsequent
+   application data remains confidential.
+
+11.3.  Post-Compromise Security
 
    Extended Key Update provides post-compromise security for long-lived
    TLS sessions.  To ensure post-compromise security guarantees:
@@ -844,7 +875,7 @@ Table of Contents
       material.  Implementations MUST NOT reuse ephemeral key-exchange
       material across updates or across TLS sessions.
 
-11.3.  Denial-of-Service (DoS)
+11.4.  Denial-of-Service (DoS)
 
    The Extended Key Update mechanism increases computational and state-
    management overhead.  A malicious peer could attempt to exhaust CPU
@@ -861,7 +892,7 @@ Table of Contents
       violation, send an "unexpected_message" alert, and terminate the
       connection.
 
-11.4.  Operational Guidance
+11.5.  Operational Guidance
 
    Deployments SHOULD evaluate Extended Key Update performance under
    load and fault conditions, such as high-frequency or concurrent
@@ -979,6 +1010,11 @@ Table of Contents
               Requirement Levels", BCP 14, RFC 2119,
               DOI 10.17487/RFC2119, March 1997,
               <https://www.rfc-editor.org/rfc/rfc2119>.
+
+   [RFC3711]  Baugher, M., McGrew, D., Naslund, M., Carrara, E., and K.
+              Norrman, "The Secure Real-time Transport Protocol (SRTP)",
+              RFC 3711, DOI 10.17487/RFC3711, March 2004,
+              <https://www.rfc-editor.org/rfc/rfc3711>.
 
    [RFC8174]  Leiba, B., "Ambiguity of Uppercase vs Lowercase in RFC
               2119 Key Words", BCP 14, RFC 8174, DOI 10.17487/RFC8174,
