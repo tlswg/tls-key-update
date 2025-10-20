@@ -5,14 +5,14 @@
 Transport Layer Security                                   H. Tschofenig
 Internet-Draft                                                   Siemens
 Intended status: Standards Track                                M. Tüxen
-Expires: 20 April 2026                 Münster Univ. of Applied Sciences
+Expires: 23 April 2026                 Münster Univ. of Applied Sciences
                                                                 T. Reddy
                                                                    Nokia
                                                                 S. Fries
                                                                  Siemens
                                                             Y. Rosomakho
                                                                  Zscaler
-                                                         17 October 2025
+                                                         20 October 2025
 
 
        Extended Key Update for Transport Layer Security (TLS) 1.3
@@ -65,7 +65,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 20 April 2026.
+   This Internet-Draft will expire on 23 April 2026.
 
 Copyright Notice
 
@@ -814,7 +814,7 @@ Table of Contents
    Section 7.5 of [TLS], to generate EKM, ensuring that the exported
    keying material is aligned with the updated security context.
 
-   When the exporter master secret is updated following a successful
+   When the exporter main secret is updated following a successful
    Extended Key Update, the TLS/DTLS implementation will have to notify
    the application that a new exporter secret is available.
 
