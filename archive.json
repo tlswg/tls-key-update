@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2025-10-19T01:54:33.519922+00:00",
+  "timestamp": "2025-10-21T01:45:55.497644+00:00",
   "repo": "tlswg/tls-key-update",
   "labels": [
     {
@@ -612,15 +612,15 @@
       "id": "I_kwDOMJPqLM7PXeV7",
       "title": "Ambiguities in current editor's draft",
       "url": "https://github.com/tlswg/tls-key-update/issues/59",
-      "state": "OPEN",
+      "state": "CLOSED",
       "author": "muhammad-usama-sardar",
       "authorAssociation": "COLLABORATOR",
       "assignees": [],
       "labels": [],
       "body": "### 0. General comments:\n- s/Master Secret/Main Secret (to be consistent with [RFC8446bis](https://www.ietf.org/archive/id/draft-ietf-tls-rfc8446bis-14.html))\n- Clarify all uses of \"traffic keys\" to specify whether that means `handshake_traffic_secret`, `application_traffic_secret`, or something else.\n\n---\n### 1. Threat model \n- Clarify the threat model: Precisely which keys are compromised and how?\n  - Is `application_traffic_secret` compromised because of the compromise of (EC)DHE shared secret `g^xy` or something else?\n  - Is `handshake_traffic_secret` compromised or not? If yes, which one: client or server or both?\n  - LTK is not compromised. (This was clarified [here](https://github.com/tlswg/tls-key-update/pull/58#issuecomment-3353027736), Thank you Hannes)\n\n---\n### 2. Informal security goals\nStating the following is insufficient. \n> \"This entire document is about security.\"\n- State as clearly as possible what do you want to achieve with this spec, such that with formal analysis it can be checked whether these goals are met or not. \n\n---\n### 3. Protocol diagram\n- Define `SEND keys` and `RECEIVE keys` precisely as used in [Figure 3 in the current editor's draft](https://tlswg.org/tls-key-update/draft-ietf-tls-extended-key-update.html#figure-3).\n- State machines in Appendix B: DTLS state machines have some explanation, but an explanation is missing for TLS state machines. ",
       "createdAt": "2025-10-02T21:40:51Z",
-      "updatedAt": "2025-10-13T06:59:13Z",
-      "closedAt": null,
+      "updatedAt": "2025-10-20T08:58:12Z",
+      "closedAt": "2025-10-20T08:58:12Z",
       "comments": [
         {
           "author": "tireddy2",
@@ -5068,24 +5068,26 @@
       "id": "PR_kwDOMJPqLM6thPwg",
       "title": "Update to the TLS State Machine (Appendix)",
       "url": "https://github.com/tlswg/tls-key-update/pull/63",
-      "state": "OPEN",
+      "state": "MERGED",
       "author": "hannestschofenig",
       "authorAssociation": "COLLABORATOR",
       "assignees": [],
       "labels": [],
       "body": "This is still work in progress.\r\n",
       "createdAt": "2025-10-13T18:44:46Z",
-      "updatedAt": "2025-10-15T05:55:24Z",
+      "updatedAt": "2025-10-19T16:15:34Z",
       "baseRepository": "tlswg/tls-key-update",
       "baseRefName": "main",
       "baseRefOid": "c008abf218d356d5df85617e22b284fff1e751ab",
       "headRepository": "tlswg/tls-key-update",
       "headRefName": "hannestschofenig-patch-6",
-      "headRefOid": "55a56b891e34f97487fea5fd34faeff1b502ff8e",
-      "closedAt": null,
-      "mergedAt": null,
-      "mergedBy": null,
-      "mergeCommit": null,
+      "headRefOid": "847d89cef33887ed03a8d13957f79071edfd6a88",
+      "closedAt": "2025-10-19T16:15:31Z",
+      "mergedAt": "2025-10-19T16:15:31Z",
+      "mergedBy": "hannestschofenig",
+      "mergeCommit": {
+        "oid": "d7f371a0ea1d8334cfb6a866208a8c3bf1dd4311"
+      },
       "comments": [],
       "reviews": [
         {
@@ -5128,24 +5130,26 @@
       "id": "PR_kwDOMJPqLM6thsXa",
       "title": "Update to the DTLS State Machine (Appendix)",
       "url": "https://github.com/tlswg/tls-key-update/pull/64",
-      "state": "OPEN",
+      "state": "MERGED",
       "author": "hannestschofenig",
       "authorAssociation": "COLLABORATOR",
       "assignees": [],
       "labels": [],
       "body": "This is still work in progress.",
       "createdAt": "2025-10-13T19:32:51Z",
-      "updatedAt": "2025-10-15T09:59:08Z",
+      "updatedAt": "2025-10-19T16:15:55Z",
       "baseRepository": "tlswg/tls-key-update",
       "baseRefName": "main",
       "baseRefOid": "c008abf218d356d5df85617e22b284fff1e751ab",
       "headRepository": "tlswg/tls-key-update",
       "headRefName": "hannestschofenig-patch-7",
-      "headRefOid": "1ef8d0182822ee6cffda909294666d4d946d5359",
-      "closedAt": null,
-      "mergedAt": null,
-      "mergedBy": null,
-      "mergeCommit": null,
+      "headRefOid": "af79afcb91dd257b65602be524a35562deabb239",
+      "closedAt": "2025-10-19T16:15:52Z",
+      "mergedAt": "2025-10-19T16:15:52Z",
+      "mergedBy": "hannestschofenig",
+      "mergeCommit": {
+        "oid": "c2d33b2c102c092e3604ec88d21696df17b69ff5"
+      },
       "comments": [],
       "reviews": [
         {
@@ -5200,6 +5204,66 @@
           "createdAt": "2025-10-15T09:59:08Z",
           "updatedAt": "2025-10-15T09:59:08Z",
           "comments": []
+        },
+        {
+          "id": "PRR_kwDOMJPqLM7H8USd",
+          "commit": {
+            "abbreviatedOid": "561a16c"
+          },
+          "author": "hannestschofenig",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-10-19T11:07:30Z",
+          "updatedAt": "2025-10-19T11:07:30Z",
+          "comments": [
+            {
+              "originalPosition": 8,
+              "body": "This is indeed a mistake.",
+              "createdAt": "2025-10-19T11:07:30Z",
+              "updatedAt": "2025-10-19T11:07:31Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM7H8UUb",
+          "commit": {
+            "abbreviatedOid": "561a16c"
+          },
+          "author": "hannestschofenig",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-10-19T11:07:53Z",
+          "updatedAt": "2025-10-19T11:07:54Z",
+          "comments": [
+            {
+              "originalPosition": 8,
+              "body": "```suggestion\r\nCrossed requests. If both peers independently initiate the extended key update and the key_update_request messages cross in flight, compare the KeyShareEntry.key_exchange values. The request with the lower lexicographic value must be ignored. If the values are equal, the endpoint must abort with an \"unexpected_message\" alert. If the peer's value is higher than the local one, the endpoint abandons its in-flight update and processes the peer's request as responder.\r\n```",
+              "createdAt": "2025-10-19T11:07:54Z",
+              "updatedAt": "2025-10-19T11:07:54Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM7H8t7_",
+          "commit": {
+            "abbreviatedOid": "1ef8d01"
+          },
+          "author": "hannestschofenig",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-10-19T16:15:14Z",
+          "updatedAt": "2025-10-19T16:15:14Z",
+          "comments": [
+            {
+              "originalPosition": 154,
+              "body": "I updated the text based in your suggestion.",
+              "createdAt": "2025-10-19T16:15:14Z",
+              "updatedAt": "2025-10-19T16:15:14Z"
+            }
+          ]
         }
       ]
     },
@@ -5208,52 +5272,324 @@
       "id": "PR_kwDOMJPqLM6t5Bdq",
       "title": "Address comments from Usama",
       "url": "https://github.com/tlswg/tls-key-update/pull/65",
-      "state": "OPEN",
+      "state": "MERGED",
       "author": "tireddy2",
       "authorAssociation": "COLLABORATOR",
       "assignees": [],
       "labels": [],
       "body": "https://github.com/tlswg/tls-key-update/issues/59",
       "createdAt": "2025-10-15T13:48:19Z",
-      "updatedAt": "2025-10-15T13:48:29Z",
+      "updatedAt": "2025-10-19T16:16:17Z",
       "baseRepository": "tlswg/tls-key-update",
       "baseRefName": "main",
       "baseRefOid": "c008abf218d356d5df85617e22b284fff1e751ab",
       "headRepository": "tlswg/tls-key-update",
       "headRefName": "tireddy2-patch-5",
       "headRefOid": "2cafa9f04980705f6d0d07d5e34dfdfcc0c3d488",
-      "closedAt": null,
-      "mergedAt": null,
-      "mergedBy": null,
-      "mergeCommit": null,
+      "closedAt": "2025-10-19T16:16:15Z",
+      "mergedAt": "2025-10-19T16:16:15Z",
+      "mergedBy": "hannestschofenig",
+      "mergeCommit": {
+        "oid": "5ce056e84aa10fdf0982738188c36eaca59b05fe"
+      },
       "comments": [],
-      "reviews": []
+      "reviews": [
+        {
+          "id": "PRR_kwDOMJPqLM7H8Uf9",
+          "commit": {
+            "abbreviatedOid": "2cafa9f"
+          },
+          "author": "hannestschofenig",
+          "authorAssociation": "COLLABORATOR",
+          "state": "APPROVED",
+          "body": "I am OK with the proposed edits. I was not quite sure why you rename \"master secret\" to \"main secret\" but the change is fine.",
+          "createdAt": "2025-10-19T11:10:23Z",
+          "updatedAt": "2025-10-19T11:10:23Z",
+          "comments": []
+        }
+      ]
     },
     {
       "number": 66,
       "id": "PR_kwDOMJPqLM6uO9v5",
       "title": "Updates to Exporter section",
       "url": "https://github.com/tlswg/tls-key-update/pull/66",
-      "state": "OPEN",
+      "state": "MERGED",
       "author": "tireddy2",
       "authorAssociation": "COLLABORATOR",
       "assignees": [],
       "labels": [],
       "body": "",
       "createdAt": "2025-10-17T06:07:51Z",
-      "updatedAt": "2025-10-17T06:10:54Z",
+      "updatedAt": "2025-10-20T18:27:00Z",
       "baseRepository": "tlswg/tls-key-update",
       "baseRefName": "main",
-      "baseRefOid": "c008abf218d356d5df85617e22b284fff1e751ab",
+      "baseRefOid": "5ce056e84aa10fdf0982738188c36eaca59b05fe",
       "headRepository": "tlswg/tls-key-update",
       "headRefName": "tireddy2-patch-6",
-      "headRefOid": "6653a6fecbad8650bce7ed36e416bec641dd7ec3",
-      "closedAt": null,
-      "mergedAt": null,
-      "mergedBy": null,
-      "mergeCommit": null,
+      "headRefOid": "4c004ef3ea39204da049dfd6a3eff8a147427447",
+      "closedAt": "2025-10-20T11:19:01Z",
+      "mergedAt": "2025-10-20T11:19:01Z",
+      "mergedBy": "tireddy2",
+      "mergeCommit": {
+        "oid": "e3c5346e5eea6c369f451e692a74b69912ac1f53"
+      },
       "comments": [],
-      "reviews": []
+      "reviews": [
+        {
+          "id": "PRR_kwDOMJPqLM7H8UiR",
+          "commit": {
+            "abbreviatedOid": "6653a6f"
+          },
+          "author": "hannestschofenig",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-10-19T11:10:53Z",
+          "updatedAt": "2025-10-19T11:10:54Z",
+          "comments": [
+            {
+              "originalPosition": 4,
+              "body": "```suggestion\r\nWhen the exporter main secret is updated following a successful Extended Key Update,\r\n```",
+              "createdAt": "2025-10-19T11:10:53Z",
+              "updatedAt": "2025-10-19T11:10:54Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM7H8Ukh",
+          "commit": {
+            "abbreviatedOid": "6653a6f"
+          },
+          "author": "hannestschofenig",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-10-19T11:11:23Z",
+          "updatedAt": "2025-10-19T11:11:23Z",
+          "comments": [
+            {
+              "originalPosition": 4,
+              "body": "Give the other PR that changes the term from \"master\" to \"main\" I was wondering whether we should also change it here.",
+              "createdAt": "2025-10-19T11:11:23Z",
+              "updatedAt": "2025-10-19T11:11:24Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM7H8Uou",
+          "commit": {
+            "abbreviatedOid": "6653a6f"
+          },
+          "author": "hannestschofenig",
+          "authorAssociation": "COLLABORATOR",
+          "state": "APPROVED",
+          "body": "",
+          "createdAt": "2025-10-19T11:12:14Z",
+          "updatedAt": "2025-10-19T11:12:14Z",
+          "comments": []
+        },
+        {
+          "id": "PRR_kwDOMJPqLM7H8aO_",
+          "commit": {
+            "abbreviatedOid": "6653a6f"
+          },
+          "author": "ilaril",
+          "authorAssociation": "NONE",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-10-19T12:15:27Z",
+          "updatedAt": "2025-10-19T12:15:28Z",
+          "comments": [
+            {
+              "originalPosition": 11,
+              "body": "I do not think this would work. What prevents the following:\r\n\r\n1. The sender exports a secret (using old key).\r\n2. The sender sends logical message based on that secret.\r\n3. Extended key update updates the secret in the middle of sending the message.\r\n4. The receiver receives the message, including the EKU.\r\n5. The receiver exports a secret (using new key, since old key is no longer available as there has been data since update!). \r\n6. ... Everything blows up as the exported secrets do not match.",
+              "createdAt": "2025-10-19T12:15:27Z",
+              "updatedAt": "2025-10-19T12:15:28Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM7H8b-B",
+          "commit": {
+            "abbreviatedOid": "6653a6f"
+          },
+          "author": "ilaril",
+          "authorAssociation": "NONE",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-10-19T12:36:22Z",
+          "updatedAt": "2025-10-19T12:36:22Z",
+          "comments": [
+            {
+              "originalPosition": 6,
+              "body": "Adding such notification without breaking API change requires the application to explicitly opt-in to this mechanism. Furthermore, I do not think that would even be sufficient. Exporters are neither directional nor synchronized, so the exporter API would have to be changed to add epoch as input.\r\n\r\nThen the key management would be nontrivial: Logical messages can take nontrivial time to send, enough to complete the whole EKU sequence in the middle. Or worse, two of those! Thus, just keeping the previous key is not sufficient, as the required key can be two (or more!) back.\r\n\r\nAnd then what if the EKU happens between exporting the secret and starting to send the logical message? Then one has logical message that is completely sent using the new key, but is still using the old key.",
+              "createdAt": "2025-10-19T12:36:22Z",
+              "updatedAt": "2025-10-19T12:36:45Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM7H-zVl",
+          "commit": {
+            "abbreviatedOid": "6653a6f"
+          },
+          "author": "stfries",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-10-20T06:20:33Z",
+          "updatedAt": "2025-10-20T06:20:33Z",
+          "comments": [
+            {
+              "originalPosition": 4,
+              "body": "Yes, makes sense to be consistent",
+              "createdAt": "2025-10-20T06:20:33Z",
+              "updatedAt": "2025-10-20T06:20:33Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM7IAE5S",
+          "commit": {
+            "abbreviatedOid": "6653a6f"
+          },
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-10-20T08:28:14Z",
+          "updatedAt": "2025-10-20T08:28:14Z",
+          "comments": [
+            {
+              "originalPosition": 4,
+              "body": "Yes, https://datatracker.ietf.org/doc/draft-ietf-tls-rfc8446bis/ uses \"main secret\" instead of \"master secret\". ",
+              "createdAt": "2025-10-20T08:28:14Z",
+              "updatedAt": "2025-10-20T08:28:14Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM7IAPyk",
+          "commit": {
+            "abbreviatedOid": "6653a6f"
+          },
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-10-20T08:41:14Z",
+          "updatedAt": "2025-10-20T08:41:15Z",
+          "comments": [
+            {
+              "originalPosition": 6,
+              "body": "The point about exporter synchronization at the API level is understood, but it is an implementation and API consideration rather than a protocol aspect. \r\nAdditionally, aggressive  EKU triggering would represent misbehavior under this specification and would be treated as a DoS, so maintaining more than two generations of exporter secrets is not expected to be necessary.",
+              "createdAt": "2025-10-20T08:41:14Z",
+              "updatedAt": "2025-10-20T08:43:19Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM7IAnfC",
+          "commit": {
+            "abbreviatedOid": "6653a6f"
+          },
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-10-20T09:07:04Z",
+          "updatedAt": "2025-10-20T09:07:04Z",
+          "comments": [
+            {
+              "originalPosition": 11,
+              "body": "To support EKU, TLS implementations will have to internally manage the transition between exporter secrets, notify applications when a new exporter secret is active.\r\nThe race condition you described cannot occur in TLS because record delivery is ordered. All records protected with the previous traffic keys are received and processed before the Extended Key Update message that installs the new keying material. Thus, both peers transition exporter secrets in a synchronized manner.\r\n\r\nThe potential overlap only exists for DTLS, which allows out-of-order delivery. The draft already addresses that case by requiring retention of the previous exporter secret until the retention timer expires",
+              "createdAt": "2025-10-20T09:07:04Z",
+              "updatedAt": "2025-10-20T09:07:04Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM7IAvjK",
+          "commit": {
+            "abbreviatedOid": "6653a6f"
+          },
+          "author": "stfries",
+          "authorAssociation": "COLLABORATOR",
+          "state": "APPROVED",
+          "body": "Just added smaller comments",
+          "createdAt": "2025-10-20T09:14:23Z",
+          "updatedAt": "2025-10-20T09:16:57Z",
+          "comments": [
+            {
+              "originalPosition": 21,
+              "body": "Proposal to enhance the last sentence to also cover the relation to DTLS.\r\n\r\nAll security considerations of TLS 1.3 {{TLS}} and DTLS.13 {{!DTLS=RFC9147}} continue to apply.",
+              "createdAt": "2025-10-20T09:14:23Z",
+              "updatedAt": "2025-10-20T09:16:57Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM7IChgl",
+          "commit": {
+            "abbreviatedOid": "6653a6f"
+          },
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-10-20T11:16:51Z",
+          "updatedAt": "2025-10-20T11:16:51Z",
+          "comments": [
+            {
+              "originalPosition": 21,
+              "body": "Thanks, fixed.",
+              "createdAt": "2025-10-20T11:16:51Z",
+              "updatedAt": "2025-10-20T11:16:52Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM7IHvr1",
+          "commit": {
+            "abbreviatedOid": "6653a6f"
+          },
+          "author": "ilaril",
+          "authorAssociation": "NONE",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-10-20T18:18:36Z",
+          "updatedAt": "2025-10-20T18:18:36Z",
+          "comments": [
+            {
+              "originalPosition": 6,
+              "body": "As the last case (EKU updating exporter secret between export and sending the message) shows, even exporter interface with explicit epoch control together with epoch change notifications is not sufficient. Even in TLS where re-ordering can not happen.\r\n\r\nAnd EKU triggering twice in one logical message is not aggressive if the message is very large.",
+              "createdAt": "2025-10-20T18:18:36Z",
+              "updatedAt": "2025-10-20T18:18:36Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM7IH0U5",
+          "commit": {
+            "abbreviatedOid": "6653a6f"
+          },
+          "author": "ilaril",
+          "authorAssociation": "NONE",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-10-20T18:27:00Z",
+          "updatedAt": "2025-10-20T18:27:00Z",
+          "comments": [
+            {
+              "originalPosition": 11,
+              "body": "That race condition does not depend on any re-ordering (the description did not mention re-ordering or any packet loss) and thus can also happen in TLS. For an even nastier version, have the EKU update the exporter secret between export and sending the message.\r\n\r\nFor the nastier version, the receiver has no way of telling the correct epoch unless explicitly specified by application protocol. Which is not acceptable.",
+              "createdAt": "2025-10-20T18:27:00Z",
+              "updatedAt": "2025-10-20T18:32:21Z"
+            }
+          ]
+        }
+      ]
     }
   ]
 }
