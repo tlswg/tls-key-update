@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2025-10-21T01:45:55.497644+00:00",
+  "timestamp": "2025-10-23T01:44:49.307337+00:00",
   "repo": "tlswg/tls-key-update",
   "labels": [
     {
@@ -630,6 +630,22 @@
           "updatedAt": "2025-10-13T06:59:13Z"
         }
       ]
+    },
+    {
+      "number": 67,
+      "id": "I_kwDOMJPqLM7SuzNf",
+      "title": "Ambiguities in version -06",
+      "url": "https://github.com/tlswg/tls-key-update/issues/67",
+      "state": "OPEN",
+      "author": "muhammad-usama-sardar",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [],
+      "body": "[A follow-up of #59 since it was closed by the authors without being properly addressed]\n\n### 0. General comments:\n- Make the names of keys consistent with [RFC8446bis](https://www.ietf.org/archive/id/draft-ietf-tls-rfc8446bis-14.html), and define any new ones very clearly. For example, I cannot parse `exporter_main_secret`. What is it? Why is it required?\n- Clarify all unqualified uses of \"traffic keys\" to specify whether that means `handshake_traffic_secret`, `application_traffic_secret`, or something else.\n- Section 11.1 and 11.2 are ditto copy.\n\n---\n### 1. Threat model \n- Clarify the threat model: Precisely which keys are compromised and **how**? See [here](https://mailarchive.ietf.org/arch/msg/tls/P_VdWSi20TZG0rJEaz7VCPKDIOg/) why the \"how\" part is necessary. [Sec. 11.1](https://www.ietf.org/archive/id/draft-ietf-tls-extended-key-update-06.html#section-11.1) says \n\n> compromise of the current application traffic secrets\n\nWhat exactly does that entail? Does that mean `client_application_traffic_secret_0` and `server_application_traffic_secret_0`?\n\n  - Is `application_traffic_secret` compromised because of the compromise of (EC)DHE shared secret `g^xy` or something else?\n  - Is `handshake_traffic_secret` compromised or not? If yes, which one: client or server or both?\n  - Is `g^xy` compromised or not?\n\n---\n### 2. Informal security goals\n\n- State as clearly as possible what do you want to achieve with this spec, such that with formal analysis it can be checked whether these goals are met or not. \n\n---\n### 3. Protocol diagram and state machine\n- TLS state machines in Appendix B.2 and B.3 are very hard to read for me. Some symbols are undefined, and an explanation is missing. For example, what is (A) and (B)? There is (1), (2), (4) and (5): is there a reason for having no (3)?",
+      "createdAt": "2025-10-21T08:18:34Z",
+      "updatedAt": "2025-10-21T08:18:34Z",
+      "closedAt": null,
+      "comments": []
     }
   ],
   "pulls": [
