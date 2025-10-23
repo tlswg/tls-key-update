@@ -793,18 +793,6 @@ and server_handshake_traffic_secret could be exposed, only the initial full hand
 can be decrypted. The Extended Key Update procedure derives fresh application traffic secrets
 from a new key exchange ensuring that all subsequent application data remains confidential.
 
-## Scope of Key Compromise
-
-Extended Key Update assumes a transient compromise of the current application
-traffic secrets, not a persistent attacker with ongoing access to key material.
-Long-term private keys are assumed secure, and post-compromise security
-therefore remains achievable.
-
-If a compromise occurs before the handshake completes, both client_handshake_traffic_secret
-and server_handshake_traffic_secret could be exposed, only the initial full handshake
-can be decrypted. The Extended Key Update procedure derives fresh application traffic secrets
-from a new key exchange ensuring that all subsequent application data remains confidential.
-
 ## Post-Compromise Security
 
 Extended Key Update provides post-compromise security for long-lived TLS sessions.
@@ -935,7 +923,7 @@ the new ones after each successful Extended Key Update.
 
 This section describes the initiator and responder state machines.
 
-## Initiator State Machine
+### Initiator State Machine
 
 ~~~ aasvg
 +----------------------+
@@ -991,7 +979,7 @@ Notes:
 - If a classic KeyUpdate arrives (EKU negotiated), ABORT "unexpected_message".
 - Crossed-requests: ignore the request with LOWER lexicographic key_exchange; if equal, abort.
 
-## Responder State Machine
+### Responder State Machine
 
 ~~~ aasvg
 +----------------------+
