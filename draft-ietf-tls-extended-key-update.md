@@ -141,7 +141,7 @@ The proposed extension is applicable to both TLS 1.3 {{TLS}} and DTLS 1.3  {{!DT
 the term "TLS" is used throughout this document to refer to both protocols unless
 otherwise specified.
 
-# Terminology and Requirements Language
+# Terminology and Requirements Language {#term}
 
 {::boilerplate bcp14-tagged}
 
@@ -153,6 +153,18 @@ In this document, we use the term post-compromise security, as defined in
 {{?CCG16=DOI.10.1109/CSF.2016.19}}. We assume that an adversary may obtain
 access to the application traffic secrets but is unable to compromise the
 long-term secret.
+
+Unless otherwise specified, all references to traffic keys in this document
+refer to application traffic keys and because the Extended Key Update procedure
+occurs after the handshake phase has completed, no handshake traffic keys
+are involved.
+
+In this document, send keys refer to the application traffic keys used by a
+peer to encrypt outbound records, and receive keys refer to
+the application traffic keys used to decrypt inbound records.
+They are derived from the current application traffic secrets as
+defined in (D)TLS 1.3, and are replaced with the new ones after
+each successful Extended Key Update.
 
 # Negotiating the Extended Key Update
 
@@ -651,7 +663,7 @@ The following diagram shows the key derivation hierarchy.
              +-----> Derive-Secret(., "exp main2",
              |                EKU(key_update_request) ||
              |                EKU(key_update_response))
-             |                = exporter_main_secret_N+1
+             |                = exporter_secret_N+1
              |
              +-----> Derive-Secret(., "res main2",
              |                EKU(key_update_request) ||
@@ -734,7 +746,7 @@ client_application_traffic_secret_N+1 in the key schedule
 server_application_traffic_secret_N+1 in the key schedule
 
 1. `EXPORTER_SECRET_N+1`: identifies the
-exporter_main_secret_N+1 in the key schedule
+exporter_secret_N+1 in the key schedule
 
 Similar to other entries in the SSLKEYLOGFILE, the label is followed by the
 32-byte value of the Random field from the ClientHello message that
@@ -784,14 +796,17 @@ This section discusses additional security and operational aspects introduced by
 ## Scope of Key Compromise
 
 Extended Key Update assumes a transient compromise of the current application
-traffic secrets, not a persistent attacker with ongoing access to key material.
+traffic keys, not a persistent attacker with ongoing access to key material.
 Long-term private keys are assumed secure, and post-compromise security
-therefore remains achievable.
+therefore remains achievable. This represents a short-term exposure of system
+memory or TLS session state after the handshake has completed.
 
-If a compromise occurs before the handshake completes, both client_handshake_traffic_secret
-and server_handshake_traffic_secret could be exposed, only the initial full handshake
-can be decrypted. The Extended Key Update procedure derives fresh application traffic secrets
-from a new key exchange ensuring that all subsequent application data remains confidential.
+If a compromise occurs before the handshake completes, the ephemeral key exchange, client_handshake_traffic_secret, and server_handshake_traffic_secret could be exposed.
+In that case, only the initial handshake messages and the application data encrypted
+can be decrypted until the Extended Key Update procedure completes.
+The Extended Key Update procedure derives fresh application traffic secrets from a
+new ephemeral key exchange, ensuring that all subsequent application data
+remains confidential.
 
 ## Post-Compromise Security
 
@@ -914,10 +929,8 @@ For editorial reasons we abbreviate the protocol message types:
  * ACK - Acknowledgement message from {{Section 7 of DTLS}}
  * APP - application data payloads
 
-In the (D)TLS 1.3 state machines discussed below, SEND keys are the keys used by a peer to encrypt
-outbound records and RECEIVE keys are the keys used to decrypt inbound records. They are derived
-from the current application traffic secrets as defined in (D)TLS 1.3, and are replaced with
-the new ones after each successful Extended Key Update.
+In the (D)TLS 1.3 state machines discussed below, the terms SEND and RECEIVE keys
+refer to the send and receive key variables defined in {{term}}.
 
 ## TLS 1.3 State Machines
 
