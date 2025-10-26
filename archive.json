@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2025-10-23T01:44:49.307337+00:00",
+  "timestamp": "2025-10-26T01:50:44.651851+00:00",
   "repo": "tlswg/tls-key-update",
   "labels": [
     {
@@ -5337,7 +5337,7 @@
       "labels": [],
       "body": "",
       "createdAt": "2025-10-17T06:07:51Z",
-      "updatedAt": "2025-10-20T18:27:00Z",
+      "updatedAt": "2025-10-24T16:14:49Z",
       "baseRepository": "tlswg/tls-key-update",
       "baseRefName": "main",
       "baseRefOid": "5ce056e84aa10fdf0982738188c36eaca59b05fe",
@@ -5604,6 +5604,108 @@
               "updatedAt": "2025-10-20T18:32:21Z"
             }
           ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM7JM6rO",
+          "commit": {
+            "abbreviatedOid": "6653a6f"
+          },
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-10-24T10:22:59Z",
+          "updatedAt": "2025-10-24T10:22:59Z",
+          "comments": [
+            {
+              "originalPosition": 6,
+              "body": "I\u2019m not entirely sure I understand the exact protocol changes you are proposing here. Could you please outline the specific modification you have in mind for the draft ?",
+              "createdAt": "2025-10-24T10:22:59Z",
+              "updatedAt": "2025-10-24T10:22:59Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM7JM7vi",
+          "commit": {
+            "abbreviatedOid": "6653a6f"
+          },
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-10-24T10:24:11Z",
+          "updatedAt": "2025-10-24T10:24:11Z",
+          "comments": [
+            {
+              "originalPosition": 11,
+              "body": "It would help if you could outline the specific modification you believe should be added, so we can evaluate whether this needs to be addressed in this draft.",
+              "createdAt": "2025-10-24T10:24:11Z",
+              "updatedAt": "2025-10-24T10:24:11Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM7JU-wG",
+          "commit": {
+            "abbreviatedOid": "6653a6f"
+          },
+          "author": "ilaril",
+          "authorAssociation": "NONE",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-10-24T16:14:49Z",
+          "updatedAt": "2025-10-24T16:14:49Z",
+          "comments": [
+            {
+              "originalPosition": 11,
+              "body": "I can not give specific modifications, because I am not sure what I have in mind actually works (this is something so complex that one would need to formally model it to know what could possibly go wrong). I only know what does not work.\r\n\r\nFirstly, this can not work with the present TLS exporter interface, because the exporter is not directional, and it is impossible to synchronize updates in the general case (and even special cases are far beyond what TLS can do). One would have define new TLS exporter interface with epoch as explicit input in order to get around this problem.\r\n\r\nSecondly, epoch change notifications (even if local and remote) are not sufficient, because the epoch can change between application using exporter and transmitting the data, leading to receiver inferring incorrect epoch. One would have to define some interface allowing application to freeze epoch updates.\r\n\r\nThese two problems are independent of any re-ordering or packet loss, so can happen with TLS, not just DTLS.\r\n\r\nThen there might be a third problem I am not thinking of... Or there might be a problem with the solution given to the second problem that only appears in DTLS, which allows re-ordering or packet loss.\r\n\r\nAnd even if this could be made to work, the interface changes are quite high cost to any application that uses TLS exporters.",
+              "createdAt": "2025-10-24T16:14:49Z",
+              "updatedAt": "2025-10-24T16:14:49Z"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "number": 68,
+      "id": "PR_kwDOMJPqLM6vX53w",
+      "title": "Editorial: remove duplicate sections and fix appendix formatting",
+      "url": "https://github.com/tlswg/tls-key-update/pull/68",
+      "state": "MERGED",
+      "author": "muhammad-usama-sardar",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [],
+      "body": "",
+      "createdAt": "2025-10-23T21:51:41Z",
+      "updatedAt": "2025-10-24T05:22:57Z",
+      "baseRepository": "tlswg/tls-key-update",
+      "baseRefName": "main",
+      "baseRefOid": "e3c5346e5eea6c369f451e692a74b69912ac1f53",
+      "headRepository": "tlswg/tls-key-update",
+      "headRefName": "remove-duplicate",
+      "headRefOid": "0b45422fa2785d3456974b2cc33615a385403a15",
+      "closedAt": "2025-10-24T05:22:57Z",
+      "mergedAt": "2025-10-24T05:22:57Z",
+      "mergedBy": "tireddy2",
+      "mergeCommit": {
+        "oid": "94724f5b71ed76a6ea5ba107bb457007b32fb708"
+      },
+      "comments": [],
+      "reviews": [
+        {
+          "id": "PRR_kwDOMJPqLM7JJHtJ",
+          "commit": {
+            "abbreviatedOid": "0b45422"
+          },
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "state": "APPROVED",
+          "body": "Thanks Usama for fixing these issues. ",
+          "createdAt": "2025-10-24T05:22:51Z",
+          "updatedAt": "2025-10-24T05:22:51Z",
+          "comments": []
         }
       ]
     }
