@@ -5,14 +5,14 @@
 Transport Layer Security                                   H. Tschofenig
 Internet-Draft                                                   Siemens
 Intended status: Standards Track                                M. Tüxen
-Expires: 27 April 2026                 Münster Univ. of Applied Sciences
+Expires: 1 May 2026                    Münster Univ. of Applied Sciences
                                                                 T. Reddy
                                                                    Nokia
                                                                 S. Fries
                                                                  Siemens
                                                             Y. Rosomakho
                                                                  Zscaler
-                                                         24 October 2025
+                                                         28 October 2025
 
 
        Extended Key Update for Transport Layer Security (TLS) 1.3
@@ -65,7 +65,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 27 April 2026.
+   This Internet-Draft will expire on 1 May 2026.
 
 Copyright Notice
 
@@ -192,6 +192,18 @@ Table of Contents
    defined in [CCG16].  We assume that an adversary may obtain access to
    the application traffic secrets but is unable to compromise the long-
    term secret.
+
+   Unless otherwise specified, all references to traffic keys in this
+   document refer to application traffic keys and because the Extended
+   Key Update procedure occurs after the handshake phase has completed,
+   no handshake traffic keys are involved.
+
+   In this document, send keys refer to the application traffic keys
+   used by a peer to encrypt outbound records, and receive keys refer to
+   the application traffic keys used to decrypt inbound records.  They
+   are derived from the current application traffic secrets as defined
+   in (D)TLS 1.3, and are replaced with the new ones after each
+   successful Extended Key Update.
 
 3.  Negotiating the Extended Key Update
 
@@ -703,7 +715,7 @@ Table of Contents
                 +-----> Derive-Secret(., "exp main2",
                 |                EKU(key_update_request) ||
                 |                EKU(key_update_response))
-                |                = exporter_main_secret_N+1
+                |                = exporter_secret_N+1
                 |
                 +-----> Derive-Secret(., "res main2",
                 |                EKU(key_update_request) ||
@@ -785,8 +797,8 @@ Table of Contents
    2.  SERVER_TRAFFIC_SECRET_N+1: identifies the
        server_application_traffic_secret_N+1 in the key schedule
 
-   3.  EXPORTER_SECRET_N+1: identifies the exporter_main_secret_N+1 in
-       the key schedule
+   3.  EXPORTER_SECRET_N+1: identifies the exporter_secret_N+1 in the
+       key schedule
 
    Similar to other entries in the SSLKEYLOGFILE, the label is followed
    by the 32-byte value of the Random field from the ClientHello message
@@ -840,16 +852,20 @@ Table of Contents
 11.1.  Scope of Key Compromise
 
    Extended Key Update assumes a transient compromise of the current
-   application traffic secrets, not a persistent attacker with ongoing
+   application traffic keys, not a persistent attacker with ongoing
    access to key material.  Long-term private keys are assumed secure,
-   and post-compromise security therefore remains achievable.
+   and post-compromise security therefore remains achievable.  This
+   represents a short-term exposure of system memory or TLS session
+   state after the handshake has completed.
 
-   If a compromise occurs before the handshake completes, both
-   client_handshake_traffic_secret and server_handshake_traffic_secret
-   could be exposed, only the initial full handshake can be decrypted.
-   The Extended Key Update procedure derives fresh application traffic
-   secrets from a new key exchange ensuring that all subsequent
-   application data remains confidential.
+   If a compromise occurs before the handshake completes, the ephemeral
+   key exchange, client_handshake_traffic_secret, and
+   server_handshake_traffic_secret could be exposed.  In that case, only
+   the initial handshake messages and the application data encrypted can
+   be decrypted until the Extended Key Update procedure completes.  The
+   Extended Key Update procedure derives fresh application traffic
+   secrets from a new ephemeral key exchange, ensuring that all
+   subsequent application data remains confidential.
 
 11.2.  Post-Compromise Security
 
@@ -1143,11 +1159,9 @@ Appendix B.  State Machines
 
    *  APP - application data payloads
 
-   In the (D)TLS 1.3 state machines discussed below, SEND keys are the
-   keys used by a peer to encrypt outbound records and RECEIVE keys are
-   the keys used to decrypt inbound records.  They are derived from the
-   current application traffic secrets as defined in (D)TLS 1.3, and are
-   replaced with the new ones after each successful Extended Key Update.
+   In the (D)TLS 1.3 state machines discussed below, the terms SEND and
+   RECEIVE keys refer to the send and receive key variables defined in
+   Section 2.
 
 B.1.  TLS 1.3 State Machines
 
