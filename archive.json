@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2025-10-28T01:44:51.275623+00:00",
+  "timestamp": "2025-10-30T01:51:11.861783+00:00",
   "repo": "tlswg/tls-key-update",
   "labels": [
     {
@@ -755,9 +755,38 @@
       "labels": [],
       "body": "[A follow-up of #59 since it was closed by the authors without being properly addressed]\n\n[Opening separate issues as requested by the authors]\n \n- Make the names of keys consistent with [RFC8446bis](https://www.ietf.org/archive/id/draft-ietf-tls-rfc8446bis-14.html), and define any new ones very clearly. For example, I cannot parse `exporter_main_secret`. What is it? Why is it required?\n- Clarify all unqualified uses of \"traffic keys\" to specify whether that means `handshake_traffic_secret`, `application_traffic_secret`, or something else.",
       "createdAt": "2025-10-27T07:31:16Z",
-      "updatedAt": "2025-10-27T07:31:16Z",
+      "updatedAt": "2025-10-29T11:45:50Z",
       "closedAt": null,
-      "comments": []
+      "comments": [
+        {
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "body": "Fixed these issues https://github.com/tlswg/tls-key-update/pull/73, please check.",
+          "createdAt": "2025-10-28T05:38:40Z",
+          "updatedAt": "2025-10-28T05:38:40Z"
+        },
+        {
+          "author": "muhammad-usama-sardar",
+          "authorAssociation": "COLLABORATOR",
+          "body": "Thanks for updates. Have you thoroughly checked that all other keys are consistent with RFC8446bis?",
+          "createdAt": "2025-10-28T20:43:52Z",
+          "updatedAt": "2025-10-28T20:43:52Z"
+        },
+        {
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "body": "I\u2019ve checked, but it\u2019s possible I may have missed something. In any case, the priority right now is to address all pending issues that need WG attention before revisiting this.",
+          "createdAt": "2025-10-29T06:40:52Z",
+          "updatedAt": "2025-10-29T06:40:52Z"
+        },
+        {
+          "author": "muhammad-usama-sardar",
+          "authorAssociation": "COLLABORATOR",
+          "body": "Sure, take your time. When you think you are fully aligned with RFC8446bis, let me know.",
+          "createdAt": "2025-10-29T11:45:50Z",
+          "updatedAt": "2025-10-29T11:45:50Z"
+        }
+      ]
     },
     {
       "number": 76,
@@ -771,9 +800,45 @@
       "labels": [],
       "body": "[A follow-up of #59 since it was closed by the authors without being properly addressed]\n\n[Opening separate issues as requested by the authors]\n\n- Clarify the threat model: Precisely which keys are compromised and **how**? See [here](https://mailarchive.ietf.org/arch/msg/tls/P_VdWSi20TZG0rJEaz7VCPKDIOg/) why the \"how\" part is necessary. [Sec. 11.1](https://www.ietf.org/archive/id/draft-ietf-tls-extended-key-update-06.html#section-11.1) says \n\n> compromise of the current application traffic secrets\n\nWhat exactly does that entail? Does that mean `client_application_traffic_secret_0` and `server_application_traffic_secret_0`?\n\n  - Is `application_traffic_secret` compromised because of the compromise of (EC)DHE shared secret `g^xy` or something else?\n  - Is `handshake_traffic_secret` compromised or not? If yes, which one: client or server or both?\n  - Is `g^xy` compromised or not?",
       "createdAt": "2025-10-27T07:33:51Z",
-      "updatedAt": "2025-10-27T07:33:51Z",
+      "updatedAt": "2025-10-29T12:12:32Z",
       "closedAt": null,
-      "comments": []
+      "comments": [
+        {
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "body": "Fixed these issues https://github.com/tlswg/tls-key-update/pull/73, please check.",
+          "createdAt": "2025-10-28T05:38:51Z",
+          "updatedAt": "2025-10-28T05:38:51Z"
+        },
+        {
+          "author": "muhammad-usama-sardar",
+          "authorAssociation": "COLLABORATOR",
+          "body": "Thanks for the updates. I don't find an answer to my question.  \n> Is g^xy compromised or not?\n\nAm I missing something? \n\n---\n\nAbout the text in PR:\n> short-term exposure of system memory or TLS session state after the handshake has completed\n\nIs it realistic to have memory exposure where only session state is exposed (and the LTK is not exposed)?",
+          "createdAt": "2025-10-28T21:11:43Z",
+          "updatedAt": "2025-10-28T21:11:43Z"
+        },
+        {
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "body": "> Thanks for the updates. I don't find an answer to my question.\n> \n> > Is g^xy compromised or not?\n> \n> Am I missing something?\n\nThe below text covers it:\n\nIf a compromise occurs before the handshake completes, **the ephemeral key exchange**, client_handshake_traffic_secret, and server_handshake_traffic_secret could be exposed.\n\nThe ephemeral key exchange covers both traditional and PQC KEMs.\n\n> \n> About the text in PR:\n> \n> > short-term exposure of system memory or TLS session state after the handshake has completed\n> \n> Is it realistic to have memory exposure where only session state is exposed (and the LTK is not exposed)?\n\nYes, private keys would be stored in TEE/HSM whereas ephemeral keys are stored in the rich OS.",
+          "createdAt": "2025-10-29T06:01:29Z",
+          "updatedAt": "2025-10-29T06:01:29Z"
+        },
+        {
+          "author": "muhammad-usama-sardar",
+          "authorAssociation": "COLLABORATOR",
+          "body": "I don't find even a single instance of TEE, HSM, OS in -06 or #73. Please clarify both items in the draft. ",
+          "createdAt": "2025-10-29T07:18:16Z",
+          "updatedAt": "2025-10-29T07:18:16Z"
+        },
+        {
+          "author": "muhammad-usama-sardar",
+          "authorAssociation": "COLLABORATOR",
+          "body": "In a meeting with @tireddy2, @tuexen and @yaroslavros, authors agreed that the text will be added in the draft for clarification of the system model.",
+          "createdAt": "2025-10-29T12:12:32Z",
+          "updatedAt": "2025-10-29T12:12:32Z"
+        }
+      ]
     },
     {
       "number": 77,
@@ -787,9 +852,45 @@
       "labels": [],
       "body": "[A follow-up of #59 since it was closed by the authors without being properly addressed]\n\n[Opening separate issues as requested by the authors]\n\n- State as clearly as possible what do you want to achieve with this spec, such that with formal analysis it can be checked whether these goals are met or not.",
       "createdAt": "2025-10-27T07:35:05Z",
-      "updatedAt": "2025-10-27T07:35:05Z",
+      "updatedAt": "2025-10-29T11:53:47Z",
       "closedAt": null,
-      "comments": []
+      "comments": [
+        {
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "body": "These are security goals:\n1.  Post-Compromise Security (PCS), it is discussed in Section 11.1\n2.  Key Freshness and Independence: Each Extended Key Update derives new application traffic secrets from freshly generated ephemeral key exchange material, ensuring cryptographic independence from previous secrets.\n3.  Application data protected under previous keys cannot be decrypted using secrets derived from subsequent updates and vice versa.\n4.  Once Extended Key Update is negotiated, peers do not accept the standard KeyUpdate mechanism within the same session.\n",
+          "createdAt": "2025-10-28T05:39:50Z",
+          "updatedAt": "2025-10-28T05:40:36Z"
+        },
+        {
+          "author": "muhammad-usama-sardar",
+          "authorAssociation": "COLLABORATOR",
+          "body": "Thanks. Please add those goals in the draft. ",
+          "createdAt": "2025-10-28T14:41:25Z",
+          "updatedAt": "2025-10-28T14:41:25Z"
+        },
+        {
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "body": "Is there any guidance on adding informal security goals to TLS drafts?\nCould you please point me to a few drafts that have included such goals for reference ?",
+          "createdAt": "2025-10-29T06:42:51Z",
+          "updatedAt": "2025-10-29T06:42:51Z"
+        },
+        {
+          "author": "muhammad-usama-sardar",
+          "authorAssociation": "COLLABORATOR",
+          "body": "> Is there any guidance on adding informal security goals to TLS drafts?\n\nI started creating such a [guidance](https://www.ietf.org/archive/id/draft-usama-tls-fatt-extension-00.html#section-3.2). I will come back to it. \n\n> Could you please point me to a few drafts that have included such goals for reference ?\n\n[RFC8446bis](https://www.ietf.org/archive/id/draft-ietf-tls-rfc8446bis-14.html#appendix-F) should provide a good reference. There are surely others.",
+          "createdAt": "2025-10-29T07:02:47Z",
+          "updatedAt": "2025-10-29T07:02:47Z"
+        },
+        {
+          "author": "muhammad-usama-sardar",
+          "authorAssociation": "COLLABORATOR",
+          "body": "In a meeting with @tireddy2, @tuexen and @yaroslavros, authors agreed that the security goals (after refinement) will be added to the draft, maybe in Appendix like [RFC8446bis](https://www.ietf.org/archive/id/draft-ietf-tls-rfc8446bis-14.html#appendix-F).",
+          "createdAt": "2025-10-29T11:53:47Z",
+          "updatedAt": "2025-10-29T11:53:47Z"
+        }
+      ]
     },
     {
       "number": 78,
@@ -803,7 +904,45 @@
       "labels": [],
       "body": "[A follow-up of #59 since it was closed by the authors without being properly addressed]\n\n[Opening separate issues as requested by the authors]\n\n- TLS state machines in Appendix B.2 and B.3 are very hard to read for me. Some symbols are undefined, and an explanation is missing. For example, what is (A) and (B)? There is (1), (2), (4) and (5): is there a reason for having no (3)?",
       "createdAt": "2025-10-27T07:35:36Z",
-      "updatedAt": "2025-10-27T07:35:36Z",
+      "updatedAt": "2025-10-29T21:22:57Z",
+      "closedAt": null,
+      "comments": [
+        {
+          "author": "muhammad-usama-sardar",
+          "authorAssociation": "COLLABORATOR",
+          "body": "In a meeting with @tireddy2, @tuexen and @yaroslavros, authors also found it to be confusing and couldn't recall what it means. There are some unusual conventions, for example, there is `SENT_NKU / WAIT_R_NKU` in one box. Is it something other than state name?\n\n@hannestschofenig has been working on it and will update these state machines, and add some explanation. ",
+          "createdAt": "2025-10-29T12:10:47Z",
+          "updatedAt": "2025-10-29T12:10:47Z"
+        },
+        {
+          "author": "hannestschofenig",
+          "authorAssociation": "COLLABORATOR",
+          "body": "I ran out of time before the cutoff and submitted the snapshot we had. Thought it was better than the out-of-date version.\n\nWill update it during the hackathon!",
+          "createdAt": "2025-10-29T20:30:29Z",
+          "updatedAt": "2025-10-29T20:30:29Z"
+        },
+        {
+          "author": "muhammad-usama-sardar",
+          "authorAssociation": "COLLABORATOR",
+          "body": "Many thanks, Hannes.",
+          "createdAt": "2025-10-29T21:22:56Z",
+          "updatedAt": "2025-10-29T21:22:56Z"
+        }
+      ]
+    },
+    {
+      "number": 79,
+      "id": "I_kwDOMJPqLM7UgtWc",
+      "title": "Align labels with 8446",
+      "url": "https://github.com/tlswg/tls-key-update/issues/79",
+      "state": "OPEN",
+      "author": "yaroslavros",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [],
+      "body": "RFC8446/8446bis uses \"derived\" as a label while for some reason current draft uses \"key derived\". I think we should align.\n\n<img width=\"328\" height=\"57\" alt=\"Image\" src=\"https://github.com/user-attachments/assets/46337600-a032-4d40-8d22-554866782412\" />\n\n<img width=\"344\" height=\"66\" alt=\"Image\" src=\"https://github.com/user-attachments/assets/c9cb9b8a-03b8-49a8-a7c8-904e7015913d\" />\n\nWe also should align on other labels. I don't see any value in adding \"2\" and changing \"master\" to \"main\" inside HKDF label which would bring us out of sync with the main TLS 1.3 spec.",
+      "createdAt": "2025-10-29T10:39:34Z",
+      "updatedAt": "2025-10-29T10:39:34Z",
       "closedAt": null,
       "comments": []
     }
@@ -5874,26 +6013,62 @@
       "id": "PR_kwDOMJPqLM6vuKIe",
       "title": "Address comments from Usama",
       "url": "https://github.com/tlswg/tls-key-update/pull/73",
-      "state": "OPEN",
+      "state": "MERGED",
       "author": "tireddy2",
       "authorAssociation": "COLLABORATOR",
       "assignees": [],
       "labels": [],
       "body": "It addresses https://github.com/tlswg/tls-key-update/issues/69 and https://github.com/tlswg/tls-key-update/issues/70",
       "createdAt": "2025-10-26T08:26:30Z",
-      "updatedAt": "2025-10-26T08:26:47Z",
+      "updatedAt": "2025-10-28T21:19:29Z",
       "baseRepository": "tlswg/tls-key-update",
       "baseRefName": "main",
       "baseRefOid": "94724f5b71ed76a6ea5ba107bb457007b32fb708",
       "headRepository": "tlswg/tls-key-update",
       "headRefName": "tireddy2-patch-5",
       "headRefOid": "43c9c766dd7b0c7d2a31243867cd8a63754fce5d",
-      "closedAt": null,
-      "mergedAt": null,
-      "mergedBy": null,
-      "mergeCommit": null,
+      "closedAt": "2025-10-28T09:49:10Z",
+      "mergedAt": "2025-10-28T09:49:10Z",
+      "mergedBy": "tireddy2",
+      "mergeCommit": {
+        "oid": "a1dd84b433dbd86b43be325a958cbe6ea6bc22ee"
+      },
       "comments": [],
-      "reviews": []
+      "reviews": [
+        {
+          "id": "PRR_kwDOMJPqLM7J6wsX",
+          "commit": {
+            "abbreviatedOid": "43c9c76"
+          },
+          "author": "hannestschofenig",
+          "authorAssociation": "COLLABORATOR",
+          "state": "APPROVED",
+          "body": "Thanks for addressing feedback from Usama. The text looks good to me.",
+          "createdAt": "2025-10-28T09:25:51Z",
+          "updatedAt": "2025-10-28T09:25:51Z",
+          "comments": []
+        },
+        {
+          "id": "PRR_kwDOMJPqLM7KGz58",
+          "commit": {
+            "abbreviatedOid": "43c9c76"
+          },
+          "author": "muhammad-usama-sardar",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "Please give the exact names of the keys. ",
+          "createdAt": "2025-10-28T21:02:25Z",
+          "updatedAt": "2025-10-28T21:19:29Z",
+          "comments": [
+            {
+              "originalPosition": 23,
+              "body": "Why don't you say exactly what it is according to RFC8446bis? Did you mean `client_write_key` and `server_write_key` for application data?",
+              "createdAt": "2025-10-28T21:02:26Z",
+              "updatedAt": "2025-10-28T21:19:29Z"
+            }
+          ]
+        }
+      ]
     }
   ]
 }
