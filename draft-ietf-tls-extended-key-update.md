@@ -71,6 +71,13 @@ informative:
      title: "Keeping Up with the KEMs: Stronger Security Notions for KEMs and automated analysis of KEM-based protocols"
      target: https://eprint.iacr.org/2023/1933.pdf
      date: November 2023
+  CCG16:
+     author:
+        org: IEEE
+     title: "On Post-compromise Security"
+     target: https://doi.org/10.1109/csf.2016.19
+     date: August 2016
+
 
 --- abstract
 
@@ -150,7 +157,7 @@ from the key update procedure specified in this document, we use the terms
 "standard key update" and "extended key update", respectively.
 
 In this document, we use the term post-compromise security, as defined in
-{{?CCG16=DOI.10.1109/CSF.2016.19}}. We assume that an adversary may obtain
+{{CCG16}}. We assume that an adversary may obtain
 access to the application traffic secrets but is unable to compromise the
 long-term secret.
 
@@ -159,12 +166,11 @@ refer to application traffic keys and because the Extended Key Update procedure
 occurs after the handshake phase has completed, no handshake traffic keys
 are involved.
 
-In this document, send keys refer to the application traffic keys used by a
-peer to encrypt outbound records, and receive keys refer to
-the application traffic keys used to decrypt inbound records.
-They are derived from the current application traffic secrets as
-defined in (D)TLS 1.3, and are replaced with the new ones after
-each successful Extended Key Update.
+In this document, send key refers to the [sender]_write_key, and receive key
+refers to the [receiver]_write_key. These keys are derived from the active
+client_application_traffic_secret_N and server_application_traffic_secret_N,
+as defined in (D)TLS 1.3 {{TLS}}, and are replaced with new ones
+after each successful Extended Key Update.
 
 # Negotiating the Extended Key Update
 
@@ -645,27 +651,27 @@ The following diagram shows the key derivation hierarchy.
        Main Secret N
              |
              v
-       Derive-Secret(., "key derived", "")
+       Derive-Secret(., "derived", "")
              |
              v
  (EC)DHE -> HKDF-Extract = Main Secret N+1
              |
-             +-----> Derive-Secret(., "c ap traffic2",
+             +-----> Derive-Secret(., "c ap traffic",
              |                EKU(key_update_request) ||
              |                EKU(key_update_response))
              |                = client_application_traffic_secret_N+1
              |
-             +-----> Derive-Secret(., "s ap traffic2",
+             +-----> Derive-Secret(., "s ap traffic",
              |                EKU(key_update_request) ||
              |                EKU(key_update_response))
              |                = server_application_traffic_secret_N+1
              |
-             +-----> Derive-Secret(., "exp main2",
+             +-----> Derive-Secret(., "exp master",
              |                EKU(key_update_request) ||
              |                EKU(key_update_response))
              |                = exporter_secret_N+1
              |
-             +-----> Derive-Secret(., "res main2",
+             +-----> Derive-Secret(., "res master",
              |                EKU(key_update_request) ||
              |                EKU(key_update_response))
                               = resumption_main_secret_N+1
@@ -797,9 +803,13 @@ This section discusses additional security and operational aspects introduced by
 
 Extended Key Update assumes a transient compromise of the current application
 traffic keys, not a persistent attacker with ongoing access to key material.
-Long-term private keys are assumed secure, and post-compromise security
-therefore remains achievable. This represents a short-term exposure of system
-memory or TLS session state after the handshake has completed.
+Long-term private keys are assumed to remain secure, as they are stored in a
+secure element, such as a Trusted Execution Environment (TEE), Hardware Security
+Module (HSM), or Trusted Platform Module (TPM). In contrast, application traffic
+keys are stored in within the rich operating system, where short-term exposure due
+to memory disclosure or transient compromise may occur. Post-compromise security
+therefore remains achievable, as a fresh key exchange during an Extended Key Update
+restores confidentiality once the compromise is resolved.
 
 If a compromise occurs before the handshake completes, the ephemeral key exchange, client_handshake_traffic_secret, and server_handshake_traffic_secret could be exposed.
 In that case, only the initial handshake messages and the application data encrypted
