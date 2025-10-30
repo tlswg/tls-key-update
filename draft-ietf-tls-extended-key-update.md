@@ -764,26 +764,36 @@ SSLKEYLOGFILE secrets including past iterations of `CLIENT_TRAFFIC_SECRET_`,
 
 Protocols such as DTLS-SRTP and DTLS-over-SCTP rely on TLS or DTLS for
 key establishment, but reuse portions of the derived keying material for
-their own specific purposes.These protocols use the TLS exporter defined
+their own specific purposes. These protocols use the TLS exporter defined
 in {{Section 7.5 of TLS}}.
 
 Once the Extended Key Update mechanism is complete, such protocols would
-need to use the newly derived key to generate Exported Keying Material
+need to use the newly derived exporter secret to generate Exported Keying Material
 (EKM) to protect packets. The "sk" derived in the {{key_update}} will be
 used as the "Secret" in the exporter function, defined in
 {{Section 7.5 of TLS}}, to generate EKM, ensuring that
 the exported keying material is aligned with the updated security context.
 
-When the exporter master secret is updated following a successful Extended Key Update,
-the TLS/DTLS implementation will have to notify the application that a
-new exporter secret is available.
+When a new exporter secret becomes active following a successful Extended
+Key Update, the TLS or DTLS implementation would have to provide an
+asynchronous notification to the application indicating that:
+
+* A new epoch has become active; and
+
+* The corresponding EKM has been derived using the exporter construction
+  discussed above, together with the label and context value.
+
+Delivering the derived EKM in this notification allows applications that
+depend on exporter-based keying material to install new application-layer
+keys in synchronization with the epoch transition.
 
 To prevent desynchronization, the application will have to retain both the
 previous and the newly derived exporter secrets for a short period. For TLS,
 the previous exporter secret would be discarded once data derived from the
-new exporter has been successfully processed. For DTLS, the previous exporter
-secret needs to be retained until the retention timer expires, to allow for
-processing of packets that may arrive out of order.  The retention policy
+new exporter has been successfully processed, and no records protected with
+the old exporter secret are expected to arrive. For DTLS, the previous exporter
+secret needs to be retained until the retention timer expires for the prior epoch,
+to allow for processing of packets that may arrive out of order.  The retention policy
 for exporter secrets is application-specific. For example, in DTLS-SRTP,
 the application might retain the previous exporter secret until its
 replay window no longer accepts packets protected with keys derived from that
