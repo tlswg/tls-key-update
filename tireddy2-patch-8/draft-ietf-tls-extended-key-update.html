@@ -2076,7 +2076,8 @@ SSLKEYLOGFILE secrets including past iterations of <code>CLIENT_TRAFFIC_SECRET_<
 <p id="section-10-1">Protocols such as DTLS-SRTP and DTLS-over-SCTP rely on TLS or DTLS for
 key establishment, but reuse portions of the derived keying material for
 their own specific purposes. These protocols use the TLS exporter defined
-in <span><a href="https://datatracker.ietf.org/doc/html/draft-ietf-tls-rfc8446bis-14#section-7.5" class="relref">Section 7.5</a> of [<a href="#TLS" class="cite xref">TLS</a>]</span>.<a href="#section-10-1" class="pilcrow">¶</a></p>
+in <span><a href="https://datatracker.ietf.org/doc/html/draft-ietf-tls-rfc8446bis-14#section-7.5" class="relref">Section 7.5</a> of [<a href="#TLS" class="cite xref">TLS</a>]</span>. Exporters are also used for deriving
+authentication related values such as nonces, as described in <span>[<a href="#RFC9729" class="cite xref">RFC9729</a>]</span>.<a href="#section-10-1" class="pilcrow">¶</a></p>
 <p id="section-10-2">Once the Extended Key Update mechanism is complete, such protocols would
 need to use the newly derived exporter secret to generate Exported Keying Material
 (EKM) to protect packets. The "sk" derived in the <a href="#key_update" class="auto internal xref">Section 7</a> will be
@@ -2360,6 +2361,10 @@ extension registry <span>[<a href="#TLS-Ext-Registry" class="cite xref">TLS-Ext-
 <dt id="RFC8174">[RFC8174]</dt>
         <dd>
 <span class="refAuthor">Leiba, B.</span>, <span class="refTitle">"Ambiguity of Uppercase vs Lowercase in RFC 2119 Key Words"</span>, <span class="seriesInfo">BCP 14</span>, <span class="seriesInfo">RFC 8174</span>, <span class="seriesInfo">DOI 10.17487/RFC8174</span>, <time datetime="2017-05" class="refDate">May 2017</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc8174">https://www.rfc-editor.org/rfc/rfc8174</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC9729">[RFC9729]</dt>
+        <dd>
+<span class="refAuthor">Schinazi, D.</span>, <span class="refAuthor">Oliver, D.</span>, and <span class="refAuthor">J. Hoyland</span>, <span class="refTitle">"The Concealed HTTP Authentication Scheme"</span>, <span class="seriesInfo">RFC 9729</span>, <span class="seriesInfo">DOI 10.17487/RFC9729</span>, <time datetime="2025-02" class="refDate">February 2025</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc9729">https://www.rfc-editor.org/rfc/rfc9729</a>&gt;</span>. </dd>
 <dd class="break"></dd>
 <dt id="TLS">[TLS]</dt>
         <dd>

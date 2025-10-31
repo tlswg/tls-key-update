@@ -818,7 +818,9 @@ Table of Contents
    Protocols such as DTLS-SRTP and DTLS-over-SCTP rely on TLS or DTLS
    for key establishment, but reuse portions of the derived keying
    material for their own specific purposes.  These protocols use the
-   TLS exporter defined in Section 7.5 of [TLS].
+   TLS exporter defined in Section 7.5 of [TLS].  Exporters are also
+   used for deriving authentication related values such as nonces, as
+   described in [RFC9729].
 
    Once the Extended Key Update mechanism is complete, such protocols
    would need to use the newly derived exporter secret to generate
@@ -1038,6 +1040,11 @@ Table of Contents
    [RFC8174]  Leiba, B., "Ambiguity of Uppercase vs Lowercase in RFC
               2119 Key Words", BCP 14, RFC 8174, DOI 10.17487/RFC8174,
               May 2017, <https://www.rfc-editor.org/rfc/rfc8174>.
+
+   [RFC9729]  Schinazi, D., Oliver, D., and J. Hoyland, "The Concealed
+              HTTP Authentication Scheme", RFC 9729,
+              DOI 10.17487/RFC9729, February 2025,
+              <https://www.rfc-editor.org/rfc/rfc9729>.
 
    [TLS]      Rescorla, E., "The Transport Layer Security (TLS) Protocol
               Version 1.3", Work in Progress, Internet-Draft, draft-
