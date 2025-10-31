@@ -71,13 +71,6 @@ informative:
      title: "Keeping Up with the KEMs: Stronger Security Notions for KEMs and automated analysis of KEM-based protocols"
      target: https://eprint.iacr.org/2023/1933.pdf
      date: November 2023
-  CCG16:
-     author:
-        org: IEEE
-     title: "On Post-compromise Security"
-     target: https://doi.org/10.1109/csf.2016.19
-     date: August 2016
-
 
 --- abstract
 
@@ -157,7 +150,7 @@ from the key update procedure specified in this document, we use the terms
 "standard key update" and "extended key update", respectively.
 
 In this document, we use the term post-compromise security, as defined in
-{{CCG16}}. We assume that an adversary may obtain
+{{?CCG16=DOI.10.1109/CSF.2016.19}}. We assume that an adversary may obtain
 access to the application traffic secrets but is unable to compromise the
 long-term secret.
 
@@ -166,11 +159,12 @@ refer to application traffic keys and because the Extended Key Update procedure
 occurs after the handshake phase has completed, no handshake traffic keys
 are involved.
 
-In this document, send key refers to the [sender]_write_key, and receive key
-refers to the [receiver]_write_key. These keys are derived from the active
-client_application_traffic_secret_N and server_application_traffic_secret_N,
-as defined in (D)TLS 1.3 {{TLS}}, and are replaced with new ones
-after each successful Extended Key Update.
+In this document, send keys refer to the application traffic keys used by a
+peer to encrypt outbound records, and receive keys refer to
+the application traffic keys used to decrypt inbound records.
+They are derived from the current application traffic secrets as
+defined in (D)TLS 1.3, and are replaced with the new ones after
+each successful Extended Key Update.
 
 # Negotiating the Extended Key Update
 
@@ -651,27 +645,27 @@ The following diagram shows the key derivation hierarchy.
        Main Secret N
              |
              v
-       Derive-Secret(., "derived", "")
+       Derive-Secret(., "key derived", "")
              |
              v
  (EC)DHE -> HKDF-Extract = Main Secret N+1
              |
-             +-----> Derive-Secret(., "c ap traffic",
+             +-----> Derive-Secret(., "c ap traffic2",
              |                EKU(key_update_request) ||
              |                EKU(key_update_response))
              |                = client_application_traffic_secret_N+1
              |
-             +-----> Derive-Secret(., "s ap traffic",
+             +-----> Derive-Secret(., "s ap traffic2",
              |                EKU(key_update_request) ||
              |                EKU(key_update_response))
              |                = server_application_traffic_secret_N+1
              |
-             +-----> Derive-Secret(., "exp master",
+             +-----> Derive-Secret(., "exp main2",
              |                EKU(key_update_request) ||
              |                EKU(key_update_response))
              |                = exporter_secret_N+1
              |
-             +-----> Derive-Secret(., "res master",
+             +-----> Derive-Secret(., "res main2",
              |                EKU(key_update_request) ||
              |                EKU(key_update_response))
                               = resumption_main_secret_N+1
@@ -770,36 +764,26 @@ SSLKEYLOGFILE secrets including past iterations of `CLIENT_TRAFFIC_SECRET_`,
 
 Protocols such as DTLS-SRTP and DTLS-over-SCTP rely on TLS or DTLS for
 key establishment, but reuse portions of the derived keying material for
-their own specific purposes. These protocols use the TLS exporter defined
+their own specific purposes.These protocols use the TLS exporter defined
 in {{Section 7.5 of TLS}}.
 
 Once the Extended Key Update mechanism is complete, such protocols would
-need to use the newly derived exporter secret to generate Exported Keying Material
+need to use the newly derived key to generate Exported Keying Material
 (EKM) to protect packets. The "sk" derived in the {{key_update}} will be
 used as the "Secret" in the exporter function, defined in
 {{Section 7.5 of TLS}}, to generate EKM, ensuring that
 the exported keying material is aligned with the updated security context.
 
-When a new exporter secret becomes active following a successful Extended
-Key Update, the TLS or DTLS implementation would have to provide an
-asynchronous notification to the application indicating that:
-
-* A new epoch has become active; and
-
-* The corresponding EKM has been derived using the exporter construction
-  discussed above, together with the label and context value.
-
-Delivering the derived EKM in this notification allows applications that
-depend on exporter-based keying material to install new application-layer
-keys in synchronization with the epoch transition.
+When the exporter master secret is updated following a successful Extended Key Update,
+the TLS/DTLS implementation will have to notify the application that a
+new exporter secret is available.
 
 To prevent desynchronization, the application will have to retain both the
 previous and the newly derived exporter secrets for a short period. For TLS,
 the previous exporter secret would be discarded once data derived from the
-new exporter has been successfully processed, and no records protected with
-the old exporter secret are expected to arrive. For DTLS, the previous exporter
-secret needs to be retained until the retention timer expires for the prior epoch,
-to allow for processing of packets that may arrive out of order.  The retention policy
+new exporter has been successfully processed. For DTLS, the previous exporter
+secret needs to be retained until the retention timer expires, to allow for
+processing of packets that may arrive out of order.  The retention policy
 for exporter secrets is application-specific. For example, in DTLS-SRTP,
 the application might retain the previous exporter secret until its
 replay window no longer accepts packets protected with keys derived from that
