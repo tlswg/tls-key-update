@@ -1378,12 +1378,11 @@ long-term secret.<a href="#section-2-3" class="pilcrow">¶</a></p>
 refer to application traffic keys and because the Extended Key Update procedure
 occurs after the handshake phase has completed, no handshake traffic keys
 are involved.<a href="#section-2-4" class="pilcrow">¶</a></p>
-<p id="section-2-5">In this document, send keys refer to the application traffic keys used by a
-peer to encrypt outbound records, and receive keys refer to
-the application traffic keys used to decrypt inbound records.
-They are derived from the current application traffic secrets as
-defined in (D)TLS 1.3, and are replaced with the new ones after
-each successful Extended Key Update.<a href="#section-2-5" class="pilcrow">¶</a></p>
+<p id="section-2-5">In this document, send key refers to the [sender]_write_key, and receive key
+refers to the [receiver]_write_key. These keys are derived from the active
+client_application_traffic_secret_N and server_application_traffic_secret_N,
+as defined in (D)TLS 1.3 <span>[<a href="#TLS" class="cite xref">TLS</a>]</span>, and are replaced with new ones
+after each successful Extended Key Update.<a href="#section-2-5" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="negotiating-the-extended-key-update">
@@ -1948,27 +1947,27 @@ TLS 1.3.<a href="#section-7-3.4.1" class="pilcrow">¶</a></p>
        Main Secret N
              |
              v
-       Derive-Secret(., "key derived", "")
+       Derive-Secret(., "derived", "")
              |
              v
  (EC)DHE -&gt; HKDF-Extract = Main Secret N+1
              |
-             +-----&gt; Derive-Secret(., "c ap traffic2",
+             +-----&gt; Derive-Secret(., "c ap traffic",
              |                EKU(key_update_request) ||
              |                EKU(key_update_response))
              |                = client_application_traffic_secret_N+1
              |
-             +-----&gt; Derive-Secret(., "s ap traffic2",
+             +-----&gt; Derive-Secret(., "s ap traffic",
              |                EKU(key_update_request) ||
              |                EKU(key_update_response))
              |                = server_application_traffic_secret_N+1
              |
-             +-----&gt; Derive-Secret(., "exp main2",
+             +-----&gt; Derive-Secret(., "exp master",
              |                EKU(key_update_request) ||
              |                EKU(key_update_response))
              |                = exporter_secret_N+1
              |
-             +-----&gt; Derive-Secret(., "res main2",
+             +-----&gt; Derive-Secret(., "res master",
              |                EKU(key_update_request) ||
              |                EKU(key_update_response))
                               = resumption_main_secret_N+1
@@ -2380,7 +2379,7 @@ extension registry <span>[<a href="#TLS-Ext-Registry" class="cite xref">TLS-Ext-
 <dd class="break"></dd>
 <dt id="CCG16">[CCG16]</dt>
         <dd>
-<span class="refAuthor">Cohn-Gordon, K.</span>, <span class="refAuthor">Cremers, C.</span>, and <span class="refAuthor">L. Garratt</span>, <span class="refTitle">"On Post-compromise Security"</span>, <span class="refContent">IEEE</span>, <span class="seriesInfo">2016 IEEE 29th Computer Security Foundations Symposium (CSF) pp. 164-178</span>, <span class="seriesInfo">DOI 10.1109/csf.2016.19</span>, <time datetime="2016-06" class="refDate">June 2016</time>, <span>&lt;<a href="https://doi.org/10.1109/csf.2016.19">https://doi.org/10.1109/csf.2016.19</a>&gt;</span>. </dd>
+<span class="refAuthor">IEEE</span>, <span class="refTitle">"On Post-compromise Security"</span>, <time datetime="2016-08" class="refDate">August 2016</time>, <span>&lt;<a href="https://doi.org/10.1109/csf.2016.19">https://doi.org/10.1109/csf.2016.19</a>&gt;</span>. </dd>
 <dd class="break"></dd>
 <dt id="CDM23">[CDM23]</dt>
         <dd>

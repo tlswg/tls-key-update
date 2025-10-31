@@ -198,12 +198,12 @@ Table of Contents
    Key Update procedure occurs after the handshake phase has completed,
    no handshake traffic keys are involved.
 
-   In this document, send keys refer to the application traffic keys
-   used by a peer to encrypt outbound records, and receive keys refer to
-   the application traffic keys used to decrypt inbound records.  They
-   are derived from the current application traffic secrets as defined
-   in (D)TLS 1.3, and are replaced with the new ones after each
-   successful Extended Key Update.
+   In this document, send key refers to the [sender]_write_key, and
+   receive key refers to the [receiver]_write_key.  These keys are
+   derived from the active client_application_traffic_secret_N and
+   server_application_traffic_secret_N, as defined in (D)TLS 1.3 [TLS],
+   and are replaced with new ones after each successful Extended Key
+   Update.
 
 3.  Negotiating the Extended Key Update
 
@@ -697,27 +697,27 @@ Table of Contents
           Main Secret N
                 |
                 v
-          Derive-Secret(., "key derived", "")
+          Derive-Secret(., "derived", "")
                 |
                 v
     (EC)DHE -> HKDF-Extract = Main Secret N+1
                 |
-                +-----> Derive-Secret(., "c ap traffic2",
+                +-----> Derive-Secret(., "c ap traffic",
                 |                EKU(key_update_request) ||
                 |                EKU(key_update_response))
                 |                = client_application_traffic_secret_N+1
                 |
-                +-----> Derive-Secret(., "s ap traffic2",
+                +-----> Derive-Secret(., "s ap traffic",
                 |                EKU(key_update_request) ||
                 |                EKU(key_update_response))
                 |                = server_application_traffic_secret_N+1
                 |
-                +-----> Derive-Secret(., "exp main2",
+                +-----> Derive-Secret(., "exp master",
                 |                EKU(key_update_request) ||
                 |                EKU(key_update_response))
                 |                = exporter_secret_N+1
                 |
-                +-----> Derive-Secret(., "res main2",
+                +-----> Derive-Secret(., "res master",
                 |                EKU(key_update_request) ||
                 |                EKU(key_update_response))
                                  = resumption_main_secret_N+1
@@ -1055,10 +1055,7 @@ Table of Contents
               <https://cyber.gouv.fr/sites/default/files/2012/09/
               NT_IPsec_EN.pdf>.
 
-   [CCG16]    Cohn-Gordon, K., Cremers, C., and L. Garratt, "On Post-
-              compromise Security", IEEE, 2016 IEEE 29th Computer
-              Security Foundations Symposium (CSF) pp. 164-178,
-              DOI 10.1109/csf.2016.19, June 2016,
+   [CCG16]    IEEE, "On Post-compromise Security", August 2016,
               <https://doi.org/10.1109/csf.2016.19>.
 
    [CDM23]    ACM, "Keeping Up with the KEMs: Stronger Security Notions
