@@ -780,8 +780,9 @@ asynchronous notification to the application indicating that:
 
 * A new epoch has become active; and
 
-* The corresponding EKM has been derived using the exporter construction
-  discussed above, together with the label and context value.
+* The corresponding EKM can be derived by the application using the
+  exporter construction defined above, with its chosen label and context value
+  as inputs, as specified in {{Section 4 of !RFC5705}}.
 
 Delivering the derived EKM in this notification allows applications that
 depend on exporter-based keying material to install new application-layer
