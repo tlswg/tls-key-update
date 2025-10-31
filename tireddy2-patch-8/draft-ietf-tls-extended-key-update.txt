@@ -835,9 +835,9 @@ Table of Contents
 
    *  A new epoch has become active; and
 
-   *  The corresponding EKM can be derived by the application using the
-      exporter construction defined above, with its chosen label and
-      context value as inputs, as specified in Section 4 of [RFC5705].
+   *  The corresponding EKM is obtained by the application through the
+      TLS/DTLS exporter interface using its chosen label and context
+      values as defined in Section 4 of [RFC5705].
 
    Delivering the derived EKM in this notification allows applications
    that depend on exporter-based keying material to install new
