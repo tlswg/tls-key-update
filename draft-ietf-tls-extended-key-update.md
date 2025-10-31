@@ -813,7 +813,7 @@ can be re-established, provided the compromise is no longer active when an
 Extended Key Update is performed.
 
 Extended Key Update can restore confidentiality only if the attacker no longer
-has access to either peer and cannot interfere with the key update procedure.
+has access to either peer and cannot interfere with the Extended Key Update procedure.
 If an adversary retains access to current application traffic keys and
 can act as a man-in-the-middle during the Extended Key Update, then the
 update cannot restore security. In that case, the attacker can impersonate
