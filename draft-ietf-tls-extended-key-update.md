@@ -770,26 +770,36 @@ SSLKEYLOGFILE secrets including past iterations of `CLIENT_TRAFFIC_SECRET_`,
 
 Protocols such as DTLS-SRTP and DTLS-over-SCTP rely on TLS or DTLS for
 key establishment, but reuse portions of the derived keying material for
-their own specific purposes.These protocols use the TLS exporter defined
+their own specific purposes. These protocols use the TLS exporter defined
 in {{Section 7.5 of TLS}}.
 
 Once the Extended Key Update mechanism is complete, such protocols would
-need to use the newly derived key to generate Exported Keying Material
+need to use the newly derived exporter secret to generate Exported Keying Material
 (EKM) to protect packets. The "sk" derived in the {{key_update}} will be
 used as the "Secret" in the exporter function, defined in
 {{Section 7.5 of TLS}}, to generate EKM, ensuring that
 the exported keying material is aligned with the updated security context.
 
-When the exporter master secret is updated following a successful Extended Key Update,
-the TLS/DTLS implementation will have to notify the application that a
-new exporter secret is available.
+When a new exporter secret becomes active following a successful Extended
+Key Update, the TLS or DTLS implementation would have to provide an
+asynchronous notification to the application indicating that:
+
+* A new epoch has become active; and
+
+* The corresponding EKM has been derived using the exporter construction
+  discussed above, together with the label and context value.
+
+Delivering the derived EKM in this notification allows applications that
+depend on exporter-based keying material to install new application-layer
+keys in synchronization with the epoch transition.
 
 To prevent desynchronization, the application will have to retain both the
 previous and the newly derived exporter secrets for a short period. For TLS,
 the previous exporter secret would be discarded once data derived from the
-new exporter has been successfully processed. For DTLS, the previous exporter
-secret needs to be retained until the retention timer expires, to allow for
-processing of packets that may arrive out of order.  The retention policy
+new exporter has been successfully processed, and no records protected with
+the old exporter secret are expected to arrive. For DTLS, the previous exporter
+secret needs to be retained until the retention timer expires for the prior epoch,
+to allow for processing of packets that may arrive out of order.  The retention policy
 for exporter secrets is application-specific. For example, in DTLS-SRTP,
 the application might retain the previous exporter secret until its
 replay window no longer accepts packets protected with keys derived from that
@@ -803,17 +813,27 @@ This section discusses additional security and operational aspects introduced by
 
 Extended Key Update assumes a transient compromise of the current application
 traffic keys, not a persistent attacker with ongoing access to key material.
-Long-term private keys are assumed to remain secure, as they are stored in a
-secure element, such as a Trusted Execution Environment (TEE), Hardware Security
-Module (HSM), or Trusted Platform Module (TPM). In contrast, application traffic
-keys are stored in within the rich operating system, where short-term exposure due
+The procedure itself does not rely on long-term private keys; those are assumed
+to remain secure, as they are stored in a secure element, such as a
+Trusted Execution Environment (TEE), Hardware Security Module (HSM),
+or Trusted Platform Module (TPM). In contrast, application traffic
+keys are stored within the rich operating system, where short-term exposure due
 to memory disclosure or transient compromise may occur. Post-compromise security
-therefore remains achievable, as a fresh key exchange during an Extended Key Update
-restores confidentiality once the compromise is resolved.
+can be re-established, provided the compromise is no longer active when an
+Extended Key Update is performed.
+
+Extended Key Update can restore confidentiality only if the attacker no longer
+has access to either peer and cannot interfere with the key update procedure.
+If an adversary retains access to current application traffic keys and
+can act as a man-in-the-middle during the Extended Key Update, then the
+update cannot restore security. In that case, the attacker can impersonate
+each endpoint and substitute key shares, maintaining control of the communication.
+Therefore, Extended Key Update provides recovery only in the case where the
+compromise has ended before the procedure begins.
 
 If a compromise occurs before the handshake completes, the ephemeral key exchange, client_handshake_traffic_secret, and server_handshake_traffic_secret could be exposed.
 In that case, only the initial handshake messages and the application data encrypted
-can be decrypted until the Extended Key Update procedure completes.
+with these secrets can be decrypted until the Extended Key Update procedure completes.
 The Extended Key Update procedure derives fresh application traffic secrets from a
 new ephemeral key exchange, ensuring that all subsequent application data
 remains confidential.
