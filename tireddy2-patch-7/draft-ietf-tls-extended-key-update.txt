@@ -864,14 +864,14 @@ Table of Contents
    active when an Extended Key Update is performed.
 
    Extended Key Update can restore confidentiality only if the attacker
-   no longer has access to either peer and cannot interfere with the key
-   update procedure.  If an adversary retains access to current
-   application traffic keys and can act as a man-in-the-middle during
-   the Extended Key Update, then the update cannot restore security.  In
-   that case, the attacker can impersonate each endpoint and substitute
-   key shares, maintaining control of the communication.  Therefore,
-   Extended Key Update provides recovery only in the case where the
-   compromise has ended before the procedure begins.
+   no longer has access to either peer and cannot interfere with the
+   Extended Key Update procedure.  If an adversary retains access to
+   current application traffic keys and can act as a man-in-the-middle
+   during the Extended Key Update, then the update cannot restore
+   security.  In that case, the attacker can impersonate each endpoint
+   and substitute key shares, maintaining control of the communication.
+   Therefore, Extended Key Update provides recovery only in the case
+   where the compromise has ended before the procedure begins.
 
    If a compromise occurs before the handshake completes, the ephemeral
    key exchange, client_handshake_traffic_secret, and
