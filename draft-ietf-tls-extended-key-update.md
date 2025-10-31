@@ -765,7 +765,8 @@ SSLKEYLOGFILE secrets including past iterations of `CLIENT_TRAFFIC_SECRET_`,
 Protocols such as DTLS-SRTP and DTLS-over-SCTP rely on TLS or DTLS for
 key establishment, but reuse portions of the derived keying material for
 their own specific purposes. These protocols use the TLS exporter defined
-in {{Section 7.5 of TLS}}.
+in {{Section 7.5 of TLS}}. Exporters are also used for deriving
+authentication related values such as nonces, as described in {{!RFC9729}}.
 
 Once the Extended Key Update mechanism is complete, such protocols would
 need to use the newly derived exporter secret to generate Exported Keying Material
