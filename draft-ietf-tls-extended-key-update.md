@@ -780,19 +780,22 @@ need to use the newly derived exporter secret to generate Exported Keying Materi
 used as the "Secret" in the exporter function, defined in
 {{Section 7.5 of TLS}}, to generate EKM, ensuring that
 the exported keying material is aligned with the updated security context.
+The newly derived exporter secret is cryptographically independent of
+previous exporter secrets.
 
 When a new exporter secret becomes active following a successful Extended
 Key Update, the TLS or DTLS implementation would have to provide an
 asynchronous notification to the application indicating that:
 
-* A new epoch has become active; and
+* A new epoch has become active, and for DTLS, the implementation can
+  include the corresponding epoch identifier. Applications receiving an
+  epoch identifier can use it to request keying material for that
+  specific epoch through the DTLS exporter interface. DTLS implementations
+  can provide an exporter interface that accepts an explicit epoch
+  parameter to simplify such requests.
 
-* The corresponding EKM is obtained by the application through the TLS/DTLS exporter interface
-  using its chosen label and context values as defined in {{Section 4 of !RFC5705}}.
-
-Delivering the derived EKM in this notification allows applications that
-depend on exporter-based keying material to install new application-layer
-keys in synchronization with the epoch transition.
+The corresponding EKM is obtained by the application through the TLS/DTLS exporter
+interface using its chosen label and context values as defined in {{Section 4 of !RFC5705}}.
 
 To prevent desynchronization, the application will have to retain both the
 previous and the newly derived exporter secrets for a short period. For TLS,
@@ -805,6 +808,14 @@ for exporter secrets is application-specific. For example, in DTLS-SRTP,
 the application might retain the previous exporter secret until its
 replay window no longer accepts packets protected with keys derived from that
 secret, as described in Section 3.3.2 of {{!RFC3711}}.
+
+Applications may receive data protected under a newly derived exporter secret
+before notification is delivered; therefore, they should be prepared to explicitly
+request new keying material if decryption using the previous exporter secret fails.
+
+The existing exporter interface defined in {{Section 7.5 of TLS}} remains
+unchanged and continues to operate as specified for connections that do
+not use Extended Key Update.
 
 #  Security Considerations
 
