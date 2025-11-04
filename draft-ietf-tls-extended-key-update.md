@@ -820,7 +820,7 @@ The existing exporter interface defined in {{Section 7.5 of TLS}} remains unchan
 and continues to operate as specified. When Extended Key Update is used,
 implementations would have to provide an additional exporter interface that accepts an
 explicit epoch parameter; that interface will return keying material for the
-epoch specified by the caller. 
+epoch specified by the caller.
 
 #  Security Considerations
 
