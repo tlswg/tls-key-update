@@ -872,11 +872,10 @@ Table of Contents
 
    The existing exporter interface defined in Section 7.5 of [TLS]
    remains unchanged and continues to operate as specified.  When
-   Extended Key Update is used, this interface produces keying material
-   for the currently active epoch.  Implementations may also provide an
+   Extended Key Update is used, implementations would have to provide an
    additional exporter interface that accepts an explicit epoch
-   parameter, allowing applications to request keying material for a
-   specific epoch.
+   parameter; that interface will return keying material for the epoch
+   specified by the caller.
 
 11.  Security Considerations
 
