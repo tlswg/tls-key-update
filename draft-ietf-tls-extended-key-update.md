@@ -787,12 +787,12 @@ When a new exporter secret becomes active following a successful Extended
 Key Update, the TLS or DTLS implementation would have to provide an
 asynchronous notification to the application indicating that:
 
-* A new epoch has become active, and for DTLS, the implementation can
+* A new epoch has become active, and the implementation can
   include the corresponding epoch identifier. Applications receiving an
   epoch identifier can use it to request keying material for that
-  specific epoch through the DTLS exporter interface. DTLS implementations
-  can provide an exporter interface that accepts an explicit epoch
-  parameter to simplify such requests.
+  specific epoch through an epoch-aware exporter interface. The epoch becomes
+  available for export once both peers have completed the Extended Key Update exchange.
+  In TLS, this identifier represents a local logical counter that may differ between peers.
 
 The corresponding EKM is obtained by the application through the TLS/DTLS exporter
 interface using its chosen label and context values as defined in {{Section 4 of !RFC5705}}.
@@ -810,12 +810,17 @@ replay window no longer accepts packets protected with keys derived from that
 secret, as described in Section 3.3.2 of {{!RFC3711}}.
 
 Applications may receive data protected under a newly derived exporter secret
-before notification is delivered; therefore, they should be prepared to explicitly
-request new keying material if decryption using the previous exporter secret fails.
+before notification is delivered. In such cases, if decryption using the
+previous exporter secret fails or if the application protocol provides
+an explicit indication of new keying material (for example, through a
+key identifier or epoch field), the application should explicitly request
+the corresponding exporter-derived keying material.
 
-The existing exporter interface defined in {{Section 7.5 of TLS}} remains
-unchanged and continues to operate as specified for connections that do
-not use Extended Key Update.
+The existing exporter interface defined in {{Section 7.5 of TLS}} remains unchanged
+and continues to operate as specified. When Extended Key Update is used, this interface
+produces keying material for the currently active epoch. Implementations may also
+provide an additional exporter interface that accepts an explicit epoch parameter,
+allowing applications to request keying material for a specific epoch.
 
 #  Security Considerations
 
