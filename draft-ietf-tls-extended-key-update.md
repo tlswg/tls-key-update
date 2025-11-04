@@ -817,10 +817,10 @@ key identifier or epoch field), the application should explicitly request
 the corresponding exporter-derived keying material.
 
 The existing exporter interface defined in {{Section 7.5 of TLS}} remains unchanged
-and continues to operate as specified. When Extended Key Update is used, this interface
-produces keying material for the currently active epoch. Implementations may also
-provide an additional exporter interface that accepts an explicit epoch parameter,
-allowing applications to request keying material for a specific epoch.
+and continues to operate as specified. When Extended Key Update is used,
+implementations would have to provide an additional exporter interface that accepts an
+explicit epoch parameter; that interface will return keying material for the
+epoch specified by the caller. 
 
 #  Security Considerations
 
