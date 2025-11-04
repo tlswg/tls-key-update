@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2025-11-02T01:53:23.323505+00:00",
+  "timestamp": "2025-11-04T01:48:35.873103+00:00",
   "repo": "tlswg/tls-key-update",
   "labels": [
     {
@@ -734,31 +734,39 @@
       "id": "I_kwDOMJPqLM7T5iOc",
       "title": "Exporter API",
       "url": "https://github.com/tlswg/tls-key-update/issues/74",
-      "state": "OPEN",
+      "state": "CLOSED",
       "author": "tireddy2",
       "authorAssociation": "COLLABORATOR",
       "assignees": [],
       "labels": [],
       "body": "@ ilaril raised the following comments in https://github.com/tlswg/tls-key-update/pull/66:\n\n\n===\nI can not give specific modifications, because I am not sure what I have in mind actually works (this is something so complex that one would need to formally model it to know what could possibly go wrong). I only know what does not work.\n\nFirstly, this can not work with the present TLS exporter interface, because the exporter is not directional, and it is impossible to synchronize updates in the general case (and even special cases are far beyond what TLS can do). One would have define new TLS exporter interface with epoch as explicit input in order to get around this problem.\n\nSecondly, epoch change notifications (even if local and remote) are not sufficient, because the epoch can change between application using exporter and transmitting the data, leading to receiver inferring incorrect epoch. One would have to define some interface allowing application to freeze epoch updates.\n\nThese two problems are independent of any re-ordering or packet loss, so can happen with TLS, not just DTLS.\n\nThen there might be a third problem I am not thinking of... Or there might be a problem with the solution given to the second problem that only appears in DTLS, which allows re-ordering or packet loss.\n\nAnd even if this could be made to work, the interface changes are quite high cost to any application that uses TLS exporters.\n",
       "createdAt": "2025-10-27T05:07:20Z",
-      "updatedAt": "2025-10-27T05:08:38Z",
-      "closedAt": null,
-      "comments": []
+      "updatedAt": "2025-11-03T06:35:58Z",
+      "closedAt": "2025-11-03T06:35:58Z",
+      "comments": [
+        {
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "body": "Addressed in https://github.com/tlswg/tls-key-update/pull/80",
+          "createdAt": "2025-11-03T06:35:58Z",
+          "updatedAt": "2025-11-03T06:35:58Z"
+        }
+      ]
     },
     {
       "number": 75,
       "id": "I_kwDOMJPqLM7T67PV",
       "title": "General comments on version -06",
       "url": "https://github.com/tlswg/tls-key-update/issues/75",
-      "state": "OPEN",
+      "state": "CLOSED",
       "author": "muhammad-usama-sardar",
       "authorAssociation": "COLLABORATOR",
       "assignees": [],
       "labels": [],
       "body": "[A follow-up of #59 since it was closed by the authors without being properly addressed]\n\n[Opening separate issues as requested by the authors]\n \n- Make the names of keys consistent with [RFC8446bis](https://www.ietf.org/archive/id/draft-ietf-tls-rfc8446bis-14.html), and define any new ones very clearly. For example, I cannot parse `exporter_main_secret`. What is it? Why is it required?\n- Clarify all unqualified uses of \"traffic keys\" to specify whether that means `handshake_traffic_secret`, `application_traffic_secret`, or something else.",
       "createdAt": "2025-10-27T07:31:16Z",
-      "updatedAt": "2025-10-30T05:35:43Z",
-      "closedAt": null,
+      "updatedAt": "2025-11-03T06:36:10Z",
+      "closedAt": "2025-11-03T06:36:10Z",
       "comments": [
         {
           "author": "tireddy2",
@@ -802,15 +810,15 @@
       "id": "I_kwDOMJPqLM7T69Mb",
       "title": "Ambiguities in version -06: Threat model",
       "url": "https://github.com/tlswg/tls-key-update/issues/76",
-      "state": "OPEN",
+      "state": "CLOSED",
       "author": "muhammad-usama-sardar",
       "authorAssociation": "COLLABORATOR",
       "assignees": [],
       "labels": [],
       "body": "[A follow-up of #59 since it was closed by the authors without being properly addressed]\n\n[Opening separate issues as requested by the authors]\n\n- Clarify the threat model: Precisely which keys are compromised and **how**? See [here](https://mailarchive.ietf.org/arch/msg/tls/P_VdWSi20TZG0rJEaz7VCPKDIOg/) why the \"how\" part is necessary. [Sec. 11.1](https://www.ietf.org/archive/id/draft-ietf-tls-extended-key-update-06.html#section-11.1) says \n\n> compromise of the current application traffic secrets\n\nWhat exactly does that entail? Does that mean `client_application_traffic_secret_0` and `server_application_traffic_secret_0`?\n\n  - Is `application_traffic_secret` compromised because of the compromise of (EC)DHE shared secret `g^xy` or something else?\n  - Is `handshake_traffic_secret` compromised or not? If yes, which one: client or server or both?\n  - Is `g^xy` compromised or not?",
       "createdAt": "2025-10-27T07:33:51Z",
-      "updatedAt": "2025-10-30T05:35:15Z",
-      "closedAt": null,
+      "updatedAt": "2025-11-03T06:36:26Z",
+      "closedAt": "2025-11-03T06:36:26Z",
       "comments": [
         {
           "author": "tireddy2",
@@ -958,15 +966,15 @@
       "id": "I_kwDOMJPqLM7UgtWc",
       "title": "Align labels with 8446",
       "url": "https://github.com/tlswg/tls-key-update/issues/79",
-      "state": "OPEN",
+      "state": "CLOSED",
       "author": "yaroslavros",
       "authorAssociation": "COLLABORATOR",
       "assignees": [],
       "labels": [],
       "body": "RFC8446/8446bis uses \"derived\" as a label while for some reason current draft uses \"key derived\". I think we should align.\n\n<img width=\"328\" height=\"57\" alt=\"Image\" src=\"https://github.com/user-attachments/assets/46337600-a032-4d40-8d22-554866782412\" />\n\n<img width=\"344\" height=\"66\" alt=\"Image\" src=\"https://github.com/user-attachments/assets/c9cb9b8a-03b8-49a8-a7c8-904e7015913d\" />\n\nWe also should align on other labels. I don't see any value in adding \"2\" and changing \"master\" to \"main\" inside HKDF label which would bring us out of sync with the main TLS 1.3 spec.",
       "createdAt": "2025-10-29T10:39:34Z",
-      "updatedAt": "2025-10-30T05:34:31Z",
-      "closedAt": null,
+      "updatedAt": "2025-11-03T06:35:25Z",
+      "closedAt": "2025-11-03T06:35:25Z",
       "comments": [
         {
           "author": "tireddy2",
@@ -6261,24 +6269,26 @@
       "id": "PR_kwDOMJPqLM6wiqHx",
       "title": "Update to Exporter section",
       "url": "https://github.com/tlswg/tls-key-update/pull/81",
-      "state": "OPEN",
+      "state": "MERGED",
       "author": "tireddy2",
       "authorAssociation": "COLLABORATOR",
       "assignees": [],
       "labels": [],
       "body": "",
       "createdAt": "2025-10-30T07:10:19Z",
-      "updatedAt": "2025-11-01T18:20:06Z",
+      "updatedAt": "2025-11-02T07:44:01Z",
       "baseRepository": "tlswg/tls-key-update",
       "baseRefName": "main",
       "baseRefOid": "a1dd84b433dbd86b43be325a958cbe6ea6bc22ee",
       "headRepository": "tlswg/tls-key-update",
       "headRefName": "tireddy2-patch-8",
       "headRefOid": "798710df9e0fea8865f8a05a77dbbdd9c76f62a9",
-      "closedAt": null,
-      "mergedAt": null,
-      "mergedBy": null,
-      "mergeCommit": null,
+      "closedAt": "2025-11-02T06:31:28Z",
+      "mergedAt": "2025-11-02T06:31:28Z",
+      "mergedBy": "tireddy2",
+      "mergeCommit": {
+        "oid": "f45a0c7c288028ba47e1ed44ce39eb7148f93219"
+      },
       "comments": [],
       "reviews": [
         {
@@ -6431,6 +6441,133 @@
               "body": "While DTLS 1.3 allows 2^64 epochs (or considerably less due to not allowing message sequence number wraparound), there are only two signaling bits for epoch (RFC 9147, section 4).\r\n\r\nNot correct about either application:\r\n\r\n- DTLS-SRTP explicitly supports re-keying active RTP connection, which is distinct from any replay-window handling.\r\n- DTLS-over-SCTP neither provides reliable nor in-order delivery of DTLS records (only control records are reliable-in-order). However, it never exports encryption keys, so DTLS can sequence key updates and data.\r\n  - The latest draft recommends updating authentication keys on EKU. The way it is specified seems to be very hand-wavy, and probably does not work.\r\n\r\nAnd then there are N+1 other applications that use DTLS. Will those work even with both endpoints updated (no way this can be deployed without veto-by-default)?",
               "createdAt": "2025-11-01T18:20:06Z",
               "updatedAt": "2025-11-01T18:20:06Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM7LJKzL",
+          "commit": {
+            "abbreviatedOid": "e76c153"
+          },
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-11-02T06:31:21Z",
+          "updatedAt": "2025-11-02T06:31:21Z",
+          "comments": [
+            {
+              "originalPosition": 41,
+              "body": "I don\u2019t agree with your interpretation, but to save everyone\u2019s time, could you please propose specific text that you think would address your concerns?\r\nThat way, we can review it directly and see whether it aligns with the intent of the draft.",
+              "createdAt": "2025-11-02T06:31:21Z",
+              "updatedAt": "2025-11-02T06:31:21Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM7LJWfN",
+          "commit": {
+            "abbreviatedOid": "e76c153"
+          },
+          "author": "ilaril",
+          "authorAssociation": "NONE",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-11-02T07:44:01Z",
+          "updatedAt": "2025-11-02T07:44:01Z",
+          "comments": [
+            {
+              "originalPosition": 41,
+              "body": "Came up with something that I think would work:\r\n\r\n- Add another exporter interface that takes epoch, label and context as parameters.\r\n  - This is meant for applications that can re-key the application connection, and its use is subject to application-level negotiation. It may or may not require application protocol changes (negotiated by the very same mechanism) to actually use.\r\n  - The existing exporter interface is left alone, functioning like it does without EKU (keys are never updated).\r\n  - Presumably has its own key \"rail\", so produces different results from the existing exporter even in the first epoch.\r\n- Compute new epoch upon sending/receiving the second (response) message.\r\n- Notify application when both peers can compute the new epoch. This happens upon receiving the second or the third (the first ACK) message (which is actually earlier than re-keying TLS).\r\n  - However, there is a subtle pitfall here: Ordering is only guaranteed relative to new epoch computation, not new epoch notification! So applications receiving data from unknown epoch need to attempt new key computation anyway.\r\n",
+              "createdAt": "2025-11-02T07:44:01Z",
+              "updatedAt": "2025-11-02T07:44:01Z"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "number": 82,
+      "id": "PR_kwDOMJPqLM6xLdrd",
+      "title": "Address comments from Ilari",
+      "url": "https://github.com/tlswg/tls-key-update/pull/82",
+      "state": "OPEN",
+      "author": "tireddy2",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [],
+      "body": "",
+      "createdAt": "2025-11-03T12:36:47Z",
+      "updatedAt": "2025-11-03T16:50:48Z",
+      "baseRepository": "tlswg/tls-key-update",
+      "baseRefName": "main",
+      "baseRefOid": "f45a0c7c288028ba47e1ed44ce39eb7148f93219",
+      "headRepository": "tlswg/tls-key-update",
+      "headRefName": "tireddy2-patch-9",
+      "headRefOid": "b91747149a4e543eb757a3fbb07ce43c85aed220",
+      "closedAt": null,
+      "mergedAt": null,
+      "mergedBy": null,
+      "mergeCommit": null,
+      "comments": [],
+      "reviews": [
+        {
+          "id": "PRR_kwDOMJPqLM7LXJxV",
+          "commit": {
+            "abbreviatedOid": "b917471"
+          },
+          "author": "ilaril",
+          "authorAssociation": "NONE",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-11-03T16:21:02Z",
+          "updatedAt": "2025-11-03T16:21:02Z",
+          "comments": [
+            {
+              "originalPosition": 17,
+              "body": "This seems really misleading:\r\n\r\n- \"for DTLS\". This interface is not DTLS-specific, it also works with TLS. This is needed for applications that use TLS for control link and UDP for data link.\r\n- \"DTLS exporter interface\". This is a new interface, not the existing TLS exporter interface. That interface is not specified: What functions/methods does the interface have, what are the argument and return types, and what do those functions do?\r\n  - The original proposal had something like export_epoch, which takes epoch (64-bit integer), label (byte string) and context (byte string) and length (positive integer) and outputs byte string.\r\n  - It would work similarly to existing exporter, but instead of using `exporter_secret`, it would use `exporter_secret_<epoch>` instead.\r\n- It is unspecified when exactly epoch becomes available for export, and when exactly asynchronous notification is triggered. This is critical for interoperability.\r\n  - The original proposal had epoch become available upon send/receive of key_update_response, and notification triggered upon receive of key_update_response or the first new_key_update. Note that it is crucial to confirm that peer has the new epoch available before notifying the application.\r\n\r\nThen while writing this, I noticed that it is also unclear how the EKU key schedule connects to the main TLS key schedule. I guess Main Secret 0 is the same as TLS Main Secret (and exporter_secret_0 would be the same as exporter_secret). And noted that instead of having to steal both active application traffic keys for catastrophic compromise, it suffices to steal just the active main secret (which now has to be kept in memory, and thus vulnerable to compromise).\r\n\r\nAlso, the messages do not seem to be hashed before being fed to key schedule, which results shares being hashed **four** times, which gets painful with post-quantum stuff. And the reasoning mentions `MAL-BIND-K-CT` security, any of the `MAL-*` models are completely irrelevant to TLS.",
+              "createdAt": "2025-11-03T16:21:02Z",
+              "updatedAt": "2025-11-03T16:55:21Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM7LXK-9",
+          "commit": {
+            "abbreviatedOid": "b917471"
+          },
+          "author": "ilaril",
+          "authorAssociation": "NONE",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-11-03T16:22:24Z",
+          "updatedAt": "2025-11-03T16:22:24Z",
+          "comments": [
+            {
+              "originalPosition": 40,
+              "body": "The existing exporter interface remains unchanged **regardless** if connection uses Extended Key Update or not. Otherwise existing protocols could not enable Extended Key Update at all.",
+              "createdAt": "2025-11-03T16:22:24Z",
+              "updatedAt": "2025-11-03T16:52:45Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM7LXruM",
+          "commit": {
+            "abbreviatedOid": "b917471"
+          },
+          "author": "ilaril",
+          "authorAssociation": "NONE",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-11-03T16:50:48Z",
+          "updatedAt": "2025-11-03T16:50:48Z",
+          "comments": [
+            {
+              "originalPosition": 36,
+              "body": "The decryption might not explicitly fail. The packet could have explicit indication of newer epoch.",
+              "createdAt": "2025-11-03T16:50:48Z",
+              "updatedAt": "2025-11-03T16:50:49Z"
             }
           ]
         }
