@@ -83,7 +83,7 @@ informative:
 
 TLS 1.3 ensures forward secrecy by performing an ephemeral Diffie-Hellman key exchange
 during the initial handshake, protecting past communications even if a party's
-long-term keys are later compromised. While the built-in KeyUpdate mechanism allows
+long-term keys (typically a private key with a corresponding certificate) are later compromised. While the built-in KeyUpdate mechanism allows
 application traffic keys to be refreshed during a session, it does not incorporate
 fresh entropy from a new key exchange and therefore does not provide post-compromise security.
 This limitation can pose a security risk in long-lived sessions, such as
@@ -122,7 +122,7 @@ session lifetime. Due to protocol complexity and known vulnerabilities, renegoti
 was first restricted by {{?TLS-RENEGOTIATION=RFC5746}} and ultimately removed in TLS 1.3. While the
 KeyUpdate message was introduced to offer limited rekeying functionality, it does
 not fulfill the same cryptographic role as renegotiation and cannot refresh
-long-term secrets or derive new secrets from fresh DHE input.
+the TLS main secret and consequently cannot derive new secrets from fresh DHE input.
 
 Security guidance from national agencies, such as ANSSI (France {{ANSSI}}), recommends the
 periodic renewal of cryptographic keys during long-lived sessions to limit the
@@ -131,7 +131,7 @@ attacker to perform dynamic key exfiltration, as defined in {{?CONFIDENTIALITY=R
 key exfiltration refers to attack scenarios where an adversary must repeatedly
 extract fresh keying material to maintain access to protected data, increasing
 operational cost and risk for the attacker. In contrast, static key exfiltration,
-where a long-term secret is extracted once and reused, poses a greater long-term
+where a long-term secret (here the TLS main secret) is extracted once and reused, poses a greater long-term
 threat, especially when session keys are not refreshed with fresh key exchange input
 rather than key derivation.
 
@@ -159,7 +159,7 @@ from the key update procedure specified in this document, we use the terms
 In this document, we use the term post-compromise security, as defined in
 {{CCG16}}. We assume that an adversary may obtain
 access to the application traffic secrets but is unable to compromise the
-long-term secret.
+TLS main secret.
 
 Unless otherwise specified, all references to traffic keys in this document
 refer to application traffic keys and because the Extended Key Update procedure
