@@ -131,7 +131,7 @@ attacker to perform dynamic key exfiltration, as defined in {{?CONFIDENTIALITY=R
 key exfiltration refers to attack scenarios where an adversary must repeatedly
 extract fresh keying material to maintain access to protected data, increasing
 operational cost and risk for the attacker. In contrast, static key exfiltration,
-where a long-term secret (here the TLS main secret) is extracted once and reused, poses a greater long-term
+where the TLS main secret is extracted once and reused, poses a greater long-term
 threat, especially when session keys are not refreshed with fresh key exchange input
 rather than key derivation.
 
