@@ -314,7 +314,7 @@ Fields:
 determined by the specified group and its corresponding definition
 (see {{Section 4.2.8 of TLS}}).
 
-# TLS 1.3 Considerations
+# TLS 1.3 Considerations {#TLSC}
 
 The following steps are taken by a TLS 1.3 implementation; the steps
 executed with DTLS 1.3 differ slightly.
@@ -440,7 +440,7 @@ Auth | {CertificateVerify}
 ~~~
 {: #fig-key-update2 title="Extended Key Update Example."}
 
-#  DTLS 1.3 Considerations
+#  DTLS 1.3 Considerations {#DTLSC}
 
 Unlike TLS 1.3, DTLS 1.3 implementations must take into account that handshake
 messages are not transmitted over a reliable transport protocol.
@@ -640,8 +640,7 @@ bound to the previously established secret,
 * the concatenation of the `ExtendedKeyUpdate(key_update_request)` and the
 `ExtendedKeyUpdate(key_update_response)` messages, which contain the key shares,
 binding the encapsulated shared secret ciphertext to IKM in case of
-hybrid key exchange, providing MAL-BIND-K-CT security (see {{CDM23}}),
-and
+hybrid key exchange, and
 * new label strings to distinguish it from the key derivation used in
 TLS 1.3.
 
@@ -790,9 +789,17 @@ asynchronous notification to the application indicating that:
 * A new epoch has become active, and the implementation can
   include the corresponding epoch identifier. Applications receiving an
   epoch identifier can use it to request keying material for that
-  specific epoch through an epoch-aware exporter interface. The epoch becomes
-  available for export once both peers have completed the Extended Key Update exchange.
+  specific epoch through an epoch-aware exporter interface.
   In TLS, this identifier represents a local logical counter that may differ between peers.
+
+Applications are notified that a new epoch is active only after both peers have completed
+the Extended Key Update exchange and switched to the new traffic keys.
+
+* In TLS, the initiator triggers notification after Step 5 in {{TLSC}},
+  and the responder triggers notification after Step 4 in {{TLSC}}.
+* In DTLS, the initiator triggers notification to the application
+  after Step 7 in {{DTLSC}}, and the responder triggers notification
+  after Step 9 in {{DTLSC}}.
 
 The corresponding EKM is obtained by the application through the TLS/DTLS exporter
 interface using its chosen label and context values as defined in {{Section 4 of !RFC5705}}.
