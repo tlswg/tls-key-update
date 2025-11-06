@@ -158,8 +158,7 @@ from the key update procedure specified in this document, we use the terms
 
 In this document, we use the term post-compromise security, as defined in
 {{CCG16}}. We assume that an adversary may obtain
-access to the application traffic secrets but is unable to compromise the
-TLS main secret.
+access to the application traffic secrets.
 
 Unless otherwise specified, all references to traffic keys in this document
 refer to application traffic keys and because the Extended Key Update procedure
