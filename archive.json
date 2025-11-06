@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2025-11-04T01:48:35.873103+00:00",
+  "timestamp": "2025-11-06T01:49:32.605552+00:00",
   "repo": "tlswg/tls-key-update",
   "labels": [
     {
@@ -982,6 +982,77 @@
           "body": "Addressed in https://github.com/tlswg/tls-key-update/pull/80 ",
           "createdAt": "2025-10-30T05:34:31Z",
           "updatedAt": "2025-10-30T05:34:31Z"
+        }
+      ]
+    },
+    {
+      "number": 83,
+      "id": "I_kwDOMJPqLM7VrUFd",
+      "title": "Key schedule",
+      "url": "https://github.com/tlswg/tls-key-update/issues/83",
+      "state": "CLOSED",
+      "author": "tireddy2",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [],
+      "body": "Then while writing this, I noticed that it is also unclear how the EKU key schedule connects to the main TLS key schedule. I guess Main Secret 0 is the same as TLS Main Secret (and exporter_secret_0 would be the same as exporter_secret). And noted that instead of having to steal both active application traffic keys for catastrophic compromise, it suffices to steal just the active main secret (which now has to be kept in memory, and thus vulnerable to compromise).\n\nAlso, the messages do not seem to be hashed before being fed to key schedule, which results shares being hashed four times, which gets painful with post-quantum stuff. And the reasoning mentions MAL-BIND-K-CT security, any of the MAL-* models are completely irrelevant to TLS.",
+      "createdAt": "2025-11-04T06:15:05Z",
+      "updatedAt": "2025-11-05T06:23:35Z",
+      "closedAt": "2025-11-05T06:23:35Z",
+      "comments": [
+        {
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "body": "a) The diagram follows the same convention as TLS 1.3 key schedule in RFC8446, where the listed messages represent the transcript hash of those messages, not the raw message bytes. Re-using the computed transcript hash is an implementation optimization and not part of the protocol definition. I don't see any such optimization discussed in RFC8446. \n\nb) please clarify why MAL-* models are not applicable to TLS ?\n\nc) The main issue is already discussed in Updating Traffic Secrets Section, see snip below:\n\nDuring the initial handshake, the Main Secret is generated (see\n{{Section 7.1 of TLS}}). Since the Main Secret\nis discarded during the key derivation procedure, a derived value is\nstored. This stored value then serves as the input salt to the first\nkey update procedure that incorporates the ephemeral (EC)DHE-\nestablished value as input keying material (IKM) to produce\nmain_secret_{N+1}. The derived value from this new master secret\nserves as input salt to the subsequent key update procedure, which\nalso incorporates a fresh ephemeral (EC)DHE value as IKM. This\nprocess is repeated for each additional key update procedure.\n",
+          "createdAt": "2025-11-04T08:44:59Z",
+          "updatedAt": "2025-11-04T08:44:59Z"
+        },
+        {
+          "author": "ilaril",
+          "authorAssociation": "NONE",
+          "body": "> a) The diagram follows the same convention as TLS 1.3 key schedule in RFC8446, where the listed messages represent the transcript hash of those messages, not the raw message bytes.\n\nI find this unclear. Searching for \"transcript\" gives no hits, \"hash\" only gives one irrelevant one.\n\n> b) please clarify why MAL-* models are not applicable to TLS ?\n\nEven LEAK-* adversaries (and MAL-* adversaries are even more powerful) are so powerful that those can just totally obliterate TLS security (just use the private key to decrypt the key exchange). Any security model involving adversaries that can trivially break the protocol is incoherent.\n",
+          "createdAt": "2025-11-04T09:00:44Z",
+          "updatedAt": "2025-11-04T09:02:06Z"
+        },
+        {
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "body": "> > a) The diagram follows the same convention as TLS 1.3 key schedule in RFC8446, where the listed messages represent the transcript hash of those messages, not the raw message bytes.\n> \n> I find this unclear. Searching for \"transcript\" gives no hits, \"hash\" only gives one irrelevant one.\n\nPlease look into the figure 5 in https://datatracker.ietf.org/doc/draft-ietf-tls-rfc8446bis/, it uses Derive-Secret which internally generates transcript of the messages :\n\n       Derive-Secret(Secret, Label, Messages) =\n            HKDF-Expand-Label(Secret, Label,\n                              Transcript-Hash(Messages), Hash.length)\n\n> \n> > b) please clarify why MAL-* models are not applicable to TLS ?\n> \n> Even LEAK-* adversaries (and MAL-* adversaries are even more powerful) are so powerful that those can just totally obliterate TLS security (just use the private key to decrypt the key exchange). Any security model involving adversaries that can trivially break the protocol is incoherent.\n\nOkay, I will remove the line. \n",
+          "createdAt": "2025-11-04T10:12:29Z",
+          "updatedAt": "2025-11-04T10:12:29Z"
+        },
+        {
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "body": "Remove MAL* in https://github.com/tlswg/tls-key-update/pull/82. ",
+          "createdAt": "2025-11-05T06:23:35Z",
+          "updatedAt": "2025-11-05T06:23:35Z"
+        }
+      ]
+    },
+    {
+      "number": 84,
+      "id": "I_kwDOMJPqLM7V2eI9",
+      "title": "Terminology change for long term keys",
+      "url": "https://github.com/tlswg/tls-key-update/issues/84",
+      "state": "OPEN",
+      "author": "stfries",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [
+        "stfries"
+      ],
+      "labels": [],
+      "body": "During IETF 124 there was a discussion on the terminology of the long term key, which may be confused with certificates also often named long term credentials or keys. \nWe should either explain the term or better using the term TLS main secret. I would propose to use latter as it better aligns with the terminology from TLS 1.3 (RFC 8446bis).\nWe should also note that the TLS main secret and traffic keys are ephemeral values. Also, the main secret should be deleted once the necessary traffic secrets have been derived, as it is no longer needed.  \n\n",
+      "createdAt": "2025-11-04T18:51:12Z",
+      "updatedAt": "2025-11-05T10:16:24Z",
+      "closedAt": null,
+      "comments": [
+        {
+          "author": "stfries",
+          "authorAssociation": "COLLABORATOR",
+          "body": "see related [PR](https://github.com/tlswg/tls-key-update/pull/85/commits/384a197c216e9f70b697dcced5347149503651b4) ",
+          "createdAt": "2025-11-05T10:16:24Z",
+          "updatedAt": "2025-11-05T10:16:24Z"
         }
       ]
     }
@@ -6498,13 +6569,13 @@
       "labels": [],
       "body": "",
       "createdAt": "2025-11-03T12:36:47Z",
-      "updatedAt": "2025-11-03T16:50:48Z",
+      "updatedAt": "2025-11-05T06:22:51Z",
       "baseRepository": "tlswg/tls-key-update",
       "baseRefName": "main",
       "baseRefOid": "f45a0c7c288028ba47e1ed44ce39eb7148f93219",
       "headRepository": "tlswg/tls-key-update",
       "headRefName": "tireddy2-patch-9",
-      "headRefOid": "b91747149a4e543eb757a3fbb07ce43c85aed220",
+      "headRefOid": "f9f9c59e11305d1f0ab21926cde275e55c6bb55e",
       "closedAt": null,
       "mergedAt": null,
       "mergedBy": null,
@@ -6568,6 +6639,311 @@
               "body": "The decryption might not explicitly fail. The packet could have explicit indication of newer epoch.",
               "createdAt": "2025-11-03T16:50:48Z",
               "updatedAt": "2025-11-03T16:50:49Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM7LgGSS",
+          "commit": {
+            "abbreviatedOid": "b917471"
+          },
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-11-04T06:03:14Z",
+          "updatedAt": "2025-11-04T06:03:14Z",
+          "comments": [
+            {
+              "originalPosition": 36,
+              "body": "Good point, updated text. ",
+              "createdAt": "2025-11-04T06:03:14Z",
+              "updatedAt": "2025-11-04T06:03:15Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM7LgGcS",
+          "commit": {
+            "abbreviatedOid": "b917471"
+          },
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-11-04T06:03:29Z",
+          "updatedAt": "2025-11-04T06:03:29Z",
+          "comments": [
+            {
+              "originalPosition": 40,
+              "body": "Thanks, fixed. ",
+              "createdAt": "2025-11-04T06:03:29Z",
+              "updatedAt": "2025-11-04T06:03:29Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM7LgMJc",
+          "commit": {
+            "abbreviatedOid": "b917471"
+          },
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-11-04T06:14:24Z",
+          "updatedAt": "2025-11-04T06:14:24Z",
+          "comments": [
+            {
+              "originalPosition": 17,
+              "body": "I updated the text, please check. please clarify which original proposal you are referring to.\r\nI will raise a separate issue for the other comments.",
+              "createdAt": "2025-11-04T06:14:24Z",
+              "updatedAt": "2025-11-04T06:16:18Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM7Lhd1p",
+          "commit": {
+            "abbreviatedOid": "e7afee6"
+          },
+          "author": "ilaril",
+          "authorAssociation": "NONE",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-11-04T08:02:58Z",
+          "updatedAt": "2025-11-04T08:02:58Z",
+          "comments": [
+            {
+              "originalPosition": 45,
+              "body": "This is not acceptable (massive breaking change to TLS). The exporter interface defined in Section 7.5 of TLS **MUST NOT** update its epoch during connection lifetime. Using current epoch would totally break most applications using exporters.\r\n\r\nThe \"additional exporter interface\" is the only way way to export keying material that is updated during connection lifetime. Furthermore, that interface does not have any implicit epoch behavior either, taking the epoch to use as parameter.\r\n\r\n\r\n",
+              "createdAt": "2025-11-04T08:02:58Z",
+              "updatedAt": "2025-11-04T08:02:59Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM7Lhvd5",
+          "commit": {
+            "abbreviatedOid": "e7afee6"
+          },
+          "author": "ilaril",
+          "authorAssociation": "NONE",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-11-04T08:14:50Z",
+          "updatedAt": "2025-11-04T08:14:50Z",
+          "comments": [
+            {
+              "originalPosition": 17,
+              "body": "This is racy. In order to prevent race conditions, the notification must be delivered only after both sides have activated the new epoch for epoch-aware export. This implies that the new epoch must be activated before the EKU exchange actually completes.\r\n\r\nIt is critical for interoperability that both sides agree exactly when the new epoch is activated, and exactly when the new epoch is notified.\r\n\r\n",
+              "createdAt": "2025-11-04T08:14:50Z",
+              "updatedAt": "2025-11-04T08:14:51Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM7Lh3oT",
+          "commit": {
+            "abbreviatedOid": "e7afee6"
+          },
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-11-04T08:19:58Z",
+          "updatedAt": "2025-11-04T08:19:58Z",
+          "comments": [
+            {
+              "originalPosition": 45,
+              "body": "Fixed text\r\n",
+              "createdAt": "2025-11-04T08:19:58Z",
+              "updatedAt": "2025-11-04T08:19:58Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM7Lh4HQ",
+          "commit": {
+            "abbreviatedOid": "b917471"
+          },
+          "author": "ilaril",
+          "authorAssociation": "NONE",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-11-04T08:20:16Z",
+          "updatedAt": "2025-11-04T08:20:16Z",
+          "comments": [
+            {
+              "originalPosition": 17,
+              "body": "The proposal I was referring to is https://github.com/tlswg/tls-key-update/pull/81#discussion_r2484287673",
+              "createdAt": "2025-11-04T08:20:16Z",
+              "updatedAt": "2025-11-04T08:20:16Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM7Lh63A",
+          "commit": {
+            "abbreviatedOid": "e7afee6"
+          },
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-11-04T08:21:37Z",
+          "updatedAt": "2025-11-04T08:21:37Z",
+          "comments": [
+            {
+              "originalPosition": 17,
+              "body": "It is already discussed in DTLS 1.3 Considerations section. ",
+              "createdAt": "2025-11-04T08:21:37Z",
+              "updatedAt": "2025-11-04T08:21:37Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM7LnXID",
+          "commit": {
+            "abbreviatedOid": "e7afee6"
+          },
+          "author": "ilaril",
+          "authorAssociation": "NONE",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-11-04T12:04:26Z",
+          "updatedAt": "2025-11-04T12:04:26Z",
+          "comments": [
+            {
+              "originalPosition": 17,
+              "body": "This is not specific to DTLS, it also applies to TLS. E.g., an application that uses TLS to key data over UDP (TLS is much better supported than DTLS). And since the rules are presumably the same for both, the final ACK can not trigger anything (since TLS does not have that).\r\n\r\nAnd reading the DTLS 1.3 considerations section, it is not clear when the notification is dispatched, and there does not seem to be any requirement to do the exporter key derivation as early as possible.",
+              "createdAt": "2025-11-04T12:04:26Z",
+              "updatedAt": "2025-11-04T12:04:27Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM7L2svf",
+          "commit": {
+            "abbreviatedOid": "e7afee6"
+          },
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-11-05T06:22:51Z",
+          "updatedAt": "2025-11-05T06:22:51Z",
+          "comments": [
+            {
+              "originalPosition": 17,
+              "body": "Fixed, please check. ",
+              "createdAt": "2025-11-05T06:22:51Z",
+              "updatedAt": "2025-11-05T06:22:51Z"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "number": 85,
+      "id": "PR_kwDOMJPqLM6xnFUX",
+      "title": "Update terminology regarding long term secrets",
+      "url": "https://github.com/tlswg/tls-key-update/pull/85",
+      "state": "OPEN",
+      "author": "stfries",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [
+        "hannestschofenig",
+        "yaroslavros",
+        "tireddy2",
+        "stfries"
+      ],
+      "labels": [],
+      "body": "Updated terminology of long-term secrets to directly relate to the TLS main secret to avoid confusion with long-term keys, which refers certificates and corresponding private keys",
+      "createdAt": "2025-11-05T10:14:49Z",
+      "updatedAt": "2025-11-05T17:08:51Z",
+      "baseRepository": "tlswg/tls-key-update",
+      "baseRefName": "main",
+      "baseRefOid": "f45a0c7c288028ba47e1ed44ce39eb7148f93219",
+      "headRepository": "tlswg/tls-key-update",
+      "headRefName": "stfries-patch-2-terminology",
+      "headRefOid": "c9c9bff4252cc1ef2588716b6f583f6053b6eb20",
+      "closedAt": null,
+      "mergedAt": null,
+      "mergedBy": null,
+      "mergeCommit": null,
+      "comments": [],
+      "reviews": [
+        {
+          "id": "PRR_kwDOMJPqLM7L9L4m",
+          "commit": {
+            "abbreviatedOid": "384a197"
+          },
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-11-05T12:52:33Z",
+          "updatedAt": "2025-11-05T12:52:33Z",
+          "comments": [
+            {
+              "originalPosition": 23,
+              "body": "```suggestion\r\nwhere the TLS main secret is extracted once and reused, poses a greater long-term\r\n```",
+              "createdAt": "2025-11-05T12:52:33Z",
+              "updatedAt": "2025-11-05T12:53:44Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM7L9P8b",
+          "commit": {
+            "abbreviatedOid": "384a197"
+          },
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-11-05T12:55:32Z",
+          "updatedAt": "2025-11-05T12:55:32Z",
+          "comments": [
+            {
+              "originalPosition": 32,
+              "body": "TLS main secret is anyway deleted after traffic keys are generated. I would say private key with a corresponding certificate. ",
+              "createdAt": "2025-11-05T12:55:32Z",
+              "updatedAt": "2025-11-05T12:55:33Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM7L9SNy",
+          "commit": {
+            "abbreviatedOid": "384a197"
+          },
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "we should not refer to TLS main secret as long-term secret. ",
+          "createdAt": "2025-11-05T12:57:07Z",
+          "updatedAt": "2025-11-05T12:57:07Z",
+          "comments": []
+        },
+        {
+          "id": "PRR_kwDOMJPqLM7MDJcC",
+          "commit": {
+            "abbreviatedOid": "384a197"
+          },
+          "author": "stfries",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-11-05T17:08:40Z",
+          "updatedAt": "2025-11-05T17:08:40Z",
+          "comments": [
+            {
+              "originalPosition": 32,
+              "body": "Would be fine for me to avoid the long term secret term completely and only refer to the TLS main secret. ",
+              "createdAt": "2025-11-05T17:08:40Z",
+              "updatedAt": "2025-11-05T17:08:40Z"
             }
           ]
         }
