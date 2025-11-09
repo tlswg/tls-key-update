@@ -815,18 +815,25 @@ the application might retain the previous exporter secret until its
 replay window no longer accepts packets protected with keys derived from that
 secret, as described in Section 3.3.2 of {{!RFC3711}}.
 
-Applications may receive data protected under a newly derived exporter secret
-before notification is delivered. In such cases, if decryption using the
-previous exporter secret fails or if the application protocol provides
-an explicit indication of new keying material (for example, through a
-key identifier or epoch field), the application should explicitly request
-the corresponding exporter-derived keying material.
+# Use of Exported Authenticators with Extended Key Update {#exported}
 
-The existing exporter interface defined in {{Section 7.5 of TLS}} remains unchanged
-and continues to operate as specified. When Extended Key Update is used,
-implementations would have to provide an additional exporter interface that accepts an
-explicit epoch parameter; that interface will return keying material for the
-epoch specified by the caller.
+EKU provides fresh traffic secrets, but EKU alone does not authenticate
+that both endpoints derived the same updated keys. An active attacker
+interfering with an EKU exchange could cause key divergence without detection.
+
+To confirm that both peers transitioned to the same new key state, endpoints
+can use Exported Authenticators {{?RFC9261}} immediately after completing EKU.
+However, the authenticator transcript defined in {{?RFC9261}} does not cover the
+EKU messages. As a result, an authenticator generated after EKU is not bound to the
+newly derived traffic secrets.
+
+To ensure MiTM-resilient key updates, this document updates Section 5.2.2 of
+{{?RFC9261}} to incorporate the Extended Key Update transcript (Hash(EKU-Transcript))
+into the CertificateVerify calculation when an authenticator is generated after EKU.
+
+If no Extended Key Update has occurred on the connection, the endpoint
+SHALL continue to use the authenticator transcript defined in
+Section 5.2.2 of {{?RFC9261}}.
 
 #  Security Considerations
 
@@ -837,7 +844,7 @@ This section discusses additional security and operational aspects introduced by
 Extended Key Update assumes a transient compromise of the current application
 traffic keys, not a persistent attacker with ongoing access to key material.
 The procedure itself does not rely on long-term private keys; those are assumed
-to remain secure, as they are stored in a secure element, such as a
+to remain secure, as they are typically stored in a secure element, such as a
 Trusted Execution Environment (TEE), Hardware Security Module (HSM),
 or Trusted Platform Module (TPM). In contrast, application traffic
 keys are stored within the rich operating system, where short-term exposure due
@@ -846,20 +853,24 @@ can be re-established, provided the compromise is no longer active when an
 Extended Key Update is performed.
 
 Extended Key Update can restore confidentiality only if the attacker no longer
-has access to either peer and cannot interfere with the Extended Key Update procedure.
-If an adversary retains access to current application traffic keys and
-can act as a man-in-the-middle during the Extended Key Update, then the
-update cannot restore security. In that case, the attacker can impersonate
-each endpoint and substitute key shares, maintaining control of the communication.
-Therefore, Extended Key Update provides recovery only in the case where the
-compromise has ended before the procedure begins.
+has access to either peer. If an adversary retains access to current application traffic
+keys and can act as a man-in-the-middle during the Extended Key Update, then the
+update cannot restore security unless {{exported}} is used.
 
-If a compromise occurs before the handshake completes, the ephemeral key exchange, client_handshake_traffic_secret, and server_handshake_traffic_secret could be exposed.
-In that case, only the initial handshake messages and the application data encrypted
-with these secrets can be decrypted until the Extended Key Update procedure completes.
-The Extended Key Update procedure derives fresh application traffic secrets from a
-new ephemeral key exchange, ensuring that all subsequent application data
-remains confidential.
+If the mechanism defined in {{exported}} is not used, the attacker can
+impersonate each endpoint, substitute EKU messages, and maintain control
+of the communication. When the modified Exported Authenticator is used,
+the CertificateVerify signature is bound to the EKU transcript, so any interference
+with the EKU messages will be detected and the attack prevented.
+
+If a compromise occurs before the handshake completes, the ephemeral key exchange,
+client_handshake_traffic_secret, server_handshake_traffic_secret, and the initial
+client_/server_application_traffic_secret could be exposed. In that case, only the
+initial handshake messages and the application data encrypted under the initial
+client_/server_application_traffic_secret can be decrypted until the Extended Key
+Update procedure completes. The Extended Key Update procedure derives fresh
+application_traffic_secrets from a new ephemeral key exchange, ensuring that all
+subsequent application data remains confidential.
 
 ## Post-Compromise Security
 
