@@ -96,19 +96,20 @@ Table of Contents
    8.  Post-Quantum Cryptography Considerations
    9.  SSLKEYLOGFILE Update
    10. Exporter
-   11. Security Considerations
-     11.1.  Scope of Key Compromise
-     11.2.  Post-Compromise Security
-     11.3.  Denial-of-Service (DoS)
-     11.4.  Operational Guidance
-   12. IANA Considerations
-     12.1.  TLS Flags
-     12.2.  TLS HandshakeType
-     12.3.  ExtendedKeyUpdate Message Subtypes Registry
-     12.4.  SSLKEYLOGFILE labels
-   13. References
-     13.1.  Normative References
-     13.2.  Informative References
+   11. Use of Exported Authenticators with Extended Key Update
+   12. Security Considerations
+     12.1.  Scope of Key Compromise
+     12.2.  Post-Compromise Security
+     12.3.  Denial-of-Service (DoS)
+     12.4.  Operational Guidance
+   13. IANA Considerations
+     13.1.  TLS Flags
+     13.2.  TLS HandshakeType
+     13.3.  ExtendedKeyUpdate Message Subtypes Registry
+     13.4.  SSLKEYLOGFILE labels
+   14. References
+     14.1.  Normative References
+     14.2.  Informative References
    Appendix A.  Acknowledgments
    Appendix B.  State Machines
      B.1.  TLS 1.3 State Machines
@@ -244,7 +245,7 @@ Table of Contents
    *  new_key_update (2)
 
    New ExtendedKeyUpdate message subtypes are assigned by IANA as
-   described in Section 12.3.
+   described in Section 13.3.
 
    A TLS peer which receives a ExtendedKeyUpdate with an unexpected
    message subtype MUST abort the connection with an
@@ -872,61 +873,74 @@ Table of Contents
    protected with keys derived from that secret, as described in
    Section 3.3.2 of [RFC3711].
 
-   Applications may receive data protected under a newly derived
-   exporter secret before notification is delivered.  In such cases, if
-   decryption using the previous exporter secret fails or if the
-   application protocol provides an explicit indication of new keying
-   material (for example, through a key identifier or epoch field), the
-   application should explicitly request the corresponding exporter-
-   derived keying material.
+11.  Use of Exported Authenticators with Extended Key Update
 
-   The existing exporter interface defined in Section 7.5 of [TLS]
-   remains unchanged and continues to operate as specified.  When
-   Extended Key Update is used, implementations would have to provide an
-   additional exporter interface that accepts an explicit epoch
-   parameter; that interface will return keying material for the epoch
-   specified by the caller.
+   EKU provides fresh traffic secrets, but EKU alone does not
+   authenticate that both endpoints derived the same updated keys.  An
+   active attacker interfering with an EKU exchange could cause key
+   divergence without detection.
 
-11.  Security Considerations
+   To confirm that both peers transitioned to the same new key state,
+   endpoints can use Exported Authenticators [RFC9261] immediately after
+   completing EKU.  However, the authenticator transcript defined in
+   [RFC9261] does not cover the EKU messages.  As a result, an
+   authenticator generated after EKU is not bound to the newly derived
+   traffic secrets.
+
+   To ensure MiTM-resilient key updates, this document updates
+   Section 5.2.2 of [RFC9261] to incorporate the Extended Key Update
+   transcript (Hash(EKU-Transcript)) into the CertificateVerify
+   calculation when an authenticator is generated after EKU.
+
+   If no Extended Key Update has occurred on the connection, the
+   endpoint SHALL continue to use the authenticator transcript defined
+   in Section 5.2.2 of [RFC9261].
+
+12.  Security Considerations
 
    This section discusses additional security and operational aspects
    introduced by the Extended Key Update mechanism.  All security
    considerations of TLS 1.3 [TLS] and DTLS.13 [DTLS] continue to apply.
 
-11.1.  Scope of Key Compromise
+12.1.  Scope of Key Compromise
 
    Extended Key Update assumes a transient compromise of the current
    application traffic keys, not a persistent attacker with ongoing
    access to key material.  The procedure itself does not rely on long-
    term private keys; those are assumed to remain secure, as they are
-   stored in a secure element, such as a Trusted Execution Environment
-   (TEE), Hardware Security Module (HSM), or Trusted Platform Module
-   (TPM).  In contrast, application traffic keys are stored within the
-   rich operating system, where short-term exposure due to memory
-   disclosure or transient compromise may occur.  Post-compromise
-   security can be re-established, provided the compromise is no longer
-   active when an Extended Key Update is performed.
+   typically stored in a secure element, such as a Trusted Execution
+   Environment (TEE), Hardware Security Module (HSM), or Trusted
+   Platform Module (TPM).  In contrast, application traffic keys are
+   stored within the rich operating system, where short-term exposure
+   due to memory disclosure or transient compromise may occur.  Post-
+   compromise security can be re-established, provided the compromise is
+   no longer active when an Extended Key Update is performed.
 
    Extended Key Update can restore confidentiality only if the attacker
-   no longer has access to either peer and cannot interfere with the
-   Extended Key Update procedure.  If an adversary retains access to
-   current application traffic keys and can act as a man-in-the-middle
-   during the Extended Key Update, then the update cannot restore
-   security.  In that case, the attacker can impersonate each endpoint
-   and substitute key shares, maintaining control of the communication.
-   Therefore, Extended Key Update provides recovery only in the case
-   where the compromise has ended before the procedure begins.
+   no longer has access to either peer.  If an adversary retains access
+   to current application traffic keys and can act as a man-in-the-
+   middle during the Extended Key Update, then the update cannot restore
+   security unless Section 11 is used.
+
+   If the mechanism defined in Section 11 is not used, the attacker can
+   impersonate each endpoint, substitute EKU messages, and maintain
+   control of the communication.  When the modified Exported
+   Authenticator is used, the CertificateVerify signature is bound to
+   the EKU transcript, so any interference with the EKU messages will be
+   detected and the attack prevented.
 
    If a compromise occurs before the handshake completes, the ephemeral
-   key exchange, client_handshake_traffic_secret, and
-   server_handshake_traffic_secret could be exposed.  In that case, only
-   the initial handshake messages and the application data encrypted
-   with these secrets can be decrypted until the Extended Key Update
-   procedure completes.  The Extended Key Update procedure derives fresh
-   application traffic secrets from a new ephemeral key exchange,
+   key exchange, client_handshake_traffic_secret,
+   server_handshake_traffic_secret, and the initial client_/
+   server_application_traffic_secret could be exposed.  In that case,
+   only the initial handshake messages and the application data
+   encrypted under the initial client_/server_application_traffic_secret
+   can be decrypted until the Extended Key Update procedure completes.
+   The Extended Key Update procedure derives fresh
+   application_traffic_secrets from a new ephemeral key exchange,
    ensuring that all subsequent application data remains confidential.
 
-11.2.  Post-Compromise Security
+12.2.  Post-Compromise Security
 
    Extended Key Update provides post-compromise security for long-lived
    TLS sessions.  To ensure post-compromise security guarantees:
@@ -935,7 +949,7 @@ Table of Contents
       material.  Implementations MUST NOT reuse ephemeral key-exchange
       material across updates or across TLS sessions.
 
-11.3.  Denial-of-Service (DoS)
+12.3.  Denial-of-Service (DoS)
 
    The Extended Key Update mechanism increases computational and state-
    management overhead.  A malicious peer could attempt to exhaust CPU
@@ -952,7 +966,7 @@ Table of Contents
       violation, send an "unexpected_message" alert, and terminate the
       connection.
 
-11.4.  Operational Guidance
+12.4.  Operational Guidance
 
    Deployments SHOULD evaluate Extended Key Update performance under
    load and fault conditions, such as high-frequency or concurrent
@@ -960,9 +974,9 @@ Table of Contents
    balance post-compromise security benefits against potential DoS
    exposure.
 
-12.  IANA Considerations
+13.  IANA Considerations
 
-12.1.  TLS Flags
+13.1.  TLS Flags
 
    IANA is requested to add the following entry to the "TLS Flags"
    extension registry [TLS-Ext-Registry]:
@@ -977,7 +991,7 @@ Table of Contents
 
    *  Reference: [This document]
 
-12.2.  TLS HandshakeType
+13.2.  TLS HandshakeType
 
    IANA is requested to add the following entry to the "TLS
    HandshakeType" registry [TLS-Ext-Registry]:
@@ -990,7 +1004,7 @@ Table of Contents
 
    *  Reference: [This document]
 
-12.3.  ExtendedKeyUpdate Message Subtypes Registry
+13.3.  ExtendedKeyUpdate Message Subtypes Registry
 
    IANA is requested to create a new registry "TLS ExtendedKeyUpdate
    Message Subtypes", within the existing "Transport Layer Security
@@ -1023,7 +1037,7 @@ Table of Contents
    depth reviews, but their approval should not be taken as an
    endorsement of the ExtendedKeyUpdate Message Subtype.
 
-12.4.  SSLKEYLOGFILE labels
+13.4.  SSLKEYLOGFILE labels
 
    IANA is requested to add the following entries to the "TLS
    SSLKEYLOGFILE Labels" extension registry [TLS-Ext-Registry]:
@@ -1057,9 +1071,9 @@ Table of Contents
 
                                  Table 2
 
-13.  References
+14.  References
 
-13.1.  Normative References
+14.1.  Normative References
 
    [DTLS]     Rescorla, E., Tschofenig, H., and N. Modadugu, "The
               Datagram Transport Layer Security (DTLS) Protocol Version
@@ -1101,7 +1115,7 @@ Table of Contents
               September 2025, <https://datatracker.ietf.org/doc/html/
               draft-ietf-tls-tlsflags-16>.
 
-13.2.  Informative References
+14.2.  Informative References
 
    [ANSSI]    ANSSI, "Recommendations for securing networks with IPsec,
               Technical Report", August 2015,
@@ -1131,6 +1145,10 @@ Table of Contents
    [RFC8447]  Salowey, J. and S. Turner, "IANA Registry Updates for TLS
               and DTLS", RFC 8447, DOI 10.17487/RFC8447, August 2018,
               <https://www.rfc-editor.org/rfc/rfc8447>.
+
+   [RFC9261]  Sullivan, N., "Exported Authenticators in TLS", RFC 9261,
+              DOI 10.17487/RFC9261, July 2022,
+              <https://www.rfc-editor.org/rfc/rfc9261>.
 
    [TLS-ECDHE-MLKEM]
               Kwiatkowski, K., Kampanakis, P., Westerbaan, B., and D.
