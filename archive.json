@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2025-11-06T01:49:32.605552+00:00",
+  "timestamp": "2025-11-09T01:52:26.538848+00:00",
   "repo": "tlswg/tls-key-update",
   "labels": [
     {
@@ -1035,7 +1035,7 @@
       "id": "I_kwDOMJPqLM7V2eI9",
       "title": "Terminology change for long term keys",
       "url": "https://github.com/tlswg/tls-key-update/issues/84",
-      "state": "OPEN",
+      "state": "CLOSED",
       "author": "stfries",
       "authorAssociation": "COLLABORATOR",
       "assignees": [
@@ -1044,8 +1044,8 @@
       "labels": [],
       "body": "During IETF 124 there was a discussion on the terminology of the long term key, which may be confused with certificates also often named long term credentials or keys. \nWe should either explain the term or better using the term TLS main secret. I would propose to use latter as it better aligns with the terminology from TLS 1.3 (RFC 8446bis).\nWe should also note that the TLS main secret and traffic keys are ephemeral values. Also, the main secret should be deleted once the necessary traffic secrets have been derived, as it is no longer needed.  \n\n",
       "createdAt": "2025-11-04T18:51:12Z",
-      "updatedAt": "2025-11-05T10:16:24Z",
-      "closedAt": null,
+      "updatedAt": "2025-11-06T12:00:11Z",
+      "closedAt": "2025-11-06T12:00:11Z",
       "comments": [
         {
           "author": "stfries",
@@ -1053,6 +1053,13 @@
           "body": "see related [PR](https://github.com/tlswg/tls-key-update/pull/85/commits/384a197c216e9f70b697dcced5347149503651b4) ",
           "createdAt": "2025-11-05T10:16:24Z",
           "updatedAt": "2025-11-05T10:16:24Z"
+        },
+        {
+          "author": "stfries",
+          "authorAssociation": "COLLABORATOR",
+          "body": "PR closed",
+          "createdAt": "2025-11-06T12:00:11Z",
+          "updatedAt": "2025-11-06T12:00:11Z"
         }
       ]
     }
@@ -6569,7 +6576,7 @@
       "labels": [],
       "body": "",
       "createdAt": "2025-11-03T12:36:47Z",
-      "updatedAt": "2025-11-05T06:22:51Z",
+      "updatedAt": "2025-11-07T19:52:55Z",
       "baseRepository": "tlswg/tls-key-update",
       "baseRefName": "main",
       "baseRefOid": "f45a0c7c288028ba47e1ed44ce39eb7148f93219",
@@ -6841,6 +6848,19 @@
               "updatedAt": "2025-11-05T06:22:51Z"
             }
           ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM7Mzh-L",
+          "commit": {
+            "abbreviatedOid": "f9f9c59"
+          },
+          "author": "stfries",
+          "authorAssociation": "COLLABORATOR",
+          "state": "APPROVED",
+          "body": "Changes look good to me. ",
+          "createdAt": "2025-11-07T19:52:55Z",
+          "updatedAt": "2025-11-07T19:52:55Z",
+          "comments": []
         }
       ]
     },
@@ -6849,7 +6869,7 @@
       "id": "PR_kwDOMJPqLM6xnFUX",
       "title": "Update terminology regarding long term secrets",
       "url": "https://github.com/tlswg/tls-key-update/pull/85",
-      "state": "OPEN",
+      "state": "MERGED",
       "author": "stfries",
       "authorAssociation": "COLLABORATOR",
       "assignees": [
@@ -6861,17 +6881,19 @@
       "labels": [],
       "body": "Updated terminology of long-term secrets to directly relate to the TLS main secret to avoid confusion with long-term keys, which refers certificates and corresponding private keys",
       "createdAt": "2025-11-05T10:14:49Z",
-      "updatedAt": "2025-11-05T17:08:51Z",
+      "updatedAt": "2025-11-06T10:59:02Z",
       "baseRepository": "tlswg/tls-key-update",
       "baseRefName": "main",
       "baseRefOid": "f45a0c7c288028ba47e1ed44ce39eb7148f93219",
       "headRepository": "tlswg/tls-key-update",
       "headRefName": "stfries-patch-2-terminology",
-      "headRefOid": "c9c9bff4252cc1ef2588716b6f583f6053b6eb20",
-      "closedAt": null,
-      "mergedAt": null,
-      "mergedBy": null,
-      "mergeCommit": null,
+      "headRefOid": "1b99eeb34b3212024b9a662b999588dd49c166f7",
+      "closedAt": "2025-11-06T10:59:02Z",
+      "mergedAt": "2025-11-06T10:59:02Z",
+      "mergedBy": "tireddy2",
+      "mergeCommit": {
+        "oid": "51f891ac2b8c02f07f3df0cfe27d0ea8321a972c"
+      },
       "comments": [],
       "reviews": [
         {
@@ -6946,6 +6968,159 @@
               "updatedAt": "2025-11-05T17:08:40Z"
             }
           ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM7MNjvo",
+          "commit": {
+            "abbreviatedOid": "384a197"
+          },
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-11-06T04:58:33Z",
+          "updatedAt": "2025-11-06T04:58:34Z",
+          "comments": [
+            {
+              "originalPosition": 32,
+              "body": "I suggest to remove this line, private key is discussed in Security considerations section. We cannot assume TLS main secret is not compromised.",
+              "createdAt": "2025-11-06T04:58:33Z",
+              "updatedAt": "2025-11-06T04:58:34Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM7MO54n",
+          "commit": {
+            "abbreviatedOid": "384a197"
+          },
+          "author": "stfries",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-11-06T06:40:45Z",
+          "updatedAt": "2025-11-06T06:40:45Z",
+          "comments": [
+            {
+              "originalPosition": 32,
+              "body": "Yes, this is true, we may not refer to both (privat key and TLS main secret). I propose to leave the first half to state the assumptions in the abstract directly, which would result in:\r\n\"We assume that an adversary may obtain access to the application traffic secrets.\"",
+              "createdAt": "2025-11-06T06:40:45Z",
+              "updatedAt": "2025-11-06T06:58:58Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM7MPKF4",
+          "commit": {
+            "abbreviatedOid": "384a197"
+          },
+          "author": "stfries",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-11-06T07:01:54Z",
+          "updatedAt": "2025-11-06T07:01:54Z",
+          "comments": [
+            {
+              "originalPosition": 23,
+              "body": "included as proposed.",
+              "createdAt": "2025-11-06T07:01:54Z",
+              "updatedAt": "2025-11-06T07:01:54Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM7MQ2Qe",
+          "commit": {
+            "abbreviatedOid": "c9c9bff"
+          },
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-11-06T08:52:30Z",
+          "updatedAt": "2025-11-06T08:52:31Z",
+          "comments": [
+            {
+              "originalPosition": 32,
+              "body": "Yes, works for me. ",
+              "createdAt": "2025-11-06T08:52:31Z",
+              "updatedAt": "2025-11-06T08:52:31Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM7MSpet",
+          "commit": {
+            "abbreviatedOid": "384a197"
+          },
+          "author": "stfries",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-11-06T10:33:23Z",
+          "updatedAt": "2025-11-06T10:33:23Z",
+          "comments": [
+            {
+              "originalPosition": 32,
+              "body": "incorporated as discussed",
+              "createdAt": "2025-11-06T10:33:23Z",
+              "updatedAt": "2025-11-06T10:33:24Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM7MTH6o",
+          "commit": {
+            "abbreviatedOid": "1b99eeb"
+          },
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "state": "APPROVED",
+          "body": "",
+          "createdAt": "2025-11-06T10:58:51Z",
+          "updatedAt": "2025-11-06T10:58:51Z",
+          "comments": []
+        }
+      ]
+    },
+    {
+      "number": 86,
+      "id": "PR_kwDOMJPqLM6x6Ckx",
+      "title": "Update to PCS",
+      "url": "https://github.com/tlswg/tls-key-update/pull/86",
+      "state": "OPEN",
+      "author": "tireddy2",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [],
+      "body": "",
+      "createdAt": "2025-11-06T13:58:56Z",
+      "updatedAt": "2025-11-07T20:42:41Z",
+      "baseRepository": "tlswg/tls-key-update",
+      "baseRefName": "main",
+      "baseRefOid": "51f891ac2b8c02f07f3df0cfe27d0ea8321a972c",
+      "headRepository": "tlswg/tls-key-update",
+      "headRefName": "tireddy2-patch-10",
+      "headRefOid": "a4489fcd3c7c8d5737bea03bc964869731ca6f4e",
+      "closedAt": null,
+      "mergedAt": null,
+      "mergedBy": null,
+      "mergeCommit": null,
+      "comments": [],
+      "reviews": [
+        {
+          "id": "PRR_kwDOMJPqLM7M0cDy",
+          "commit": {
+            "abbreviatedOid": "a4489fc"
+          },
+          "author": "stfries",
+          "authorAssociation": "COLLABORATOR",
+          "state": "APPROVED",
+          "body": "Changes look good to me. Thanks for the updates. ",
+          "createdAt": "2025-11-07T20:42:41Z",
+          "updatedAt": "2025-11-07T20:42:41Z",
+          "comments": []
         }
       ]
     }
