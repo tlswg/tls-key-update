@@ -827,7 +827,7 @@ immediately after completing an EKU.
 This document updates Section 5.1 of {{!RFC9261}} to specify that, after an
 Extended Key Update has completed, the Handshake Context and Finished MAC Key used for
 Exported Authenticators can be derived from the exporter secret associated with the current epoch.
-Implementations that support the epoch-aware exporter interface will have to provide a means
+Implementations that support the epoch-aware Exported Authenticators interface will have to provide a means
 for applications to request the generation or validation of Exported Authenticators using
 the exporter secret for a specific epoch.
 
@@ -845,7 +845,10 @@ Exported Authenticators for a specific exporter epoch. The APIs defined in
 continue to operate without modification. The epoch-aware API accepts an
 epoch identifier; when present, the TLS implementation MUST derive the
 Handshake Context and Finished MAC Key from the exporter secret associated
-with that epoch.
+with that epoch. When Exported Authenticators are generated using the epoch-aware
+Exported Authenticators interface, the epoch identifier used for their derivation
+can be conveyed in the certificate_request_context field, allowing the peer to
+determine the correct exporter secret for validation.
 
 #  Security Considerations
 
