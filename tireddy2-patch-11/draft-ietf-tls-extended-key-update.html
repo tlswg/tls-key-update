@@ -2134,31 +2134,29 @@ secret, as described in Section 3.3.2 of <span>[<a href="#RFC3711" class="cite x
 <p id="section-11-1">EKU provides fresh traffic secrets, but EKU alone does not authenticate
 that both endpoints derived the same updated keys. An active attacker
 interfering with an EKU exchange could cause the peers to transition to divergent
-traffic secrets without detection.<a href="#section-11-1" class="pilcrow">¶</a></p>
-<p id="section-11-2">To confirm that both peers transitioned to the same new key state, endpoints
-can use Exported Authenticators <span>[<a href="#RFC9261" class="cite xref">RFC9261</a>]</span> immediately after completing an EKU.
-However, the authenticator transcript defined in <span>[<a href="#RFC9261" class="cite xref">RFC9261</a>]</span> does not cover the
-EKU messages. As a result, an authenticator generated after EKU is not bound to the
-newly derived traffic secrets.<a href="#section-11-2" class="pilcrow">¶</a></p>
-<p id="section-11-3">To ensure MiTM-resilient key updates, this document updates Section 5.2.2 of <span>[<a href="#RFC9261" class="cite xref">RFC9261</a>]</span> as follows:<a href="#section-11-3" class="pilcrow">¶</a></p>
-<p id="section-11-4">When an Exported Authenticator is generated after an Extended Key Update,
-the authenticator transcript <span class="bcp14">MUST</span> be updated to include the hash of the most
-recent EKU exchange, consisting of the key_update request and response messages:<a href="#section-11-4" class="pilcrow">¶</a></p>
-<div class="alignLeft art-text artwork" id="section-11-5">
-<pre>
-Hash(Handshake Context ||
-     authenticator request ||
-     Certificate ||
-     Hash(EKU(key_update_request), EKU(key_update_response)))
-</pre><a href="#section-11-5" class="pilcrow">¶</a>
-</div>
-<p id="section-11-6">If no Extended Key Update has occurred on the connection, the endpoint
-<span class="bcp14">SHALL</span> continue to use the authenticator transcript defined in
-Section 5.2.2 of <span>[<a href="#RFC9261" class="cite xref">RFC9261</a>]</span>.<a href="#section-11-6" class="pilcrow">¶</a></p>
-<p id="section-11-7">This document also updates Section 5.1 of <span>[<a href="#RFC9261" class="cite xref">RFC9261</a>]</span> to specify that, when an
-Extended Key Update has completed, the Handshake Context and Finished MAC Key for
-Exported Authenticators has to be derived using the epoch-aware exporter
-interface and the exporter secret associated with the current epoch.<a href="#section-11-7" class="pilcrow">¶</a></p>
+traffic secrets without detection. To confirm that both peers transitioned to the
+same new key state, endpoints can use Exported Authenticators <span>[<a href="#RFC9261" class="cite xref">RFC9261</a>]</span>
+immediately after completing an EKU.<a href="#section-11-1" class="pilcrow">¶</a></p>
+<p id="section-11-2">This document updates Section 5.1 of <span>[<a href="#RFC9261" class="cite xref">RFC9261</a>]</span> to specify that, after an
+Extended Key Update has completed, the Handshake Context and Finished MAC Key used for
+Exported Authenticators are derived from the exporter secret associated with the current epoch.
+Implementations that support the epoch-aware exporter interface will have to provide a means
+for applications to request the generation or validation of Exported Authenticators using
+the exporter secret for a specific epoch.<a href="#section-11-2" class="pilcrow">¶</a></p>
+<p id="section-11-3">The Handshake Context and Finished MAC Key used in both the CertificateVerify message
+(Section 5.2.2 of <span>[<a href="#RFC9261" class="cite xref">RFC9261</a>]</span>) and the Finished message (Section 5.2.3 of <span>[<a href="#RFC9261" class="cite xref">RFC9261</a>]</span>)
+are derived from the exporter secret associated with the current epoch.
+If a MitM interferes with the EKU exchange and causes the peers to derive different traffic
+and exporter secrets, their Handshake Contexts and Finished MAC Keys will differ.
+As a result, validation as specified in Section 5.2.4 of <span>[<a href="#RFC9261" class="cite xref">RFC9261</a>]</span> will fail, thereby
+detecting the divergence of key state between peers.<a href="#section-11-3" class="pilcrow">¶</a></p>
+<p id="section-11-4">A new optional API is defined to permit applications to request or verify
+Exported Authenticators for a specific exporter epoch. The APIs defined in
+<span>[<a href="#RFC9261" class="cite xref">RFC9261</a>]</span> remain available and unchanged, so existing applications
+continue to operate without modification. The epoch-aware API accepts an
+epoch identifier; when present, the TLS implementation <span class="bcp14">MUST</span> derive the
+Handshake Context and Finished MAC Key from the exporter secret associated
+with that epoch.<a href="#section-11-4" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="security-considerations">
