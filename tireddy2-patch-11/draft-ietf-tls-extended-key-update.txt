@@ -887,10 +887,10 @@ Table of Contents
    an Extended Key Update has completed, the Handshake Context and
    Finished MAC Key used for Exported Authenticators can be derived from
    the exporter secret associated with the current epoch.
-   Implementations that support the epoch-aware exporter interface will
-   have to provide a means for applications to request the generation or
-   validation of Exported Authenticators using the exporter secret for a
-   specific epoch.
+   Implementations that support the epoch-aware Exported Authenticators
+   interface will have to provide a means for applications to request
+   the generation or validation of Exported Authenticators using the
+   exporter secret for a specific epoch.
 
    The Handshake Context and Finished MAC Key used in both the
    CertificateVerify message (Section 5.2.2 of [RFC9261]) and the
@@ -908,7 +908,12 @@ Table of Contents
    so existing applications continue to operate without modification.
    The epoch-aware API accepts an epoch identifier; when present, the
    TLS implementation MUST derive the Handshake Context and Finished MAC
-   Key from the exporter secret associated with that epoch.
+   Key from the exporter secret associated with that epoch.  When
+   Exported Authenticators are generated using the epoch-aware Exported
+   Authenticators interface, the epoch identifier used for their
+   derivation can be conveyed in the certificate_request_context field,
+   allowing the peer to determine the correct exporter secret for
+   validation.
 
 12.  Security Considerations
 
