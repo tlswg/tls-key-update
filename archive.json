@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2025-11-09T01:52:26.538848+00:00",
+  "timestamp": "2025-11-11T01:50:20.228702+00:00",
   "repo": "tlswg/tls-key-update",
   "labels": [
     {
@@ -6569,24 +6569,26 @@
       "id": "PR_kwDOMJPqLM6xLdrd",
       "title": "Address comments from Ilari",
       "url": "https://github.com/tlswg/tls-key-update/pull/82",
-      "state": "OPEN",
+      "state": "MERGED",
       "author": "tireddy2",
       "authorAssociation": "COLLABORATOR",
       "assignees": [],
       "labels": [],
       "body": "",
       "createdAt": "2025-11-03T12:36:47Z",
-      "updatedAt": "2025-11-07T19:52:55Z",
+      "updatedAt": "2025-11-09T06:22:33Z",
       "baseRepository": "tlswg/tls-key-update",
       "baseRefName": "main",
       "baseRefOid": "f45a0c7c288028ba47e1ed44ce39eb7148f93219",
       "headRepository": "tlswg/tls-key-update",
       "headRefName": "tireddy2-patch-9",
       "headRefOid": "f9f9c59e11305d1f0ab21926cde275e55c6bb55e",
-      "closedAt": null,
-      "mergedAt": null,
-      "mergedBy": null,
-      "mergeCommit": null,
+      "closedAt": "2025-11-09T06:22:32Z",
+      "mergedAt": "2025-11-09T06:22:32Z",
+      "mergedBy": "tireddy2",
+      "mergeCommit": {
+        "oid": "8171e6bd8d29a14987624e232ac1ab0e2db3082a"
+      },
       "comments": [],
       "reviews": [
         {
@@ -7089,24 +7091,26 @@
       "id": "PR_kwDOMJPqLM6x6Ckx",
       "title": "Update to PCS",
       "url": "https://github.com/tlswg/tls-key-update/pull/86",
-      "state": "OPEN",
+      "state": "MERGED",
       "author": "tireddy2",
       "authorAssociation": "COLLABORATOR",
       "assignees": [],
       "labels": [],
       "body": "",
       "createdAt": "2025-11-06T13:58:56Z",
-      "updatedAt": "2025-11-07T20:42:41Z",
+      "updatedAt": "2025-11-09T17:44:04Z",
       "baseRepository": "tlswg/tls-key-update",
       "baseRefName": "main",
-      "baseRefOid": "51f891ac2b8c02f07f3df0cfe27d0ea8321a972c",
+      "baseRefOid": "8171e6bd8d29a14987624e232ac1ab0e2db3082a",
       "headRepository": "tlswg/tls-key-update",
       "headRefName": "tireddy2-patch-10",
-      "headRefOid": "a4489fcd3c7c8d5737bea03bc964869731ca6f4e",
-      "closedAt": null,
-      "mergedAt": null,
-      "mergedBy": null,
-      "mergeCommit": null,
+      "headRefOid": "0f935b9d90e6d3720ecc763c1c4909be85e6fc90",
+      "closedAt": "2025-11-09T06:27:47Z",
+      "mergedAt": "2025-11-09T06:27:46Z",
+      "mergedBy": "tireddy2",
+      "mergeCommit": {
+        "oid": "09dc70a5edfd652cfa77e7edef6ba63085b0590b"
+      },
       "comments": [],
       "reviews": [
         {
@@ -7121,8 +7125,54 @@
           "createdAt": "2025-11-07T20:42:41Z",
           "updatedAt": "2025-11-07T20:42:41Z",
           "comments": []
+        },
+        {
+          "id": "PRR_kwDOMJPqLM7NDV0S",
+          "commit": {
+            "abbreviatedOid": "0f935b9"
+          },
+          "author": "ilaril",
+          "authorAssociation": "NONE",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-11-09T17:44:04Z",
+          "updatedAt": "2025-11-09T17:44:04Z",
+          "comments": [
+            {
+              "originalPosition": 30,
+              "body": "This seems woefully under-specified. How exactly is the hash incorporated into the calculation? Where in \"authenticator transcript\" is the hash added? Is it wrapped in message_hash type (like the hashed Client Hello from base TLS 1.3)? Are all EKU exchanges included, or is just the most recent one? What about the finished transcript (note RFC9261 is designed so that the hash can be multi-tapped).\r\n\r\nMore serious problem is that there is nothing to prevent EKU from racing with exporter authenticator, leading to receiver using different EKU transcript from sender. Which causes EA that should work being rejected (which might cause fatal application error).\r\n\r\nHowever, again it is possible to do something clever: Instead of using the RFC9261 construction with normal TLS exporter interface for exported authenticators, use RFC9261 construction with epoch-aware TLS exporter, and send the correct epoch along with the exported authenticator.This requires application protocol changes, but those seem necessary anyway.",
+              "createdAt": "2025-11-09T17:44:04Z",
+              "updatedAt": "2025-11-09T17:44:04Z"
+            }
+          ]
         }
       ]
+    },
+    {
+      "number": 87,
+      "id": "PR_kwDOMJPqLM6yp6D1",
+      "title": "Eliminate unnecessary message",
+      "url": "https://github.com/tlswg/tls-key-update/pull/87",
+      "state": "OPEN",
+      "author": "yaroslavros",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [],
+      "body": "As discussed at IETF124 I have tightened up the process and eliminated 1 unnecessary message in both TLS and DTLS flows.\r\n\r\nPlease check.",
+      "createdAt": "2025-11-11T01:44:25Z",
+      "updatedAt": "2025-11-11T01:44:25Z",
+      "baseRepository": "tlswg/tls-key-update",
+      "baseRefName": "main",
+      "baseRefOid": "09dc70a5edfd652cfa77e7edef6ba63085b0590b",
+      "headRepository": "yaroslavros/tls-key-update",
+      "headRefName": "main",
+      "headRefOid": "a11a6a57bcea9f3f17bb3d6ea7c2a86476ae39df",
+      "closedAt": null,
+      "mergedAt": null,
+      "mergedBy": null,
+      "mergeCommit": null,
+      "comments": [],
+      "reviews": []
     }
   ]
 }
