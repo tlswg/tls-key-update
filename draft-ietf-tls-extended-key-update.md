@@ -257,7 +257,6 @@ Auth | {CertificateVerify}
   [EKU(key_update_request)]N   -------->
                                <--------  [EKU(key_update_response)]N
       [EKU(new_key_update)]N   -------->
-                               <--------  [EKU(new_key_update)]N
                                   ...
        [Application Data]N+1   <------->  [Application Data]N+1
 
@@ -329,24 +328,24 @@ key update. The responder MAY defer sending a response if system load or resourc
 constraints prevent immediate processing. In such cases, the response MUST
 be sent once sufficient resources become available.
 
-1. Upon receipt of an `ExtendedKeyUpdate(key_update_response)` the initiator
-derives the new secrets from the exchanged key shares. The initiator then sends an empty
-ExtendedKeyUpdate(new_key_update) message to trigger the switch to the
-new keys.
+1. After the responder sends `ExtendedKeyUpdate(key_update_response)` it
+MUST update its send keys.
 
-1. After the initiator sends `ExtendedKeyUpdate(new_key_update)` it
-MUST update its send keys. Upon receipt of this message, the responder
-MUST update its receive keys and then send
-`ExtendedKeyUpdate(new_key_update)`, after which it MUST update its
+1. Upon receipt of an `ExtendedKeyUpdate(key_update_response)` the initiator
+derives the new secrets from the exchanged key shares. The initiator then updates
+its receive keys and sends an empty ExtendedKeyUpdate(new_key_update) message to
+complete the process.
+
+1. After sending `ExtendedKeyUpdate(new_key_update)` initiator MUST update its
 send keys.
 
-1. After receiving the responder’s `ExtendedKeyUpdate(new_key_update)`,
-the initiator MUST update its receive keys.
+1. After receiving the initiator’s `ExtendedKeyUpdate(new_key_update)`,
+the responder MUST update its receive keys.
 
-Both sender and receiver MUST encrypt their
-`ExtendedKeyUpdate(new_key_update)` messages with the old keys. Both
-sides MUST ensure that the `new_key_update` encrypted with the old key
-is received before accepting any messages encrypted with the new key.
+Both initiator and responder MUST encrypt their `ExtendedKeyUpdate` messages
+with the old keys. Responder MUST ensure that the `ExtendedKeyUpdate(new_key_update)`
+encrypted with the old key is received before accepting any messages encrypted with
+the new key.
 
 If TLS peers independently initiate the extended key update and the
 requests cross in flight, the `ExtendedKeyUpdate(key_update_request)` with the
@@ -428,14 +427,12 @@ Auth | {CertificateVerify}
                                <-------- [EKU(key_update_response
                                            (with key_share))]
                                         # Server derives new secrets
-# Client derives new secrets			
+                                        # and updates SEND keys here
+# Client derives new secrets
+# and updates RECEIVE keys here
         [EKU(new_key_update)]  -------->
 # Client updates SEND keys here
                                     # Server updates RECEIVE keys here
-                               <--------  [EKU(new_key_update)]
-                                    # Server updates SEND keys here
-
-# Client updates RECEIVE keys here
 ~~~
 {: #fig-key-update2 title="Extended Key Update Example."}
 
@@ -444,14 +441,14 @@ Auth | {CertificateVerify}
 Unlike TLS 1.3, DTLS 1.3 implementations must take into account that handshake
 messages are not transmitted over a reliable transport protocol.
 
-Due to the possibility of an `ExtendedKeyUpdate(new_key_update)` message being
+Due to the possibility of an `ExtendedKeyUpdate` messages being
 lost and thereby preventing the sender of that message from updating its keying
 material, receivers MUST retain the pre-update keying material until receipt
 and successful decryption of a message using the new keys.
 
 Due to packet loss and/or reordering, DTLS 1.3 peers MAY receive records from an
 earlier epoch. If the necessary keys are available, implementations SHOULD attempt
-to process such records; however, they MAY choose to discard them.The exchange
+to process such records; however, they MAY choose to discard them. The exchange
 has the following steps:
 
 1. The initiator sends an `ExtendedKeyUpdate(key_update_request)` message, which contains a
@@ -460,7 +457,7 @@ has the following steps:
    retransmission, but delivery is only confirmed when the initiator either receives the
    corresponding `ExtendedKeyUpdate(key_update_response)` or an ACK.
 
-2. Upon receipt, the responder sends its own `KeyShareEntry` in a
+1. Upon receipt, the responder sends its own `KeyShareEntry` in a
    `ExtendedKeyUpdate(key_update_response)` message. While an extended key update
    is in progress, the responder MUST NOT initiate further key updates. The responder MAY defer
    sending a response if system load or resource constraints prevent immediate processing.
@@ -468,30 +465,24 @@ has the following steps:
    sufficient resources become available, retransmit the key_update_response until it is acknowledged by the
    initiator.
 
-3. On receipt of `ExtendedKeyUpdate(key_update_response)` the initiator derives a secret key based on the
+1. On receipt of `ExtendedKeyUpdate(key_update_response)` the initiator derives a secret key based on the
    exchanged key shares. This message also serves as an implicit acknowledgment of the
-   initiator’s ExtendedKeyUpdate(key_update_request), so no separate ACK is required.
+   initiator's `ExtendedKeyUpdate(key_update_request)`, so no separate ACK is required. The initiator MUST
+   update its receive keys and epoch value.
 
-4. The initiator transmits an `ExtendedKeyUpdate(new_key_update)` message. This message is subject to DTLS
+1. The initiator transmits an `ExtendedKeyUpdate(new_key_update)` message. This message is subject to DTLS
    retransmission until acknowledged.
 
-5. Upon receiving `ExtendedKeyUpdate(new_key_update)`, the responder MUST update
-   its receive keys and epoch value.
+1. The responder MUST acknowledge the received message by sending an ACK message.
 
-6. The responder acknowledges the received message by sending its own
-   `ExtendedKeyUpdate(new_key_update)`.
+1. After the responder receives the initiator's `ExtendedKeyUpdate(new_key_update)`,
+   the responder MUST update its send key and epoch value. With the receipt of
+   that message, the responder MUST also update its receive keys.
 
-7. After the initiator receives the responder’s `ExtendedKeyUpdate(new_key_update)`,
-   the initiator MUST update its send key and epoch value. With the receipt of
-   that message, the initiator MUST also update its receive keys.
-
-8. The initiator MUST acknowledge the responder’s
-   `ExtendedKeyUpdate(new_key_update)` with an ACK message.
-
-9.  On receipt of the ACK message, the responder updates its send key and epoch
-    value. If this ACK is not received, the responder re-transmits its
-    ExtendedKeyUpdate(new_key_update) until ACK is received. The key update is
-    complete once this ACK is processed by the responder.
+1.  On receipt of the ACK message, the initiator updates its send key and epoch
+    value. If this ACK is not received, the initiator re-transmits its
+    `ExtendedKeyUpdate(new_key_update)` until ACK is received. The key update is
+    complete once this ACK is processed by the initiator.
 
 The handshake framing uses a single `HandshakeType` for this message
 (see {{fig-dtls-handshake}}).
@@ -570,31 +561,29 @@ Client                            Server
                                   # no epoch change yet
 
                            <-------- [EKU(key_update_response)]
-                                  # still old epochs
+# Sent under OLD epoch. Server does NOT bump yet.
+
+# Step 3: initiator bumps RECEIVE epoch on
+# receiving key update response-in:
+# (rx:=rx+1; tx still old)
+[C: tx=3, rx=4]                   [S: tx=3, rx=3]
 
 [EKU(new_key_update)]      -------->
-# Sent under OLD epoch. Client does NOT bump yet.
-
-# Step 6: responder bumps RECEIVE epoch on NKU-in:
-# (rx:=rx+1; tx still old)
-[C: tx=3, rx=3]                   [S: tx=3, rx=4]
-
-                           <-------- [EKU(new_key_update)]
-# Responder’s NKU is tagged with OLD tx (3).
+# Sender's NKU is tagged with OLD tx (3).
 
 # Epoch switch point:
-# Step 8: initiator bumps BOTH tx and rx on NKU-in:
-[C: tx=4, rx=4]                   [S: tx=3, rx=4]
+# Step 6: responder bumps BOTH tx and rx on NKU-in:
+[C: tx=3, rx=4]                   [S: tx=4, rx=4]
 
-[ACK] (tag=new)            -------->
+                           <-------- [ACK] (tag=new)
 
-# Step 10: responder bumps SEND epoch on ACK-in:
-[C: tx=4, rx=4]                   [S: tx=4, rx=4]
-
-                           <--------   [Application Data]
+# Step 7: initiator bumps SEND epoch on ACK-in:
 [C: tx=4, rx=4]                   [S: tx=4, rx=4]
 
 [Application Data]         -------->
+[C: tx=4, rx=4]                   [S: tx=4, rx=4]
+
+                           <--------   [Application Data]
 [C: tx=4, rx=4]                   [S: tx=4, rx=4]
 ~~~
 {: #dtls-key-update title="Example DTLS 1.3 Extended Key Update: Message Exchange."}
@@ -610,12 +599,11 @@ the message transmission.
 | APP ------------>  | 3/3 -> 3/3     | 3/3 -> 3/3   |
 | <------------ APP  | 3/3 -> 3/3     | 3/3 -> 3/3   |
 | req -------------> | 3/3 -> 3/3     | 3/3 -> 3/3   |
-| <------------ resp | 3/3 -> 3/3     | 3/3 -> 3/3   |
-| NKU  ------------> | 3/3 -> 3/3     | 3/3 -> 3/4   | <- step 6
-| <------------- NKU | 3/3 -> 4/4     | 3/4 -> 3/4   | <- step 8
-| ACK -------------> | 4/4 -> 4/4     | 3/4 -> 4/4   | <- step 10
-| <------------- APP | 4/4 -> 4/4     | 4/4 -> 4/4   |
+| <------------ resp | 3/3 -> 3/4     | 3/3 -> 3/3   | <- step 3
+| NKU  ------------> | 3/4 -> 3/4     | 3/3 -> 4/4   | <- step 6
+| <------------- ACK | 3/4 -> 4/4     | 4/4 -> 4/4   | <- step 7
 | APP -------------> | 4/4 -> 4/4     | 4/4 -> 4/4   |
+| <------------- APP | 4/4 -> 4/4     | 4/4 -> 4/4   |
 +--------------------+----------------+--------------+
 ~~~
 {: #dtls-table title="Example DTLS 1.3 Extended Key Update: Epoch Changes."}
@@ -696,7 +684,7 @@ traffic keys have been computed, implementations SHOULD delete
 client_/server_application_traffic_secret_N and its associated
 traffic keys as soon as possible. Note: The
 client_/server_application_traffic_secret_N and its associated
-traffic keys can only be deleted after receiving the
+traffic keys can only be deleted by the responder after receiving the
 `ExtendedKeyUpdate(new_key_update)` message.
 
 When using this extension, it is important to consider its interaction with
@@ -1030,20 +1018,10 @@ This section describes the initiator and responder state machines.
 |  (B) recv Resp with key_share:
 |      derive new secrets
 |      send NKU (encrypted under old keys)
-|      update SEND keys (send_key := new)
+|      update SEND key (send_key := new)
+|      update RECEIVE key (receive_key := new)
 \      --> WAIT_R_NKU
  v
-+---------------------------+
-| SENT_NKU / WAIT_R_NKU     |
-| send_key=new,             |
-| receive_key=current,      |
-| updating=1                |
-+---------------------------+
-      |
-(5) recv NKU (encrypted under old keys)
-    update RECEIVE keys (receive_key := new)
-    set updating=0
-      v
 +----------------------+
 | FINISHED             |
 +----------------------+
@@ -1051,8 +1029,7 @@ This section describes the initiator and responder state machines.
 
 Notes:
 
-- Both NKU messages are sent under old keys. The old-key NKU
-  must be received before accepting traffic under new keys.
+- NKU message is sent under old keys.
 - If a classic KeyUpdate arrives (EKU negotiated), ABORT "unexpected_message".
 - Crossed-requests: ignore the request with LOWER lexicographic key_exchange; if equal, abort.
 
@@ -1076,6 +1053,7 @@ Notes:
 |  (may defer sending if under load;
 |   must send once resources free)
 |  derive new secrets
+|  update SEND keys (send_key := new)
 |  --> WAIT_I_NKU
       v
 +----------------------+
@@ -1085,8 +1063,6 @@ Notes:
       |
 (4) recv NKU (encrypted under old keys)
     update RECEIVE keys (receive_key := new)
-    send NKU (encrypted under old keys)
-    update SEND keys (send_key := new)
     set updating=0
       v
 +----------------------+
@@ -1096,7 +1072,6 @@ Notes:
 
 Notes:
 
-- No "accept/reject" or status in Resp; wire format has only a KeyShareEntry.
 - Responder may defer Resp under load (no status reply), then must send it once resources are free.
 - If a classic KeyUpdate arrives (EKU negotiated), ABORT "unexpected_message".
 
@@ -1120,26 +1095,21 @@ The following variables and abbreviations are used in the state machine diagrams
 
 Crossed requests. If both peers independently initiate the extended key update and the key_update_request messages cross in flight, compare the KeyShareEntry.key_exchange values. The request with the lower lexicographic value must be ignored. If the values are equal, the endpoint must abort with an "unexpected_message" alert. If the peer's value is higher than the local one, the endpoint abandons its in-flight update and processes the peer's request as responder.
 
-No status in responses. ExtendedKeyUpdate(key_update_response) carries only a KeyShareEntry; there is no accept/reject/status field in the wire format. Implementations either proceed normally or abort on error; there is no benign "reject" reply.
-
 ### State Machine (Initiator)
 
 The initiator starts in the START state with matching epochs (rx := E; tx := E). It sends a Req and enters WAIT_RESP (updating := 1). While waiting, APP data may be sent at any time (tagged with the current tx) and received according to the APP acceptance rule below.
 
-Once the responder returns Resp with a tag matching the current rx, the initiator derives new key material. It then sends NKU still tagged with the old tx, moving to WAIT_R_NKU.
+Once the responder returns Resp with a tag matching the current rx, the initiator derives new key material. It then sends NKU still tagged with the old tx. The initiator activates retention mode: the old epoch is remembered, the receive epoch is incremented, and application data is accepted under both epochs for a transition period. Initiator moves to WAIT_ACK.
 
 If a peer key_update_request arrives while in WAIT_RESP (crossed updates), apply the crossed-request rule above. If the peer's key_exchange is higher, abandon the local update (updating := 0) and continue as responder: send key_update_response, derive new secrets, then proceed with the responder flow. If lower, ignore the peer's request; if equal, abort with "unexpected_message".
 
-Upon receiving the responder's NKU (tag equals the current rx, meaning the responder is still tagging with its old tx), the initiator:
+Upon receiving the responder's ACK matching the updated epoch, the responder completes the transition by synchronizing transmit and receive epochs (tx := rx), disabling retention, and clearing the update flag. The state machine returns to FINISHED, ready for subsequent updates.
 
-1. activates retention (old_rx := rx; retain_old := 1),
-2. increments both epochs (rx++, tx++),
-3. sends ACK tagged with the new tx (which now equals the new rx),
-4. clears updating and enters FINISHED.
+Throughout the process:
 
-Retention at the initiator ends automatically on the first APP received under the new rx (then retain_old := 0). APP traffic is otherwise permitted at any time; reordering is tolerated by the acceptance rule.
-
-APP acceptance rule (receiver): accept if e == rx or (retain_old && e == old_rx). If retain_old is set and an APP with the new rx arrives, clear retain_old.
+* Duplicate messages are tolerated (for retransmission handling).
+* Temporary epoch mismatches are permitted while an update is in progress.
+* Application data flows continuously, subject to epoch acceptance rules.
 
 ~~~ aasvg
 +---------------------------------+
@@ -1161,7 +1131,7 @@ APP acceptance rule (receiver): accept if e == rx or (retain_old && e == old_rx)
  |    |    |                if peer == local -> ABORT  (Error)
  |    |    |                if peer > local  -> ABANDON update;
  |    |    |                                    updating := 0;
- |	  |	   |                                    act as RESPONDER
+ |	   |    |                                    act as RESPONDER
  |    |    |
  |    |    +-- APP send (anytime)           (Self-Loop)
  |    |
@@ -1170,30 +1140,27 @@ APP acceptance rule (receiver): accept if e == rx or (retain_old && e == old_rx)
  +-- APP recv: e == rx                           (Self-Loop)
 
           | recv Resp [e == rx]
-          | derive secrets; send NKU [tag=old tx]
+          | derive secrets
+          v
++---------------------+
+| ACTIVATE RETENTION  |
+| old_rx=rx;          |
+| retain_old=1; rx++  |
++---------------------+
+          |
+(4) send NKU [tag=old tx]
           v
 +------------------------------+
-| WAIT_R_NKU                   |
+| WAIT_ACK (updating = 1)      |
 +------------------------------+
       |
       |  APP send/recv allowed
       |
-(6) recv NKU [e==rx]
-(Responder still tags old tx)
-      v
-+----------------------+
-| ACTIVATE RETENTION   |
-| old_rx=rx;           |
-| retain_old=1;        |
-| rx=rx+1; tx=tx+1     |
-+----------------------+
-      |
-(8) send ACK [tag=tx]
-    set updating := 0; assert tx==rx
+(7) recv ACK [e==rx]
+    tx=rx; retain_old=0; updating := 0
       v
 +------------------------------------------+
 | FINISHED                                 |
-| (retain_old=0 after first APP at new rx) |
 +------------------------------------------+
 ~~~
 
@@ -1201,17 +1168,18 @@ APP acceptance rule (receiver): accept if e == rx or (retain_old && e == old_rx)
 
 The responder starts in the START state with synchronized transmit and receive epochs (rx := E; tx := E) and no update in progress. Application data can be transmitted at any time using the sender's current transmit epoch. A receiver must accept application data if the epoch tag on the DTLS record equals the receiver's current receive epoch. If the receiver has retention active (retain_old == true), the receiver must also accept DTLS records whose epoch tag equals the remembered previous epoch.
 
-Upon receiving an ExtendedKeyUpdate(key_update_request) (Req), the responder transitions to RESPOND. The responder may defer sending key_update_response under load; in that case it must acknowledge the request with an ACK and retransmit the response until it is acknowledged by the initiator, as specified in DTLS considerations. When sent, key_update_response is tagged with the current tx. After sending the response, the responder enters WAIT_I_NKU.
+Upon receiving an `ExtendedKeyUpdate(key_update_request)` (Req), the responder transitions to RESPOND. The responder may defer sending `ExtendedKeyUpdate(key_update_response)` under load; in that case it must acknowledge the request with an ACK and retransmit the response until it is acknowledged by the initiator, as specified in DTLS considerations. When sent, `ExtendedKeyUpdate(key_update_response)` is tagged with the current tx.
 
-When a new_key_update (NKU) is received with the correct epoch, the responder activates retention mode: the old epoch is remembered, the receive epoch is incremented, and application data is accepted under both epochs for a transition period. The responder then sends its own NKU tagged with the old transmit epoch and moves to WAIT_ACK.
+After an `ExtendedKeyUpdate(new_key_update)` (NKU) is received with the correct epoch, the responder:
 
-Finally, upon receipt of an ACK matching the updated epoch, the responder completes the transition by synchronizing transmit and receive epochs (tx := rx), disabling retention, and clearing the update flag. The state machine returns to FINISHED, ready for subsequent updates.
+1. activates retention (old_rx := rx; retain_old := 1),
+1. increments both epochs (rx++, tx++),
+1. sends ACK tagged with the new tx (which now equals the new rx),
+1. clears updating and enters FINISHED.
 
-Throughout the process:
+Retention at the responder ends automatically on the first APP received under the new rx (then retain_old := 0). APP traffic is otherwise permitted at any time; reordering is tolerated by the acceptance rule.
 
-- Duplicate messages are tolerated (for retransmission handling).
-- Temporary epoch mismatches are permitted while an update is in progress.
-- Application data flows continuously, subject to epoch acceptance rules.
+APP acceptance rule (receiver): accept if e == rx or (retain_old && e == old_rx). If retain_old is set and an APP with the new rx arrives, clear retain_old.
 
 ~~~ aasvg
 +---------------------------------+
@@ -1219,7 +1187,7 @@ Throughout the process:
 | rx := E; tx := E, updating := 0 |
 +---------------------------------+
       |
-(3) recv Req [e==rx]
+(2) recv Req [e==rx]
     set updating := 1
       v
 +----------------------+
@@ -1232,28 +1200,23 @@ Throughout the process:
       v
 +---------------+
 | WAIT_I_NKU    |
-| (updating=1) |
+| (updating=1)  |
 +-------+-------+
       |
-(5) recv NKU [e==rx]      (assert accepted)
-      v
+(4) recv NKU [e==rx]      (assert accepted)
+      |
 +---------------------+
 | ACTIVATE RETENTION  |
 | old_rx=rx;          |
-| retain_old=1; rx++  |
+| retain_old=1;       |
+| rx=rx+1; tx=tx+1    |
 +----------+----------+
       |
-(6) send NKU [tag=old tx]
+(5) send ACK [tag=tx]
+    set updating := 0; assert tx==rx
       v
-+--------------+
-| WAIT_ACK     |
-| (updating=1) |
-+-------+------+
-      |
-(7/8) recv ACK [e==rx]
-    tx=rx; retain_old=0; updating := 0
-      v
-+-----------+
-| FINISHED  |
-+-----------+
++------------------------------------------+
+| FINISHED                                 |
+| (retain_old=0 after first APP at new rx) |
++------------------------------------------+
 ~~~
