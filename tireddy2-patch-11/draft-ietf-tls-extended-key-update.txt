@@ -885,7 +885,7 @@ Table of Contents
 
    This document updates Section 5.1 of [RFC9261] to specify that, after
    an Extended Key Update has completed, the Handshake Context and
-   Finished MAC Key used for Exported Authenticators are derived from
+   Finished MAC Key used for Exported Authenticators can be derived from
    the exporter secret associated with the current epoch.
    Implementations that support the epoch-aware exporter interface will
    have to provide a means for applications to request the generation or
@@ -902,13 +902,13 @@ Table of Contents
    in Section 5.2.4 of [RFC9261] will fail, thereby detecting the
    divergence of key state between peers.
 
-   A new optional API is defined to permit applications to request or
-   verify Exported Authenticators for a specific exporter epoch.  The
-   APIs defined in [RFC9261] remain available and unchanged, so existing
-   applications continue to operate without modification.  The epoch-
-   aware API accepts an epoch identifier; when present, the TLS
-   implementation MUST derive the Handshake Context and Finished MAC Key
-   from the exporter secret associated with that epoch.
+   A new optional API has to be defined to permit applications to
+   request or verify Exported Authenticators for a specific exporter
+   epoch.  The APIs defined in [RFC9261] remain available and unchanged,
+   so existing applications continue to operate without modification.
+   The epoch-aware API accepts an epoch identifier; when present, the
+   TLS implementation MUST derive the Handshake Context and Finished MAC
+   Key from the exporter secret associated with that epoch.
 
 12.  Security Considerations
 
