@@ -819,21 +819,36 @@ secret, as described in Section 3.3.2 of {{!RFC3711}}.
 
 EKU provides fresh traffic secrets, but EKU alone does not authenticate
 that both endpoints derived the same updated keys. An active attacker
-interfering with an EKU exchange could cause key divergence without detection.
+interfering with an EKU exchange could cause the peers to transition to divergent
+traffic secrets without detection.
 
 To confirm that both peers transitioned to the same new key state, endpoints
-can use Exported Authenticators {{?RFC9261}} immediately after completing EKU.
+can use Exported Authenticators {{?RFC9261}} immediately after completing an EKU.
 However, the authenticator transcript defined in {{?RFC9261}} does not cover the
 EKU messages. As a result, an authenticator generated after EKU is not bound to the
 newly derived traffic secrets.
 
-To ensure MiTM-resilient key updates, this document updates Section 5.2.2 of
-{{?RFC9261}} to incorporate the Extended Key Update transcript (Hash(EKU-Transcript))
-into the CertificateVerify calculation when an authenticator is generated after EKU.
+To ensure MiTM-resilient key updates, this document updates Section 5.2.2 of {{?RFC9261}} as follows:
+
+When an Exported Authenticator is generated after an Extended Key Update,
+the authenticator transcript MUST be updated to include the hash of the most
+recent EKU exchange, consisting of the key_update request and response messages:
+
+~~~
+Hash(Handshake Context ||
+     authenticator request ||
+     Certificate ||
+     Hash(EKU(key_update_request), EKU(key_update_response)))
+~~~
 
 If no Extended Key Update has occurred on the connection, the endpoint
 SHALL continue to use the authenticator transcript defined in
 Section 5.2.2 of {{?RFC9261}}.
+
+This document also updates Section 5.1 of {{!RFC9261}} to specify that, when an
+Extended Key Update has completed, the Handshake Context and Finished MAC Key for
+Exported Authenticators has to be derived using the epoch-aware exporter
+interface and the exporter secret associated with the current epoch.
 
 #  Security Considerations
 
