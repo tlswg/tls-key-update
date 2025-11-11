@@ -826,7 +826,7 @@ immediately after completing an EKU.
 
 This document updates Section 5.1 of {{!RFC9261}} to specify that, after an
 Extended Key Update has completed, the Handshake Context and Finished MAC Key used for
-Exported Authenticators are derived from the exporter secret associated with the current epoch.
+Exported Authenticators can be derived from the exporter secret associated with the current epoch.
 Implementations that support the epoch-aware exporter interface will have to provide a means
 for applications to request the generation or validation of Exported Authenticators using
 the exporter secret for a specific epoch.
@@ -839,7 +839,7 @@ and exporter secrets, their Handshake Contexts and Finished MAC Keys will differ
 As a result, validation as specified in Section 5.2.4 of {{!RFC9261}} will fail, thereby
 detecting the divergence of key state between peers.
 
-A new optional API is defined to permit applications to request or verify
+A new optional API has to be defined to permit applications to request or verify
 Exported Authenticators for a specific exporter epoch. The APIs defined in
 {{!RFC9261}} remain available and unchanged, so existing applications
 continue to operate without modification. The epoch-aware API accepts an
