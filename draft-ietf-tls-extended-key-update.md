@@ -820,35 +820,32 @@ secret, as described in Section 3.3.2 of {{!RFC3711}}.
 EKU provides fresh traffic secrets, but EKU alone does not authenticate
 that both endpoints derived the same updated keys. An active attacker
 interfering with an EKU exchange could cause the peers to transition to divergent
-traffic secrets without detection.
+traffic secrets without detection. To confirm that both peers transitioned to the
+same new key state, endpoints can use Exported Authenticators {{?RFC9261}}
+immediately after completing an EKU.
 
-To confirm that both peers transitioned to the same new key state, endpoints
-can use Exported Authenticators {{?RFC9261}} immediately after completing an EKU.
-However, the authenticator transcript defined in {{?RFC9261}} does not cover the
-EKU messages. As a result, an authenticator generated after EKU is not bound to the
-newly derived traffic secrets.
+This document updates Section 5.1 of {{!RFC9261}} to specify that, after an
+Extended Key Update has completed, the Handshake Context and Finished MAC Key used for
+Exported Authenticators are derived from the exporter secret associated with the current epoch.
+Implementations that support the epoch-aware exporter interface will have to provide a means
+for applications to request the generation or validation of Exported Authenticators using
+the exporter secret for a specific epoch.
 
-To ensure MiTM-resilient key updates, this document updates Section 5.2.2 of {{?RFC9261}} as follows:
+The Handshake Context and Finished MAC Key used in both the CertificateVerify message
+(Section 5.2.2 of {{!RFC9261}}) and the Finished message (Section 5.2.3 of {{!RFC9261}})
+are derived from the exporter secret associated with the current epoch.
+If a MitM interferes with the EKU exchange and causes the peers to derive different traffic
+and exporter secrets, their Handshake Contexts and Finished MAC Keys will differ.
+As a result, validation as specified in Section 5.2.4 of {{!RFC9261}} will fail, thereby
+detecting the divergence of key state between peers.
 
-When an Exported Authenticator is generated after an Extended Key Update,
-the authenticator transcript MUST be updated to include the hash of the most
-recent EKU exchange, consisting of the key_update request and response messages:
-
-~~~
-Hash(Handshake Context ||
-     authenticator request ||
-     Certificate ||
-     Hash(EKU(key_update_request), EKU(key_update_response)))
-~~~
-
-If no Extended Key Update has occurred on the connection, the endpoint
-SHALL continue to use the authenticator transcript defined in
-Section 5.2.2 of {{?RFC9261}}.
-
-This document also updates Section 5.1 of {{!RFC9261}} to specify that, when an
-Extended Key Update has completed, the Handshake Context and Finished MAC Key for
-Exported Authenticators has to be derived using the epoch-aware exporter
-interface and the exporter secret associated with the current epoch.
+A new optional API is defined to permit applications to request or verify
+Exported Authenticators for a specific exporter epoch. The APIs defined in
+{{!RFC9261}} remain available and unchanged, so existing applications
+continue to operate without modification. The epoch-aware API accepts an
+epoch identifier; when present, the TLS implementation MUST derive the
+Handshake Context and Finished MAC Key from the exporter secret associated
+with that epoch.
 
 #  Security Considerations
 
