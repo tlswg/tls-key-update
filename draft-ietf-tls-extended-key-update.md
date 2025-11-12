@@ -842,7 +842,7 @@ detecting the divergence of key state between peers.
 
 A new optional API has to be defined to permit applications to request or verify
 Exported Authenticators for a specific exporter epoch. The APIs defined in
-{{!RFC9261}} remain available and unchanged, so existing applications
+{{!RFC9261}} remain unchanged, so existing applications
 continue to operate without modification. The epoch-aware API accepts an
 epoch identifier; when present, the TLS implementation MUST derive the
 Handshake Context and Finished MAC Key from the exporter secret associated
