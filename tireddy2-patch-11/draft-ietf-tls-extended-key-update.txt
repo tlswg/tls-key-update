@@ -5,14 +5,14 @@
 Transport Layer Security                                   H. Tschofenig
 Internet-Draft                                                   Siemens
 Intended status: Standards Track                                M. Tüxen
-Expires: 15 May 2026                   Münster Univ. of Applied Sciences
+Expires: 16 May 2026                   Münster Univ. of Applied Sciences
                                                                 T. Reddy
                                                                    Nokia
                                                                 S. Fries
                                                                  Siemens
                                                             Y. Rosomakho
                                                                  Zscaler
-                                                        11 November 2025
+                                                        12 November 2025
 
 
        Extended Key Update for Transport Layer Security (TLS) 1.3
@@ -66,7 +66,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 15 May 2026.
+   This Internet-Draft will expire on 16 May 2026.
 
 Copyright Notice
 
@@ -877,11 +877,14 @@ Table of Contents
 
    EKU provides fresh traffic secrets, but EKU alone does not
    authenticate that both endpoints derived the same updated keys.  An
-   active attacker interfering with an EKU exchange could cause the
-   peers to transition to divergent traffic secrets without detection.
-   To confirm that both peers transitioned to the same new key state,
-   endpoints can use Exported Authenticators [RFC9261] immediately after
-   completing an EKU.
+   attacker that temporarily compromises an endpoint may later act as an
+   active MitM capable of interfering with the EKU exchange.  Such an
+   attacker can cause the peers to transition to divergent traffic
+   secrets without detection, but cannot compromise the endpoint to
+   derive secrets after the new epoch is established.  To confirm that
+   both peers transitioned to the same new key state, endpoints can use
+   Exported Authenticators [RFC9261] immediately after completing an
+   EKU.
 
    This document updates Section 5.1 of [RFC9261] to specify that, after
    an Extended Key Update has completed, the Handshake Context and
