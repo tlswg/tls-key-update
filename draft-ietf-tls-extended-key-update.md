@@ -823,7 +823,7 @@ may later act as an active MitM capable of interfering with the EKU exchange.
 Such an attacker can cause the peers to transition to divergent traffic secrets without detection,
 but cannot compromise the endpoint to derive secrets after the new epoch is established.
 To confirm that both peers transitioned to the same new key state, endpoints can use
-Exported Authenticators {{?RFC9261}} immediately after completing an EKU.
+Exported Authenticators {{!RFC9261}} immediately after completing an EKU.
 
 This document updates Section 5.1 of {{!RFC9261}} to specify that, after an
 Extended Key Update has completed, the Handshake Context and Finished MAC Key used for
