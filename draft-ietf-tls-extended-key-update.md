@@ -817,12 +817,13 @@ secret, as described in Section 3.3.2 of {{!RFC3711}}.
 
 # Use of Exported Authenticators with Extended Key Update {#exported}
 
-EKU provides fresh traffic secrets, but EKU alone does not authenticate
-that both endpoints derived the same updated keys. An active attacker
-interfering with an EKU exchange could cause the peers to transition to divergent
-traffic secrets without detection. To confirm that both peers transitioned to the
-same new key state, endpoints can use Exported Authenticators {{?RFC9261}}
-immediately after completing an EKU.
+EKU provides fresh traffic secrets, but EKU alone does not authenticate that both endpoints
+derived the same updated keys. An attacker that temporarily compromises an endpoint
+may later act as an active MitM capable of interfering with the EKU exchange.
+Such an attacker can cause the peers to transition to divergent traffic secrets without detection,
+but cannot compromise the endpoint to derive secrets after the new epoch is established.
+To confirm that both peers transitioned to the same new key state, endpoints can use
+Exported Authenticators {{?RFC9261}} immediately after completing an EKU.
 
 This document updates Section 5.1 of {{!RFC9261}} to specify that, after an
 Extended Key Update has completed, the Handshake Context and Finished MAC Key used for
