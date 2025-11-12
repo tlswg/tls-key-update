@@ -2149,7 +2149,7 @@ the exporter secret for a specific epoch.<a href="#section-11-2" class="pilcrow"
 are derived from the exporter secret associated with the current epoch.
 If a MitM interferes with the EKU exchange and causes the peers to derive different traffic
 and exporter secrets, their Handshake Contexts and Finished MAC Keys will differ.
-As a result, validation as specified in Section 5.2.4 of <span>[<a href="#RFC9261" class="cite xref">RFC9261</a>]</span> will fail, thereby
+As a result, validation procedures specified in Section 5.2.4 of <span>[<a href="#RFC9261" class="cite xref">RFC9261</a>]</span> will fail, thereby
 detecting the divergence of key state between peers.<a href="#section-11-3" class="pilcrow">¶</a></p>
 <p id="section-11-4">A new optional API has to be defined to permit applications to request or verify
 Exported Authenticators for a specific exporter epoch. The APIs defined in
