@@ -837,7 +837,7 @@ The Handshake Context and Finished MAC Key used in both the CertificateVerify me
 are derived from the exporter secret associated with the current epoch.
 If a MitM interferes with the EKU exchange and causes the peers to derive different traffic
 and exporter secrets, their Handshake Contexts and Finished MAC Keys will differ.
-As a result, validation as specified in Section 5.2.4 of {{!RFC9261}} will fail, thereby
+As a result, validation procedures specified in Section 5.2.4 of {{!RFC9261}} will fail, thereby
 detecting the divergence of key state between peers.
 
 A new optional API has to be defined to permit applications to request or verify
