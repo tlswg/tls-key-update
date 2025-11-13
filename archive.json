@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2025-11-11T01:50:20.228702+00:00",
+  "timestamp": "2025-11-13T01:51:03.598690+00:00",
   "repo": "tlswg/tls-key-update",
   "labels": [
     {
@@ -1062,6 +1062,38 @@
           "updatedAt": "2025-11-06T12:00:11Z"
         }
       ]
+    },
+    {
+      "number": 88,
+      "id": "I_kwDOMJPqLM7XO4nD",
+      "title": "Update to PCS",
+      "url": "https://github.com/tlswg/tls-key-update/issues/88",
+      "state": "OPEN",
+      "author": "tireddy2",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [],
+      "body": "This seems woefully under-specified. How exactly is the hash incorporated into the calculation? Where in \"authenticator transcript\" is the hash added? Is it wrapped in message_hash type (like the hashed Client Hello from base TLS 1.3)? Are all EKU exchanges included, or is just the most recent one? What about the finished transcript (note RFC9261 is designed so that the hash can be multi-tapped).\n\nMore serious problem is that there is nothing to prevent EKU from racing with exporter authenticator, leading to receiver using different EKU transcript from sender. Which causes EA that should work being rejected (which might cause fatal application error).\n\nHowever, again it is possible to do something clever: Instead of using the RFC9261 construction with normal TLS exporter interface for exported authenticators, use RFC9261 construction with epoch-aware TLS exporter, and send the correct epoch along with the exported authenticator.This requires application protocol changes, but those seem necessary anyway.\n",
+      "createdAt": "2025-11-11T07:09:07Z",
+      "updatedAt": "2025-11-11T07:09:07Z",
+      "closedAt": null,
+      "comments": []
+    },
+    {
+      "number": 90,
+      "id": "I_kwDOMJPqLM7XUDiA",
+      "title": "Exporter_secret probably should != exporter_secret_0",
+      "url": "https://github.com/tlswg/tls-key-update/issues/90",
+      "state": "OPEN",
+      "author": "ilaril",
+      "authorAssociation": "NONE",
+      "assignees": [],
+      "labels": [],
+      "body": "Currently, `exporter_secret_0` seems to equal `exporter_secret`. This requires an implementation to keep the exporter keys for the first epoch for the entire connection duration \u2014 as application might use the TLS 1.3 exporter interface.\n\nThis degrades security, as while EKU-aware applications use `exporter_secret` only for authentication \u2014 which can not be retroactively broken \u2014 those use `exporter_secret_0` for the initial encryption keys. Thus, compromise after the first epoch has ended can still compromise the data in the first epoch.\n\nThis can be fixed by making `exporter_secret_<N>` use a different label from `exporter_secret` \u2014 e.g., \"exp epoch\".",
+      "createdAt": "2025-11-11T13:36:52Z",
+      "updatedAt": "2025-11-11T13:36:52Z",
+      "closedAt": null,
+      "comments": []
     }
   ],
   "pulls": [
@@ -7098,7 +7130,7 @@
       "labels": [],
       "body": "",
       "createdAt": "2025-11-06T13:58:56Z",
-      "updatedAt": "2025-11-09T17:44:04Z",
+      "updatedAt": "2025-11-11T07:08:38Z",
       "baseRepository": "tlswg/tls-key-update",
       "baseRefName": "main",
       "baseRefOid": "8171e6bd8d29a14987624e232ac1ab0e2db3082a",
@@ -7145,6 +7177,26 @@
               "updatedAt": "2025-11-09T17:44:04Z"
             }
           ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM7NbjWT",
+          "commit": {
+            "abbreviatedOid": "0f935b9"
+          },
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-11-11T07:08:38Z",
+          "updatedAt": "2025-11-11T07:08:38Z",
+          "comments": [
+            {
+              "originalPosition": 30,
+              "body": "Thanks @ilaril for the feedback, I will raise a seperate issue and PR to address this issue. ",
+              "createdAt": "2025-11-11T07:08:38Z",
+              "updatedAt": "2025-11-11T07:08:38Z"
+            }
+          ]
         }
       ]
     },
@@ -7160,19 +7212,570 @@
       "labels": [],
       "body": "As discussed at IETF124 I have tightened up the process and eliminated 1 unnecessary message in both TLS and DTLS flows.\r\n\r\nPlease check.",
       "createdAt": "2025-11-11T01:44:25Z",
-      "updatedAt": "2025-11-11T01:44:25Z",
+      "updatedAt": "2025-11-12T15:35:22Z",
       "baseRepository": "tlswg/tls-key-update",
       "baseRefName": "main",
       "baseRefOid": "09dc70a5edfd652cfa77e7edef6ba63085b0590b",
       "headRepository": "yaroslavros/tls-key-update",
       "headRefName": "main",
-      "headRefOid": "a11a6a57bcea9f3f17bb3d6ea7c2a86476ae39df",
+      "headRefOid": "9152aeb95992a8efdb789f5a22ce402ab90a053d",
       "closedAt": null,
       "mergedAt": null,
       "mergedBy": null,
       "mergeCommit": null,
-      "comments": [],
-      "reviews": []
+      "comments": [
+        {
+          "author": "hannestschofenig",
+          "authorAssociation": "COLLABORATOR",
+          "body": "I am still not convinced about this optimization. The initial design was selected to separate the two phases - first phase is to exchange the DH public keys and the second phase is to activate the keys. Our use cases, long-lived connections in telco networks and in the industurial IoT sector, do not have any performance constraints.\r\n\r\nMaking this change will also requires us to re-do the formal analysis.",
+          "createdAt": "2025-11-12T14:52:05Z",
+          "updatedAt": "2025-11-12T14:52:05Z"
+        },
+        {
+          "author": "ilaril",
+          "authorAssociation": "NONE",
+          "body": "It also seems like this prevents the initiator from delaying the update in TLS (due to unexpected overload) without stalling the entire channel, as the responder will immediately change the keys it uses after sending key_update_response. Delaying the update still works in DTLS, as the initiator can explicitly ACK the response, which does not trigger any actions from the responder.",
+          "createdAt": "2025-11-12T15:35:22Z",
+          "updatedAt": "2025-11-12T15:35:22Z"
+        }
+      ],
+      "reviews": [
+        {
+          "id": "PRR_kwDOMJPqLM7Ncf6e",
+          "commit": {
+            "abbreviatedOid": "a11a6a5"
+          },
+          "author": "ilaril",
+          "authorAssociation": "NONE",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-11-11T08:23:57Z",
+          "updatedAt": "2025-11-11T08:23:57Z",
+          "comments": [
+            {
+              "originalPosition": 25,
+              "body": "I think receive keys should be updated in previous step \u2014 since responder updates its send keys upon sending NKRes, the initiator should update its receive keys after receiving NKRes.",
+              "createdAt": "2025-11-11T08:23:57Z",
+              "updatedAt": "2025-11-11T08:34:37Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM7NcrM8",
+          "commit": {
+            "abbreviatedOid": "a11a6a5"
+          },
+          "author": "ilaril",
+          "authorAssociation": "NONE",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-11-11T08:34:21Z",
+          "updatedAt": "2025-11-11T08:34:22Z",
+          "comments": [
+            {
+              "originalPosition": 39,
+              "body": "How could responder accept any messages with new key before receiving NKU?\r\n\r\nHowever, because NKRes and NKU both update keys, endpoints must both check those messages are the last in record \u2014 Similarly to the finished message. \r\n",
+              "createdAt": "2025-11-11T08:34:21Z",
+              "updatedAt": "2025-11-11T08:34:22Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM7NcubO",
+          "commit": {
+            "abbreviatedOid": "a11a6a5"
+          },
+          "author": "ilaril",
+          "authorAssociation": "NONE",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-11-11T08:37:36Z",
+          "updatedAt": "2025-11-11T08:37:37Z",
+          "comments": [
+            {
+              "originalPosition": 52,
+              "body": "As in previous prose, I think it should be \"Client derives new secrets and updates RECEIVE keys here\" and \"Client updates SEND keys here\".",
+              "createdAt": "2025-11-11T08:37:36Z",
+              "updatedAt": "2025-11-11T08:37:37Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM7NdJ24",
+          "commit": {
+            "abbreviatedOid": "a11a6a5"
+          },
+          "author": "yaroslavros",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-11-11T09:02:23Z",
+          "updatedAt": "2025-11-11T09:02:23Z",
+          "comments": [
+            {
+              "originalPosition": 25,
+              "body": "Updated the text",
+              "createdAt": "2025-11-11T09:02:23Z",
+              "updatedAt": "2025-11-11T09:02:23Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM7NdLTV",
+          "commit": {
+            "abbreviatedOid": "a11a6a5"
+          },
+          "author": "yaroslavros",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-11-11T09:03:52Z",
+          "updatedAt": "2025-11-11T09:03:52Z",
+          "comments": [
+            {
+              "originalPosition": 39,
+              "body": "Responder has access to new key schedule. So technically it could accept messages using trial decryption with new keys before receiving confirmation from the initiator. This text instructs implementers not to do that.",
+              "createdAt": "2025-11-11T09:03:52Z",
+              "updatedAt": "2025-11-11T09:03:53Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM7NdLdr",
+          "commit": {
+            "abbreviatedOid": "a11a6a5"
+          },
+          "author": "yaroslavros",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-11-11T09:04:01Z",
+          "updatedAt": "2025-11-11T09:04:02Z",
+          "comments": [
+            {
+              "originalPosition": 52,
+              "body": "Updated",
+              "createdAt": "2025-11-11T09:04:01Z",
+              "updatedAt": "2025-11-11T09:04:02Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM7NwFMG",
+          "commit": {
+            "abbreviatedOid": "9152aeb"
+          },
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-11-12T07:06:16Z",
+          "updatedAt": "2025-11-12T07:06:16Z",
+          "comments": [
+            {
+              "originalPosition": 278,
+              "body": "```suggestion\r\nUpon receiving the responder's ACK matching the updated epoch, the initiator completes the transition by synchronizing transmit and receive epochs (tx := rx), disabling retention, and clearing the update flag. The state machine returns to FINISHED, ready for subsequent updates.\r\n```",
+              "createdAt": "2025-11-12T07:06:16Z",
+              "updatedAt": "2025-11-12T07:06:17Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM7NwGHv",
+          "commit": {
+            "abbreviatedOid": "9152aeb"
+          },
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "state": "APPROVED",
+          "body": "Changes look good except for a Nit. ",
+          "createdAt": "2025-11-12T07:07:53Z",
+          "updatedAt": "2025-11-12T07:07:53Z",
+          "comments": []
+        }
+      ]
+    },
+    {
+      "number": 89,
+      "id": "PR_kwDOMJPqLM6ysH36",
+      "title": "Update to RFC9261",
+      "url": "https://github.com/tlswg/tls-key-update/pull/89",
+      "state": "OPEN",
+      "author": "tireddy2",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [],
+      "body": "",
+      "createdAt": "2025-11-11T07:10:49Z",
+      "updatedAt": "2025-11-12T15:33:13Z",
+      "baseRepository": "tlswg/tls-key-update",
+      "baseRefName": "main",
+      "baseRefOid": "09dc70a5edfd652cfa77e7edef6ba63085b0590b",
+      "headRepository": "tlswg/tls-key-update",
+      "headRefName": "tireddy2-patch-11",
+      "headRefOid": "b01de27d54f6184fb924098aa7d67503ae4eb376",
+      "closedAt": null,
+      "mergedAt": null,
+      "mergedBy": null,
+      "mergeCommit": null,
+      "comments": [
+        {
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "body": "Update to address comments from @ilaril, see https://github.com/tlswg/tls-key-update/issues/88",
+          "createdAt": "2025-11-11T07:12:07Z",
+          "updatedAt": "2025-11-11T07:12:07Z"
+        },
+        {
+          "author": "hannestschofenig",
+          "authorAssociation": "COLLABORATOR",
+          "body": "I agree that we need to make RFC 9261 a normative reference and we also need to update it.",
+          "createdAt": "2025-11-12T14:48:58Z",
+          "updatedAt": "2025-11-12T14:48:58Z"
+        }
+      ],
+      "reviews": [
+        {
+          "id": "PRR_kwDOMJPqLM7Nc-Z9",
+          "commit": {
+            "abbreviatedOid": "99b21f1"
+          },
+          "author": "ilaril",
+          "authorAssociation": "NONE",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-11-11T08:53:04Z",
+          "updatedAt": "2025-11-11T08:53:05Z",
+          "comments": [
+            {
+              "originalPosition": 29,
+              "body": "This is not necessary and causes issues with the finished transcript hash calculation \u2014 since CertificateVerify hash is assumed to be prefix of Finished hash.\r\n\r\nThe reason it is not needed is that `exporter_secret_<n>` already incorporates the latest EKU exchange, and thus the authenticator transcript inherits that via Handshake Context, which comes from epoch-aware exporter.",
+              "createdAt": "2025-11-11T08:53:04Z",
+              "updatedAt": "2025-11-11T08:53:25Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM7NdD4x",
+          "commit": {
+            "abbreviatedOid": "99b21f1"
+          },
+          "author": "ilaril",
+          "authorAssociation": "NONE",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-11-11T08:57:43Z",
+          "updatedAt": "2025-11-11T08:57:44Z",
+          "comments": [
+            {
+              "originalPosition": 38,
+              "body": "This is not backward-compatible as it does not work with EKU-unaware applications. Applications that do not support EKU must continue to work even if EKU is enabled at TLS level \u2014 just not get all the benefits.\r\n\r\nAnd such Exported Authenticators must be sent together with the correct epoch value, so it is possible to verify the authenticators.",
+              "createdAt": "2025-11-11T08:57:43Z",
+              "updatedAt": "2025-11-11T08:57:44Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM7Nhy4v",
+          "commit": {
+            "abbreviatedOid": "99b21f1"
+          },
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-11-11T13:56:00Z",
+          "updatedAt": "2025-11-11T13:56:01Z",
+          "comments": [
+            {
+              "originalPosition": 29,
+              "body": "Good point, updated text. ",
+              "createdAt": "2025-11-11T13:56:00Z",
+              "updatedAt": "2025-11-11T13:56:01Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM7NiGVR",
+          "commit": {
+            "abbreviatedOid": "99b21f1"
+          },
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-11-11T14:12:20Z",
+          "updatedAt": "2025-11-11T14:12:20Z",
+          "comments": [
+            {
+              "originalPosition": 38,
+              "body": "Fixed, please check. ",
+              "createdAt": "2025-11-11T14:12:20Z",
+              "updatedAt": "2025-11-11T14:12:21Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM7NrPZ_",
+          "commit": {
+            "abbreviatedOid": "72843ef"
+          },
+          "author": "yaroslavros",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-11-11T23:57:09Z",
+          "updatedAt": "2025-11-11T23:57:09Z",
+          "comments": [
+            {
+              "originalPosition": 20,
+              "body": "I am not sure if that's correct. We use main secret from the previous key schedule, hence:\r\n\r\n- attacker won't be able to obtain new traffic secrets even if it somehow managed to modify key shares in flight\r\n- peers will get AEAD failure and terminate the connection\r\n\r\nAm I missing something?",
+              "createdAt": "2025-11-11T23:57:09Z",
+              "updatedAt": "2025-11-11T23:57:10Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM7NrRSt",
+          "commit": {
+            "abbreviatedOid": "72843ef"
+          },
+          "author": "yaroslavros",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-11-12T00:00:20Z",
+          "updatedAt": "2025-11-12T00:00:20Z",
+          "comments": [
+            {
+              "originalPosition": 20,
+              "body": "Or are you referring to an attacker who:\r\n- has obtained previous main key / key schedule\r\n- is able to mitm bi-directional communication between peers\r\n\r\nIf that's the case I think threat model need to be clarified.",
+              "createdAt": "2025-11-12T00:00:20Z",
+              "updatedAt": "2025-11-12T00:00:20Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM7NuQsm",
+          "commit": {
+            "abbreviatedOid": "72843ef"
+          },
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-11-12T05:05:48Z",
+          "updatedAt": "2025-11-12T05:05:48Z",
+          "comments": [
+            {
+              "originalPosition": 20,
+              "body": "> Or are you referring to an attacker who:\r\n> \r\n>     * has obtained previous main key / key schedule\r\n> \r\n>     * is able to mitm bi-directional communication between peers\r\n> \r\n> \r\n> If that's the case I think threat model need to be clarified.\r\n\r\nYes, I am referring to his attack. Updated the first paragraph in the section to explain threat model, please check. ",
+              "createdAt": "2025-11-12T05:05:48Z",
+              "updatedAt": "2025-11-12T05:05:49Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM7N3OZW",
+          "commit": {
+            "abbreviatedOid": "5d80825"
+          },
+          "author": "hannestschofenig",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-11-12T14:40:39Z",
+          "updatedAt": "2025-11-12T14:40:40Z",
+          "comments": [
+            {
+              "originalPosition": 27,
+              "body": "```suggestion\r\nExported Authenticators {{!RFC9261}} immediately after completing an EKU.\r\n```",
+              "createdAt": "2025-11-12T14:40:39Z",
+              "updatedAt": "2025-11-12T14:40:40Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM7N3Rb0",
+          "commit": {
+            "abbreviatedOid": "5d80825"
+          },
+          "author": "hannestschofenig",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-11-12T14:43:24Z",
+          "updatedAt": "2025-11-12T14:43:24Z",
+          "comments": [
+            {
+              "originalPosition": 41,
+              "body": "```suggestion\r\nAs a result, validation procedures specified in Section 5.2.4 of {{!RFC9261}} will fail, thereby\r\n```",
+              "createdAt": "2025-11-12T14:43:24Z",
+              "updatedAt": "2025-11-12T14:43:24Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM7N3SsM",
+          "commit": {
+            "abbreviatedOid": "5d80825"
+          },
+          "author": "hannestschofenig",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-11-12T14:44:36Z",
+          "updatedAt": "2025-11-12T14:44:36Z",
+          "comments": [
+            {
+              "originalPosition": 44,
+              "body": "Shouldn't we specify the API here -- in the same way as RFC 9261 defines APIs?",
+              "createdAt": "2025-11-12T14:44:36Z",
+              "updatedAt": "2025-11-12T14:44:36Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM7N3TXb",
+          "commit": {
+            "abbreviatedOid": "5d80825"
+          },
+          "author": "hannestschofenig",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-11-12T14:45:15Z",
+          "updatedAt": "2025-11-12T14:45:15Z",
+          "comments": [
+            {
+              "originalPosition": 44,
+              "body": "What does \"request or verify\" mean here? ",
+              "createdAt": "2025-11-12T14:45:15Z",
+              "updatedAt": "2025-11-12T14:45:15Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM7N3TsH",
+          "commit": {
+            "abbreviatedOid": "5d80825"
+          },
+          "author": "hannestschofenig",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-11-12T14:45:31Z",
+          "updatedAt": "2025-11-12T14:45:32Z",
+          "comments": [
+            {
+              "originalPosition": 46,
+              "body": "```suggestion\r\n{{!RFC9261}} remain unchanged, so existing applications\r\n```",
+              "createdAt": "2025-11-12T14:45:31Z",
+              "updatedAt": "2025-11-12T14:45:32Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM7N3U3I",
+          "commit": {
+            "abbreviatedOid": "5d80825"
+          },
+          "author": "hannestschofenig",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-11-12T14:46:36Z",
+          "updatedAt": "2025-11-12T14:46:36Z",
+          "comments": [
+            {
+              "originalPosition": 47,
+              "body": "Is it really required to leave these applications unchanged? There are not many applications today that use RFC 9261. Hence, I do not believe there is a lot of harm in modifying them --- if necessary.",
+              "createdAt": "2025-11-12T14:46:36Z",
+              "updatedAt": "2025-11-12T14:46:36Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM7N3806",
+          "commit": {
+            "abbreviatedOid": "5d80825"
+          },
+          "author": "ilaril",
+          "authorAssociation": "NONE",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-11-12T15:18:07Z",
+          "updatedAt": "2025-11-12T15:18:07Z",
+          "comments": [
+            {
+              "originalPosition": 47,
+              "body": "Yes, because it would be a breaking change to the TLS library, and to both application endpoints. Even one released TLS library having stable support for RFC 9261, or one application actually using it would make it no-go.\r\n\r\nWhile it is easy for libraries to make breaking changes (it frequently happens accidentally), such changes have very high cost to everyone else. It can be from difficult to virtually impossible to update applications across such change, and as old versions go out of security support, that is a major source of forever-days.\r\n\r\nNote that similarly to RFC 9261 being implementable in application layer on top of classical TLS Exporter, this is implementable in application layer on top of Epoch-Aware TLS Exporter.",
+              "createdAt": "2025-11-12T15:18:07Z",
+              "updatedAt": "2025-11-12T15:30:22Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM7N4AqE",
+          "commit": {
+            "abbreviatedOid": "b01de27"
+          },
+          "author": "ilaril",
+          "authorAssociation": "NONE",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-11-12T15:21:20Z",
+          "updatedAt": "2025-11-12T15:21:20Z",
+          "comments": [
+            {
+              "originalPosition": 45,
+              "body": "As note, TLS library API is not strictly necessary, as this can be implemented on top of Epoch-Aware TLS Exporter in the same way as RFC 9261 can be implemented on top of classical TLS Exporter. RFC 9261 just encourages using TLS library implementation, if available.",
+              "createdAt": "2025-11-12T15:21:20Z",
+              "updatedAt": "2025-11-12T15:21:20Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM7N4N8d",
+          "commit": {
+            "abbreviatedOid": "5d80825"
+          },
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-11-12T15:31:01Z",
+          "updatedAt": "2025-11-12T15:31:01Z",
+          "comments": [
+            {
+              "originalPosition": 44,
+              "body": "The side that requests an authenticator (request API) .\r\nThe side that validates an authenticator received from its peer (validate API).\r\n\r\nBoth these APIs are defined in RFC 9261. ",
+              "createdAt": "2025-11-12T15:31:01Z",
+              "updatedAt": "2025-11-12T15:31:01Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM7N4Qpw",
+          "commit": {
+            "abbreviatedOid": "5d80825"
+          },
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-11-12T15:33:12Z",
+          "updatedAt": "2025-11-12T15:33:13Z",
+          "comments": [
+            {
+              "originalPosition": 47,
+              "body": "Good point; other than CloudFlare deploying it, I don't see any TLS library that supports RFC9261. ",
+              "createdAt": "2025-11-12T15:33:12Z",
+              "updatedAt": "2025-11-12T15:33:38Z"
+            }
+          ]
+        }
+      ]
     }
   ]
 }
