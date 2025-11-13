@@ -839,7 +839,7 @@ Section 5.2.2 of {{?RFC9261}}.
 
 This section discusses additional security and operational aspects introduced by the Extended Key Update mechanism. All security considerations of TLS 1.3 {{TLS}} and DTLS.13 {{!DTLS=RFC9147}} continue to apply.
 
-## Scope of Key Compromise
+## Scope of Key Compromise {#scope}
 
 Extended Key Update assumes a transient compromise of the current application
 traffic keys, not a persistent attacker with ongoing access to key material.
