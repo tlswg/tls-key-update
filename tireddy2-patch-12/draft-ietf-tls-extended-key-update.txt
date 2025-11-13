@@ -92,7 +92,7 @@ Table of Contents
      5.1.  TLS 1.3 Extended Key Update Example
    6.  DTLS 1.3 Considerations
      6.1.  DTLS 1.3 Extended Key Update Example
-   7.  Updating Traffic Secrets
+   7.  Updating Traffic Keys
    8.  Post-Quantum Cryptography Considerations
    9.  SSLKEYLOGFILE Update
    10. Exporter
@@ -138,12 +138,12 @@ Table of Contents
    TLS 1.3 also includes a KeyUpdate mechanism that allows traffic keys
    to be refreshed during an established session.  However, this
    mechanism does not provide post-compromise security, as it applies
-   only a key derivation function to the previous traffic keys as input.
-   While this design is generally sufficient for short-lived
-   connections, it may present security limitations in scenarios where
-   sessions persist for extended periods, such as in industrial IoT or
-   telecommunications systems, where continuous availability is critical
-   and session renegotiation or resumption is impractical.
+   only a key derivation function to the previous application traffic
+   key as input.  While this design is generally sufficient for short-
+   lived connections, it may present security limitations in scenarios
+   where sessions persist for extended periods, such as in industrial
+   IoT or telecommunications systems, where continuous availability is
+   critical and session renegotiation or resumption is impractical.
 
    Earlier versions of TLS supported session renegotiation, which
    allowed peers to negotiate fresh keying material, including
@@ -173,7 +173,7 @@ Table of Contents
    mechanism allows peers to perform a fresh Diffie-Hellman exchange
    within an active session using one of the groups negotiated during
    the initial handshake.  By periodically rerunning (EC)DHE, this
-   extension enables the derivation of new traffic secrets that are
+   extension enables the derivation of new traffic keys that are
    independent of prior key material.  As noted in Appendix F of [TLS],
    this approach mitigates the risk of static key exfiltration and
    shifts the attacker burden toward dynamic key exfiltration.
@@ -671,11 +671,12 @@ Table of Contents
 
        Figure 6: Example DTLS 1.3 Extended Key Update: Epoch Changes.
 
-7.  Updating Traffic Secrets
+7.  Updating Traffic Keys
 
    When the extended key update message exchange is completed both peers
-   have successfully updated their traffic keys.  The key derivation
-   function described in this document is used to perform this update.
+   have successfully updated their application traffic keys.  The key
+   derivation function described in this document is used to perform
+   this update.
 
    The design of the key derivation function for computing the next
    generation of application_traffic_secret is motivated by the desire
@@ -878,48 +879,26 @@ Table of Contents
 
 11.  Use of Exported Authenticators with Extended Key Update
 
-   EKU provides fresh traffic secrets, but EKU alone does not
-   authenticate that both endpoints derived the same updated keys.  An
-   attacker that temporarily compromises an endpoint may later act as an
-   active MitM capable of interfering with the EKU exchange.  Such an
-   attacker can cause the peers to transition to divergent traffic
-   secrets without detection, but cannot compromise the endpoint to
-   derive secrets after the new epoch is established.  To confirm that
-   both peers transitioned to the same new key state, endpoints can use
-   Exported Authenticators [RFC9261] immediately after completing an
-   EKU.
+   EKU provides fresh traffic keys, but EKU alone does not authenticate
+   that both endpoints derived the same updated keys.  An active
+   attacker interfering with an EKU exchange could cause key divergence
+   without detection.
 
-   This document updates Section 5.1 of [RFC9261] to specify that, after
-   an Extended Key Update has completed, the Handshake Context and
-   Finished MAC Key used for Exported Authenticators can be derived from
-   the exporter secret associated with the current epoch.
-   Implementations that support the epoch-aware Exported Authenticators
-   interface will have to provide a means for applications to request
-   the generation or validation of Exported Authenticators using the
-   exporter secret for a specific epoch.
+   To confirm that both peers transitioned to the same new key state,
+   endpoints can use Exported Authenticators [RFC9261] immediately after
+   completing EKU.  However, the authenticator transcript defined in
+   [RFC9261] does not cover the EKU messages.  As a result, an
+   authenticator generated after EKU is not bound to the newly derived
+   traffic keys.
 
-   The Handshake Context and Finished MAC Key used in both the
-   CertificateVerify message (Section 5.2.2 of [RFC9261]) and the
-   Finished message (Section 5.2.3 of [RFC9261]) are derived from the
-   exporter secret associated with the current epoch.  If a MitM
-   interferes with the EKU exchange and causes the peers to derive
-   different traffic and exporter secrets, their Handshake Contexts and
-   Finished MAC Keys will differ.  As a result, validation procedures
-   specified in Section 5.2.4 of [RFC9261] will fail, thereby detecting
-   the divergence of key state between peers.
+   To ensure MiTM-resilient key updates, this document updates
+   Section 5.2.2 of [RFC9261] to incorporate the Extended Key Update
+   transcript (Hash(EKU-Transcript)) into the CertificateVerify
+   calculation when an authenticator is generated after EKU.
 
-   A new optional API has to be defined to permit applications to
-   request or verify Exported Authenticators for a specific exporter
-   epoch.  The APIs defined in [RFC9261] remain unchanged, so existing
-   applications continue to operate without modification.  The epoch-
-   aware API accepts an epoch identifier; when present, the TLS
-   implementation MUST derive the Handshake Context and Finished MAC Key
-   from the exporter secret associated with that epoch.  When Exported
-   Authenticators are generated using the epoch-aware Exported
-   Authenticators interface, the epoch identifier used for their
-   derivation can be conveyed in the certificate_request_context field,
-   allowing the peer to determine the correct exporter secret for
-   validation.
+   If no Extended Key Update has occurred on the connection, the
+   endpoint SHALL continue to use the authenticator transcript defined
+   in Section 5.2.2 of [RFC9261].
 
 12.  Security Considerations
 
@@ -1123,10 +1102,6 @@ Table of Contents
               2119 Key Words", BCP 14, RFC 8174, DOI 10.17487/RFC8174,
               May 2017, <https://www.rfc-editor.org/rfc/rfc8174>.
 
-   [RFC9261]  Sullivan, N., "Exported Authenticators in TLS", RFC 9261,
-              DOI 10.17487/RFC9261, July 2022,
-              <https://www.rfc-editor.org/rfc/rfc9261>.
-
    [RFC9729]  Schinazi, D., Oliver, D., and J. Hoyland, "The Concealed
               HTTP Authentication Scheme", RFC 9729,
               DOI 10.17487/RFC9729, February 2025,
@@ -1174,6 +1149,10 @@ Table of Contents
    [RFC8447]  Salowey, J. and S. Turner, "IANA Registry Updates for TLS
               and DTLS", RFC 8447, DOI 10.17487/RFC8447, August 2018,
               <https://www.rfc-editor.org/rfc/rfc8447>.
+
+   [RFC9261]  Sullivan, N., "Exported Authenticators in TLS", RFC 9261,
+              DOI 10.17487/RFC9261, July 2022,
+              <https://www.rfc-editor.org/rfc/rfc9261>.
 
    [TLS-ECDHE-MLKEM]
               Kwiatkowski, K., Kampanakis, P., Westerbaan, B., and D.
