@@ -785,7 +785,7 @@ When a new exporter secret becomes active following a successful Extended
 Key Update, the TLS or DTLS implementation would have to provide an
 asynchronous notification to the application indicating that:
 
-* A new epoch has become active, and the implementation can
+* A new epoch has become active, and the (D)TLS implementation can
   include the corresponding epoch identifier. Applications receiving an
   epoch identifier can use it to request keying material for that
   specific epoch through an epoch-aware exporter interface.
@@ -844,12 +844,13 @@ A new optional API has to be defined to permit applications to request or verify
 Exported Authenticators for a specific exporter epoch. The APIs defined in
 {{!RFC9261}} remain unchanged, so existing applications
 continue to operate without modification. The epoch-aware API accepts an
-epoch identifier; when present, the TLS implementation MUST derive the
+epoch identifier; when present, the (D)TLS implementation MUST derive the
 Handshake Context and Finished MAC Key from the exporter secret associated
 with that epoch. When Exported Authenticators are generated using the epoch-aware
 Exported Authenticators interface, the epoch identifier used for their derivation
-can be conveyed in the certificate_request_context field, allowing the peer to
-determine the correct exporter secret for validation.
+can be conveyed in the certificate_request_context field, allowing the peer,
+particularly in DTLS where records may be reordered, to determine the
+correct exporter secret for validation.
 
 #  Security Considerations
 
