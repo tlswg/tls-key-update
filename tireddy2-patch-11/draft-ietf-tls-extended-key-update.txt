@@ -5,14 +5,14 @@
 Transport Layer Security                                   H. Tschofenig
 Internet-Draft                                                   Siemens
 Intended status: Standards Track                                M. Tüxen
-Expires: 16 May 2026                   Münster Univ. of Applied Sciences
+Expires: 17 May 2026                   Münster Univ. of Applied Sciences
                                                                 T. Reddy
                                                                    Nokia
                                                                 S. Fries
                                                                  Siemens
                                                             Y. Rosomakho
                                                                  Zscaler
-                                                        12 November 2025
+                                                        13 November 2025
 
 
        Extended Key Update for Transport Layer Security (TLS) 1.3
@@ -66,7 +66,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 16 May 2026.
+   This Internet-Draft will expire on 17 May 2026.
 
 Copyright Notice
 
@@ -836,12 +836,12 @@ Table of Contents
    provide an asynchronous notification to the application indicating
    that:
 
-   *  A new epoch has become active, and the implementation can include
-      the corresponding epoch identifier.  Applications receiving an
-      epoch identifier can use it to request keying material for that
-      specific epoch through an epoch-aware exporter interface.  In TLS,
-      this identifier represents a local logical counter that may differ
-      between peers.
+   *  A new epoch has become active, and the (D)TLS implementation can
+      include the corresponding epoch identifier.  Applications
+      receiving an epoch identifier can use it to request keying
+      material for that specific epoch through an epoch-aware exporter
+      interface.  In TLS, this identifier represents a local logical
+      counter that may differ between peers.
 
    Applications are notified that a new epoch is active only after both
    peers have completed the Extended Key Update exchange and switched to
@@ -909,14 +909,14 @@ Table of Contents
    request or verify Exported Authenticators for a specific exporter
    epoch.  The APIs defined in [RFC9261] remain unchanged, so existing
    applications continue to operate without modification.  The epoch-
-   aware API accepts an epoch identifier; when present, the TLS
+   aware API accepts an epoch identifier; when present, the (D)TLS
    implementation MUST derive the Handshake Context and Finished MAC Key
    from the exporter secret associated with that epoch.  When Exported
    Authenticators are generated using the epoch-aware Exported
    Authenticators interface, the epoch identifier used for their
    derivation can be conveyed in the certificate_request_context field,
-   allowing the peer to determine the correct exporter secret for
-   validation.
+   allowing the peer, particularly in DTLS where records may be
+   reordered, to determine the correct exporter secret for validation.
 
 12.  Security Considerations
 
