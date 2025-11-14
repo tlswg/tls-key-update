@@ -1283,4 +1283,7 @@ Once Extended Key Update has been negotiated for a session, peers rely exclusive
 
 ## Detecting Divergent Key State
 
-As described in {{exported}}, Exported Authenticators can be used after an Extended Key Update to confirm that both endpoints derived the same traffic keys. Because the authenticator computation depends on the exporter secret associated with the most recent EKU, any divergence in traffic keys causes signature validation to fail, revealing interference by an active attacker.
+As described in {{exported}}, both Post-handshake Certificate-Based Client Authentication and Exported Authenticators can be used after an Extended Key Update to confirm that both endpoints derived the same
+traffic keys. Because the authentication messages produced by these mechanisms depend on values
+derived from the updated traffic keys, any divergence in those traffic keys causes validation to fail,
+revealing interference by an active attacker.
