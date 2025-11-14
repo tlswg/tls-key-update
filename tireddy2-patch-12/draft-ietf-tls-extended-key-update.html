@@ -3256,7 +3256,9 @@ must be received before accepting traffic under new keys.<a href="#appendix-B.1.
         <h3 id="name-post-compromise-security-pc">
 <a href="#appendix-C.1" class="section-number selfRef">C.1. </a><a href="#name-post-compromise-security-pc" class="section-name selfRef">Post-Compromise Security (PCS)</a>
         </h3>
-<p id="appendix-C.1-1">Extended Key Update supports post-compromise security under the assumptions described in <a href="#scope" class="auto internal xref">Section 12.1</a>. If an attacker temporarily compromises an endpoint and obtains the traffic keys in use before an Extended Key Update takes place, but the compromise does not persist after the EKU completes, the attacker cannot derive the new keying material established by EKU. This property follows from the use of fresh ephemeral key exchange material during each Extended Key Update, which produces new traffic keys that are independent of the previous ones.<a href="#appendix-C.1-1" class="pilcrow">¶</a></p>
+<p id="appendix-C.1-1">Extended Key Update supports post-compromise security under the assumptions described in <a href="#scope" class="auto internal xref">Section 12.1</a>. If an attacker temporarily compromises an endpoint and obtains the traffic keys in use before an Extended Key Update takes place, but the compromise does not persist after the EKU completes, the attacker cannot derive the new keying material established by EKU. This property follows from the use of fresh ephemeral key exchange material during each Extended Key Update, which produces new traffic keys that are independent of the previous ones. This
+property provides only best-effort post-compromise security, as it assumes the attacker is not acting as a MiTM
+during the Extended Key Update.<a href="#appendix-C.1-1" class="pilcrow">¶</a></p>
 <p id="appendix-C.1-2">As a result, confidentiality of application data encrypted after the Extended Key Update is preserved even if the earlier traffic keys were exposed.<a href="#appendix-C.1-2" class="pilcrow">¶</a></p>
 </section>
 </div>

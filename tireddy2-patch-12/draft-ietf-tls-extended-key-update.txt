@@ -1595,7 +1595,9 @@ C.1.  Post-Compromise Security (PCS)
    material established by EKU.  This property follows from the use of
    fresh ephemeral key exchange material during each Extended Key
    Update, which produces new traffic keys that are independent of the
-   previous ones.
+   previous ones.  This property provides only best-effort post-
+   compromise security, as it assumes the attacker is not acting as a
+   MiTM during the Extended Key Update.
 
    As a result, confidentiality of application data encrypted after the
    Extended Key Update is preserved even if the earlier traffic keys
