@@ -815,15 +815,26 @@ the application might retain the previous exporter secret until its
 replay window no longer accepts packets protected with keys derived from that
 secret, as described in Section 3.3.2 of {{!RFC3711}}.
 
-# Use of Exported Authenticators with Extended Key Update {#exported}
+# Use of Post-Handshake Authentication and Exported Authenticators with Extended Key Update {#exported}
 
 EKU provides fresh traffic secrets, but EKU alone does not authenticate that both endpoints
 derived the same updated keys. An attacker that temporarily compromises an endpoint
 may later act as an active MitM capable of interfering with the EKU exchange.
 Such an attacker can cause the peers to transition to divergent traffic secrets without detection,
 but cannot compromise the endpoint to derive secrets after the new epoch is established.
-To confirm that both peers transitioned to the same new key state, endpoints can use
-Exported Authenticators {{!RFC9261}} immediately after completing an EKU.
+To confirm that both peers transitioned to the same new key state, TLS 1.3 provides two
+mechanisms: Post-Handshake Certificate-Based Client Authentication and
+Exported Authenticators {{!RFC9261}}.
+
+## Post-Handshake Certificate-Based Client Authentication
+
+When Post-handshake Certificate-Based Client Authentication (Section 4.6.2 of {{!RFC8446}})
+is performed after an Extended Key Update is complete, it produces a Finished message
+computed using the application traffic keys of the new epoch. This confirms that both peers
+are operating with the same updated traffic keys and completes an authenticated
+transition after the EKU.
+
+## Exported Authenticators
 
 This document updates Section 5.1 of {{!RFC9261}} to specify that, after an
 Extended Key Update has completed, the Handshake Context and Finished MAC Key used for
@@ -874,11 +885,12 @@ has access to either peer. If an adversary retains access to current application
 keys and can act as a man-in-the-middle during the Extended Key Update, then the
 update cannot restore security unless {{exported}} is used.
 
-If the mechanism defined in {{exported}} is not used, the attacker can
+If one of the mechanisms defined in {{exported}} is not used, the attacker can
 impersonate each endpoint, substitute EKU messages, and maintain control
-of the communication. When the modified Exported Authenticator is used,
-the CertificateVerify signature is bound to the EKU transcript, so any interference
-with the EKU messages will be detected and the attack prevented.
+of the communication. When Post-handshake Certificate-Based Client Authentication
+or the modified Exported Authenticator mechanism is used, the authentication messages
+are bound to the keys established after the EKU. Any modification or substitution of
+EKU messages therefore becomes detectable, preventing this attack.
 
 If a compromise occurs before the handshake completes, the ephemeral key exchange,
 client_handshake_traffic_secret, server_handshake_traffic_secret, and the initial
