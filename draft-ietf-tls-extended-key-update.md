@@ -828,7 +828,7 @@ Exported Authenticators {{!RFC9261}}.
 
 ## Post-Handshake Certificate-Based Client Authentication
 
-When Post-handshake Certificate-Based Client Authentication (Section 4.6.2 of {{!RFC8446}})
+When Post-handshake Certificate-Based Client Authentication (Section 4.6.2 of {{TLS}})
 is performed after an Extended Key Update is complete, it produces a Finished message
 computed using the application traffic keys of the new epoch. This confirms that both peers
 are operating with the same updated traffic keys and completes an authenticated
