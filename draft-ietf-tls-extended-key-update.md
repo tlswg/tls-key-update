@@ -1265,7 +1265,9 @@ A complete security analysis of the EKU is outside the scope of this document. T
 
 ## Post-Compromise Security (PCS)
 
-Extended Key Update supports post-compromise security under the assumptions described in {{scope}}. If an attacker temporarily compromises an endpoint and obtains the traffic keys in use before an Extended Key Update takes place, but the compromise does not persist after the EKU completes, the attacker cannot derive the new keying material established by EKU. This property follows from the use of fresh ephemeral key exchange material during each Extended Key Update, which produces new traffic keys that are independent of the previous ones.
+Extended Key Update supports post-compromise security under the assumptions described in {{scope}}. If an attacker temporarily compromises an endpoint and obtains the traffic keys in use before an Extended Key Update takes place, but the compromise does not persist after the EKU completes, the attacker cannot derive the new keying material established by EKU. This property follows from the use of fresh ephemeral key exchange material during each Extended Key Update, which produces new traffic keys that are independent of the previous ones. This
+property provides only best-effort post-compromise security, as it assumes the attacker is not acting as a MiTM
+during the Extended Key Update.
 
 As a result, confidentiality of application data encrypted after the Extended Key Update is preserved even if the earlier traffic keys were exposed.
 
