@@ -5,14 +5,14 @@
 Transport Layer Security                                   H. Tschofenig
 Internet-Draft                                                   Siemens
 Intended status: Standards Track                                M. Tüxen
-Expires: 17 May 2026                   Münster Univ. of Applied Sciences
+Expires: 18 May 2026                   Münster Univ. of Applied Sciences
                                                                 T. Reddy
                                                                    Nokia
                                                                 S. Fries
                                                                  Siemens
                                                             Y. Rosomakho
                                                                  Zscaler
-                                                        13 November 2025
+                                                        14 November 2025
 
 
        Extended Key Update for Transport Layer Security (TLS) 1.3
@@ -66,7 +66,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 17 May 2026.
+   This Internet-Draft will expire on 18 May 2026.
 
 Copyright Notice
 
@@ -1625,11 +1625,12 @@ C.3.  Elimination of Standard KeyUpdate
 
 C.4.  Detecting Divergent Key State
 
-   As described in Section 11, Exported Authenticators can be used after
+   As described in Section 11, both Post-handshake Certificate-Based
+   Client Authentication and Exported Authenticators can be used after
    an Extended Key Update to confirm that both endpoints derived the
-   same traffic keys.  Because the authenticator computation depends on
-   the exporter secret associated with the most recent EKU, any
-   divergence in traffic keys causes signature validation to fail,
+   same traffic keys.  Because the authentication messages produced by
+   these mechanisms depend on values derived from the updated traffic
+   keys, any divergence in those traffic keys causes validation to fail,
    revealing interference by an active attacker.
 
 Authors' Addresses

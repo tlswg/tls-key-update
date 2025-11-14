@@ -1064,7 +1064,7 @@ svg :is([fill="white"], [fill^="#fff"]) {
 </tr></thead>
 <tfoot><tr>
 <td class="left">Tschofenig, et al.</td>
-<td class="center">Expires 17 May 2026</td>
+<td class="center">Expires 18 May 2026</td>
 <td class="right">[Page]</td>
 </tr></tfoot>
 </table>
@@ -1077,12 +1077,12 @@ svg :is([fill="white"], [fill^="#fff"]) {
 <dd class="internet-draft">draft-ietf-tls-extended-key-update-latest</dd>
 <dt class="label-published">Published:</dt>
 <dd class="published">
-<time datetime="2025-11-13" class="published">13 November 2025</time>
+<time datetime="2025-11-14" class="published">14 November 2025</time>
     </dd>
 <dt class="label-intended-status">Intended Status:</dt>
 <dd class="intended-status">Standards Track</dd>
 <dt class="label-expires">Expires:</dt>
-<dd class="expires"><time datetime="2026-05-17">17 May 2026</time></dd>
+<dd class="expires"><time datetime="2026-05-18">18 May 2026</time></dd>
 <dt class="label-authors">Authors:</dt>
 <dd class="authors">
 <div class="author">
@@ -1156,7 +1156,7 @@ and DTLS 1.3.<a href="#section-abstract-2" class="pilcrow">¶</a></p>
         time. It is inappropriate to use Internet-Drafts as reference
         material or to cite them other than as "work in progress."<a href="#section-boilerplate.1-3" class="pilcrow">¶</a></p>
 <p id="section-boilerplate.1-4">
-        This Internet-Draft will expire on 17 May 2026.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
+        This Internet-Draft will expire on 18 May 2026.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="copyright">
@@ -3292,7 +3292,10 @@ must be received before accepting traffic under new keys.<a href="#appendix-B.1.
         <h3 id="name-detecting-divergent-key-sta">
 <a href="#appendix-C.4" class="section-number selfRef">C.4. </a><a href="#name-detecting-divergent-key-sta" class="section-name selfRef">Detecting Divergent Key State</a>
         </h3>
-<p id="appendix-C.4-1">As described in <a href="#exported" class="auto internal xref">Section 11</a>, Exported Authenticators can be used after an Extended Key Update to confirm that both endpoints derived the same traffic keys. Because the authenticator computation depends on the exporter secret associated with the most recent EKU, any divergence in traffic keys causes signature validation to fail, revealing interference by an active attacker.<a href="#appendix-C.4-1" class="pilcrow">¶</a></p>
+<p id="appendix-C.4-1">As described in <a href="#exported" class="auto internal xref">Section 11</a>, both Post-handshake Certificate-Based Client Authentication and Exported Authenticators can be used after an Extended Key Update to confirm that both endpoints derived the same
+traffic keys. Because the authentication messages produced by these mechanisms depend on values
+derived from the updated traffic keys, any divergence in those traffic keys causes validation to fail,
+revealing interference by an active attacker.<a href="#appendix-C.4-1" class="pilcrow">¶</a></p>
 </section>
 </div>
 </section>
