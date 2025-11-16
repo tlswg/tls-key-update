@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2025-11-13T01:51:03.598690+00:00",
+  "timestamp": "2025-11-16T01:55:21.512169+00:00",
   "repo": "tlswg/tls-key-update",
   "labels": [
     {
@@ -111,7 +111,7 @@
       "id": "I_kwDOMJPqLM60DFTn",
       "title": "Update to the exchange sequence",
       "url": "https://github.com/tlswg/tls-key-update/issues/19",
-      "state": "OPEN",
+      "state": "CLOSED",
       "author": "rifaat-ietf",
       "authorAssociation": "NONE",
       "assignees": [
@@ -120,8 +120,8 @@
       "labels": [],
       "body": "Hi Hannes, \n\nAs per our discussion, I would like to discuss a potential change to the exchange sequence to accommodate a different use case, as follows:\n\nThe exchange has the following steps:\n\n   1.  Initiator sends a ExtendedKeyUpdateRequest message, which\n       contains a key share.  While an extended key update is in\n       progress, the initiator MUST NOT initiate further key updates.\n\n   2.  On receipt of the ExtendedKeyUpdateRequest message, the responder\n       sends the ExtendedKeyUpdateResponse message.  \n       \n       If the responder accepts the request, it sets the status to accepted \n       and includes its own key share. At this point, the responder is able\n       to derive a secret key based on the exchanged key shares, and the application\n       is able to obtain the Exported Keying Material (EKM).\n       \n       If the responder declines the request, it sets the status accordingly \n       and does not include the key share.\n\n       While an extended key update is in progress, the responder MUST\n       NOT initiate further key updates.\n\n\n   3.  On receipt of the ExtendedKeyUpdateResponse message with accepted\n       status, the initiator is able to derive a secret key based on the\n       exchanged key shares, and the application is able to obtain the EKM.\n       \n   4.  At this point, the application is able to use the EKM to derive\n       additional keys and be ready to send them to HW that will use them for\n       encryption/decryption. When the initiator is ready to start using the\n       new keys, the initiator sends a NewKeyUpdate message and MUST update\n       its traffic keys and MUST send all its traffic using the next\n       generation of keys.  \n       \n       The NewKeyUpdate message is intentionally an empty structure that\n       triggers the transition to new keying material.\n\nHappy to discuss this further, if needed.\n",
       "createdAt": "2025-04-25T18:10:59Z",
-      "updatedAt": "2025-10-30T16:32:08Z",
-      "closedAt": null,
+      "updatedAt": "2025-11-13T10:03:16Z",
+      "closedAt": "2025-11-13T10:03:16Z",
       "comments": [
         {
           "author": "tireddy2",
@@ -129,6 +129,13 @@
           "body": "@rifaat-ietf - The exchange sequence has gone through significant changes, please go through it and let us know if you have any issues. ",
           "createdAt": "2025-10-13T06:57:57Z",
           "updatedAt": "2025-10-13T06:57:57Z"
+        },
+        {
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "body": "I am closing this issue for now, @rifaat-ietf - please feel free to re-open it if you see any issues with the updated exchange sequence.",
+          "createdAt": "2025-11-13T10:03:16Z",
+          "updatedAt": "2025-11-13T10:03:16Z"
         }
       ]
     },
@@ -509,9 +516,17 @@
       "labels": [],
       "body": "Currently we only talk about application data payloads being accepted during the different extended key update states.",
       "createdAt": "2025-09-06T18:05:00Z",
-      "updatedAt": "2025-09-06T18:05:00Z",
+      "updatedAt": "2025-11-13T10:48:16Z",
       "closedAt": null,
-      "comments": []
+      "comments": [
+        {
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "body": "Good point, I propose to add the following text:\nOnce the Extended Key Update mechanism is complete and the endpoint begins using the corresponding traffic keys, all records are encrypted with those keys, including alerts and post-handshake messages.",
+          "createdAt": "2025-11-13T10:48:16Z",
+          "updatedAt": "2025-11-13T10:48:16Z"
+        }
+      ]
     },
     {
       "number": 47,
@@ -581,9 +596,17 @@
       "labels": [],
       "body": "We need to clarify who retransmits what in DTLS flows in case there is a suspicion that a message was lost.",
       "createdAt": "2025-09-17T19:20:24Z",
-      "updatedAt": "2025-10-13T06:59:30Z",
+      "updatedAt": "2025-11-13T10:53:22Z",
       "closedAt": null,
-      "comments": []
+      "comments": [
+        {
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "body": "we can add the following line:\nRetransmission of Extended Key Update messages in DTLS follows the DTLS handshake retransmission procedure.",
+          "createdAt": "2025-11-13T10:53:22Z",
+          "updatedAt": "2025-11-13T10:53:22Z"
+        }
+      ]
     },
     {
       "number": 57,
@@ -1068,16 +1091,24 @@
       "id": "I_kwDOMJPqLM7XO4nD",
       "title": "Update to PCS",
       "url": "https://github.com/tlswg/tls-key-update/issues/88",
-      "state": "OPEN",
+      "state": "CLOSED",
       "author": "tireddy2",
       "authorAssociation": "COLLABORATOR",
       "assignees": [],
       "labels": [],
       "body": "This seems woefully under-specified. How exactly is the hash incorporated into the calculation? Where in \"authenticator transcript\" is the hash added? Is it wrapped in message_hash type (like the hashed Client Hello from base TLS 1.3)? Are all EKU exchanges included, or is just the most recent one? What about the finished transcript (note RFC9261 is designed so that the hash can be multi-tapped).\n\nMore serious problem is that there is nothing to prevent EKU from racing with exporter authenticator, leading to receiver using different EKU transcript from sender. Which causes EA that should work being rejected (which might cause fatal application error).\n\nHowever, again it is possible to do something clever: Instead of using the RFC9261 construction with normal TLS exporter interface for exported authenticators, use RFC9261 construction with epoch-aware TLS exporter, and send the correct epoch along with the exported authenticator.This requires application protocol changes, but those seem necessary anyway.\n",
       "createdAt": "2025-11-11T07:09:07Z",
-      "updatedAt": "2025-11-11T07:09:07Z",
-      "closedAt": null,
-      "comments": []
+      "updatedAt": "2025-11-13T07:01:19Z",
+      "closedAt": "2025-11-13T07:01:19Z",
+      "comments": [
+        {
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "body": "Fixed issue in https://github.com/tlswg/tls-key-update/pull/89 ",
+          "createdAt": "2025-11-13T07:01:19Z",
+          "updatedAt": "2025-11-13T07:01:19Z"
+        }
+      ]
     },
     {
       "number": 90,
@@ -1091,9 +1122,31 @@
       "labels": [],
       "body": "Currently, `exporter_secret_0` seems to equal `exporter_secret`. This requires an implementation to keep the exporter keys for the first epoch for the entire connection duration \u2014 as application might use the TLS 1.3 exporter interface.\n\nThis degrades security, as while EKU-aware applications use `exporter_secret` only for authentication \u2014 which can not be retroactively broken \u2014 those use `exporter_secret_0` for the initial encryption keys. Thus, compromise after the first epoch has ended can still compromise the data in the first epoch.\n\nThis can be fixed by making `exporter_secret_<N>` use a different label from `exporter_secret` \u2014 e.g., \"exp epoch\".",
       "createdAt": "2025-11-11T13:36:52Z",
-      "updatedAt": "2025-11-11T13:36:52Z",
+      "updatedAt": "2025-11-14T12:38:12Z",
       "closedAt": null,
-      "comments": []
+      "comments": [
+        {
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "body": "The draft uses exporter_secret_{N+1}. exporter_secret_{N+1} is not derived from the TLS 1.3 exporter_secret or any prior exporter_secret_{N}. Each exporter_secret_{N+1} is derived from the ephermeal ECDH established during the Extended Key Update. I don't see a need to use a different label to derive \"exporter_secret_{N+1}\".\n\n",
+          "createdAt": "2025-11-13T08:02:07Z",
+          "updatedAt": "2025-11-13T08:02:07Z"
+        },
+        {
+          "author": "ilaril",
+          "authorAssociation": "NONE",
+          "body": "What secret does Epoch-aware TLS Exporter use if application specifies epoch=0 (presumably after server finished, but before the first EKU)?\n\n- Making that an error runs into the security issue.\n- Using exporter_secret_0 == exporter_secret runs into the security issue.\n- exporter_secret_1 is not available, so can not be used.\n\nThe only thing that would work and avoid the security issue is using exporter_secret_0 != exporter_secret.",
+          "createdAt": "2025-11-13T14:25:03Z",
+          "updatedAt": "2025-11-13T14:25:03Z"
+        },
+        {
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "body": "Thanks @ilaril  for the explanation. I propose to add the following text:\n\nTLS specifies a single exporter_secret derived from the main secret. This value is static for the entire duration of a TLS session and is not updated by EKU. The new exporter interface defined in this document derives a fresh exporter secret whenever new application traffic keys are established through the EKU mechanism. A core design goal of this interface is that compromise of exporter-secret material at a later point in time MUST NOT enable an attacker to recover exporter outputs that were produced earlier in the connection.  If the initial exporter secret for this interface were equal to the TLS exporter_secret, this property would be violated: compromise of the TLS exporter_secret at any time during the connection would allow an attacker to retroactively recompute all exporter outputs that depend on it.\n\nTherefore, the initial exporter secret used by the interface defined in this document, i.e., the exporter output available prior to the first EKU MUST be distinct from the TLS  exporter_secret. This separation ensures that compromise of the TLS exporter interface does not compromise outputs from this new exporter interface.\n\n~~~\nexporter_secret_0 = Derive-Secret(Main Secret, \"pre-update exporter\", ClientHello...server Finished)\n~~~",
+          "createdAt": "2025-11-14T12:38:12Z",
+          "updatedAt": "2025-11-14T12:38:12Z"
+        }
+      ]
     }
   ],
   "pulls": [
@@ -7407,13 +7460,13 @@
       "labels": [],
       "body": "",
       "createdAt": "2025-11-11T07:10:49Z",
-      "updatedAt": "2025-11-12T15:33:13Z",
+      "updatedAt": "2025-11-14T10:14:42Z",
       "baseRepository": "tlswg/tls-key-update",
       "baseRefName": "main",
       "baseRefOid": "09dc70a5edfd652cfa77e7edef6ba63085b0590b",
       "headRepository": "tlswg/tls-key-update",
       "headRefName": "tireddy2-patch-11",
-      "headRefOid": "b01de27d54f6184fb924098aa7d67503ae4eb376",
+      "headRefOid": "476fa84c4c9d5a6c83bf8f93ad059599088aaaaa",
       "closedAt": null,
       "mergedAt": null,
       "mergedBy": null,
@@ -7772,6 +7825,113 @@
               "body": "Good point; other than CloudFlare deploying it, I don't see any TLS library that supports RFC9261. ",
               "createdAt": "2025-11-12T15:33:12Z",
               "updatedAt": "2025-11-12T15:33:38Z"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "number": 91,
+      "id": "PR_kwDOMJPqLM6zMWDQ",
+      "title": "Added Security Goals and fixed terminology",
+      "url": "https://github.com/tlswg/tls-key-update/pull/91",
+      "state": "OPEN",
+      "author": "tireddy2",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [],
+      "body": "Address https://github.com/tlswg/tls-key-update/issues/77",
+      "createdAt": "2025-11-13T10:24:08Z",
+      "updatedAt": "2025-11-14T10:42:49Z",
+      "baseRepository": "tlswg/tls-key-update",
+      "baseRefName": "main",
+      "baseRefOid": "09dc70a5edfd652cfa77e7edef6ba63085b0590b",
+      "headRepository": "tlswg/tls-key-update",
+      "headRefName": "tireddy2-patch-12",
+      "headRefOid": "c1f113d4c284ca1b6079677ec5b0396c28b5c5de",
+      "closedAt": null,
+      "mergedAt": null,
+      "mergedBy": null,
+      "mergeCommit": null,
+      "comments": [],
+      "reviews": [
+        {
+          "id": "PRR_kwDOMJPqLM7OQ39d",
+          "commit": {
+            "abbreviatedOid": "baa88ca"
+          },
+          "author": "ilaril",
+          "authorAssociation": "NONE",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-11-13T16:04:25Z",
+          "updatedAt": "2025-11-13T16:04:25Z",
+          "comments": [
+            {
+              "originalPosition": 79,
+              "body": "What excludes an attacker that has somehow obtained the current AEAD keys and the salt used for next EKU on active connection but without any further access? EKU can not fix such compromise (without using EA).\r\n\r\n",
+              "createdAt": "2025-11-13T16:04:25Z",
+              "updatedAt": "2025-11-13T16:04:25Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM7ORBfX",
+          "commit": {
+            "abbreviatedOid": "baa88ca"
+          },
+          "author": "ilaril",
+          "authorAssociation": "NONE",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-11-13T16:12:38Z",
+          "updatedAt": "2025-11-13T16:12:39Z",
+          "comments": [
+            {
+              "originalPosition": 97,
+              "body": "TLS 1.3 has also post-handshake authentication (very rarely used, due to causing problems with many applications). I think it would be possible to make it work with EKU so it also can detect interference. PHA and EKU are mutually ordered as both use handshake messages. As consequence, it is always  possible to determine the correct epoch.",
+              "createdAt": "2025-11-13T16:12:39Z",
+              "updatedAt": "2025-11-13T16:12:39Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM7Oe4_R",
+          "commit": {
+            "abbreviatedOid": "baa88ca"
+          },
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-11-14T10:21:34Z",
+          "updatedAt": "2025-11-14T10:21:34Z",
+          "comments": [
+            {
+              "originalPosition": 97,
+              "body": "Good point, updated the PR and https://github.com/tlswg/tls-key-update/pull/89 as well to discuss both PHA and exported authenticators. ",
+              "createdAt": "2025-11-14T10:21:34Z",
+              "updatedAt": "2025-11-14T10:21:34Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM7OfDu6",
+          "commit": {
+            "abbreviatedOid": "baa88ca"
+          },
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-11-14T10:30:32Z",
+          "updatedAt": "2025-11-14T10:30:33Z",
+          "comments": [
+            {
+              "originalPosition": 79,
+              "body": "This section discusses an attacker whose access to the endpoint ended before the EKU and who is\r\nnot able to act as an MiTM during the EKU procedure.",
+              "createdAt": "2025-11-14T10:30:32Z",
+              "updatedAt": "2025-11-14T10:30:33Z"
             }
           ]
         }
