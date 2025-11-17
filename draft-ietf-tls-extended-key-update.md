@@ -851,17 +851,19 @@ and exporter secrets, their Handshake Contexts and Finished MAC Keys will differ
 As a result, validation procedures specified in Section 5.2.4 of {{!RFC9261}} will fail, thereby
 detecting the divergence of key state between peers.
 
-A new optional API has to be defined to permit applications to request or verify
-Exported Authenticators for a specific exporter epoch. The APIs defined in
-{{!RFC9261}} remain unchanged, so existing applications
-continue to operate without modification. The epoch-aware API accepts an
-epoch identifier; when present, the (D)TLS implementation MUST derive the
-Handshake Context and Finished MAC Key from the exporter secret associated
-with that epoch. When Exported Authenticators are generated using the epoch-aware
-Exported Authenticators interface, the epoch identifier used for their derivation
-can be conveyed in the certificate_request_context field, allowing the peer,
-particularly in DTLS where records may be reordered, to determine the
-correct exporter secret for validation.
+A new optional API SHOULD be defined to permit applications to request or verify
+Exported Authenticators for a specific exporter epoch. As discussed in Section 7
+of {{!RFC9261}}, this can, as an exception, be implemented at the application
+layer when the epoch-aware TLS exporter is available. The APIs defined in {{!RFC9261}}
+remain unchanged, so existing applications continue to operate without
+modification. The epoch-aware API accepts an epoch identifier; when present,
+the (D)TLS implementation MUST derive the Handshake Context and Finished MAC Key
+from the exporter secret associated with that epoch. When Exported Authenticators
+are generated using the epoch-aware Exported Authenticators interface, the
+epoch identifier used for their derivation can be conveyed in the
+certificate_request_context field, allowing the peer, particularly in
+DTLS where records may be reordered, to determine the correct exporter
+secret for validation.
 
 #  Security Considerations
 
