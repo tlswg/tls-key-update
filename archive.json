@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2025-11-16T01:55:21.512169+00:00",
+  "timestamp": "2025-11-18T01:49:05.479899+00:00",
   "repo": "tlswg/tls-key-update",
   "labels": [
     {
@@ -7460,13 +7460,13 @@
       "labels": [],
       "body": "",
       "createdAt": "2025-11-11T07:10:49Z",
-      "updatedAt": "2025-11-14T10:14:42Z",
+      "updatedAt": "2025-11-17T06:00:44Z",
       "baseRepository": "tlswg/tls-key-update",
       "baseRefName": "main",
       "baseRefOid": "09dc70a5edfd652cfa77e7edef6ba63085b0590b",
       "headRepository": "tlswg/tls-key-update",
       "headRefName": "tireddy2-patch-11",
-      "headRefOid": "476fa84c4c9d5a6c83bf8f93ad059599088aaaaa",
+      "headRefOid": "bab4ab43e70d8535ba886c31303fcb981e384c6c",
       "closedAt": null,
       "mergedAt": null,
       "mergedBy": null,
@@ -7827,6 +7827,46 @@
               "updatedAt": "2025-11-12T15:33:38Z"
             }
           ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM7O5LMJ",
+          "commit": {
+            "abbreviatedOid": "b01de27"
+          },
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-11-17T05:53:59Z",
+          "updatedAt": "2025-11-17T05:53:59Z",
+          "comments": [
+            {
+              "originalPosition": 45,
+              "body": "Updated text to clarify that TLS library API is not mandatory. ",
+              "createdAt": "2025-11-17T05:53:59Z",
+              "updatedAt": "2025-11-17T05:53:59Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM7O5QNp",
+          "commit": {
+            "abbreviatedOid": "5d80825"
+          },
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-11-17T06:00:44Z",
+          "updatedAt": "2025-11-17T06:00:44Z",
+          "comments": [
+            {
+              "originalPosition": 47,
+              "body": "Updated text to clarify it is possible to implement at the application layer as an exception without any changes to TLS library. ",
+              "createdAt": "2025-11-17T06:00:44Z",
+              "updatedAt": "2025-11-17T06:00:44Z"
+            }
+          ]
         }
       ]
     },
@@ -7842,7 +7882,7 @@
       "labels": [],
       "body": "Address https://github.com/tlswg/tls-key-update/issues/77",
       "createdAt": "2025-11-13T10:24:08Z",
-      "updatedAt": "2025-11-14T10:42:49Z",
+      "updatedAt": "2025-11-17T05:27:08Z",
       "baseRepository": "tlswg/tls-key-update",
       "baseRefName": "main",
       "baseRefOid": "09dc70a5edfd652cfa77e7edef6ba63085b0590b",
@@ -7932,6 +7972,26 @@
               "body": "This section discusses an attacker whose access to the endpoint ended before the EKU and who is\r\nnot able to act as an MiTM during the EKU procedure.",
               "createdAt": "2025-11-14T10:30:32Z",
               "updatedAt": "2025-11-14T10:30:33Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM7O4-XI",
+          "commit": {
+            "abbreviatedOid": "baa88ca"
+          },
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-11-17T05:26:54Z",
+          "updatedAt": "2025-11-17T05:26:54Z",
+          "comments": [
+            {
+              "originalPosition": 79,
+              "body": "Added text to explain the attacker scope.",
+              "createdAt": "2025-11-17T05:26:54Z",
+              "updatedAt": "2025-11-17T05:26:54Z"
             }
           ]
         }
