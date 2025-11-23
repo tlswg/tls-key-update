@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2025-11-18T01:49:05.479899+00:00",
+  "timestamp": "2025-11-23T02:03:04.210882+00:00",
   "repo": "tlswg/tls-key-update",
   "labels": [
     {
@@ -951,7 +951,7 @@
       "labels": [],
       "body": "[A follow-up of #59 since it was closed by the authors without being properly addressed]\n\n[Opening separate issues as requested by the authors]\n\n- TLS state machines in Appendix B.2 and B.3 are very hard to read for me. Some symbols are undefined, and an explanation is missing. For example, what is (A) and (B)? There is (1), (2), (4) and (5): is there a reason for having no (3)?",
       "createdAt": "2025-10-27T07:35:36Z",
-      "updatedAt": "2025-10-30T11:41:59Z",
+      "updatedAt": "2025-11-22T10:06:41Z",
       "closedAt": null,
       "comments": [
         {
@@ -981,6 +981,13 @@
           "body": "@hannestschofenig - We will clarify that the Appendix state diagrams are illustrative, and the normative text in the draft takes precedence in case of conflict.",
           "createdAt": "2025-10-30T11:41:59Z",
           "updatedAt": "2025-10-30T11:41:59Z"
+        },
+        {
+          "author": "muhammad-usama-sardar",
+          "authorAssociation": "COLLABORATOR",
+          "body": "I don't see anything in flight on clarification of TLS state machines. Did I miss something?",
+          "createdAt": "2025-11-22T10:06:41Z",
+          "updatedAt": "2025-11-22T10:06:41Z"
         }
       ]
     },
