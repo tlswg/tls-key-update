@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2025-11-23T02:03:04.210882+00:00",
+  "timestamp": "2025-11-27T01:48:48.418422+00:00",
   "repo": "tlswg/tls-key-update",
   "labels": [
     {
@@ -7467,7 +7467,7 @@
       "labels": [],
       "body": "",
       "createdAt": "2025-11-11T07:10:49Z",
-      "updatedAt": "2025-11-17T06:00:44Z",
+      "updatedAt": "2025-11-25T07:15:16Z",
       "baseRepository": "tlswg/tls-key-update",
       "baseRefName": "main",
       "baseRefOid": "09dc70a5edfd652cfa77e7edef6ba63085b0590b",
@@ -7492,6 +7492,13 @@
           "body": "I agree that we need to make RFC 9261 a normative reference and we also need to update it.",
           "createdAt": "2025-11-12T14:48:58Z",
           "updatedAt": "2025-11-12T14:48:58Z"
+        },
+        {
+          "author": "ilaril",
+          "authorAssociation": "NONE",
+          "body": "Looks technically good on quick look \u2014 editorial stuff can come later.",
+          "createdAt": "2025-11-25T07:15:16Z",
+          "updatedAt": "2025-11-25T07:15:16Z"
         }
       ],
       "reviews": [
@@ -7889,7 +7896,7 @@
       "labels": [],
       "body": "Address https://github.com/tlswg/tls-key-update/issues/77",
       "createdAt": "2025-11-13T10:24:08Z",
-      "updatedAt": "2025-11-17T05:27:08Z",
+      "updatedAt": "2025-11-25T14:02:10Z",
       "baseRepository": "tlswg/tls-key-update",
       "baseRefName": "main",
       "baseRefOid": "09dc70a5edfd652cfa77e7edef6ba63085b0590b",
@@ -7900,7 +7907,22 @@
       "mergedAt": null,
       "mergedBy": null,
       "mergeCommit": null,
-      "comments": [],
+      "comments": [
+        {
+          "author": "ilaril",
+          "authorAssociation": "NONE",
+          "body": "I suppose the security goals are now something that can be achieved. Feature like this needs formal analysis, which can inform what the goals should be.",
+          "createdAt": "2025-11-25T07:32:27Z",
+          "updatedAt": "2025-11-25T07:32:27Z"
+        },
+        {
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "body": "> I suppose the security goals are now something that can be achieved. Feature like this needs formal analysis, which can inform what the goals should be.\r\n\r\nYes, formal analysis is mandatory for the draft to progress.  ",
+          "createdAt": "2025-11-25T14:02:10Z",
+          "updatedAt": "2025-11-25T14:02:10Z"
+        }
+      ],
       "reviews": [
         {
           "id": "PRR_kwDOMJPqLM7OQ39d",
