@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2025-11-27T01:48:48.418422+00:00",
+  "timestamp": "2025-12-02T01:52:51.581715+00:00",
   "repo": "tlswg/tls-key-update",
   "labels": [
     {
@@ -7896,7 +7896,7 @@
       "labels": [],
       "body": "Address https://github.com/tlswg/tls-key-update/issues/77",
       "createdAt": "2025-11-13T10:24:08Z",
-      "updatedAt": "2025-11-25T14:02:10Z",
+      "updatedAt": "2025-11-30T08:16:10Z",
       "baseRepository": "tlswg/tls-key-update",
       "baseRefName": "main",
       "baseRefOid": "09dc70a5edfd652cfa77e7edef6ba63085b0590b",
@@ -7921,6 +7921,13 @@
           "body": "> I suppose the security goals are now something that can be achieved. Feature like this needs formal analysis, which can inform what the goals should be.\r\n\r\nYes, formal analysis is mandatory for the draft to progress.  ",
           "createdAt": "2025-11-25T14:02:10Z",
           "updatedAt": "2025-11-25T14:02:10Z"
+        },
+        {
+          "author": "muhammad-usama-sardar",
+          "authorAssociation": "COLLABORATOR",
+          "body": "> I suppose the security goals are now something that can be achieved. Feature like this needs formal analysis, which can inform what the goals should be.\r\n\r\nSure. I am working on formal analysis of this draft. For formal analysis, we need to first align on the desired security goals and the terminology. Hence, issues #76, #77, and #78 were created.",
+          "createdAt": "2025-11-30T08:16:10Z",
+          "updatedAt": "2025-11-30T08:16:10Z"
         }
       ],
       "reviews": [
