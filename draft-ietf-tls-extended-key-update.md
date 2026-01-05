@@ -334,7 +334,9 @@ MUST update its send keys.
 1. Upon receipt of an `ExtendedKeyUpdate(key_update_response)` the initiator
 derives the new secrets from the exchanged key shares. The initiator then updates
 its receive keys and sends an empty ExtendedKeyUpdate(new_key_update) message to
-complete the process.
+complete the process. The initiator MUST NOT defer derivation of the secrets and
+sending the ExtendedKeyUpdate(new_key_update) message as it would stall the
+communication.
 
 1. After sending `ExtendedKeyUpdate(new_key_update)` initiator MUST update its
 send keys.
@@ -468,7 +470,7 @@ has the following steps:
 1. On receipt of `ExtendedKeyUpdate(key_update_response)` the initiator derives a secret key based on the
    exchanged key shares. This message also serves as an implicit acknowledgment of the
    initiator's `ExtendedKeyUpdate(key_update_request)`, so no separate ACK is required. The initiator MUST
-   update its receive keys and epoch value.
+   update its receive keys and epoch value. The initiator MUST NOT defer derivation of the secrets.
 
 1. The initiator transmits an `ExtendedKeyUpdate(new_key_update)` message. This message is subject to DTLS
    retransmission until acknowledged.
@@ -1103,7 +1105,7 @@ Once the responder returns Resp with a tag matching the current rx, the initiato
 
 If a peer key_update_request arrives while in WAIT_RESP (crossed updates), apply the crossed-request rule above. If the peer's key_exchange is higher, abandon the local update (updating := 0) and continue as responder: send key_update_response, derive new secrets, then proceed with the responder flow. If lower, ignore the peer's request; if equal, abort with "unexpected_message".
 
-Upon receiving the responder's ACK matching the updated epoch, the responder completes the transition by synchronizing transmit and receive epochs (tx := rx), disabling retention, and clearing the update flag. The state machine returns to FINISHED, ready for subsequent updates.
+Upon receiving the responder's ACK matching the updated epoch, the initiator completes the transition by synchronizing transmit and receive epochs (tx := rx), disabling retention, and clearing the update flag. The state machine returns to FINISHED, ready for subsequent updates.
 
 Throughout the process:
 
