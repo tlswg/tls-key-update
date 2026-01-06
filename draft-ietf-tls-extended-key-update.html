@@ -1504,7 +1504,6 @@ Auth | {CertificateVerify}
   [EKU(key_update_request)]N   --------&gt;
                                &lt;--------  [EKU(key_update_response)]N
       [EKU(new_key_update)]N   --------&gt;
-                               &lt;--------  [EKU(new_key_update)]N
                                   ...
        [Application Data]N+1   &lt;-------&gt;  [Application Data]N+1
 
@@ -1591,27 +1590,30 @@ constraints prevent immediate processing. In such cases, the response <span clas
 be sent once sufficient resources become available.<a href="#section-5-2.2.1" class="pilcrow">¶</a></p>
 </li>
         <li id="section-5-2.3">
-          <p id="section-5-2.3.1">Upon receipt of an <code>ExtendedKeyUpdate(key_update_response)</code> the initiator
-derives the new secrets from the exchanged key shares. The initiator then sends an empty
-ExtendedKeyUpdate(new_key_update) message to trigger the switch to the
-new keys.<a href="#section-5-2.3.1" class="pilcrow">¶</a></p>
+          <p id="section-5-2.3.1">After the responder sends <code>ExtendedKeyUpdate(key_update_response)</code> it
+<span class="bcp14">MUST</span> update its send keys.<a href="#section-5-2.3.1" class="pilcrow">¶</a></p>
 </li>
         <li id="section-5-2.4">
-          <p id="section-5-2.4.1">After the initiator sends <code>ExtendedKeyUpdate(new_key_update)</code> it
-<span class="bcp14">MUST</span> update its send keys. Upon receipt of this message, the responder
-<span class="bcp14">MUST</span> update its receive keys and then send
-<code>ExtendedKeyUpdate(new_key_update)</code>, after which it <span class="bcp14">MUST</span> update its
-send keys.<a href="#section-5-2.4.1" class="pilcrow">¶</a></p>
+          <p id="section-5-2.4.1">Upon receipt of an <code>ExtendedKeyUpdate(key_update_response)</code> the initiator
+derives the new secrets from the exchanged key shares. The initiator then updates
+its receive keys and sends an empty ExtendedKeyUpdate(new_key_update) message to
+complete the process. The initiator <span class="bcp14">MUST NOT</span> defer derivation of the secrets and
+sending the ExtendedKeyUpdate(new_key_update) message as it would stall the
+communication.<a href="#section-5-2.4.1" class="pilcrow">¶</a></p>
 </li>
         <li id="section-5-2.5">
-          <p id="section-5-2.5.1">After receiving the responder’s <code>ExtendedKeyUpdate(new_key_update)</code>,
-the initiator <span class="bcp14">MUST</span> update its receive keys.<a href="#section-5-2.5.1" class="pilcrow">¶</a></p>
+          <p id="section-5-2.5.1">After sending <code>ExtendedKeyUpdate(new_key_update)</code> initiator <span class="bcp14">MUST</span> update its
+send keys.<a href="#section-5-2.5.1" class="pilcrow">¶</a></p>
+</li>
+        <li id="section-5-2.6">
+          <p id="section-5-2.6.1">After receiving the initiator’s <code>ExtendedKeyUpdate(new_key_update)</code>,
+the responder <span class="bcp14">MUST</span> update its receive keys.<a href="#section-5-2.6.1" class="pilcrow">¶</a></p>
 </li>
       </ol>
-<p id="section-5-3">Both sender and receiver <span class="bcp14">MUST</span> encrypt their
-<code>ExtendedKeyUpdate(new_key_update)</code> messages with the old keys. Both
-sides <span class="bcp14">MUST</span> ensure that the <code>new_key_update</code> encrypted with the old key
-is received before accepting any messages encrypted with the new key.<a href="#section-5-3" class="pilcrow">¶</a></p>
+<p id="section-5-3">Both initiator and responder <span class="bcp14">MUST</span> encrypt their <code>ExtendedKeyUpdate</code> messages
+with the old keys. Responder <span class="bcp14">MUST</span> ensure that the <code>ExtendedKeyUpdate(new_key_update)</code>
+encrypted with the old key is received before accepting any messages encrypted with
+the new key.<a href="#section-5-3" class="pilcrow">¶</a></p>
 <p id="section-5-4">If TLS peers independently initiate the extended key update and the
 requests cross in flight, the <code>ExtendedKeyUpdate(key_update_request)</code> with the
 lower lexicographic order of the <code>key_exchange</code> value in
@@ -1703,14 +1705,12 @@ Auth | {CertificateVerify}
                                &lt;-------- [EKU(key_update_response
                                            (with key_share))]
                                         # Server derives new secrets
+                                        # and updates SEND keys here
 # Client derives new secrets
+# and updates RECEIVE keys here
         [EKU(new_key_update)]  --------&gt;
 # Client updates SEND keys here
                                     # Server updates RECEIVE keys here
-                               &lt;--------  [EKU(new_key_update)]
-                                    # Server updates SEND keys here
-
-# Client updates RECEIVE keys here
 </pre>
 </div>
 <figcaption><a href="#figure-3" class="selfRef">Figure 3</a>:
@@ -1728,13 +1728,13 @@ Auth | {CertificateVerify}
       </h2>
 <p id="section-6-1">Unlike TLS 1.3, DTLS 1.3 implementations must take into account that handshake
 messages are not transmitted over a reliable transport protocol.<a href="#section-6-1" class="pilcrow">¶</a></p>
-<p id="section-6-2">Due to the possibility of an <code>ExtendedKeyUpdate(new_key_update)</code> message being
+<p id="section-6-2">Due to the possibility of an <code>ExtendedKeyUpdate</code> messages being
 lost and thereby preventing the sender of that message from updating its keying
 material, receivers <span class="bcp14">MUST</span> retain the pre-update keying material until receipt
 and successful decryption of a message using the new keys.<a href="#section-6-2" class="pilcrow">¶</a></p>
 <p id="section-6-3">Due to packet loss and/or reordering, DTLS 1.3 peers <span class="bcp14">MAY</span> receive records from an
 earlier epoch. If the necessary keys are available, implementations <span class="bcp14">SHOULD</span> attempt
-to process such records; however, they <span class="bcp14">MAY</span> choose to discard them.The exchange
+to process such records; however, they <span class="bcp14">MAY</span> choose to discard them. The exchange
 has the following steps:<a href="#section-6-3" class="pilcrow">¶</a></p>
 <ol start="1" type="1" class="normal type-1" id="section-6-4">
 <li id="section-6-4.1">
@@ -1756,34 +1756,26 @@ initiator.<a href="#section-6-4.2.1" class="pilcrow">¶</a></p>
         <li id="section-6-4.3">
           <p id="section-6-4.3.1">On receipt of <code>ExtendedKeyUpdate(key_update_response)</code> the initiator derives a secret key based on the
 exchanged key shares. This message also serves as an implicit acknowledgment of the
-initiator’s ExtendedKeyUpdate(key_update_request), so no separate ACK is required.<a href="#section-6-4.3.1" class="pilcrow">¶</a></p>
+initiator's <code>ExtendedKeyUpdate(key_update_request)</code>, so no separate ACK is required. The initiator <span class="bcp14">MUST</span>
+update its receive keys and epoch value. The initiator <span class="bcp14">MUST NOT</span> defer derivation of the secrets.<a href="#section-6-4.3.1" class="pilcrow">¶</a></p>
 </li>
         <li id="section-6-4.4">
           <p id="section-6-4.4.1">The initiator transmits an <code>ExtendedKeyUpdate(new_key_update)</code> message. This message is subject to DTLS
 retransmission until acknowledged.<a href="#section-6-4.4.1" class="pilcrow">¶</a></p>
 </li>
         <li id="section-6-4.5">
-          <p id="section-6-4.5.1">Upon receiving <code>ExtendedKeyUpdate(new_key_update)</code>, the responder <span class="bcp14">MUST</span> update
-its receive keys and epoch value.<a href="#section-6-4.5.1" class="pilcrow">¶</a></p>
+          <p id="section-6-4.5.1">The responder <span class="bcp14">MUST</span> acknowledge the received message by sending an ACK message.<a href="#section-6-4.5.1" class="pilcrow">¶</a></p>
 </li>
         <li id="section-6-4.6">
-          <p id="section-6-4.6.1">The responder acknowledges the received message by sending its own
-<code>ExtendedKeyUpdate(new_key_update)</code>.<a href="#section-6-4.6.1" class="pilcrow">¶</a></p>
+          <p id="section-6-4.6.1">After the responder receives the initiator's <code>ExtendedKeyUpdate(new_key_update)</code>,
+the responder <span class="bcp14">MUST</span> update its send key and epoch value. With the receipt of
+that message, the responder <span class="bcp14">MUST</span> also update its receive keys.<a href="#section-6-4.6.1" class="pilcrow">¶</a></p>
 </li>
         <li id="section-6-4.7">
-          <p id="section-6-4.7.1">After the initiator receives the responder’s <code>ExtendedKeyUpdate(new_key_update)</code>,
-the initiator <span class="bcp14">MUST</span> update its send key and epoch value. With the receipt of
-that message, the initiator <span class="bcp14">MUST</span> also update its receive keys.<a href="#section-6-4.7.1" class="pilcrow">¶</a></p>
-</li>
-        <li id="section-6-4.8">
-          <p id="section-6-4.8.1">The initiator <span class="bcp14">MUST</span> acknowledge the responder’s
-<code>ExtendedKeyUpdate(new_key_update)</code> with an ACK message.<a href="#section-6-4.8.1" class="pilcrow">¶</a></p>
-</li>
-        <li id="section-6-4.9">
-          <p id="section-6-4.9.1">On receipt of the ACK message, the responder updates its send key and epoch
-value. If this ACK is not received, the responder re-transmits its
-ExtendedKeyUpdate(new_key_update) until ACK is received. The key update is
-complete once this ACK is processed by the responder.<a href="#section-6-4.9.1" class="pilcrow">¶</a></p>
+          <p id="section-6-4.7.1">On receipt of the ACK message, the initiator updates its send key and epoch
+value. If this ACK is not received, the initiator re-transmits its
+<code>ExtendedKeyUpdate(new_key_update)</code> until ACK is received. The key update is
+complete once this ACK is processed by the initiator.<a href="#section-6-4.7.1" class="pilcrow">¶</a></p>
 </li>
       </ol>
 <p id="section-6-5">The handshake framing uses a single <code>HandshakeType</code> for this message
@@ -1873,31 +1865,29 @@ Client                            Server
                                   # no epoch change yet
 
                            &lt;-------- [EKU(key_update_response)]
-                                  # still old epochs
+# Sent under OLD epoch. Server does NOT bump yet.
+
+# Step 3: initiator bumps RECEIVE epoch on
+# receiving key update response-in:
+# (rx:=rx+1; tx still old)
+[C: tx=3, rx=4]                   [S: tx=3, rx=3]
 
 [EKU(new_key_update)]      --------&gt;
-# Sent under OLD epoch. Client does NOT bump yet.
-
-# Step 6: responder bumps RECEIVE epoch on NKU-in:
-# (rx:=rx+1; tx still old)
-[C: tx=3, rx=3]                   [S: tx=3, rx=4]
-
-                           &lt;-------- [EKU(new_key_update)]
-# Responder’s NKU is tagged with OLD tx (3).
+# Sender's NKU is tagged with OLD tx (3).
 
 # Epoch switch point:
-# Step 8: initiator bumps BOTH tx and rx on NKU-in:
-[C: tx=4, rx=4]                   [S: tx=3, rx=4]
+# Step 6: responder bumps BOTH tx and rx on NKU-in:
+[C: tx=3, rx=4]                   [S: tx=4, rx=4]
 
-[ACK] (tag=new)            --------&gt;
+                           &lt;-------- [ACK] (tag=new)
 
-# Step 10: responder bumps SEND epoch on ACK-in:
-[C: tx=4, rx=4]                   [S: tx=4, rx=4]
-
-                           &lt;--------   [Application Data]
+# Step 7: initiator bumps SEND epoch on ACK-in:
 [C: tx=4, rx=4]                   [S: tx=4, rx=4]
 
 [Application Data]         --------&gt;
+[C: tx=4, rx=4]                   [S: tx=4, rx=4]
+
+                           &lt;--------   [Application Data]
 [C: tx=4, rx=4]                   [S: tx=4, rx=4]
 </pre>
 </div>
@@ -1918,12 +1908,11 @@ the message transmission.<a href="#section-6.1-3" class="pilcrow">¶</a></p>
 | APP ------------&gt;  | 3/3 -&gt; 3/3     | 3/3 -&gt; 3/3   |
 | &lt;------------ APP  | 3/3 -&gt; 3/3     | 3/3 -&gt; 3/3   |
 | req -------------&gt; | 3/3 -&gt; 3/3     | 3/3 -&gt; 3/3   |
-| &lt;------------ resp | 3/3 -&gt; 3/3     | 3/3 -&gt; 3/3   |
-| NKU  ------------&gt; | 3/3 -&gt; 3/3     | 3/3 -&gt; 3/4   | &lt;- step 6
-| &lt;------------- NKU | 3/3 -&gt; 4/4     | 3/4 -&gt; 3/4   | &lt;- step 8
-| ACK -------------&gt; | 4/4 -&gt; 4/4     | 3/4 -&gt; 4/4   | &lt;- step 10
-| &lt;------------- APP | 4/4 -&gt; 4/4     | 4/4 -&gt; 4/4   |
+| &lt;------------ resp | 3/3 -&gt; 3/4     | 3/3 -&gt; 3/3   | &lt;- step 3
+| NKU  ------------&gt; | 3/4 -&gt; 3/4     | 3/3 -&gt; 4/4   | &lt;- step 6
+| &lt;------------- ACK | 3/4 -&gt; 4/4     | 4/4 -&gt; 4/4   | &lt;- step 7
 | APP -------------&gt; | 4/4 -&gt; 4/4     | 4/4 -&gt; 4/4   |
+| &lt;------------- APP | 4/4 -&gt; 4/4     | 4/4 -&gt; 4/4   |
 +--------------------+----------------+--------------+
 </pre>
 </div>
@@ -2018,7 +2007,7 @@ traffic keys have been computed, implementations <span class="bcp14">SHOULD</spa
 client_/server_application_traffic_secret_N and its associated
 traffic keys as soon as possible. Note: The
 client_/server_application_traffic_secret_N and its associated
-traffic keys can only be deleted after receiving the
+traffic keys can only be deleted by the responder after receiving the
 <code>ExtendedKeyUpdate(new_key_update)</code> message.<a href="#section-7-8" class="pilcrow">¶</a></p>
 <p id="section-7-9">When using this extension, it is important to consider its interaction with
 ticket-based session resumption. If resumption occurs without a new (EC)DH
@@ -2645,28 +2634,24 @@ refer to the send and receive key variables defined in <a href="#term" class="au
           </h4>
 <div id="appendix-B.1.1-1">
             <div class="alignLeft art-svg artwork" id="appendix-B.1.1-1.1">
-<svg xmlns="http://www.w3.org/2000/svg" version="1.1" height="736" width="536" viewBox="0 0 536 736" class="diagram" text-anchor="middle" font-family="monospace" font-size="13px" stroke-linecap="round">
+<svg xmlns="http://www.w3.org/2000/svg" version="1.1" height="576" width="536" viewBox="0 0 536 576" class="diagram" text-anchor="middle" font-family="monospace" font-size="13px" stroke-linecap="round">
                 <path d="M 8,32 L 8,112" fill="none" stroke="black"></path>
-                <path d="M 8,192 L 8,464" fill="none" stroke="black"></path>
-                <path d="M 8,512 L 8,592" fill="none" stroke="black"></path>
-                <path d="M 8,688 L 8,720" fill="none" stroke="black"></path>
+                <path d="M 8,192 L 8,480" fill="none" stroke="black"></path>
+                <path d="M 8,528 L 8,560" fill="none" stroke="black"></path>
                 <path d="M 192,32 L 192,112" fill="none" stroke="black"></path>
                 <path d="M 192,192 L 192,240" fill="none" stroke="black"></path>
-                <path d="M 192,688 L 192,720" fill="none" stroke="black"></path>
-                <path d="M 232,512 L 232,592" fill="none" stroke="black"></path>
+                <path d="M 192,528 L 192,560" fill="none" stroke="black"></path>
                 <path d="M 8,32 L 192,32" fill="none" stroke="black"></path>
                 <path d="M 8,112 L 192,112" fill="none" stroke="black"></path>
                 <path d="M 8,192 L 192,192" fill="none" stroke="black"></path>
                 <path d="M 8,240 L 192,240" fill="none" stroke="black"></path>
-                <path d="M 64,480 L 80,480" fill="none" stroke="black"></path>
-                <path d="M 8,512 L 232,512" fill="none" stroke="black"></path>
-                <path d="M 8,592 L 232,592" fill="none" stroke="black"></path>
-                <path d="M 8,688 L 192,688" fill="none" stroke="black"></path>
-                <path d="M 8,720 L 192,720" fill="none" stroke="black"></path>
-                <path d="M 8,480 L 20,504" fill="none" stroke="black"></path>
+                <path d="M 64,496 L 80,496" fill="none" stroke="black"></path>
+                <path d="M 8,528 L 192,528" fill="none" stroke="black"></path>
+                <path d="M 8,560 L 192,560" fill="none" stroke="black"></path>
+                <path d="M 8,496 L 20,520" fill="none" stroke="black"></path>
                 <path d="M 28,248 L 72,336" fill="none" stroke="black"></path>
-                <polygon class="arrowhead" points="88,480 76,474.4 76,485.6" fill="black" transform="rotate(0,80,480)"></polygon>
-                <polygon class="arrowhead" points="28,504 16,498.4 16,509.6" fill="black" transform="rotate(63.43494882292201,20,504)"></polygon>
+                <polygon class="arrowhead" points="88,496 76,490.4 76,501.6" fill="black" transform="rotate(0,80,496)"></polygon>
+                <polygon class="arrowhead" points="28,520 16,514.4 16,525.6" fill="black" transform="rotate(63.43494882292201,20,520)"></polygon>
                 <circle cx="96" cy="352" r="6" class="closeddot" fill="black"></circle>
                 <circle cx="96" cy="368" r="6" class="closeddot" fill="black"></circle>
                 <g class="text">
@@ -2755,35 +2740,18 @@ refer to the send and receive key variables defined in <a href="#term" class="au
                   <text x="320" y="452">keys)</text>
                   <text x="84" y="468">update</text>
                   <text x="132" y="468">SEND</text>
-                  <text x="172" y="468">keys</text>
-                  <text x="232" y="468">(send_key</text>
-                  <text x="284" y="468">:=</text>
-                  <text x="316" y="468">new)</text>
-                  <text x="132" y="484">WAIT_R_NKU</text>
-                  <text x="52" y="532">SENT_NKU</text>
-                  <text x="96" y="532">/</text>
-                  <text x="148" y="532">WAIT_R_NKU</text>
-                  <text x="72" y="548">send_key=new,</text>
-                  <text x="100" y="564">receive_key=current,</text>
-                  <text x="60" y="580">updating=1</text>
-                  <text x="56" y="612">|</text>
-                  <text x="16" y="628">(5)</text>
-                  <text x="52" y="628">recv</text>
-                  <text x="88" y="628">NKU</text>
-                  <text x="148" y="628">(encrypted</text>
-                  <text x="216" y="628">under</text>
-                  <text x="256" y="628">old</text>
-                  <text x="296" y="628">keys)</text>
-                  <text x="60" y="644">update</text>
-                  <text x="120" y="644">RECEIVE</text>
-                  <text x="172" y="644">keys</text>
-                  <text x="244" y="644">(receive_key</text>
-                  <text x="308" y="644">:=</text>
-                  <text x="340" y="644">new)</text>
-                  <text x="48" y="660">set</text>
-                  <text x="108" y="660">updating=0</text>
-                  <text x="56" y="676">v</text>
-                  <text x="52" y="708">FINISHED</text>
+                  <text x="168" y="468">key</text>
+                  <text x="224" y="468">(send_key</text>
+                  <text x="276" y="468">:=</text>
+                  <text x="308" y="468">new)</text>
+                  <text x="84" y="484">update</text>
+                  <text x="144" y="484">RECEIVE</text>
+                  <text x="192" y="484">key</text>
+                  <text x="260" y="484">(receive_key</text>
+                  <text x="324" y="484">:=</text>
+                  <text x="356" y="484">new)</text>
+                  <text x="132" y="500">WAIT_R_NKU</text>
+                  <text x="52" y="548">FINISHED</text>
                 </g>
               </svg><a href="#appendix-B.1.1-1.1" class="pilcrow">¶</a>
 </div>
@@ -2791,8 +2759,7 @@ refer to the send and receive key variables defined in <a href="#term" class="au
 <p id="appendix-B.1.1-2">Notes:<a href="#appendix-B.1.1-2" class="pilcrow">¶</a></p>
 <ul class="normal">
 <li class="normal" id="appendix-B.1.1-3.1">
-              <p id="appendix-B.1.1-3.1.1">Both NKU messages are sent under old keys. The old-key NKU
-must be received before accepting traffic under new keys.<a href="#appendix-B.1.1-3.1.1" class="pilcrow">¶</a></p>
+              <p id="appendix-B.1.1-3.1.1">NKU message is sent under old keys.<a href="#appendix-B.1.1-3.1.1" class="pilcrow">¶</a></p>
 </li>
             <li class="normal" id="appendix-B.1.1-3.2">
               <p id="appendix-B.1.1-3.2.1">If a classic KeyUpdate arrives (EKU negotiated), ABORT "unexpected_message".<a href="#appendix-B.1.1-3.2.1" class="pilcrow">¶</a></p>
@@ -2810,25 +2777,25 @@ must be received before accepting traffic under new keys.<a href="#appendix-B.1.
           </h4>
 <div id="appendix-B.1.2-1">
             <div class="alignLeft art-svg artwork" id="appendix-B.1.2-1.1">
-<svg xmlns="http://www.w3.org/2000/svg" version="1.1" height="560" width="360" viewBox="0 0 360 560" class="diagram" text-anchor="middle" font-family="monospace" font-size="13px" stroke-linecap="round">
+<svg xmlns="http://www.w3.org/2000/svg" version="1.1" height="544" width="360" viewBox="0 0 360 544" class="diagram" text-anchor="middle" font-family="monospace" font-size="13px" stroke-linecap="round">
                 <path d="M 8,32 L 8,112" fill="none" stroke="black"></path>
-                <path d="M 8,192 L 8,304" fill="none" stroke="black"></path>
-                <path d="M 8,336 L 8,384" fill="none" stroke="black"></path>
-                <path d="M 8,512 L 8,544" fill="none" stroke="black"></path>
+                <path d="M 8,192 L 8,320" fill="none" stroke="black"></path>
+                <path d="M 8,352 L 8,400" fill="none" stroke="black"></path>
+                <path d="M 8,496 L 8,528" fill="none" stroke="black"></path>
                 <path d="M 192,32 L 192,112" fill="none" stroke="black"></path>
                 <path d="M 192,192 L 192,224" fill="none" stroke="black"></path>
-                <path d="M 192,336 L 192,384" fill="none" stroke="black"></path>
-                <path d="M 192,512 L 192,544" fill="none" stroke="black"></path>
+                <path d="M 192,352 L 192,400" fill="none" stroke="black"></path>
+                <path d="M 192,496 L 192,528" fill="none" stroke="black"></path>
                 <path d="M 8,32 L 192,32" fill="none" stroke="black"></path>
                 <path d="M 8,112 L 192,112" fill="none" stroke="black"></path>
                 <path d="M 8,192 L 192,192" fill="none" stroke="black"></path>
                 <path d="M 8,224 L 192,224" fill="none" stroke="black"></path>
-                <path d="M 32,304 L 48,304" fill="none" stroke="black"></path>
-                <path d="M 8,336 L 192,336" fill="none" stroke="black"></path>
-                <path d="M 8,384 L 192,384" fill="none" stroke="black"></path>
-                <path d="M 8,512 L 192,512" fill="none" stroke="black"></path>
-                <path d="M 8,544 L 192,544" fill="none" stroke="black"></path>
-                <polygon class="arrowhead" points="56,304 44,298.4 44,309.6" fill="black" transform="rotate(0,48,304)"></polygon>
+                <path d="M 32,320 L 48,320" fill="none" stroke="black"></path>
+                <path d="M 8,352 L 192,352" fill="none" stroke="black"></path>
+                <path d="M 8,400 L 192,400" fill="none" stroke="black"></path>
+                <path d="M 8,496 L 192,496" fill="none" stroke="black"></path>
+                <path d="M 8,528 L 192,528" fill="none" stroke="black"></path>
+                <polygon class="arrowhead" points="56,320 44,314.4 44,325.6" fill="black" transform="rotate(0,48,320)"></polygon>
                 <g class="text">
                   <text x="40" y="52">START</text>
                   <text x="88" y="68">send_key=current,</text>
@@ -2860,40 +2827,34 @@ must be received before accepting traffic under new keys.<a href="#appendix-B.1.
                   <text x="52" y="292">derive</text>
                   <text x="96" y="292">new</text>
                   <text x="144" y="292">secrets</text>
-                  <text x="100" y="308">WAIT_I_NKU</text>
-                  <text x="56" y="324">v</text>
-                  <text x="60" y="356">WAIT_I_NKU</text>
-                  <text x="60" y="372">updating=1</text>
-                  <text x="56" y="404">|</text>
-                  <text x="16" y="420">(4)</text>
-                  <text x="52" y="420">recv</text>
-                  <text x="88" y="420">NKU</text>
-                  <text x="148" y="420">(encrypted</text>
-                  <text x="216" y="420">under</text>
-                  <text x="256" y="420">old</text>
-                  <text x="296" y="420">keys)</text>
-                  <text x="60" y="436">update</text>
-                  <text x="120" y="436">RECEIVE</text>
-                  <text x="172" y="436">keys</text>
-                  <text x="244" y="436">(receive_key</text>
-                  <text x="308" y="436">:=</text>
-                  <text x="340" y="436">new)</text>
-                  <text x="52" y="452">send</text>
-                  <text x="88" y="452">NKU</text>
-                  <text x="148" y="452">(encrypted</text>
-                  <text x="216" y="452">under</text>
-                  <text x="256" y="452">old</text>
-                  <text x="296" y="452">keys)</text>
-                  <text x="60" y="468">update</text>
-                  <text x="108" y="468">SEND</text>
-                  <text x="148" y="468">keys</text>
-                  <text x="208" y="468">(send_key</text>
-                  <text x="260" y="468">:=</text>
-                  <text x="292" y="468">new)</text>
-                  <text x="48" y="484">set</text>
-                  <text x="108" y="484">updating=0</text>
-                  <text x="56" y="500">v</text>
-                  <text x="52" y="532">FINISHED</text>
+                  <text x="52" y="308">update</text>
+                  <text x="100" y="308">SEND</text>
+                  <text x="140" y="308">keys</text>
+                  <text x="200" y="308">(send_key</text>
+                  <text x="252" y="308">:=</text>
+                  <text x="284" y="308">new)</text>
+                  <text x="100" y="324">WAIT_I_NKU</text>
+                  <text x="56" y="340">v</text>
+                  <text x="60" y="372">WAIT_I_NKU</text>
+                  <text x="60" y="388">updating=1</text>
+                  <text x="56" y="420">|</text>
+                  <text x="16" y="436">(4)</text>
+                  <text x="52" y="436">recv</text>
+                  <text x="88" y="436">NKU</text>
+                  <text x="148" y="436">(encrypted</text>
+                  <text x="216" y="436">under</text>
+                  <text x="256" y="436">old</text>
+                  <text x="296" y="436">keys)</text>
+                  <text x="60" y="452">update</text>
+                  <text x="120" y="452">RECEIVE</text>
+                  <text x="172" y="452">keys</text>
+                  <text x="244" y="452">(receive_key</text>
+                  <text x="308" y="452">:=</text>
+                  <text x="340" y="452">new)</text>
+                  <text x="48" y="468">set</text>
+                  <text x="108" y="468">updating=0</text>
+                  <text x="56" y="484">v</text>
+                  <text x="52" y="516">FINISHED</text>
                 </g>
               </svg><a href="#appendix-B.1.2-1.1" class="pilcrow">¶</a>
 </div>
@@ -2901,13 +2862,10 @@ must be received before accepting traffic under new keys.<a href="#appendix-B.1.
 <p id="appendix-B.1.2-2">Notes:<a href="#appendix-B.1.2-2" class="pilcrow">¶</a></p>
 <ul class="normal">
 <li class="normal" id="appendix-B.1.2-3.1">
-              <p id="appendix-B.1.2-3.1.1">No "accept/reject" or status in Resp; wire format has only a KeyShareEntry.<a href="#appendix-B.1.2-3.1.1" class="pilcrow">¶</a></p>
+              <p id="appendix-B.1.2-3.1.1">Responder may defer Resp under load (no status reply), then must send it once resources are free.<a href="#appendix-B.1.2-3.1.1" class="pilcrow">¶</a></p>
 </li>
             <li class="normal" id="appendix-B.1.2-3.2">
-              <p id="appendix-B.1.2-3.2.1">Responder may defer Resp under load (no status reply), then must send it once resources are free.<a href="#appendix-B.1.2-3.2.1" class="pilcrow">¶</a></p>
-</li>
-            <li class="normal" id="appendix-B.1.2-3.3">
-              <p id="appendix-B.1.2-3.3.1">If a classic KeyUpdate arrives (EKU negotiated), ABORT "unexpected_message".<a href="#appendix-B.1.2-3.3.1" class="pilcrow">¶</a></p>
+              <p id="appendix-B.1.2-3.2.1">If a classic KeyUpdate arrives (EKU negotiated), ABORT "unexpected_message".<a href="#appendix-B.1.2-3.2.1" class="pilcrow">¶</a></p>
 </li>
           </ul>
 </section>
@@ -2956,7 +2914,6 @@ must be received before accepting traffic under new keys.<a href="#appendix-B.1.
 </li>
           </ul>
 <p id="appendix-B.2.1-3">Crossed requests. If both peers independently initiate the extended key update and the key_update_request messages cross in flight, compare the KeyShareEntry.key_exchange values. The request with the lower lexicographic value must be ignored. If the values are equal, the endpoint must abort with an "unexpected_message" alert. If the peer's value is higher than the local one, the endpoint abandons its in-flight update and processes the peer's request as responder.<a href="#appendix-B.2.1-3" class="pilcrow">¶</a></p>
-<p id="appendix-B.2.1-4">No status in responses. ExtendedKeyUpdate(key_update_response) carries only a KeyShareEntry; there is no accept/reject/status field in the wire format. Implementations either proceed normally or abort on error; there is no benign "reject" reply.<a href="#appendix-B.2.1-4" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="state-machine-initiator">
@@ -2965,46 +2922,41 @@ must be received before accepting traffic under new keys.<a href="#appendix-B.1.
 <a href="#appendix-B.2.2" class="section-number selfRef">B.2.2. </a><a href="#name-state-machine-initiator" class="section-name selfRef">State Machine (Initiator)</a>
           </h4>
 <p id="appendix-B.2.2-1">The initiator starts in the START state with matching epochs (rx := E; tx := E). It sends a Req and enters WAIT_RESP (updating := 1). While waiting, APP data may be sent at any time (tagged with the current tx) and received according to the APP acceptance rule below.<a href="#appendix-B.2.2-1" class="pilcrow">¶</a></p>
-<p id="appendix-B.2.2-2">Once the responder returns Resp with a tag matching the current rx, the initiator derives new key material. It then sends NKU still tagged with the old tx, moving to WAIT_R_NKU.<a href="#appendix-B.2.2-2" class="pilcrow">¶</a></p>
+<p id="appendix-B.2.2-2">Once the responder returns Resp with a tag matching the current rx, the initiator derives new key material. It then sends NKU still tagged with the old tx. The initiator activates retention mode: the old epoch is remembered, the receive epoch is incremented, and application data is accepted under both epochs for a transition period. Initiator moves to WAIT_ACK.<a href="#appendix-B.2.2-2" class="pilcrow">¶</a></p>
 <p id="appendix-B.2.2-3">If a peer key_update_request arrives while in WAIT_RESP (crossed updates), apply the crossed-request rule above. If the peer's key_exchange is higher, abandon the local update (updating := 0) and continue as responder: send key_update_response, derive new secrets, then proceed with the responder flow. If lower, ignore the peer's request; if equal, abort with "unexpected_message".<a href="#appendix-B.2.2-3" class="pilcrow">¶</a></p>
-<p id="appendix-B.2.2-4">Upon receiving the responder's NKU (tag equals the current rx, meaning the responder is still tagging with its old tx), the initiator:<a href="#appendix-B.2.2-4" class="pilcrow">¶</a></p>
-<ol start="1" type="1" class="normal type-1" id="appendix-B.2.2-5">
-<li id="appendix-B.2.2-5.1">
-              <p id="appendix-B.2.2-5.1.1">activates retention (old_rx := rx; retain_old := 1),<a href="#appendix-B.2.2-5.1.1" class="pilcrow">¶</a></p>
+<p id="appendix-B.2.2-4">Upon receiving the responder's ACK matching the updated epoch, the initiator completes the transition by synchronizing transmit and receive epochs (tx := rx), disabling retention, and clearing the update flag. The state machine returns to FINISHED, ready for subsequent updates.<a href="#appendix-B.2.2-4" class="pilcrow">¶</a></p>
+<p id="appendix-B.2.2-5">Throughout the process:<a href="#appendix-B.2.2-5" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="appendix-B.2.2-6.1">
+              <p id="appendix-B.2.2-6.1.1">Duplicate messages are tolerated (for retransmission handling).<a href="#appendix-B.2.2-6.1.1" class="pilcrow">¶</a></p>
 </li>
-            <li id="appendix-B.2.2-5.2">
-              <p id="appendix-B.2.2-5.2.1">increments both epochs (rx++, tx++),<a href="#appendix-B.2.2-5.2.1" class="pilcrow">¶</a></p>
+            <li class="normal" id="appendix-B.2.2-6.2">
+              <p id="appendix-B.2.2-6.2.1">Temporary epoch mismatches are permitted while an update is in progress.<a href="#appendix-B.2.2-6.2.1" class="pilcrow">¶</a></p>
 </li>
-            <li id="appendix-B.2.2-5.3">
-              <p id="appendix-B.2.2-5.3.1">sends ACK tagged with the new tx (which now equals the new rx),<a href="#appendix-B.2.2-5.3.1" class="pilcrow">¶</a></p>
+            <li class="normal" id="appendix-B.2.2-6.3">
+              <p id="appendix-B.2.2-6.3.1">Application data flows continuously, subject to epoch acceptance rules.<a href="#appendix-B.2.2-6.3.1" class="pilcrow">¶</a></p>
 </li>
-            <li id="appendix-B.2.2-5.4">
-              <p id="appendix-B.2.2-5.4.1">clears updating and enters FINISHED.<a href="#appendix-B.2.2-5.4.1" class="pilcrow">¶</a></p>
-</li>
-          </ol>
-<p id="appendix-B.2.2-6">Retention at the initiator ends automatically on the first APP received under the new rx (then retain_old := 0). APP traffic is otherwise permitted at any time; reordering is tolerated by the acceptance rule.<a href="#appendix-B.2.2-6" class="pilcrow">¶</a></p>
-<p id="appendix-B.2.2-7">APP acceptance rule (receiver): accept if e == rx or (retain_old &amp;&amp; e == old_rx). If retain_old is set and an APP with the new rx arrives, clear retain_old.<a href="#appendix-B.2.2-7" class="pilcrow">¶</a></p>
-<div id="appendix-B.2.2-8">
-            <div class="alignLeft art-svg artwork" id="appendix-B.2.2-8.1">
-<svg xmlns="http://www.w3.org/2000/svg" version="1.1" height="880" width="584" viewBox="0 0 584 880" class="diagram" text-anchor="middle" font-family="monospace" font-size="13px" stroke-linecap="round">
+          </ul>
+<div id="appendix-B.2.2-7">
+            <div class="alignLeft art-svg artwork" id="appendix-B.2.2-7.1">
+<svg xmlns="http://www.w3.org/2000/svg" version="1.1" height="832" width="560" viewBox="0 0 560 832" class="diagram" text-anchor="middle" font-family="monospace" font-size="13px" stroke-linecap="round">
                 <path d="M 8,32 L 8,80" fill="none" stroke="black"></path>
                 <path d="M 8,160 L 8,192" fill="none" stroke="black"></path>
-                <path d="M 8,512 L 8,544" fill="none" stroke="black"></path>
-                <path d="M 8,656 L 8,736" fill="none" stroke="black"></path>
-                <path d="M 8,816 L 8,864" fill="none" stroke="black"></path>
+                <path d="M 8,512 L 8,576" fill="none" stroke="black"></path>
+                <path d="M 8,640 L 8,672" fill="none" stroke="black"></path>
+                <path d="M 8,784 L 8,816" fill="none" stroke="black"></path>
                 <path d="M 16,200 L 16,432" fill="none" stroke="black"></path>
                 <path d="M 56,200 L 56,320" fill="none" stroke="black"></path>
                 <path d="M 56,352 L 56,400" fill="none" stroke="black"></path>
-                <path d="M 56,552 L 56,592" fill="none" stroke="black"></path>
+                <path d="M 56,680 L 56,720" fill="none" stroke="black"></path>
                 <path d="M 88,464 L 88,504" fill="none" stroke="black"></path>
-                <path d="M 96,200 L 96,320" fill="none" stroke="black"></path>
-                <path d="M 96,352 L 96,368" fill="none" stroke="black"></path>
+                <path d="M 96,200 L 96,368" fill="none" stroke="black"></path>
+                <path d="M 184,512 L 184,576" fill="none" stroke="black"></path>
                 <path d="M 192,200 L 192,256" fill="none" stroke="black"></path>
-                <path d="M 192,656 L 192,736" fill="none" stroke="black"></path>
                 <path d="M 256,160 L 256,192" fill="none" stroke="black"></path>
-                <path d="M 256,512 L 256,544" fill="none" stroke="black"></path>
+                <path d="M 256,640 L 256,672" fill="none" stroke="black"></path>
                 <path d="M 280,32 L 280,80" fill="none" stroke="black"></path>
-                <path d="M 352,816 L 352,864" fill="none" stroke="black"></path>
+                <path d="M 352,784 L 352,816" fill="none" stroke="black"></path>
                 <path d="M 8,32 L 280,32" fill="none" stroke="black"></path>
                 <path d="M 8,80 L 280,80" fill="none" stroke="black"></path>
                 <path d="M 8,160 L 256,160" fill="none" stroke="black"></path>
@@ -3013,12 +2965,12 @@ must be received before accepting traffic under new keys.<a href="#appendix-B.1.
                 <path d="M 96,368 L 112,368" fill="none" stroke="black"></path>
                 <path d="M 56,400 L 72,400" fill="none" stroke="black"></path>
                 <path d="M 16,432 L 32,432" fill="none" stroke="black"></path>
-                <path d="M 8,512 L 256,512" fill="none" stroke="black"></path>
-                <path d="M 8,544 L 256,544" fill="none" stroke="black"></path>
-                <path d="M 8,656 L 192,656" fill="none" stroke="black"></path>
-                <path d="M 8,736 L 192,736" fill="none" stroke="black"></path>
+                <path d="M 8,512 L 184,512" fill="none" stroke="black"></path>
+                <path d="M 8,576 L 184,576" fill="none" stroke="black"></path>
+                <path d="M 8,640 L 256,640" fill="none" stroke="black"></path>
+                <path d="M 8,672 L 256,672" fill="none" stroke="black"></path>
+                <path d="M 8,784 L 352,784" fill="none" stroke="black"></path>
                 <path d="M 8,816 L 352,816" fill="none" stroke="black"></path>
-                <path d="M 8,864 L 352,864" fill="none" stroke="black"></path>
                 <polygon class="arrowhead" points="200,200 188,194.4 188,205.6" fill="black" transform="rotate(270,192,200)"></polygon>
                 <polygon class="arrowhead" points="104,200 92,194.4 92,205.6" fill="black" transform="rotate(270,96,200)"></polygon>
                 <polygon class="arrowhead" points="96,504 84,498.4 84,509.6" fill="black" transform="rotate(90,88,504)"></polygon>
@@ -3075,11 +3027,10 @@ must be received before accepting traffic under new keys.<a href="#appendix-B.1.
                   <text x="420" y="324">updating</text>
                   <text x="468" y="324">:=</text>
                   <text x="492" y="324">0;</text>
-                  <text x="88" y="340">|</text>
-                  <text x="160" y="340">|</text>
-                  <text x="464" y="340">act</text>
-                  <text x="492" y="340">as</text>
-                  <text x="544" y="340">RESPONDER</text>
+                  <text x="136" y="340">|</text>
+                  <text x="440" y="340">act</text>
+                  <text x="468" y="340">as</text>
+                  <text x="520" y="340">RESPONDER</text>
                   <text x="136" y="372">APP</text>
                   <text x="172" y="372">send</text>
                   <text x="232" y="372">(anytime)</text>
@@ -3104,54 +3055,39 @@ must be received before accepting traffic under new keys.<a href="#appendix-B.1.
                   <text x="212" y="468">==</text>
                   <text x="240" y="468">rx]</text>
                   <text x="124" y="484">derive</text>
-                  <text x="188" y="484">secrets;</text>
-                  <text x="244" y="484">send</text>
-                  <text x="280" y="484">NKU</text>
-                  <text x="332" y="484">[tag=old</text>
-                  <text x="384" y="484">tx]</text>
-                  <text x="60" y="532">WAIT_R_NKU</text>
-                  <text x="88" y="580">APP</text>
-                  <text x="144" y="580">send/recv</text>
-                  <text x="216" y="580">allowed</text>
-                  <text x="16" y="612">(6)</text>
-                  <text x="52" y="612">recv</text>
+                  <text x="184" y="484">secrets</text>
+                  <text x="52" y="532">ACTIVATE</text>
+                  <text x="128" y="532">RETENTION</text>
+                  <text x="60" y="548">old_rx=rx;</text>
+                  <text x="72" y="564">retain_old=1;</text>
+                  <text x="148" y="564">rx++</text>
+                  <text x="88" y="596">|</text>
+                  <text x="16" y="612">(4)</text>
+                  <text x="52" y="612">send</text>
                   <text x="88" y="612">NKU</text>
-                  <text x="136" y="612">[e==rx]</text>
-                  <text x="44" y="628">(Responder</text>
-                  <text x="112" y="628">still</text>
-                  <text x="156" y="628">tags</text>
-                  <text x="192" y="628">old</text>
-                  <text x="224" y="628">tx)</text>
-                  <text x="56" y="644">v</text>
-                  <text x="52" y="676">ACTIVATE</text>
-                  <text x="128" y="676">RETENTION</text>
-                  <text x="60" y="692">old_rx=rx;</text>
-                  <text x="72" y="708">retain_old=1;</text>
-                  <text x="40" y="724">rx=rx</text>
-                  <text x="76" y="724">1;</text>
-                  <text x="120" y="724">tx=tx+1</text>
-                  <text x="56" y="756">|</text>
-                  <text x="16" y="772">(8)</text>
-                  <text x="52" y="772">send</text>
-                  <text x="88" y="772">ACK</text>
-                  <text x="140" y="772">[tag=tx]</text>
-                  <text x="48" y="788">set</text>
-                  <text x="100" y="788">updating</text>
-                  <text x="148" y="788">:=</text>
-                  <text x="172" y="788">0;</text>
-                  <text x="212" y="788">assert</text>
-                  <text x="268" y="788">tx==rx</text>
-                  <text x="56" y="804">v</text>
-                  <text x="52" y="836">FINISHED</text>
-                  <text x="72" y="852">(retain_old=0</text>
-                  <text x="152" y="852">after</text>
-                  <text x="200" y="852">first</text>
-                  <text x="240" y="852">APP</text>
-                  <text x="268" y="852">at</text>
-                  <text x="296" y="852">new</text>
-                  <text x="328" y="852">rx)</text>
+                  <text x="140" y="612">[tag=old</text>
+                  <text x="192" y="612">tx]</text>
+                  <text x="88" y="628">v</text>
+                  <text x="52" y="660">WAIT_ACK</text>
+                  <text x="128" y="660">(updating</text>
+                  <text x="176" y="660">=</text>
+                  <text x="196" y="660">1)</text>
+                  <text x="88" y="708">APP</text>
+                  <text x="144" y="708">send/recv</text>
+                  <text x="216" y="708">allowed</text>
+                  <text x="16" y="740">(7)</text>
+                  <text x="52" y="740">recv</text>
+                  <text x="88" y="740">ACK</text>
+                  <text x="136" y="740">[e==rx]</text>
+                  <text x="60" y="756">tx=rx;</text>
+                  <text x="144" y="756">retain_old=0;</text>
+                  <text x="236" y="756">updating</text>
+                  <text x="284" y="756">:=</text>
+                  <text x="304" y="756">0</text>
+                  <text x="56" y="772">v</text>
+                  <text x="52" y="804">FINISHED</text>
                 </g>
-              </svg><a href="#appendix-B.2.2-8.1" class="pilcrow">¶</a>
+              </svg><a href="#appendix-B.2.2-7.1" class="pilcrow">¶</a>
 </div>
 </div>
 </section>
@@ -3162,37 +3098,38 @@ must be received before accepting traffic under new keys.<a href="#appendix-B.1.
 <a href="#appendix-B.2.3" class="section-number selfRef">B.2.3. </a><a href="#name-state-machine-responder" class="section-name selfRef">State Machine (Responder)</a>
           </h4>
 <p id="appendix-B.2.3-1">The responder starts in the START state with synchronized transmit and receive epochs (rx := E; tx := E) and no update in progress. Application data can be transmitted at any time using the sender's current transmit epoch. A receiver must accept application data if the epoch tag on the DTLS record equals the receiver's current receive epoch. If the receiver has retention active (retain_old == true), the receiver must also accept DTLS records whose epoch tag equals the remembered previous epoch.<a href="#appendix-B.2.3-1" class="pilcrow">¶</a></p>
-<p id="appendix-B.2.3-2">Upon receiving an ExtendedKeyUpdate(key_update_request) (Req), the responder transitions to RESPOND. The responder may defer sending key_update_response under load; in that case it must acknowledge the request with an ACK and retransmit the response until it is acknowledged by the initiator, as specified in DTLS considerations. When sent, key_update_response is tagged with the current tx. After sending the response, the responder enters WAIT_I_NKU.<a href="#appendix-B.2.3-2" class="pilcrow">¶</a></p>
-<p id="appendix-B.2.3-3">When a new_key_update (NKU) is received with the correct epoch, the responder activates retention mode: the old epoch is remembered, the receive epoch is incremented, and application data is accepted under both epochs for a transition period. The responder then sends its own NKU tagged with the old transmit epoch and moves to WAIT_ACK.<a href="#appendix-B.2.3-3" class="pilcrow">¶</a></p>
-<p id="appendix-B.2.3-4">Finally, upon receipt of an ACK matching the updated epoch, the responder completes the transition by synchronizing transmit and receive epochs (tx := rx), disabling retention, and clearing the update flag. The state machine returns to FINISHED, ready for subsequent updates.<a href="#appendix-B.2.3-4" class="pilcrow">¶</a></p>
-<p id="appendix-B.2.3-5">Throughout the process:<a href="#appendix-B.2.3-5" class="pilcrow">¶</a></p>
-<ul class="normal">
-<li class="normal" id="appendix-B.2.3-6.1">
-              <p id="appendix-B.2.3-6.1.1">Duplicate messages are tolerated (for retransmission handling).<a href="#appendix-B.2.3-6.1.1" class="pilcrow">¶</a></p>
+<p id="appendix-B.2.3-2">Upon receiving an <code>ExtendedKeyUpdate(key_update_request)</code> (Req), the responder transitions to RESPOND. The responder may defer sending <code>ExtendedKeyUpdate(key_update_response)</code> under load; in that case it must acknowledge the request with an ACK and retransmit the response until it is acknowledged by the initiator, as specified in DTLS considerations. When sent, <code>ExtendedKeyUpdate(key_update_response)</code> is tagged with the current tx.<a href="#appendix-B.2.3-2" class="pilcrow">¶</a></p>
+<p id="appendix-B.2.3-3">After an <code>ExtendedKeyUpdate(new_key_update)</code> (NKU) is received with the correct epoch, the responder:<a href="#appendix-B.2.3-3" class="pilcrow">¶</a></p>
+<ol start="1" type="1" class="normal type-1" id="appendix-B.2.3-4">
+<li id="appendix-B.2.3-4.1">
+              <p id="appendix-B.2.3-4.1.1">activates retention (old_rx := rx; retain_old := 1),<a href="#appendix-B.2.3-4.1.1" class="pilcrow">¶</a></p>
 </li>
-            <li class="normal" id="appendix-B.2.3-6.2">
-              <p id="appendix-B.2.3-6.2.1">Temporary epoch mismatches are permitted while an update is in progress.<a href="#appendix-B.2.3-6.2.1" class="pilcrow">¶</a></p>
+            <li id="appendix-B.2.3-4.2">
+              <p id="appendix-B.2.3-4.2.1">increments both epochs (rx++, tx++),<a href="#appendix-B.2.3-4.2.1" class="pilcrow">¶</a></p>
 </li>
-            <li class="normal" id="appendix-B.2.3-6.3">
-              <p id="appendix-B.2.3-6.3.1">Application data flows continuously, subject to epoch acceptance rules.<a href="#appendix-B.2.3-6.3.1" class="pilcrow">¶</a></p>
+            <li id="appendix-B.2.3-4.3">
+              <p id="appendix-B.2.3-4.3.1">sends ACK tagged with the new tx (which now equals the new rx),<a href="#appendix-B.2.3-4.3.1" class="pilcrow">¶</a></p>
 </li>
-          </ul>
+            <li id="appendix-B.2.3-4.4">
+              <p id="appendix-B.2.3-4.4.1">clears updating and enters FINISHED.<a href="#appendix-B.2.3-4.4.1" class="pilcrow">¶</a></p>
+</li>
+          </ol>
+<p id="appendix-B.2.3-5">Retention at the responder ends automatically on the first APP received under the new rx (then retain_old := 0). APP traffic is otherwise permitted at any time; reordering is tolerated by the acceptance rule.<a href="#appendix-B.2.3-5" class="pilcrow">¶</a></p>
+<p id="appendix-B.2.3-6">APP acceptance rule (receiver): accept if e == rx or (retain_old &amp;&amp; e == old_rx). If retain_old is set and an APP with the new rx arrives, clear retain_old.<a href="#appendix-B.2.3-6" class="pilcrow">¶</a></p>
 <div id="appendix-B.2.3-7">
             <div class="alignLeft art-svg artwork" id="appendix-B.2.3-7.1">
-<svg xmlns="http://www.w3.org/2000/svg" version="1.1" height="704" width="536" viewBox="0 0 536 704" class="diagram" text-anchor="middle" font-family="monospace" font-size="13px" stroke-linecap="round">
+<svg xmlns="http://www.w3.org/2000/svg" version="1.1" height="624" width="536" viewBox="0 0 536 624" class="diagram" text-anchor="middle" font-family="monospace" font-size="13px" stroke-linecap="round">
                 <path d="M 8,32 L 8,80" fill="none" stroke="black"></path>
                 <path d="M 8,160 L 8,192" fill="none" stroke="black"></path>
                 <path d="M 8,288 L 8,336" fill="none" stroke="black"></path>
-                <path d="M 8,400 L 8,464" fill="none" stroke="black"></path>
-                <path d="M 8,528 L 8,576" fill="none" stroke="black"></path>
-                <path d="M 8,656 L 8,688" fill="none" stroke="black"></path>
+                <path d="M 8,400 L 8,480" fill="none" stroke="black"></path>
+                <path d="M 8,560 L 8,608" fill="none" stroke="black"></path>
                 <path d="M 56,200 L 56,280" fill="none" stroke="black"></path>
-                <path d="M 104,656 L 104,688" fill="none" stroke="black"></path>
-                <path d="M 128,528 L 128,576" fill="none" stroke="black"></path>
-                <path d="M 136,288 L 136,304" fill="none" stroke="black"></path>
-                <path d="M 184,400 L 184,464" fill="none" stroke="black"></path>
+                <path d="M 136,288 L 136,336" fill="none" stroke="black"></path>
+                <path d="M 184,400 L 184,480" fill="none" stroke="black"></path>
                 <path d="M 192,160 L 192,192" fill="none" stroke="black"></path>
                 <path d="M 280,32 L 280,80" fill="none" stroke="black"></path>
+                <path d="M 352,560 L 352,608" fill="none" stroke="black"></path>
                 <path d="M 8,32 L 280,32" fill="none" stroke="black"></path>
                 <path d="M 8,80 L 280,80" fill="none" stroke="black"></path>
                 <path d="M 8,160 L 192,160" fill="none" stroke="black"></path>
@@ -3200,11 +3137,9 @@ must be received before accepting traffic under new keys.<a href="#appendix-B.1.
                 <path d="M 8,288 L 136,288" fill="none" stroke="black"></path>
                 <path d="M 8,336 L 136,336" fill="none" stroke="black"></path>
                 <path d="M 8,400 L 184,400" fill="none" stroke="black"></path>
-                <path d="M 8,464 L 184,464" fill="none" stroke="black"></path>
-                <path d="M 8,528 L 128,528" fill="none" stroke="black"></path>
-                <path d="M 8,576 L 128,576" fill="none" stroke="black"></path>
-                <path d="M 8,656 L 104,656" fill="none" stroke="black"></path>
-                <path d="M 8,688 L 104,688" fill="none" stroke="black"></path>
+                <path d="M 8,480 L 184,480" fill="none" stroke="black"></path>
+                <path d="M 8,560 L 352,560" fill="none" stroke="black"></path>
+                <path d="M 8,608 L 352,608" fill="none" stroke="black"></path>
                 <polygon class="arrowhead" points="64,280 52,274.4 52,285.6" fill="black" transform="rotate(90,56,280)"></polygon>
                 <g class="text">
                   <text x="40" y="52">START</text>
@@ -3218,7 +3153,7 @@ must be received before accepting traffic under new keys.<a href="#appendix-B.1.
                   <text x="244" y="68">:=</text>
                   <text x="264" y="68">0</text>
                   <text x="56" y="100">|</text>
-                  <text x="16" y="116">(3)</text>
+                  <text x="16" y="116">(2)</text>
                   <text x="52" y="116">recv</text>
                   <text x="88" y="116">Req</text>
                   <text x="136" y="116">[e==rx]</text>
@@ -3248,41 +3183,41 @@ must be received before accepting traffic under new keys.<a href="#appendix-B.1.
                   <text x="324" y="260">initiator)</text>
                   <text x="60" y="308">WAIT_I_NKU</text>
                   <text x="68" y="324">(updating=1)</text>
-                  <text x="128" y="324">|</text>
                   <text x="56" y="356">|</text>
-                  <text x="16" y="372">(5)</text>
+                  <text x="16" y="372">(4)</text>
                   <text x="52" y="372">recv</text>
                   <text x="88" y="372">NKU</text>
                   <text x="136" y="372">[e==rx]</text>
                   <text x="240" y="372">(assert</text>
                   <text x="312" y="372">accepted)</text>
-                  <text x="56" y="388">v</text>
+                  <text x="56" y="388">|</text>
                   <text x="52" y="420">ACTIVATE</text>
                   <text x="128" y="420">RETENTION</text>
                   <text x="60" y="436">old_rx=rx;</text>
                   <text x="72" y="452">retain_old=1;</text>
-                  <text x="148" y="452">rx++</text>
-                  <text x="56" y="484">|</text>
-                  <text x="16" y="500">(6)</text>
-                  <text x="52" y="500">send</text>
-                  <text x="88" y="500">NKU</text>
-                  <text x="140" y="500">[tag=old</text>
-                  <text x="192" y="500">tx]</text>
-                  <text x="56" y="516">v</text>
-                  <text x="52" y="548">WAIT_ACK</text>
-                  <text x="68" y="564">(updating=1)</text>
-                  <text x="56" y="596">|</text>
-                  <text x="24" y="612">(7/8)</text>
-                  <text x="68" y="612">recv</text>
-                  <text x="104" y="612">ACK</text>
-                  <text x="152" y="612">[e==rx]</text>
-                  <text x="60" y="628">tx=rx;</text>
-                  <text x="144" y="628">retain_old=0;</text>
-                  <text x="236" y="628">updating</text>
-                  <text x="284" y="628">:=</text>
-                  <text x="304" y="628">0</text>
-                  <text x="56" y="644">v</text>
-                  <text x="52" y="676">FINISHED</text>
+                  <text x="40" y="468">rx=rx</text>
+                  <text x="76" y="468">1;</text>
+                  <text x="120" y="468">tx=tx+1</text>
+                  <text x="56" y="500">|</text>
+                  <text x="16" y="516">(5)</text>
+                  <text x="52" y="516">send</text>
+                  <text x="88" y="516">ACK</text>
+                  <text x="140" y="516">[tag=tx]</text>
+                  <text x="48" y="532">set</text>
+                  <text x="100" y="532">updating</text>
+                  <text x="148" y="532">:=</text>
+                  <text x="172" y="532">0;</text>
+                  <text x="212" y="532">assert</text>
+                  <text x="268" y="532">tx==rx</text>
+                  <text x="56" y="548">v</text>
+                  <text x="52" y="580">FINISHED</text>
+                  <text x="72" y="596">(retain_old=0</text>
+                  <text x="152" y="596">after</text>
+                  <text x="200" y="596">first</text>
+                  <text x="240" y="596">APP</text>
+                  <text x="268" y="596">at</text>
+                  <text x="296" y="596">new</text>
+                  <text x="328" y="596">rx)</text>
                 </g>
               </svg><a href="#appendix-B.2.3-7.1" class="pilcrow">¶</a>
 </div>
