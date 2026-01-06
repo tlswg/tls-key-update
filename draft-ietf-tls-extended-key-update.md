@@ -785,7 +785,7 @@ When a new exporter secret becomes active following a successful Extended
 Key Update, the TLS or DTLS implementation would have to provide an
 asynchronous notification to the application indicating that:
 
-* A new epoch has become active, and the implementation can
+* A new epoch has become active, and the (D)TLS implementation can
   include the corresponding epoch identifier. Applications receiving an
   epoch identifier can use it to request keying material for that
   specific epoch through an epoch-aware exporter interface.
@@ -815,25 +815,56 @@ the application might retain the previous exporter secret until its
 replay window no longer accepts packets protected with keys derived from that
 secret, as described in Section 3.3.2 of {{!RFC3711}}.
 
-# Use of Exported Authenticators with Extended Key Update {#exported}
 
-EKU provides fresh traffic keys, but EKU alone does not authenticate
-that both endpoints derived the same updated keys. An active attacker
-interfering with an EKU exchange could cause key divergence without detection.
+# Use of Post-Handshake Authentication and Exported Authenticators with Extended Key Update {#exported}
 
-To confirm that both peers transitioned to the same new key state, endpoints
-can use Exported Authenticators {{?RFC9261}} immediately after completing EKU.
-However, the authenticator transcript defined in {{?RFC9261}} does not cover the
-EKU messages. As a result, an authenticator generated after EKU is not bound to the
-newly derived traffic keys.
+EKU provides fresh traffic secrets, but EKU alone does not authenticate that both endpoints
+derived the same updated keys. An attacker that temporarily compromises an endpoint
+may later act as an active MitM capable of interfering with the EKU exchange.
+Such an attacker can cause the peers to transition to divergent traffic secrets without detection,
+but cannot compromise the endpoint to derive secrets after the new epoch is established.
+To confirm that both peers transitioned to the same new key state, TLS 1.3 provides two
+mechanisms: Post-Handshake Certificate-Based Client Authentication and
+Exported Authenticators {{!RFC9261}}.
 
-To ensure MiTM-resilient key updates, this document updates Section 5.2.2 of
-{{?RFC9261}} to incorporate the Extended Key Update transcript (Hash(EKU-Transcript))
-into the CertificateVerify calculation when an authenticator is generated after EKU.
+## Post-Handshake Certificate-Based Client Authentication
 
-If no Extended Key Update has occurred on the connection, the endpoint
-SHALL continue to use the authenticator transcript defined in
-Section 5.2.2 of {{?RFC9261}}.
+When Post-handshake Certificate-Based Client Authentication (Section 4.6.2 of {{TLS}})
+is performed after an Extended Key Update is complete, it produces a Finished message
+computed using the application traffic keys of the new epoch. This confirms that both peers
+are operating with the same updated traffic keys and completes an authenticated
+transition after the EKU.
+
+## Exported Authenticators
+
+This document updates Section 5.1 of {{!RFC9261}} to specify that, after an
+Extended Key Update has completed, the Handshake Context and Finished MAC Key used for
+Exported Authenticators can be derived from the exporter secret associated with the current epoch.
+Implementations that support the epoch-aware Exported Authenticators interface will have to provide a means
+for applications to request the generation or validation of Exported Authenticators using
+the exporter secret for a specific epoch.
+
+The Handshake Context and Finished MAC Key used in both the CertificateVerify message
+(Section 5.2.2 of {{!RFC9261}}) and the Finished message (Section 5.2.3 of {{!RFC9261}})
+are derived from the exporter secret associated with the current epoch.
+If a MitM interferes with the EKU exchange and causes the peers to derive different traffic
+and exporter secrets, their Handshake Contexts and Finished MAC Keys will differ.
+As a result, validation procedures specified in Section 5.2.4 of {{!RFC9261}} will fail, thereby
+detecting the divergence of key state between peers.
+
+A new optional API SHOULD be defined to permit applications to request or verify
+Exported Authenticators for a specific exporter epoch. As discussed in Section 7
+of {{!RFC9261}}, this can, as an exception, be implemented at the application
+layer when the epoch-aware TLS exporter is available. The APIs defined in {{!RFC9261}}
+remain unchanged, so existing applications continue to operate without
+modification. The epoch-aware API accepts an epoch identifier; when present,
+the (D)TLS implementation MUST derive the Handshake Context and Finished MAC Key
+from the exporter secret associated with that epoch. When Exported Authenticators
+are generated using the epoch-aware Exported Authenticators interface, the
+epoch identifier used for their derivation can be conveyed in the
+certificate_request_context field, allowing the peer, particularly in
+DTLS where records may be reordered, to determine the correct exporter
+secret for validation.
 
 #  Security Considerations
 
@@ -857,11 +888,12 @@ has access to either peer. If an adversary retains access to current application
 keys and can act as a man-in-the-middle during the Extended Key Update, then the
 update cannot restore security unless {{exported}} is used.
 
-If the mechanism defined in {{exported}} is not used, the attacker can
+If one of the mechanisms defined in {{exported}} is not used, the attacker can
 impersonate each endpoint, substitute EKU messages, and maintain control
-of the communication. When the modified Exported Authenticator is used,
-the CertificateVerify signature is bound to the EKU transcript, so any interference
-with the EKU messages will be detected and the attack prevented.
+of the communication. When Post-handshake Certificate-Based Client Authentication
+or the modified Exported Authenticator mechanism is used, the authentication messages
+are bound to the keys established after the EKU. Any modification or substitution of
+EKU messages therefore becomes detectable, preventing this attack.
 
 If a compromise occurs before the handshake completes, the ephemeral key exchange,
 client_handshake_traffic_secret, server_handshake_traffic_secret, and the initial
