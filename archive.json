@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2025-12-02T01:52:51.581715+00:00",
+  "timestamp": "2026-01-06T01:59:53.538749+00:00",
   "repo": "tlswg/tls-key-update",
   "labels": [
     {
@@ -7272,13 +7272,13 @@
       "labels": [],
       "body": "As discussed at IETF124 I have tightened up the process and eliminated 1 unnecessary message in both TLS and DTLS flows.\r\n\r\nPlease check.",
       "createdAt": "2025-11-11T01:44:25Z",
-      "updatedAt": "2025-11-12T15:35:22Z",
+      "updatedAt": "2026-01-05T09:20:25Z",
       "baseRepository": "tlswg/tls-key-update",
       "baseRefName": "main",
       "baseRefOid": "09dc70a5edfd652cfa77e7edef6ba63085b0590b",
       "headRepository": "yaroslavros/tls-key-update",
       "headRefName": "main",
-      "headRefOid": "9152aeb95992a8efdb789f5a22ce402ab90a053d",
+      "headRefOid": "fb4fc14eb8e4e224a41c2550661bb7232c640e08",
       "closedAt": null,
       "mergedAt": null,
       "mergedBy": null,
@@ -7297,6 +7297,13 @@
           "body": "It also seems like this prevents the initiator from delaying the update in TLS (due to unexpected overload) without stalling the entire channel, as the responder will immediately change the keys it uses after sending key_update_response. Delaying the update still works in DTLS, as the initiator can explicitly ACK the response, which does not trigger any actions from the responder.",
           "createdAt": "2025-11-12T15:35:22Z",
           "updatedAt": "2025-11-12T15:35:22Z"
+        },
+        {
+          "author": "hannestschofenig",
+          "authorAssociation": "COLLABORATOR",
+          "body": "I agree with Ilari on his last point. If we accept this PR we have to add extra text to address the case of delayed updates in TLS.\r\n\r\nOtherwise the proposed changes work fine in the SPIN model. ",
+          "createdAt": "2026-01-05T09:20:25Z",
+          "updatedAt": "2026-01-05T09:20:25Z"
         }
       ],
       "reviews": [
@@ -7452,6 +7459,26 @@
           "createdAt": "2025-11-12T07:07:53Z",
           "updatedAt": "2025-11-12T07:07:53Z",
           "comments": []
+        },
+        {
+          "id": "PRR_kwDOMJPqLM7YEngy",
+          "commit": {
+            "abbreviatedOid": "9152aeb"
+          },
+          "author": "hannestschofenig",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2026-01-04T16:51:28Z",
+          "updatedAt": "2026-01-04T16:51:28Z",
+          "comments": [
+            {
+              "originalPosition": 278,
+              "body": "I think Tiru is correct with the suggested change.",
+              "createdAt": "2026-01-04T16:51:28Z",
+              "updatedAt": "2026-01-04T16:51:28Z"
+            }
+          ]
         }
       ]
     },
