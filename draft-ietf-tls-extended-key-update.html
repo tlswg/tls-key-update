@@ -1214,7 +1214,7 @@ and DTLS 1.3.<a href="#section-abstract-2" class="pilcrow">¶</a></p>
             </ul>
 </li>
           <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.7">
-            <p id="section-toc.1-1.7.1"><a href="#section-7" class="auto internal xref">7</a>.  <a href="#name-updating-traffic-secrets" class="internal xref">Updating Traffic Secrets</a></p>
+            <p id="section-toc.1-1.7.1"><a href="#section-7" class="auto internal xref">7</a>.  <a href="#name-updating-traffic-keys" class="internal xref">Updating Traffic Keys</a></p>
 </li>
           <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.8">
             <p id="section-toc.1-1.8.1"><a href="#section-8" class="auto internal xref">8</a>.  <a href="#name-post-quantum-cryptography-c" class="internal xref">Post-Quantum Cryptography Considerations</a></p>
@@ -1315,7 +1315,24 @@ and DTLS 1.3.<a href="#section-abstract-2" class="pilcrow">¶</a></p>
             </ul>
 </li>
           <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.17">
-            <p id="section-toc.1-1.17.1"><a href="#appendix-C" class="auto internal xref"></a><a href="#name-authors-addresses" class="internal xref">Authors' Addresses</a></p>
+            <p id="section-toc.1-1.17.1"><a href="#appendix-C" class="auto internal xref">Appendix C</a>.  <a href="#name-overview-of-security-goals" class="internal xref">Overview of Security Goals</a></p>
+<ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.17.2.1">
+                <p id="section-toc.1-1.17.2.1.1"><a href="#appendix-C.1" class="auto internal xref">C.1</a>.  <a href="#name-post-compromise-security-pc" class="internal xref">Post-Compromise Security (PCS)</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.17.2.2">
+                <p id="section-toc.1-1.17.2.2.1"><a href="#appendix-C.2" class="auto internal xref">C.2</a>.  <a href="#name-key-freshness-and-cryptogra" class="internal xref">Key Freshness and Cryptographic Independence</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.17.2.3">
+                <p id="section-toc.1-1.17.2.3.1"><a href="#appendix-C.3" class="auto internal xref">C.3</a>.  <a href="#name-elimination-of-standard-key" class="internal xref">Elimination of Standard KeyUpdate</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.17.2.4">
+                <p id="section-toc.1-1.17.2.4.1"><a href="#appendix-C.4" class="auto internal xref">C.4</a>.  <a href="#name-detecting-divergent-key-sta" class="internal xref">Detecting Divergent Key State</a></p>
+</li>
+            </ul>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.18">
+            <p id="section-toc.1-1.18.1"><a href="#appendix-D" class="auto internal xref"></a><a href="#name-authors-addresses" class="internal xref">Authors' Addresses</a></p>
 </li>
         </ul>
 </nav>
@@ -1334,7 +1351,7 @@ who record encrypted traffic for later decryption.<a href="#section-1-1" class="
 <p id="section-1-2">TLS 1.3 also includes a KeyUpdate mechanism that allows traffic keys to be refreshed
 during an established session. However, this mechanism does not provide
 post-compromise security, as it applies only a key derivation function to the
-previous application traffic secret as input. While this design is generally sufficient
+previous application traffic key as input. While this design is generally sufficient
 for short-lived connections, it may present security limitations in scenarios where
 sessions persist for extended periods, such as in industrial IoT or telecommunications
 systems, where continuous availability is critical and session renegotiation or resumption
@@ -1360,7 +1377,7 @@ rather than key derivation.<a href="#section-1-4" class="pilcrow">¶</a></p>
 mechanism. Unlike the standard key update, this mechanism allows peers to perform a
 fresh Diffie-Hellman exchange within an active session using one of the groups
 negotiated during the initial handshake. By periodically rerunning (EC)DHE, this
-extension enables the derivation of new traffic secrets that are independent of
+extension enables the derivation of new traffic keys that are independent of
 prior key material. As noted in <span><a href="https://datatracker.ietf.org/doc/html/draft-ietf-tls-rfc8446bis-14#appendix-F" class="relref">Appendix F</a> of [<a href="#TLS" class="cite xref">TLS</a>]</span>, this
 approach mitigates the risk of static key exfiltration and shifts the attacker
 burden toward dynamic key exfiltration.<a href="#section-1-5" class="pilcrow">¶</a></p>
@@ -1383,7 +1400,7 @@ from the key update procedure specified in this document, we use the terms
 "standard key update" and "extended key update", respectively.<a href="#section-2-2" class="pilcrow">¶</a></p>
 <p id="section-2-3">In this document, we use the term post-compromise security, as defined in
 <span>[<a href="#CCG16" class="cite xref">CCG16</a>]</span>. We assume that an adversary may obtain
-access to the application traffic secrets.<a href="#section-2-3" class="pilcrow">¶</a></p>
+access to the application traffic keys.<a href="#section-2-3" class="pilcrow">¶</a></p>
 <p id="section-2-4">Unless otherwise specified, all references to traffic keys in this document
 refer to application traffic keys and because the Extended Key Update procedure
 occurs after the handshake phase has completed, no handshake traffic keys
@@ -1920,11 +1937,11 @@ the message transmission.<a href="#section-6.1-3" class="pilcrow">¶</a></p>
 </div>
 <div id="key_update">
 <section id="section-7">
-      <h2 id="name-updating-traffic-secrets">
-<a href="#section-7" class="section-number selfRef">7. </a><a href="#name-updating-traffic-secrets" class="section-name selfRef">Updating Traffic Secrets</a>
+      <h2 id="name-updating-traffic-keys">
+<a href="#section-7" class="section-number selfRef">7. </a><a href="#name-updating-traffic-keys" class="section-name selfRef">Updating Traffic Keys</a>
       </h2>
 <p id="section-7-1">When the extended key update message exchange is completed both peers
-have successfully updated their application traffic secrets. The
+have successfully updated their application traffic keys. The
 key derivation function described in this document is used to perform
 this update.<a href="#section-7-1" class="pilcrow">¶</a></p>
 <p id="section-7-2">The design of the key derivation function for computing the next
@@ -2200,7 +2217,7 @@ secret for validation.<a href="#section-11.2-3" class="pilcrow">¶</a></p>
 <a href="#section-12" class="section-number selfRef">12. </a><a href="#name-security-considerations" class="section-name selfRef">Security Considerations</a>
       </h2>
 <p id="section-12-1">This section discusses additional security and operational aspects introduced by the Extended Key Update mechanism. All security considerations of TLS 1.3 <span>[<a href="#TLS" class="cite xref">TLS</a>]</span> and DTLS.13 <span>[<a href="#DTLS" class="cite xref">DTLS</a>]</span> continue to apply.<a href="#section-12-1" class="pilcrow">¶</a></p>
-<div id="scope-of-key-compromise">
+<div id="scope">
 <section id="section-12.1">
         <h3 id="name-scope-of-key-compromise">
 <a href="#section-12.1" class="section-number selfRef">12.1. </a><a href="#name-scope-of-key-compromise" class="section-name selfRef">Scope of Key Compromise</a>
@@ -3276,8 +3293,65 @@ must be received before accepting traffic under new keys.<a href="#appendix-B.1.
 </div>
 </section>
 </div>
-<div id="authors-addresses">
+<div id="overview-of-security-goals">
 <section id="appendix-C">
+      <h2 id="name-overview-of-security-goals">
+<a href="#appendix-C" class="section-number selfRef">Appendix C. </a><a href="#name-overview-of-security-goals" class="section-name selfRef">Overview of Security Goals</a>
+      </h2>
+<p id="appendix-C-1">A complete security analysis of the EKU is outside the scope of this document. This appendix provides an informal description of the primary security goals that EKU is designed to achieve.<a href="#appendix-C-1" class="pilcrow">¶</a></p>
+<div id="post-compromise-security-pcs">
+<section id="appendix-C.1">
+        <h3 id="name-post-compromise-security-pc">
+<a href="#appendix-C.1" class="section-number selfRef">C.1. </a><a href="#name-post-compromise-security-pc" class="section-name selfRef">Post-Compromise Security (PCS)</a>
+        </h3>
+<p id="appendix-C.1-1">Extended Key Update supports post-compromise security under the assumptions described in <a href="#scope" class="auto internal xref">Section 12.1</a>. If an attacker temporarily compromises an endpoint and obtains the traffic keys in use before an Extended Key Update takes place, but the compromise does not persist after the EKU completes, the attacker cannot derive the new keying material established by EKU. This property follows from the use of fresh ephemeral key exchange material during each Extended Key Update, which produces new traffic keys that are independent of the previous ones. This
+property provides only best-effort post-compromise security, as it assumes the attacker is not acting as a MiTM
+during the Extended Key Update.<a href="#appendix-C.1-1" class="pilcrow">¶</a></p>
+<p id="appendix-C.1-2">As a result, confidentiality of application data encrypted after the Extended Key Update is preserved even if the earlier traffic keys were exposed.<a href="#appendix-C.1-2" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="key-freshness-and-cryptographic-independence">
+<section id="appendix-C.2">
+        <h3 id="name-key-freshness-and-cryptogra">
+<a href="#appendix-C.2" class="section-number selfRef">C.2. </a><a href="#name-key-freshness-and-cryptogra" class="section-name selfRef">Key Freshness and Cryptographic Independence</a>
+        </h3>
+<p id="appendix-C.2-1">Each Extended Key Update derives new traffic keys from ephemeral key exchange material. This ensures strong separation between successive traffic keys:<a href="#appendix-C.2-1" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="appendix-C.2-2.1">
+            <p id="appendix-C.2-2.1.1">The new traffic keys established by an Extended Key Update are independent of the previous traffic keys.<a href="#appendix-C.2-2.1.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="appendix-C.2-2.2">
+            <p id="appendix-C.2-2.2.1">Compromise of one of traffic keys does not allow recovery of any earlier or later traffic keys.<a href="#appendix-C.2-2.2.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="appendix-C.2-2.3">
+            <p id="appendix-C.2-2.3.1">Application data protected under one of the traffic keys cannot be decrypted using keys from another.<a href="#appendix-C.2-2.3.1" class="pilcrow">¶</a></p>
+</li>
+        </ul>
+</section>
+</div>
+<div id="elimination-of-standard-keyupdate">
+<section id="appendix-C.3">
+        <h3 id="name-elimination-of-standard-key">
+<a href="#appendix-C.3" class="section-number selfRef">C.3. </a><a href="#name-elimination-of-standard-key" class="section-name selfRef">Elimination of Standard KeyUpdate</a>
+        </h3>
+<p id="appendix-C.3-1">Once Extended Key Update has been negotiated for a session, peers rely exclusively on EKU rather than the standard TLS 1.3 KeyUpdate mechanism. Relying solely on Extended Key Update helps maintain PCS properties throughout the lifetime of the TLS session.<a href="#appendix-C.3-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="detecting-divergent-key-state">
+<section id="appendix-C.4">
+        <h3 id="name-detecting-divergent-key-sta">
+<a href="#appendix-C.4" class="section-number selfRef">C.4. </a><a href="#name-detecting-divergent-key-sta" class="section-name selfRef">Detecting Divergent Key State</a>
+        </h3>
+<p id="appendix-C.4-1">As described in <a href="#exported" class="auto internal xref">Section 11</a>, both Post-handshake Certificate-Based Client Authentication and Exported Authenticators can be used after an Extended Key Update to confirm that both endpoints derived the same
+traffic keys. Because the authentication messages produced by these mechanisms depend on values
+derived from the updated traffic keys, any divergence in those traffic keys causes validation to fail,
+revealing interference by an active attacker.<a href="#appendix-C.4-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+</section>
+</div>
+<div id="authors-addresses">
+<section id="appendix-D">
       <h2 id="name-authors-addresses">
 <a href="#name-authors-addresses" class="section-name selfRef">Authors' Addresses</a>
       </h2>
