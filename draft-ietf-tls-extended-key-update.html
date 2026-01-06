@@ -34,12 +34,12 @@ and DTLS 1.3.
     Python 3.12.12
     ConfigArgParse 1.7
     google-i18n-address 3.1.1
-    intervaltree 3.1.0
+    intervaltree 3.2.1
     Jinja2 3.1.6
-    lxml 5.3.1
-    platformdirs 4.5.0
+    lxml 6.0.2
+    platformdirs 4.5.1
     pycountry 24.6.1
-    PyYAML 6.0.2
+    PyYAML 6.0.3
     requests 2.32.5
     wcwidth 0.2.14
 -->
@@ -1060,11 +1060,11 @@ svg :is([fill="white"], [fill^="#fff"]) {
 <thead><tr>
 <td class="left">Internet-Draft</td>
 <td class="center">Extended Key Update for TLS</td>
-<td class="right">November 2025</td>
+<td class="right">January 2026</td>
 </tr></thead>
 <tfoot><tr>
 <td class="left">Tschofenig, et al.</td>
-<td class="center">Expires 13 May 2026</td>
+<td class="center">Expires 10 July 2026</td>
 <td class="right">[Page]</td>
 </tr></tfoot>
 </table>
@@ -1077,12 +1077,12 @@ svg :is([fill="white"], [fill^="#fff"]) {
 <dd class="internet-draft">draft-ietf-tls-extended-key-update-latest</dd>
 <dt class="label-published">Published:</dt>
 <dd class="published">
-<time datetime="2025-11-09" class="published">9 November 2025</time>
+<time datetime="2026-01-06" class="published">6 January 2026</time>
     </dd>
 <dt class="label-intended-status">Intended Status:</dt>
 <dd class="intended-status">Standards Track</dd>
 <dt class="label-expires">Expires:</dt>
-<dd class="expires"><time datetime="2026-05-13">13 May 2026</time></dd>
+<dd class="expires"><time datetime="2026-07-10">10 July 2026</time></dd>
 <dt class="label-authors">Authors:</dt>
 <dd class="authors">
 <div class="author">
@@ -1156,7 +1156,7 @@ and DTLS 1.3.<a href="#section-abstract-2" class="pilcrow">¶</a></p>
         time. It is inappropriate to use Internet-Drafts as reference
         material or to cite them other than as "work in progress."<a href="#section-boilerplate.1-3" class="pilcrow">¶</a></p>
 <p id="section-boilerplate.1-4">
-        This Internet-Draft will expire on 13 May 2026.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
+        This Internet-Draft will expire on 10 July 2026.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="copyright">
@@ -1165,7 +1165,7 @@ and DTLS 1.3.<a href="#section-abstract-2" class="pilcrow">¶</a></p>
 <a href="#name-copyright-notice" class="section-name selfRef">Copyright Notice</a>
         </h2>
 <p id="section-boilerplate.2-1">
-            Copyright (c) 2025 IETF Trust and the persons identified as the
+            Copyright (c) 2026 IETF Trust and the persons identified as the
             document authors. All rights reserved.<a href="#section-boilerplate.2-1" class="pilcrow">¶</a></p>
 <p id="section-boilerplate.2-2">
             This document is subject to BCP 78 and the IETF Trust's Legal
@@ -1226,7 +1226,15 @@ and DTLS 1.3.<a href="#section-abstract-2" class="pilcrow">¶</a></p>
             <p id="section-toc.1-1.10.1"><a href="#section-10" class="auto internal xref">10</a>. <a href="#name-exporter" class="internal xref">Exporter</a></p>
 </li>
           <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.11">
-            <p id="section-toc.1-1.11.1"><a href="#section-11" class="auto internal xref">11</a>. <a href="#name-use-of-exported-authenticat" class="internal xref">Use of Exported Authenticators with Extended Key Update</a></p>
+            <p id="section-toc.1-1.11.1"><a href="#section-11" class="auto internal xref">11</a>. <a href="#name-use-of-post-handshake-authe" class="internal xref">Use of Post-Handshake Authentication and Exported Authenticators with Extended Key Update</a></p>
+<ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.11.2.1">
+                <p id="section-toc.1-1.11.2.1.1"><a href="#section-11.1" class="auto internal xref">11.1</a>.  <a href="#name-post-handshake-certificate-" class="internal xref">Post-Handshake Certificate-Based Client Authentication</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.11.2.2">
+                <p id="section-toc.1-1.11.2.2.1"><a href="#section-11.2" class="auto internal xref">11.2</a>.  <a href="#name-exported-authenticators" class="internal xref">Exported Authenticators</a></p>
+</li>
+            </ul>
 </li>
           <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.12">
             <p id="section-toc.1-1.12.1"><a href="#section-12" class="auto internal xref">12</a>. <a href="#name-security-considerations" class="internal xref">Security Considerations</a></p>
@@ -2091,7 +2099,7 @@ Key Update, the TLS or DTLS implementation would have to provide an
 asynchronous notification to the application indicating that:<a href="#section-10-3" class="pilcrow">¶</a></p>
 <ul class="normal">
 <li class="normal" id="section-10-4.1">
-          <p id="section-10-4.1.1">A new epoch has become active, and the implementation can
+          <p id="section-10-4.1.1">A new epoch has become active, and the (D)TLS implementation can
 include the corresponding epoch identifier. Applications receiving an
 epoch identifier can use it to request keying material for that
 specific epoch through an epoch-aware exporter interface.
@@ -2128,23 +2136,62 @@ secret, as described in Section 3.3.2 of <span>[<a href="#RFC3711" class="cite x
 </div>
 <div id="exported">
 <section id="section-11">
-      <h2 id="name-use-of-exported-authenticat">
-<a href="#section-11" class="section-number selfRef">11. </a><a href="#name-use-of-exported-authenticat" class="section-name selfRef">Use of Exported Authenticators with Extended Key Update</a>
+      <h2 id="name-use-of-post-handshake-authe">
+<a href="#section-11" class="section-number selfRef">11. </a><a href="#name-use-of-post-handshake-authe" class="section-name selfRef">Use of Post-Handshake Authentication and Exported Authenticators with Extended Key Update</a>
       </h2>
-<p id="section-11-1">EKU provides fresh traffic secrets, but EKU alone does not authenticate
-that both endpoints derived the same updated keys. An active attacker
-interfering with an EKU exchange could cause key divergence without detection.<a href="#section-11-1" class="pilcrow">¶</a></p>
-<p id="section-11-2">To confirm that both peers transitioned to the same new key state, endpoints
-can use Exported Authenticators <span>[<a href="#RFC9261" class="cite xref">RFC9261</a>]</span> immediately after completing EKU.
-However, the authenticator transcript defined in <span>[<a href="#RFC9261" class="cite xref">RFC9261</a>]</span> does not cover the
-EKU messages. As a result, an authenticator generated after EKU is not bound to the
-newly derived traffic secrets.<a href="#section-11-2" class="pilcrow">¶</a></p>
-<p id="section-11-3">To ensure MiTM-resilient key updates, this document updates Section 5.2.2 of
-<span>[<a href="#RFC9261" class="cite xref">RFC9261</a>]</span> to incorporate the Extended Key Update transcript (Hash(EKU-Transcript))
-into the CertificateVerify calculation when an authenticator is generated after EKU.<a href="#section-11-3" class="pilcrow">¶</a></p>
-<p id="section-11-4">If no Extended Key Update has occurred on the connection, the endpoint
-<span class="bcp14">SHALL</span> continue to use the authenticator transcript defined in
-Section 5.2.2 of <span>[<a href="#RFC9261" class="cite xref">RFC9261</a>]</span>.<a href="#section-11-4" class="pilcrow">¶</a></p>
+<p id="section-11-1">EKU provides fresh traffic secrets, but EKU alone does not authenticate that both endpoints
+derived the same updated keys. An attacker that temporarily compromises an endpoint
+may later act as an active MitM capable of interfering with the EKU exchange.
+Such an attacker can cause the peers to transition to divergent traffic secrets without detection,
+but cannot compromise the endpoint to derive secrets after the new epoch is established.
+To confirm that both peers transitioned to the same new key state, TLS 1.3 provides two
+mechanisms: Post-Handshake Certificate-Based Client Authentication and
+Exported Authenticators <span>[<a href="#RFC9261" class="cite xref">RFC9261</a>]</span>.<a href="#section-11-1" class="pilcrow">¶</a></p>
+<div id="post-handshake-certificate-based-client-authentication">
+<section id="section-11.1">
+        <h3 id="name-post-handshake-certificate-">
+<a href="#section-11.1" class="section-number selfRef">11.1. </a><a href="#name-post-handshake-certificate-" class="section-name selfRef">Post-Handshake Certificate-Based Client Authentication</a>
+        </h3>
+<p id="section-11.1-1">When Post-handshake Certificate-Based Client Authentication (Section 4.6.2 of <span>[<a href="#TLS" class="cite xref">TLS</a>]</span>)
+is performed after an Extended Key Update is complete, it produces a Finished message
+computed using the application traffic keys of the new epoch. This confirms that both peers
+are operating with the same updated traffic keys and completes an authenticated
+transition after the EKU.<a href="#section-11.1-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="exported-authenticators">
+<section id="section-11.2">
+        <h3 id="name-exported-authenticators">
+<a href="#section-11.2" class="section-number selfRef">11.2. </a><a href="#name-exported-authenticators" class="section-name selfRef">Exported Authenticators</a>
+        </h3>
+<p id="section-11.2-1">This document updates Section 5.1 of <span>[<a href="#RFC9261" class="cite xref">RFC9261</a>]</span> to specify that, after an
+Extended Key Update has completed, the Handshake Context and Finished MAC Key used for
+Exported Authenticators can be derived from the exporter secret associated with the current epoch.
+Implementations that support the epoch-aware Exported Authenticators interface will have to provide a means
+for applications to request the generation or validation of Exported Authenticators using
+the exporter secret for a specific epoch.<a href="#section-11.2-1" class="pilcrow">¶</a></p>
+<p id="section-11.2-2">The Handshake Context and Finished MAC Key used in both the CertificateVerify message
+(Section 5.2.2 of <span>[<a href="#RFC9261" class="cite xref">RFC9261</a>]</span>) and the Finished message (Section 5.2.3 of <span>[<a href="#RFC9261" class="cite xref">RFC9261</a>]</span>)
+are derived from the exporter secret associated with the current epoch.
+If a MitM interferes with the EKU exchange and causes the peers to derive different traffic
+and exporter secrets, their Handshake Contexts and Finished MAC Keys will differ.
+As a result, validation procedures specified in Section 5.2.4 of <span>[<a href="#RFC9261" class="cite xref">RFC9261</a>]</span> will fail, thereby
+detecting the divergence of key state between peers.<a href="#section-11.2-2" class="pilcrow">¶</a></p>
+<p id="section-11.2-3">A new optional API <span class="bcp14">SHOULD</span> be defined to permit applications to request or verify
+Exported Authenticators for a specific exporter epoch. As discussed in Section 7
+of <span>[<a href="#RFC9261" class="cite xref">RFC9261</a>]</span>, this can, as an exception, be implemented at the application
+layer when the epoch-aware TLS exporter is available. The APIs defined in <span>[<a href="#RFC9261" class="cite xref">RFC9261</a>]</span>
+remain unchanged, so existing applications continue to operate without
+modification. The epoch-aware API accepts an epoch identifier; when present,
+the (D)TLS implementation <span class="bcp14">MUST</span> derive the Handshake Context and Finished MAC Key
+from the exporter secret associated with that epoch. When Exported Authenticators
+are generated using the epoch-aware Exported Authenticators interface, the
+epoch identifier used for their derivation can be conveyed in the
+certificate_request_context field, allowing the peer, particularly in
+DTLS where records may be reordered, to determine the correct exporter
+secret for validation.<a href="#section-11.2-3" class="pilcrow">¶</a></p>
+</section>
+</div>
 </section>
 </div>
 <div id="security-considerations">
@@ -2172,11 +2219,12 @@ Extended Key Update is performed.<a href="#section-12.1-1" class="pilcrow">¶</a
 has access to either peer. If an adversary retains access to current application traffic
 keys and can act as a man-in-the-middle during the Extended Key Update, then the
 update cannot restore security unless <a href="#exported" class="auto internal xref">Section 11</a> is used.<a href="#section-12.1-2" class="pilcrow">¶</a></p>
-<p id="section-12.1-3">If the mechanism defined in <a href="#exported" class="auto internal xref">Section 11</a> is not used, the attacker can
+<p id="section-12.1-3">If one of the mechanisms defined in <a href="#exported" class="auto internal xref">Section 11</a> is not used, the attacker can
 impersonate each endpoint, substitute EKU messages, and maintain control
-of the communication. When the modified Exported Authenticator is used,
-the CertificateVerify signature is bound to the EKU transcript, so any interference
-with the EKU messages will be detected and the attack prevented.<a href="#section-12.1-3" class="pilcrow">¶</a></p>
+of the communication. When Post-handshake Certificate-Based Client Authentication
+or the modified Exported Authenticator mechanism is used, the authentication messages
+are bound to the keys established after the EKU. Any modification or substitution of
+EKU messages therefore becomes detectable, preventing this attack.<a href="#section-12.1-3" class="pilcrow">¶</a></p>
 <p id="section-12.1-4">If a compromise occurs before the handshake completes, the ephemeral key exchange,
 client_handshake_traffic_secret, server_handshake_traffic_secret, and the initial
 client_/server_application_traffic_secret could be exposed. In that case, only the
@@ -2413,6 +2461,10 @@ extension registry <span>[<a href="#TLS-Ext-Registry" class="cite xref">TLS-Ext-
         <dd>
 <span class="refAuthor">Leiba, B.</span>, <span class="refTitle">"Ambiguity of Uppercase vs Lowercase in RFC 2119 Key Words"</span>, <span class="seriesInfo">BCP 14</span>, <span class="seriesInfo">RFC 8174</span>, <span class="seriesInfo">DOI 10.17487/RFC8174</span>, <time datetime="2017-05" class="refDate">May 2017</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc8174">https://www.rfc-editor.org/rfc/rfc8174</a>&gt;</span>. </dd>
 <dd class="break"></dd>
+<dt id="RFC9261">[RFC9261]</dt>
+        <dd>
+<span class="refAuthor">Sullivan, N.</span>, <span class="refTitle">"Exported Authenticators in TLS"</span>, <span class="seriesInfo">RFC 9261</span>, <span class="seriesInfo">DOI 10.17487/RFC9261</span>, <time datetime="2022-07" class="refDate">July 2022</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc9261">https://www.rfc-editor.org/rfc/rfc9261</a>&gt;</span>. </dd>
+<dd class="break"></dd>
 <dt id="RFC9729">[RFC9729]</dt>
         <dd>
 <span class="refAuthor">Schinazi, D.</span>, <span class="refAuthor">Oliver, D.</span>, and <span class="refAuthor">J. Hoyland</span>, <span class="refTitle">"The Concealed HTTP Authentication Scheme"</span>, <span class="seriesInfo">RFC 9729</span>, <span class="seriesInfo">DOI 10.17487/RFC9729</span>, <time datetime="2025-02" class="refDate">February 2025</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc9729">https://www.rfc-editor.org/rfc/rfc9729</a>&gt;</span>. </dd>
@@ -2458,13 +2510,9 @@ extension registry <span>[<a href="#TLS-Ext-Registry" class="cite xref">TLS-Ext-
         <dd>
 <span class="refAuthor">Salowey, J.</span> and <span class="refAuthor">S. Turner</span>, <span class="refTitle">"IANA Registry Updates for TLS and DTLS"</span>, <span class="seriesInfo">RFC 8447</span>, <span class="seriesInfo">DOI 10.17487/RFC8447</span>, <time datetime="2018-08" class="refDate">August 2018</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc8447">https://www.rfc-editor.org/rfc/rfc8447</a>&gt;</span>. </dd>
 <dd class="break"></dd>
-<dt id="RFC9261">[RFC9261]</dt>
-        <dd>
-<span class="refAuthor">Sullivan, N.</span>, <span class="refTitle">"Exported Authenticators in TLS"</span>, <span class="seriesInfo">RFC 9261</span>, <span class="seriesInfo">DOI 10.17487/RFC9261</span>, <time datetime="2022-07" class="refDate">July 2022</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc9261">https://www.rfc-editor.org/rfc/rfc9261</a>&gt;</span>. </dd>
-<dd class="break"></dd>
 <dt id="TLS-ECDHE-MLKEM">[TLS-ECDHE-MLKEM]</dt>
         <dd>
-<span class="refAuthor">Kwiatkowski, K.</span>, <span class="refAuthor">Kampanakis, P.</span>, <span class="refAuthor">Westerbaan, B.</span>, and <span class="refAuthor">D. Stebila</span>, <span class="refTitle">"Post-quantum hybrid ECDHE-MLKEM Key Agreement for TLSv1.3"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-ietf-tls-ecdhe-mlkem-01</span>, <time datetime="2025-09-29" class="refDate">29 September 2025</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-ietf-tls-ecdhe-mlkem-01">https://datatracker.ietf.org/doc/html/draft-ietf-tls-ecdhe-mlkem-01</a>&gt;</span>. </dd>
+<span class="refAuthor">Kwiatkowski, K.</span>, <span class="refAuthor">Kampanakis, P.</span>, <span class="refAuthor">Westerbaan, B.</span>, and <span class="refAuthor">D. Stebila</span>, <span class="refTitle">"Post-quantum hybrid ECDHE-MLKEM Key Agreement for TLSv1.3"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-ietf-tls-ecdhe-mlkem-03</span>, <time datetime="2025-11-21" class="refDate">21 November 2025</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-ietf-tls-ecdhe-mlkem-03">https://datatracker.ietf.org/doc/html/draft-ietf-tls-ecdhe-mlkem-03</a>&gt;</span>. </dd>
 <dd class="break"></dd>
 <dt id="TLS-Ext-Registry">[TLS-Ext-Registry]</dt>
         <dd>
