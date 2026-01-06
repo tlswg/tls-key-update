@@ -110,7 +110,7 @@ who record encrypted traffic for later decryption.
 TLS 1.3 also includes a KeyUpdate mechanism that allows traffic keys to be refreshed
 during an established session. However, this mechanism does not provide
 post-compromise security, as it applies only a key derivation function to the
-previous application traffic secret as input. While this design is generally sufficient
+previous application traffic key as input. While this design is generally sufficient
 for short-lived connections, it may present security limitations in scenarios where
 sessions persist for extended periods, such as in industrial IoT or telecommunications
 systems, where continuous availability is critical and session renegotiation or resumption
@@ -139,7 +139,7 @@ This specification defines a TLS extension that introduces an extended key updat
 mechanism. Unlike the standard key update, this mechanism allows peers to perform a
 fresh Diffie-Hellman exchange within an active session using one of the groups
 negotiated during the initial handshake. By periodically rerunning (EC)DHE, this
-extension enables the derivation of new traffic secrets that are independent of
+extension enables the derivation of new traffic keys that are independent of
 prior key material. As noted in {{Appendix F of !TLS=I-D.ietf-tls-rfc8446bis}}, this
 approach mitigates the risk of static key exfiltration and shifts the attacker
 burden toward dynamic key exfiltration.
@@ -158,7 +158,7 @@ from the key update procedure specified in this document, we use the terms
 
 In this document, we use the term post-compromise security, as defined in
 {{CCG16}}. We assume that an adversary may obtain
-access to the application traffic secrets.
+access to the application traffic keys.
 
 Unless otherwise specified, all references to traffic keys in this document
 refer to application traffic keys and because the Extended Key Update procedure
@@ -621,10 +621,10 @@ the message transmission.
 {: #dtls-table title="Example DTLS 1.3 Extended Key Update: Epoch Changes."}
 
 
-# Updating Traffic Secrets {#key_update}
+# Updating Traffic Keys {#key_update}
 
 When the extended key update message exchange is completed both peers
-have successfully updated their application traffic secrets. The
+have successfully updated their application traffic keys. The
 key derivation function described in this document is used to perform
 this update.
 
@@ -815,6 +815,7 @@ the application might retain the previous exporter secret until its
 replay window no longer accepts packets protected with keys derived from that
 secret, as described in Section 3.3.2 of {{!RFC3711}}.
 
+
 # Use of Post-Handshake Authentication and Exported Authenticators with Extended Key Update {#exported}
 
 EKU provides fresh traffic secrets, but EKU alone does not authenticate that both endpoints
@@ -869,7 +870,7 @@ secret for validation.
 
 This section discusses additional security and operational aspects introduced by the Extended Key Update mechanism. All security considerations of TLS 1.3 {{TLS}} and DTLS.13 {{!DTLS=RFC9147}} continue to apply.
 
-## Scope of Key Compromise
+## Scope of Key Compromise {#scope}
 
 Extended Key Update assumes a transient compromise of the current application
 traffic keys, not a persistent attacker with ongoing access to key material.
@@ -1288,3 +1289,35 @@ Throughout the process:
 | FINISHED  |
 +-----------+
 ~~~
+
+
+# Overview of Security Goals
+
+A complete security analysis of the EKU is outside the scope of this document. This appendix provides an informal description of the primary security goals that EKU is designed to achieve.
+
+## Post-Compromise Security (PCS)
+
+Extended Key Update supports post-compromise security under the assumptions described in {{scope}}. If an attacker temporarily compromises an endpoint and obtains the traffic keys in use before an Extended Key Update takes place, but the compromise does not persist after the EKU completes, the attacker cannot derive the new keying material established by EKU. This property follows from the use of fresh ephemeral key exchange material during each Extended Key Update, which produces new traffic keys that are independent of the previous ones. This
+property provides only best-effort post-compromise security, as it assumes the attacker is not acting as a MiTM
+during the Extended Key Update.
+
+As a result, confidentiality of application data encrypted after the Extended Key Update is preserved even if the earlier traffic keys were exposed.
+
+## Key Freshness and Cryptographic Independence
+
+Each Extended Key Update derives new traffic keys from ephemeral key exchange material. This ensures strong separation between successive traffic keys:
+
+* The new traffic keys established by an Extended Key Update are independent of the previous traffic keys.
+* Compromise of one of traffic keys does not allow recovery of any earlier or later traffic keys.
+* Application data protected under one of the traffic keys cannot be decrypted using keys from another.
+
+## Elimination of Standard KeyUpdate
+
+Once Extended Key Update has been negotiated for a session, peers rely exclusively on EKU rather than the standard TLS 1.3 KeyUpdate mechanism. Relying solely on Extended Key Update helps maintain PCS properties throughout the lifetime of the TLS session.
+
+## Detecting Divergent Key State
+
+As described in {{exported}}, both Post-handshake Certificate-Based Client Authentication and Exported Authenticators can be used after an Extended Key Update to confirm that both endpoints derived the same
+traffic keys. Because the authentication messages produced by these mechanisms depend on values
+derived from the updated traffic keys, any divergence in those traffic keys causes validation to fail,
+revealing interference by an active attacker.
