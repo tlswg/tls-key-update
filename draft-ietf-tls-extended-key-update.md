@@ -756,6 +756,50 @@ SSLKEYLOGFILE secrets including past iterations of `CLIENT_TRAFFIC_SECRET_`,
 
 # Exporter
 
+## Post-Compromise Security for the Initial Exporter Secret
+
+TLS specifies a single exporter_secret derived from the main secret. This
+exporter secret is static for the lifetime of the connection and is not updated by EKU.
+
+This document defines an exporter interface that derives a fresh exporter secret
+whenever new application traffic keys are established through EKU. A core design
+goal of this interface is that compromise of exporter secret material at a later
+point in time will not enable an attacker to recover exporter outputs that were
+produced earlier in the connection.
+
+If the initial exporter secret for this interface were equal to the exporter_secret,
+this goal would not be met. The exporter outputs are deterministically derived
+from the exporter_secret. As a result, compromise of the exporter_secret
+at any point during the lifetime of the connection would allow an attacker to
+recompute all exporter outputs derived from it, including those produced earlier
+in the connection, thereby violating post-compromise security for
+exported keying material.
+
+Therefore, the initial exporter secret used by the exporter interface defined in
+this document, i.e., the exporter output available prior to the first Extended
+Key Update, MUST be distinct from the exporter_secret. This separation
+ensures that compromise of the TLS exporter interface does not compromise outputs
+derived from the exporter interface defined in this document.
+
+Prior to the first Extended Key Update, the exporter interface provides an
+initial exporter secret, denoted exporter_secret_0. This secret is derived
+from the TLS main secret and the handshake transcript, but is cryptographically
+independent of the TLS exporter_secret. It is computed as follows:
+
+~~~~
+exporter_secret_0 =
+Derive-Secret(Main Secret,
+"exporter eku",
+Transcript-Hash(ClientHello..server Finished))
+~~~~
+
+Applications that require post-compromise security MUST use the exporter
+interface defined in this document. This exporter interface is independent of
+the TLS exporter defined in {{Section 7.5 of TLS}}, which continues to use a
+static `exporter_secret` for the lifetime of the connection.
+
+## Exporter Usage After Extended Key Update
+
 Protocols such as DTLS-SRTP and DTLS-over-SCTP rely on TLS or DTLS for
 key establishment, but reuse portions of the derived keying material for
 their own specific purposes. These protocols use the TLS exporter defined
