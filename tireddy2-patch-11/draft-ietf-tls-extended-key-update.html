@@ -1064,7 +1064,7 @@ svg :is([fill="white"], [fill^="#fff"]) {
 </tr></thead>
 <tfoot><tr>
 <td class="left">Tschofenig, et al.</td>
-<td class="center">Expires 11 July 2026</td>
+<td class="center">Expires 12 July 2026</td>
 <td class="right">[Page]</td>
 </tr></tfoot>
 </table>
@@ -1077,12 +1077,12 @@ svg :is([fill="white"], [fill^="#fff"]) {
 <dd class="internet-draft">draft-ietf-tls-extended-key-update-latest</dd>
 <dt class="label-published">Published:</dt>
 <dd class="published">
-<time datetime="2026-01-07" class="published">7 January 2026</time>
+<time datetime="2026-01-08" class="published">8 January 2026</time>
     </dd>
 <dt class="label-intended-status">Intended Status:</dt>
 <dd class="intended-status">Standards Track</dd>
 <dt class="label-expires">Expires:</dt>
-<dd class="expires"><time datetime="2026-07-11">11 July 2026</time></dd>
+<dd class="expires"><time datetime="2026-07-12">12 July 2026</time></dd>
 <dt class="label-authors">Authors:</dt>
 <dd class="authors">
 <div class="author">
@@ -1156,7 +1156,7 @@ and DTLS 1.3.<a href="#section-abstract-2" class="pilcrow">¶</a></p>
         time. It is inappropriate to use Internet-Drafts as reference
         material or to cite them other than as "work in progress."<a href="#section-boilerplate.1-3" class="pilcrow">¶</a></p>
 <p id="section-boilerplate.1-4">
-        This Internet-Draft will expire on 11 July 2026.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
+        This Internet-Draft will expire on 12 July 2026.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="copyright">
@@ -1736,61 +1736,64 @@ Auth | {CertificateVerify}
       </h2>
 <p id="section-6-1">Unlike TLS 1.3, DTLS 1.3 implementations must take into account that handshake
 messages are not transmitted over a reliable transport protocol.<a href="#section-6-1" class="pilcrow">¶</a></p>
-<p id="section-6-2">Due to the possibility of an <code>ExtendedKeyUpdate</code> messages being
+<p id="section-6-2">EKU messages <span class="bcp14">MUST</span> be handled using the existing DTLS handshake mechanisms
+for fragmentation, ordering, and retransmission, as defined in <span>[<a href="#DTLS" class="cite xref">DTLS</a>]</span>,
+to ensure reliable delivery.<a href="#section-6-2" class="pilcrow">¶</a></p>
+<p id="section-6-3">Due to the possibility of an <code>ExtendedKeyUpdate</code> messages being
 lost and thereby preventing the sender of that message from updating its keying
 material, receivers <span class="bcp14">MUST</span> retain the pre-update keying material until receipt
-and successful decryption of a message using the new keys.<a href="#section-6-2" class="pilcrow">¶</a></p>
-<p id="section-6-3">Due to packet loss and/or reordering, DTLS 1.3 peers <span class="bcp14">MAY</span> receive records from an
+and successful decryption of a message using the new keys.<a href="#section-6-3" class="pilcrow">¶</a></p>
+<p id="section-6-4">Due to packet loss and/or reordering, DTLS 1.3 peers <span class="bcp14">MAY</span> receive records from an
 earlier epoch. If the necessary keys are available, implementations <span class="bcp14">SHOULD</span> attempt
 to process such records; however, they <span class="bcp14">MAY</span> choose to discard them. The exchange
-has the following steps:<a href="#section-6-3" class="pilcrow">¶</a></p>
-<ol start="1" type="1" class="normal type-1" id="section-6-4">
-<li id="section-6-4.1">
-          <p id="section-6-4.1.1">The initiator sends an <code>ExtendedKeyUpdate(key_update_request)</code> message, which contains a
+has the following steps:<a href="#section-6-4" class="pilcrow">¶</a></p>
+<ol start="1" type="1" class="normal type-1" id="section-6-5">
+<li id="section-6-5.1">
+          <p id="section-6-5.1.1">The initiator sends an <code>ExtendedKeyUpdate(key_update_request)</code> message, which contains a
 key share. While an extended key update is in progress, the initiator <span class="bcp14">MUST NOT</span>
 initiate further key updates. This message is subject to DTLS handshake
 retransmission, but delivery is only confirmed when the initiator either receives the
-corresponding <code>ExtendedKeyUpdate(key_update_response)</code> or an ACK.<a href="#section-6-4.1.1" class="pilcrow">¶</a></p>
+corresponding <code>ExtendedKeyUpdate(key_update_response)</code> or an ACK.<a href="#section-6-5.1.1" class="pilcrow">¶</a></p>
 </li>
-        <li id="section-6-4.2">
-          <p id="section-6-4.2.1">Upon receipt, the responder sends its own <code>KeyShareEntry</code> in a
+        <li id="section-6-5.2">
+          <p id="section-6-5.2.1">Upon receipt, the responder sends its own <code>KeyShareEntry</code> in a
 <code>ExtendedKeyUpdate(key_update_response)</code> message. While an extended key update
 is in progress, the responder <span class="bcp14">MUST NOT</span> initiate further key updates. The responder <span class="bcp14">MAY</span> defer
 sending a response if system load or resource constraints prevent immediate processing.
 In such cases, the responder <span class="bcp14">MUST</span> acknowledge receipt of the key_update_request with an ACK and, once
 sufficient resources become available, retransmit the key_update_response until it is acknowledged by the
-initiator.<a href="#section-6-4.2.1" class="pilcrow">¶</a></p>
+initiator.<a href="#section-6-5.2.1" class="pilcrow">¶</a></p>
 </li>
-        <li id="section-6-4.3">
-          <p id="section-6-4.3.1">On receipt of <code>ExtendedKeyUpdate(key_update_response)</code> the initiator derives a secret key based on the
+        <li id="section-6-5.3">
+          <p id="section-6-5.3.1">On receipt of <code>ExtendedKeyUpdate(key_update_response)</code> the initiator derives a secret key based on the
 exchanged key shares. This message also serves as an implicit acknowledgment of the
 initiator's <code>ExtendedKeyUpdate(key_update_request)</code>, so no separate ACK is required. The initiator <span class="bcp14">MUST</span>
-update its receive keys and epoch value. The initiator <span class="bcp14">MUST NOT</span> defer derivation of the secrets.<a href="#section-6-4.3.1" class="pilcrow">¶</a></p>
+update its receive keys and epoch value. The initiator <span class="bcp14">MUST NOT</span> defer derivation of the secrets.<a href="#section-6-5.3.1" class="pilcrow">¶</a></p>
 </li>
-        <li id="section-6-4.4">
-          <p id="section-6-4.4.1">The initiator transmits an <code>ExtendedKeyUpdate(new_key_update)</code> message. This message is subject to DTLS
-retransmission until acknowledged.<a href="#section-6-4.4.1" class="pilcrow">¶</a></p>
+        <li id="section-6-5.4">
+          <p id="section-6-5.4.1">The initiator transmits an <code>ExtendedKeyUpdate(new_key_update)</code> message. This message is subject to DTLS
+retransmission until acknowledged.<a href="#section-6-5.4.1" class="pilcrow">¶</a></p>
 </li>
-        <li id="section-6-4.5">
-          <p id="section-6-4.5.1">The responder <span class="bcp14">MUST</span> acknowledge the received message by sending an ACK message.<a href="#section-6-4.5.1" class="pilcrow">¶</a></p>
+        <li id="section-6-5.5">
+          <p id="section-6-5.5.1">The responder <span class="bcp14">MUST</span> acknowledge the received message by sending an ACK message.<a href="#section-6-5.5.1" class="pilcrow">¶</a></p>
 </li>
-        <li id="section-6-4.6">
-          <p id="section-6-4.6.1">After the responder receives the initiator's <code>ExtendedKeyUpdate(new_key_update)</code>,
+        <li id="section-6-5.6">
+          <p id="section-6-5.6.1">After the responder receives the initiator's <code>ExtendedKeyUpdate(new_key_update)</code>,
 the responder <span class="bcp14">MUST</span> update its send key and epoch value. With the receipt of
-that message, the responder <span class="bcp14">MUST</span> also update its receive keys.<a href="#section-6-4.6.1" class="pilcrow">¶</a></p>
+that message, the responder <span class="bcp14">MUST</span> also update its receive keys.<a href="#section-6-5.6.1" class="pilcrow">¶</a></p>
 </li>
-        <li id="section-6-4.7">
-          <p id="section-6-4.7.1">On receipt of the ACK message, the initiator updates its send key and epoch
+        <li id="section-6-5.7">
+          <p id="section-6-5.7.1">On receipt of the ACK message, the initiator updates its send key and epoch
 value. If this ACK is not received, the initiator re-transmits its
 <code>ExtendedKeyUpdate(new_key_update)</code> until ACK is received. The key update is
-complete once this ACK is processed by the initiator.<a href="#section-6-4.7.1" class="pilcrow">¶</a></p>
+complete once this ACK is processed by the initiator.<a href="#section-6-5.7.1" class="pilcrow">¶</a></p>
 </li>
       </ol>
-<p id="section-6-5">The handshake framing uses a single <code>HandshakeType</code> for this message
-(see <a href="#fig-dtls-handshake" class="auto internal xref">Figure 4</a>).<a href="#section-6-5" class="pilcrow">¶</a></p>
+<p id="section-6-6">The handshake framing uses a single <code>HandshakeType</code> for this message
+(see <a href="#fig-dtls-handshake" class="auto internal xref">Figure 4</a>).<a href="#section-6-6" class="pilcrow">¶</a></p>
 <span id="name-dtls-13-handshake-structure"></span><div id="fig-dtls-handshake">
 <figure id="figure-4">
-        <div class="alignLeft art-text artwork" id="section-6-6.1">
+        <div class="alignLeft art-text artwork" id="section-6-7.1">
 <pre>
        enum {
            client_hello(1),
@@ -2017,17 +2020,20 @@ traffic keys as soon as possible. Note: The
 client_/server_application_traffic_secret_N and its associated
 traffic keys can only be deleted by the responder after receiving the
 <code>ExtendedKeyUpdate(new_key_update)</code> message.<a href="#section-7-8" class="pilcrow">¶</a></p>
-<p id="section-7-9">When using this extension, it is important to consider its interaction with
+<p id="section-7-9">Once client_/server_application_traffic_secret_N+1 and the corresponding traffic
+keys are in use, all subsequent records, including alerts and post-handshake
+messages <span class="bcp14">MUST</span> be protected using those keys.<a href="#section-7-9" class="pilcrow">¶</a></p>
+<p id="section-7-10">When using this extension, it is important to consider its interaction with
 ticket-based session resumption. If resumption occurs without a new (EC)DH
 exchange that provides forward secrecy, an attacker could potentially revert
 the security context to an earlier state, thereby negating the benefits of
 the extended key update. To preserve the security guarantees provided by key
 updates, endpoints <span class="bcp14">MUST</span> either invalidate any session tickets issued prior
 to the key update or ensure that resumption always involves a fresh (EC)DH
-exchange.<a href="#section-7-9" class="pilcrow">¶</a></p>
-<p id="section-7-10">If session tickets cannot be stored securely, developers <span class="bcp14">SHOULD</span> consider
+exchange.<a href="#section-7-10" class="pilcrow">¶</a></p>
+<p id="section-7-11">If session tickets cannot be stored securely, developers <span class="bcp14">SHOULD</span> consider
 disabling ticket-based resumption in their deployments. While this approach
-may impact performance, it provides improved security properties.<a href="#section-7-10" class="pilcrow">¶</a></p>
+may impact performance, it provides improved security properties.<a href="#section-7-11" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="post-quantum-cryptography-considerations">
@@ -2556,10 +2562,6 @@ extension registry <span>[<a href="#TLS-Ext-Registry" class="cite xref">TLS-Ext-
 <dt id="CCG16">[CCG16]</dt>
         <dd>
 <span class="refAuthor">IEEE</span>, <span class="refTitle">"On Post-compromise Security"</span>, <time datetime="2016-08" class="refDate">August 2016</time>, <span>&lt;<a href="https://doi.org/10.1109/csf.2016.19">https://doi.org/10.1109/csf.2016.19</a>&gt;</span>. </dd>
-<dd class="break"></dd>
-<dt id="CDM23">[CDM23]</dt>
-        <dd>
-<span class="refAuthor">ACM</span>, <span class="refTitle">"Keeping Up with the KEMs: Stronger Security Notions for KEMs and automated analysis of KEM-based protocols"</span>, <time datetime="2023-11" class="refDate">November 2023</time>, <span>&lt;<a href="https://eprint.iacr.org/2023/1933.pdf">https://eprint.iacr.org/2023/1933.pdf</a>&gt;</span>. </dd>
 <dd class="break"></dd>
 <dt id="CONFIDENTIALITY">[CONFIDENTIALITY]</dt>
         <dd>
