@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2026-01-06T01:59:53.538749+00:00",
+  "timestamp": "2026-01-08T01:59:59.668095+00:00",
   "repo": "tlswg/tls-key-update",
   "labels": [
     {
@@ -892,15 +892,15 @@
       "id": "I_kwDOMJPqLM7T6-BT",
       "title": "Ambiguities in version -06: Informal security goals",
       "url": "https://github.com/tlswg/tls-key-update/issues/77",
-      "state": "OPEN",
+      "state": "CLOSED",
       "author": "muhammad-usama-sardar",
       "authorAssociation": "COLLABORATOR",
       "assignees": [],
       "labels": [],
       "body": "[A follow-up of #59 since it was closed by the authors without being properly addressed]\n\n[Opening separate issues as requested by the authors]\n\n- State as clearly as possible what do you want to achieve with this spec, such that with formal analysis it can be checked whether these goals are met or not.",
       "createdAt": "2025-10-27T07:35:05Z",
-      "updatedAt": "2025-10-29T11:53:47Z",
-      "closedAt": null,
+      "updatedAt": "2026-01-06T14:06:09Z",
+      "closedAt": "2026-01-06T14:06:09Z",
       "comments": [
         {
           "author": "tireddy2",
@@ -7265,24 +7265,26 @@
       "id": "PR_kwDOMJPqLM6yp6D1",
       "title": "Eliminate unnecessary message",
       "url": "https://github.com/tlswg/tls-key-update/pull/87",
-      "state": "OPEN",
+      "state": "MERGED",
       "author": "yaroslavros",
       "authorAssociation": "COLLABORATOR",
       "assignees": [],
       "labels": [],
       "body": "As discussed at IETF124 I have tightened up the process and eliminated 1 unnecessary message in both TLS and DTLS flows.\r\n\r\nPlease check.",
       "createdAt": "2025-11-11T01:44:25Z",
-      "updatedAt": "2026-01-05T09:20:25Z",
+      "updatedAt": "2026-01-06T18:30:41Z",
       "baseRepository": "tlswg/tls-key-update",
       "baseRefName": "main",
-      "baseRefOid": "09dc70a5edfd652cfa77e7edef6ba63085b0590b",
+      "baseRefOid": "d2db856fa748537bed423cc6418b3aefb8f13a00",
       "headRepository": "yaroslavros/tls-key-update",
       "headRefName": "main",
-      "headRefOid": "fb4fc14eb8e4e224a41c2550661bb7232c640e08",
-      "closedAt": null,
-      "mergedAt": null,
-      "mergedBy": null,
-      "mergeCommit": null,
+      "headRefOid": "a093f1f91c1476ee83feafb764fc6962e31261f5",
+      "closedAt": "2026-01-06T18:30:40Z",
+      "mergedAt": "2026-01-06T18:30:40Z",
+      "mergedBy": "hannestschofenig",
+      "mergeCommit": {
+        "oid": "81592c444f955fe1494154f0893325d8fa441a08"
+      },
       "comments": [
         {
           "author": "hannestschofenig",
@@ -7304,6 +7306,13 @@
           "body": "I agree with Ilari on his last point. If we accept this PR we have to add extra text to address the case of delayed updates in TLS.\r\n\r\nOtherwise the proposed changes work fine in the SPIN model. ",
           "createdAt": "2026-01-05T09:20:25Z",
           "updatedAt": "2026-01-05T09:20:25Z"
+        },
+        {
+          "author": "yaroslavros",
+          "authorAssociation": "COLLABORATOR",
+          "body": "Added text prohibiting initiator from deferring key derivation in both TLS and DTLS.",
+          "createdAt": "2026-01-06T16:32:36Z",
+          "updatedAt": "2026-01-06T16:32:36Z"
         }
       ],
       "reviews": [
@@ -7487,24 +7496,26 @@
       "id": "PR_kwDOMJPqLM6ysH36",
       "title": "Update to RFC9261",
       "url": "https://github.com/tlswg/tls-key-update/pull/89",
-      "state": "OPEN",
+      "state": "MERGED",
       "author": "tireddy2",
       "authorAssociation": "COLLABORATOR",
       "assignees": [],
       "labels": [],
       "body": "",
       "createdAt": "2025-11-11T07:10:49Z",
-      "updatedAt": "2025-11-25T07:15:16Z",
+      "updatedAt": "2026-01-06T13:32:03Z",
       "baseRepository": "tlswg/tls-key-update",
       "baseRefName": "main",
       "baseRefOid": "09dc70a5edfd652cfa77e7edef6ba63085b0590b",
       "headRepository": "tlswg/tls-key-update",
       "headRefName": "tireddy2-patch-11",
       "headRefOid": "bab4ab43e70d8535ba886c31303fcb981e384c6c",
-      "closedAt": null,
-      "mergedAt": null,
-      "mergedBy": null,
-      "mergeCommit": null,
+      "closedAt": "2026-01-06T13:31:59Z",
+      "mergedAt": "2026-01-06T13:31:59Z",
+      "mergedBy": "hannestschofenig",
+      "mergeCommit": {
+        "oid": "69208b6f21d6f90681c3c27083dd3281c8241f4e"
+      },
       "comments": [
         {
           "author": "tireddy2",
@@ -7916,24 +7927,26 @@
       "id": "PR_kwDOMJPqLM6zMWDQ",
       "title": "Added Security Goals and fixed terminology",
       "url": "https://github.com/tlswg/tls-key-update/pull/91",
-      "state": "OPEN",
+      "state": "MERGED",
       "author": "tireddy2",
       "authorAssociation": "COLLABORATOR",
       "assignees": [],
       "labels": [],
       "body": "Address https://github.com/tlswg/tls-key-update/issues/77",
       "createdAt": "2025-11-13T10:24:08Z",
-      "updatedAt": "2025-11-30T08:16:10Z",
+      "updatedAt": "2026-01-06T13:34:01Z",
       "baseRepository": "tlswg/tls-key-update",
       "baseRefName": "main",
-      "baseRefOid": "09dc70a5edfd652cfa77e7edef6ba63085b0590b",
+      "baseRefOid": "69208b6f21d6f90681c3c27083dd3281c8241f4e",
       "headRepository": "tlswg/tls-key-update",
       "headRefName": "tireddy2-patch-12",
-      "headRefOid": "c1f113d4c284ca1b6079677ec5b0396c28b5c5de",
-      "closedAt": null,
-      "mergedAt": null,
-      "mergedBy": null,
-      "mergeCommit": null,
+      "headRefOid": "4cc3cab1958cbb8720f19955cd6a9b2a621992d3",
+      "closedAt": "2026-01-06T13:33:56Z",
+      "mergedAt": "2026-01-06T13:33:56Z",
+      "mergedBy": "hannestschofenig",
+      "mergeCommit": {
+        "oid": "d2db856fa748537bed423cc6418b3aefb8f13a00"
+      },
       "comments": [
         {
           "author": "ilaril",
@@ -8059,6 +8072,32 @@
           ]
         }
       ]
+    },
+    {
+      "number": 92,
+      "id": "PR_kwDOMJPqLM671sf1",
+      "title": "PCS for the Initial Exporter Secret",
+      "url": "https://github.com/tlswg/tls-key-update/pull/92",
+      "state": "OPEN",
+      "author": "tireddy2",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [],
+      "body": "Address issue raised in https://github.com/tlswg/tls-key-update/issues/90",
+      "createdAt": "2026-01-07T05:38:16Z",
+      "updatedAt": "2026-01-07T05:40:03Z",
+      "baseRepository": "tlswg/tls-key-update",
+      "baseRefName": "main",
+      "baseRefOid": "81592c444f955fe1494154f0893325d8fa441a08",
+      "headRepository": "tlswg/tls-key-update",
+      "headRefName": "tireddy2-patch-11",
+      "headRefOid": "12a0ba99e67115444945918d5a75ce3d92299745",
+      "closedAt": null,
+      "mergedAt": null,
+      "mergedBy": null,
+      "mergeCommit": null,
+      "comments": [],
+      "reviews": []
     }
   ]
 }
