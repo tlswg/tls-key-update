@@ -65,12 +65,6 @@ informative:
      title: Transport Layer Security (TLS) Extensions
      target: https://www.iana.org/assignments/tls-extensiontype-values
      date: November 2023
-  CDM23:
-     author:
-        org: ACM
-     title: "Keeping Up with the KEMs: Stronger Security Notions for KEMs and automated analysis of KEM-based protocols"
-     target: https://eprint.iacr.org/2023/1933.pdf
-     date: November 2023
   CCG16:
      author:
         org: IEEE
@@ -443,6 +437,10 @@ Auth | {CertificateVerify}
 Unlike TLS 1.3, DTLS 1.3 implementations must take into account that handshake
 messages are not transmitted over a reliable transport protocol.
 
+EKU messages MUST be handled using the existing DTLS handshake mechanisms
+for fragmentation, ordering, and retransmission, as defined in {{DTLS}},
+to ensure reliable delivery.
+
 Due to the possibility of an `ExtendedKeyUpdate` messages being
 lost and thereby preventing the sender of that message from updating its keying
 material, receivers MUST retain the pre-update keying material until receipt
@@ -688,6 +686,10 @@ traffic keys as soon as possible. Note: The
 client_/server_application_traffic_secret_N and its associated
 traffic keys can only be deleted by the responder after receiving the
 `ExtendedKeyUpdate(new_key_update)` message.
+
+Once client_/server_application_traffic_secret_N+1 and the corresponding traffic
+keys are in use, all subsequent records, including alerts and post-handshake
+messages MUST be protected using those keys.
 
 When using this extension, it is important to consider its interaction with
 ticket-based session resumption. If resumption occurs without a new (EC)DH
