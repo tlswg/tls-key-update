@@ -765,7 +765,7 @@ exporter secret is static for the lifetime of the connection and is not updated 
 
 This document defines an exporter interface that derives a fresh exporter secret
 whenever new application traffic keys are established through the EKU. A core design
-goal of this interface is that compromise of exporter secret material at a later
+goal of this interface is that compromise of the exporter secret material at a later
 point in time will not enable an attacker to recover exporter outputs that were
 produced earlier in the connection.
 
