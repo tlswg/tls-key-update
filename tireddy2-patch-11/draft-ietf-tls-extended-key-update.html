@@ -2107,7 +2107,7 @@ SSLKEYLOGFILE secrets including past iterations of <code>CLIENT_TRAFFIC_SECRET_<
 <a href="#section-10.1" class="section-number selfRef">10.1. </a><a href="#name-post-compromise-security-fo" class="section-name selfRef">Post-Compromise Security for the Initial Exporter Secret</a>
         </h3>
 <p id="section-10.1-1">TLS specifies a single exporter_secret derived from the main secret. This
-exporter secret is static for the lifetime of the connection and is not updated by EKU.<a href="#section-10.1-1" class="pilcrow">¶</a></p>
+exporter secret is static for the lifetime of the connection and is not updated by the EKU.<a href="#section-10.1-1" class="pilcrow">¶</a></p>
 <p id="section-10.1-2">This document defines an exporter interface that derives a fresh exporter secret
 whenever new application traffic keys are established through the EKU. A core design
 goal of this interface is that compromise of exporter secret material at a later
