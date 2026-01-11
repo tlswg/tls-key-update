@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2026-01-08T01:59:59.668095+00:00",
+  "timestamp": "2026-01-11T02:09:46.835992+00:00",
   "repo": "tlswg/tls-key-update",
   "labels": [
     {
@@ -8083,15 +8083,15 @@
       "authorAssociation": "COLLABORATOR",
       "assignees": [],
       "labels": [],
-      "body": "Address issue raised in https://github.com/tlswg/tls-key-update/issues/90",
+      "body": "Address issue raised in https://github.com/tlswg/tls-key-update/issues/90, https://github.com/tlswg/tls-key-update/issues/56 and https://github.com/tlswg/tls-key-update/issues/46",
       "createdAt": "2026-01-07T05:38:16Z",
-      "updatedAt": "2026-01-07T05:40:03Z",
+      "updatedAt": "2026-01-08T07:57:08Z",
       "baseRepository": "tlswg/tls-key-update",
       "baseRefName": "main",
       "baseRefOid": "81592c444f955fe1494154f0893325d8fa441a08",
       "headRepository": "tlswg/tls-key-update",
       "headRefName": "tireddy2-patch-11",
-      "headRefOid": "12a0ba99e67115444945918d5a75ce3d92299745",
+      "headRefOid": "84a19233b8b1205e93668f1e193b0b888e9dc084",
       "closedAt": null,
       "mergedAt": null,
       "mergedBy": null,
