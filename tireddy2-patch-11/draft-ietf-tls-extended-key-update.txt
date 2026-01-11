@@ -834,9 +834,9 @@ Table of Contents
    This document defines an exporter interface that derives a fresh
    exporter secret whenever new application traffic keys are established
    through the EKU.  A core design goal of this interface is that
-   compromise of exporter secret material at a later point in time will
-   not enable an attacker to recover exporter outputs that were produced
-   earlier in the connection.
+   compromise of the exporter secret material at a later point in time
+   will not enable an attacker to recover exporter outputs that were
+   produced earlier in the connection.
 
    If the initial exporter secret for this interface were equal to the
    exporter_secret, this goal would not be met.  The exporter outputs
