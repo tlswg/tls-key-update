@@ -1007,10 +1007,10 @@ and Thom Wiggers for their review comments.
 The sections below describe the state machines for the extended key update
 operation for TLS 1.3 and DTLS 1.3.
 
-The state machine diagrams in the Appendix are provided for illustrative 
-purposes only to aid understanding of the protocol flow. They are not normative. 
-In case of any discrepancy between the Appendix diagrams and the protocol 
-behavior specified in the main body of this document, the text in the 
+The state machine diagrams in the Appendix are provided for illustrative
+purposes only to aid understanding of the protocol flow. They are not normative.
+In case of any discrepancy between the Appendix diagrams and the protocol
+behavior specified in the main body of this document, the text in the
 draft takes precedence.
 
 For editorial reasons we abbreviate the protocol message types:
