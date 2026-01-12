@@ -437,10 +437,7 @@ Auth | {CertificateVerify}
 Unlike TLS 1.3, DTLS 1.3 implementations must take into account that handshake
 messages are not transmitted over a reliable transport protocol.
 
-EKU messages MUST be handled using the existing DTLS handshake mechanisms
-for fragmentation, ordering, and retransmission, as defined in {{DTLS}},
-to ensure reliable delivery.
-
+EKU messages MUST be transmitted reliably, like other DTLS handshake messages. If necessary, EKU messages MAY be fragmented as described in {{Section 5.5 of DTLS}}.
 Due to the possibility of an `ExtendedKeyUpdate` messages being
 lost and thereby preventing the sender of that message from updating its keying
 material, receivers MUST retain the pre-update keying material until receipt
