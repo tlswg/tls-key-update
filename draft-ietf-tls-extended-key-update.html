@@ -1064,7 +1064,7 @@ svg :is([fill="white"], [fill^="#fff"]) {
 </tr></thead>
 <tfoot><tr>
 <td class="left">Tschofenig, et al.</td>
-<td class="center">Expires 10 July 2026</td>
+<td class="center">Expires 17 July 2026</td>
 <td class="right">[Page]</td>
 </tr></tfoot>
 </table>
@@ -1077,12 +1077,12 @@ svg :is([fill="white"], [fill^="#fff"]) {
 <dd class="internet-draft">draft-ietf-tls-extended-key-update-latest</dd>
 <dt class="label-published">Published:</dt>
 <dd class="published">
-<time datetime="2026-01-06" class="published">6 January 2026</time>
+<time datetime="2026-01-13" class="published">13 January 2026</time>
     </dd>
 <dt class="label-intended-status">Intended Status:</dt>
 <dd class="intended-status">Standards Track</dd>
 <dt class="label-expires">Expires:</dt>
-<dd class="expires"><time datetime="2026-07-10">10 July 2026</time></dd>
+<dd class="expires"><time datetime="2026-07-17">17 July 2026</time></dd>
 <dt class="label-authors">Authors:</dt>
 <dd class="authors">
 <div class="author">
@@ -1156,7 +1156,7 @@ and DTLS 1.3.<a href="#section-abstract-2" class="pilcrow">¶</a></p>
         time. It is inappropriate to use Internet-Drafts as reference
         material or to cite them other than as "work in progress."<a href="#section-boilerplate.1-3" class="pilcrow">¶</a></p>
 <p id="section-boilerplate.1-4">
-        This Internet-Draft will expire on 10 July 2026.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
+        This Internet-Draft will expire on 17 July 2026.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="copyright">
@@ -2601,26 +2601,43 @@ and Thom Wiggers for their review comments.<a href="#appendix-A-4" class="pilcro
       </h2>
 <p id="appendix-B-1">The sections below describe the state machines for the extended key update
 operation for TLS 1.3 and DTLS 1.3.<a href="#appendix-B-1" class="pilcrow">¶</a></p>
-<p id="appendix-B-2">For editorial reasons we abbreviate the protocol message types:<a href="#appendix-B-2" class="pilcrow">¶</a></p>
+<p id="appendix-B-2">The state machine diagrams in the Appendix are provided for illustrative
+purposes only to aid understanding of the protocol flow. They are not normative.
+In case of any discrepancy between the Appendix diagrams and the protocol
+behavior specified in the main body of this document, the text in the
+draft takes precedence.<a href="#appendix-B-2" class="pilcrow">¶</a></p>
+<p id="appendix-B-3">For editorial reasons we abbreviate the protocol message types:<a href="#appendix-B-3" class="pilcrow">¶</a></p>
 <ul class="normal">
-<li class="normal" id="appendix-B-3.1">
-          <p id="appendix-B-3.1.1">Req - ExtendedKeyUpdate(request)<a href="#appendix-B-3.1.1" class="pilcrow">¶</a></p>
+<li class="normal" id="appendix-B-4.1">
+          <p id="appendix-B-4.1.1">Req - ExtendedKeyUpdate(request)<a href="#appendix-B-4.1.1" class="pilcrow">¶</a></p>
 </li>
-        <li class="normal" id="appendix-B-3.2">
-          <p id="appendix-B-3.2.1">Resp - ExtendedKeyUpdate(response)<a href="#appendix-B-3.2.1" class="pilcrow">¶</a></p>
+        <li class="normal" id="appendix-B-4.2">
+          <p id="appendix-B-4.2.1">Resp - ExtendedKeyUpdate(response)<a href="#appendix-B-4.2.1" class="pilcrow">¶</a></p>
 </li>
-        <li class="normal" id="appendix-B-3.3">
-          <p id="appendix-B-3.3.1">NKU - ExtendedKeyUpdate(new_key_update)<a href="#appendix-B-3.3.1" class="pilcrow">¶</a></p>
+        <li class="normal" id="appendix-B-4.3">
+          <p id="appendix-B-4.3.1">NKU - ExtendedKeyUpdate(new_key_update)<a href="#appendix-B-4.3.1" class="pilcrow">¶</a></p>
 </li>
-        <li class="normal" id="appendix-B-3.4">
-          <p id="appendix-B-3.4.1">ACK - Acknowledgement message from <span><a href="https://rfc-editor.org/rfc/rfc9147#section-7" class="relref">Section 7</a> of [<a href="#DTLS" class="cite xref">DTLS</a>]</span><a href="#appendix-B-3.4.1" class="pilcrow">¶</a></p>
+        <li class="normal" id="appendix-B-4.4">
+          <p id="appendix-B-4.4.1">ACK - Acknowledgement message from <span><a href="https://rfc-editor.org/rfc/rfc9147#section-7" class="relref">Section 7</a> of [<a href="#DTLS" class="cite xref">DTLS</a>]</span><a href="#appendix-B-4.4.1" class="pilcrow">¶</a></p>
 </li>
-        <li class="normal" id="appendix-B-3.5">
-          <p id="appendix-B-3.5.1">APP - application data payloads<a href="#appendix-B-3.5.1" class="pilcrow">¶</a></p>
+        <li class="normal" id="appendix-B-4.5">
+          <p id="appendix-B-4.5.1">APP - application data payloads<a href="#appendix-B-4.5.1" class="pilcrow">¶</a></p>
 </li>
       </ul>
-<p id="appendix-B-4">In the (D)TLS 1.3 state machines discussed below, the terms SEND and RECEIVE keys
-refer to the send and receive key variables defined in <a href="#term" class="auto internal xref">Section 2</a>.<a href="#appendix-B-4" class="pilcrow">¶</a></p>
+<p id="appendix-B-5">In the (D)TLS 1.3 state machines discussed below, the terms SEND and RECEIVE keys
+refer to the send and receive key variables defined in <a href="#term" class="auto internal xref">Section 2</a>.<a href="#appendix-B-5" class="pilcrow">¶</a></p>
+<p id="appendix-B-6">The TLS state machine diagrams use the following notation:<a href="#appendix-B-6" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="appendix-B-7.1">
+          <p id="appendix-B-7.1.1">Numbered labels (1), (2), … denote normal protocol transitions in the order they occur.<a href="#appendix-B-7.1.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="appendix-B-7.2">
+          <p id="appendix-B-7.2.1">Lettered labels (A), (B), … denote exceptional or conditional transitions.<a href="#appendix-B-7.2.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="appendix-B-7.3">
+          <p id="appendix-B-7.3.1">Self-loops indicate that the state does not change as a result of the event.<a href="#appendix-B-7.3.1" class="pilcrow">¶</a></p>
+</li>
+      </ul>
 <div id="tls-13-state-machines">
 <section id="appendix-B.1">
         <h3 id="name-tls-13-state-machines">
@@ -2636,7 +2653,7 @@ refer to the send and receive key variables defined in <a href="#term" class="au
             <div class="alignLeft art-svg artwork" id="appendix-B.1.1-1.1">
 <svg xmlns="http://www.w3.org/2000/svg" version="1.1" height="576" width="536" viewBox="0 0 536 576" class="diagram" text-anchor="middle" font-family="monospace" font-size="13px" stroke-linecap="round">
                 <path d="M 8,32 L 8,112" fill="none" stroke="black"></path>
-                <path d="M 8,192 L 8,480" fill="none" stroke="black"></path>
+                <path d="M 8,192 L 8,496" fill="none" stroke="black"></path>
                 <path d="M 8,528 L 8,560" fill="none" stroke="black"></path>
                 <path d="M 192,32 L 192,112" fill="none" stroke="black"></path>
                 <path d="M 192,192 L 192,240" fill="none" stroke="black"></path>
@@ -2645,13 +2662,9 @@ refer to the send and receive key variables defined in <a href="#term" class="au
                 <path d="M 8,112 L 192,112" fill="none" stroke="black"></path>
                 <path d="M 8,192 L 192,192" fill="none" stroke="black"></path>
                 <path d="M 8,240 L 192,240" fill="none" stroke="black"></path>
-                <path d="M 64,496 L 80,496" fill="none" stroke="black"></path>
                 <path d="M 8,528 L 192,528" fill="none" stroke="black"></path>
                 <path d="M 8,560 L 192,560" fill="none" stroke="black"></path>
-                <path d="M 8,496 L 20,520" fill="none" stroke="black"></path>
                 <path d="M 28,248 L 72,336" fill="none" stroke="black"></path>
-                <polygon class="arrowhead" points="88,496 76,490.4 76,501.6" fill="black" transform="rotate(0,80,496)"></polygon>
-                <polygon class="arrowhead" points="28,520 16,514.4 16,525.6" fill="black" transform="rotate(63.43494882292201,20,520)"></polygon>
                 <circle cx="96" cy="352" r="6" class="closeddot" fill="black"></circle>
                 <circle cx="96" cy="368" r="6" class="closeddot" fill="black"></circle>
                 <g class="text">
@@ -2724,7 +2737,7 @@ refer to the send and receive key variables defined in <a href="#term" class="au
                   <text x="404" y="388">in</text>
                   <text x="456" y="388">responder</text>
                   <text x="516" y="388">flow</text>
-                  <text x="40" y="420">(B)</text>
+                  <text x="40" y="420">(2)</text>
                   <text x="76" y="420">recv</text>
                   <text x="116" y="420">Resp</text>
                   <text x="156" y="420">with</text>
@@ -2750,7 +2763,9 @@ refer to the send and receive key variables defined in <a href="#term" class="au
                   <text x="260" y="484">(receive_key</text>
                   <text x="324" y="484">:=</text>
                   <text x="356" y="484">new)</text>
-                  <text x="132" y="500">WAIT_R_NKU</text>
+                  <text x="72" y="500">set</text>
+                  <text x="132" y="500">updating=0</text>
+                  <text x="64" y="516">v</text>
                   <text x="52" y="548">FINISHED</text>
                 </g>
               </svg><a href="#appendix-B.1.1-1.1" class="pilcrow">¶</a>
@@ -2802,7 +2817,7 @@ refer to the send and receive key variables defined in <a href="#term" class="au
                   <text x="96" y="84">receive_key=current</text>
                   <text x="60" y="100">updating=0</text>
                   <text x="56" y="132">|</text>
-                  <text x="16" y="148">(2)</text>
+                  <text x="16" y="148">(1)</text>
                   <text x="52" y="148">recv</text>
                   <text x="88" y="148">Req</text>
                   <text x="48" y="164">set</text>
@@ -2838,7 +2853,7 @@ refer to the send and receive key variables defined in <a href="#term" class="au
                   <text x="60" y="372">WAIT_I_NKU</text>
                   <text x="60" y="388">updating=1</text>
                   <text x="56" y="420">|</text>
-                  <text x="16" y="436">(4)</text>
+                  <text x="16" y="436">(2)</text>
                   <text x="52" y="436">recv</text>
                   <text x="88" y="436">NKU</text>
                   <text x="148" y="436">(encrypted</text>
@@ -3062,7 +3077,7 @@ refer to the send and receive key variables defined in <a href="#term" class="au
                   <text x="72" y="564">retain_old=1;</text>
                   <text x="148" y="564">rx++</text>
                   <text x="88" y="596">|</text>
-                  <text x="16" y="612">(4)</text>
+                  <text x="16" y="612">(2)</text>
                   <text x="52" y="612">send</text>
                   <text x="88" y="612">NKU</text>
                   <text x="140" y="612">[tag=old</text>
@@ -3075,7 +3090,7 @@ refer to the send and receive key variables defined in <a href="#term" class="au
                   <text x="88" y="708">APP</text>
                   <text x="144" y="708">send/recv</text>
                   <text x="216" y="708">allowed</text>
-                  <text x="16" y="740">(7)</text>
+                  <text x="16" y="740">(3)</text>
                   <text x="52" y="740">recv</text>
                   <text x="88" y="740">ACK</text>
                   <text x="136" y="740">[e==rx]</text>
@@ -3153,7 +3168,7 @@ refer to the send and receive key variables defined in <a href="#term" class="au
                   <text x="244" y="68">:=</text>
                   <text x="264" y="68">0</text>
                   <text x="56" y="100">|</text>
-                  <text x="16" y="116">(2)</text>
+                  <text x="16" y="116">(1)</text>
                   <text x="52" y="116">recv</text>
                   <text x="88" y="116">Req</text>
                   <text x="136" y="116">[e==rx]</text>
@@ -3184,7 +3199,7 @@ refer to the send and receive key variables defined in <a href="#term" class="au
                   <text x="60" y="308">WAIT_I_NKU</text>
                   <text x="68" y="324">(updating=1)</text>
                   <text x="56" y="356">|</text>
-                  <text x="16" y="372">(4)</text>
+                  <text x="16" y="372">(2)</text>
                   <text x="52" y="372">recv</text>
                   <text x="88" y="372">NKU</text>
                   <text x="136" y="372">[e==rx]</text>
@@ -3199,7 +3214,7 @@ refer to the send and receive key variables defined in <a href="#term" class="au
                   <text x="76" y="468">1;</text>
                   <text x="120" y="468">tx=tx+1</text>
                   <text x="56" y="500">|</text>
-                  <text x="16" y="516">(5)</text>
+                  <text x="16" y="516">(3)</text>
                   <text x="52" y="516">send</text>
                   <text x="88" y="516">ACK</text>
                   <text x="140" y="516">[tag=tx]</text>
