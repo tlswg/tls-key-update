@@ -764,13 +764,10 @@ A core design goal of this specification is not met if the exporter_secret does 
 Therefore, this document defines an exporter interface that derives a fresh exporter secret
 whenever new application traffic keys are updated through the EKU.
 
-If the initial exporter secret for this interface were equal to the exporter_secret,
-this goal would not be met. The exporter outputs are deterministically derived
-from the exporter_secret. As a result, compromise of the exporter_secret
-at any point during the lifetime of the connection would allow an attacker to
-recompute all exporter outputs derived from it, including those produced earlier
-in the connection, thereby violating post-compromise security for
-exported keying material.
+If the initial exporter secret for this new interface were identical to exporter_secret,
+then compromising exporter_secret at any point during the lifetime of the connection
+would enable an attacker to recompute all exporter outputs derived from it.
+This would break post-compromise security for exported keying material.
 
 Therefore, the initial exporter secret used by the exporter interface defined in
 this document, i.e., the exporter output available prior to the first Extended
