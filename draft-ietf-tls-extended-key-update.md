@@ -1007,6 +1007,12 @@ and Thom Wiggers for their review comments.
 The sections below describe the state machines for the extended key update
 operation for TLS 1.3 and DTLS 1.3.
 
+The state machine diagrams in the Appendix are provided for illustrative
+purposes only to aid understanding of the protocol flow. They are not normative.
+In case of any discrepancy between the Appendix diagrams and the protocol
+behavior specified in the main body of this document, the text in the
+draft takes precedence.
+
 For editorial reasons we abbreviate the protocol message types:
 
  * Req - ExtendedKeyUpdate(request)
@@ -1017,6 +1023,12 @@ For editorial reasons we abbreviate the protocol message types:
 
 In the (D)TLS 1.3 state machines discussed below, the terms SEND and RECEIVE keys
 refer to the send and receive key variables defined in {{term}}.
+
+The TLS state machine diagrams use the following notation:
+
+* Numbered labels (1), (2), … denote normal protocol transitions in the order they occur.
+* Lettered labels (A), (B), … denote exceptional or conditional transitions.
+* Self-loops indicate that the state does not change as a result of the event.
 
 ## TLS 1.3 State Machines
 
@@ -1049,13 +1061,13 @@ This section describes the initiator and responder state machines.
 |          * act as RESPONDER: send Resp with KeyShareEntry,
 |            derive new secrets, then proceed as in responder flow
 |
-|  (B) recv Resp with key_share:
+|  (2) recv Resp with key_share:
 |      derive new secrets
 |      send NKU (encrypted under old keys)
 |      update SEND key (send_key := new)
 |      update RECEIVE key (receive_key := new)
-\      --> WAIT_R_NKU
- v
+|      set updating=0
+       v
 +----------------------+
 | FINISHED             |
 +----------------------+
@@ -1077,7 +1089,7 @@ Notes:
 | updating=0           |
 +----------------------+
       |
-(2) recv Req
+(1) recv Req
     set updating=1
       v
 +----------------------+
@@ -1095,7 +1107,7 @@ Notes:
 | updating=1           |
 +----------------------+
       |
-(4) recv NKU (encrypted under old keys)
+(2) recv NKU (encrypted under old keys)
     update RECEIVE keys (receive_key := new)
     set updating=0
       v
@@ -1182,7 +1194,7 @@ Throughout the process:
 | retain_old=1; rx++  |
 +---------------------+
           |
-(4) send NKU [tag=old tx]
+(2) send NKU [tag=old tx]
           v
 +------------------------------+
 | WAIT_ACK (updating = 1)      |
@@ -1190,7 +1202,7 @@ Throughout the process:
       |
       |  APP send/recv allowed
       |
-(7) recv ACK [e==rx]
+(3) recv ACK [e==rx]
     tx=rx; retain_old=0; updating := 0
       v
 +------------------------------------------+
@@ -1221,7 +1233,7 @@ APP acceptance rule (receiver): accept if e == rx or (retain_old && e == old_rx)
 | rx := E; tx := E, updating := 0 |
 +---------------------------------+
       |
-(2) recv Req [e==rx]
+(1) recv Req [e==rx]
     set updating := 1
       v
 +----------------------+
@@ -1237,7 +1249,7 @@ APP acceptance rule (receiver): accept if e == rx or (retain_old && e == old_rx)
 | (updating=1)  |
 +-------+-------+
       |
-(4) recv NKU [e==rx]      (assert accepted)
+(2) recv NKU [e==rx]      (assert accepted)
       |
 +---------------------+
 | ACTIVATE RETENTION  |
@@ -1246,7 +1258,7 @@ APP acceptance rule (receiver): accept if e == rx or (retain_old && e == old_rx)
 | rx=rx+1; tx=tx+1    |
 +----------+----------+
       |
-(5) send ACK [tag=tx]
+(3) send ACK [tag=tx]
     set updating := 0; assert tx==rx
       v
 +------------------------------------------+
