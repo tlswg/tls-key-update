@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2026-01-11T02:09:46.835992+00:00",
+  "timestamp": "2026-01-13T01:57:39.328752+00:00",
   "repo": "tlswg/tls-key-update",
   "labels": [
     {
@@ -8085,19 +8085,248 @@
       "labels": [],
       "body": "Address issue raised in https://github.com/tlswg/tls-key-update/issues/90, https://github.com/tlswg/tls-key-update/issues/56 and https://github.com/tlswg/tls-key-update/issues/46",
       "createdAt": "2026-01-07T05:38:16Z",
-      "updatedAt": "2026-01-08T07:57:08Z",
+      "updatedAt": "2026-01-12T14:49:27Z",
       "baseRepository": "tlswg/tls-key-update",
       "baseRefName": "main",
       "baseRefOid": "81592c444f955fe1494154f0893325d8fa441a08",
       "headRepository": "tlswg/tls-key-update",
       "headRefName": "tireddy2-patch-11",
-      "headRefOid": "84a19233b8b1205e93668f1e193b0b888e9dc084",
+      "headRefOid": "3811ad225e19c6fb0859e43668095551b6a494e5",
       "closedAt": null,
       "mergedAt": null,
       "mergedBy": null,
       "mergeCommit": null,
       "comments": [],
-      "reviews": []
+      "reviews": [
+        {
+          "id": "PRR_kwDOMJPqLM7Zcidc",
+          "commit": {
+            "abbreviatedOid": "84a1923"
+          },
+          "author": "hannestschofenig",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2026-01-11T17:24:50Z",
+          "updatedAt": "2026-01-11T17:24:51Z",
+          "comments": [
+            {
+              "originalPosition": 20,
+              "body": "```suggestion\r\nEKU messages MUST be transmitted reliably, like other DTLS handshake messages. If necessary, EKU messages MAY be fragmented as described in {{Section 5.5 of DTLS}}.\r\n```",
+              "createdAt": "2026-01-11T17:24:50Z",
+              "updatedAt": "2026-01-11T17:24:51Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM7Zcjte",
+          "commit": {
+            "abbreviatedOid": "84a1923"
+          },
+          "author": "hannestschofenig",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2026-01-11T17:28:03Z",
+          "updatedAt": "2026-01-11T17:28:03Z",
+          "comments": [
+            {
+              "originalPosition": 42,
+              "body": "```suggestion\r\nexporter secret is static for the lifetime of the connection and is not updated by the EKU.\r\n```",
+              "createdAt": "2026-01-11T17:28:03Z",
+              "updatedAt": "2026-01-11T17:28:03Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM7Zcj1k",
+          "commit": {
+            "abbreviatedOid": "84a1923"
+          },
+          "author": "hannestschofenig",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2026-01-11T17:28:24Z",
+          "updatedAt": "2026-01-11T17:28:24Z",
+          "comments": [
+            {
+              "originalPosition": 45,
+              "body": "```suggestion\r\nwhenever new application traffic keys are established through the EKU. A core design\r\n```",
+              "createdAt": "2026-01-11T17:28:24Z",
+              "updatedAt": "2026-01-11T17:28:24Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM7ZckEh",
+          "commit": {
+            "abbreviatedOid": "4d5fcf4"
+          },
+          "author": "hannestschofenig",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2026-01-11T17:28:54Z",
+          "updatedAt": "2026-01-11T17:28:54Z",
+          "comments": [
+            {
+              "originalPosition": 46,
+              "body": "```suggestion\r\ngoal of this interface is that compromise of the exporter secret material at a later\r\n```",
+              "createdAt": "2026-01-11T17:28:54Z",
+              "updatedAt": "2026-01-11T17:28:54Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM7Zns41",
+          "commit": {
+            "abbreviatedOid": "3811ad2"
+          },
+          "author": "hannestschofenig",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2026-01-12T14:31:08Z",
+          "updatedAt": "2026-01-12T14:31:08Z",
+          "comments": [
+            {
+              "originalPosition": 38,
+              "body": "```suggestion\r\nThe TLS 1.3 Key Schedule, see {{Figure 5 of TLS}}, derives the exporter_secret from the main secret. This\r\n```",
+              "createdAt": "2026-01-12T14:31:08Z",
+              "updatedAt": "2026-01-12T14:31:08Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM7ZnuZE",
+          "commit": {
+            "abbreviatedOid": "3811ad2"
+          },
+          "author": "hannestschofenig",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2026-01-12T14:32:23Z",
+          "updatedAt": "2026-01-12T14:32:23Z",
+          "comments": [
+            {
+              "originalPosition": 39,
+              "body": "```suggestion\r\nexporter_secret is static for the lifetime of the connection and is not updated by a standard key update.\r\n```",
+              "createdAt": "2026-01-12T14:32:23Z",
+              "updatedAt": "2026-01-12T14:32:23Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM7Znxoo",
+          "commit": {
+            "abbreviatedOid": "3811ad2"
+          },
+          "author": "hannestschofenig",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2026-01-12T14:34:57Z",
+          "updatedAt": "2026-01-12T14:34:57Z",
+          "comments": [
+            {
+              "originalPosition": 45,
+              "body": "```suggestion\r\nA core design goal of this specification is not met if the exporter_secret does not change.\r\nTherefore, this document defines an exporter interface that derives a fresh exporter secret\r\nwhenever new application traffic keys are updated through the EKU.\r\n```",
+              "createdAt": "2026-01-12T14:34:57Z",
+              "updatedAt": "2026-01-12T14:34:57Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM7Zn2PR",
+          "commit": {
+            "abbreviatedOid": "3811ad2"
+          },
+          "author": "hannestschofenig",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2026-01-12T14:38:30Z",
+          "updatedAt": "2026-01-12T14:38:30Z",
+          "comments": [
+            {
+              "originalPosition": 53,
+              "body": "```suggestion\r\nIf the initial exporter secret for this new interface were identical to exporter_secret and all subsequent exporter secrets were derived from it deterministically, then compromising exporter_secret at any point during the lifetime of the connection would enable an attacker to recompute all exporter outputs derived from it. This would break post-compromise security for exported keying material.\r\n```",
+              "createdAt": "2026-01-12T14:38:30Z",
+              "updatedAt": "2026-01-12T14:38:30Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM7ZoDyC",
+          "commit": {
+            "abbreviatedOid": "3811ad2"
+          },
+          "author": "hannestschofenig",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2026-01-12T14:49:27Z",
+          "updatedAt": "2026-01-12T14:49:27Z",
+          "comments": [
+            {
+              "originalPosition": 76,
+              "body": "```suggestion\r\nstatic `exporter_secret` for the lifetime of the connection for compatiblity with \"legacy\" applications.\r\n```",
+              "createdAt": "2026-01-12T14:49:27Z",
+              "updatedAt": "2026-01-12T14:49:28Z"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "number": 93,
+      "id": "PR_kwDOMJPqLM68tXua",
+      "title": "Update to Appendix",
+      "url": "https://github.com/tlswg/tls-key-update/pull/93",
+      "state": "OPEN",
+      "author": "tireddy2",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [],
+      "body": "",
+      "createdAt": "2026-01-12T14:07:48Z",
+      "updatedAt": "2026-01-12T14:53:22Z",
+      "baseRepository": "tlswg/tls-key-update",
+      "baseRefName": "main",
+      "baseRefOid": "81592c444f955fe1494154f0893325d8fa441a08",
+      "headRepository": "tlswg/tls-key-update",
+      "headRefName": "tireddy2-patch-12",
+      "headRefOid": "0da0a3cf2b1bb86cd3a795b0e33515f643516110",
+      "closedAt": null,
+      "mergedAt": null,
+      "mergedBy": null,
+      "mergeCommit": null,
+      "comments": [
+        {
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "body": "This PR will address https://github.com/tlswg/tls-key-update/issues/78",
+          "createdAt": "2026-01-12T14:10:24Z",
+          "updatedAt": "2026-01-12T14:10:24Z"
+        }
+      ],
+      "reviews": [
+        {
+          "id": "PRR_kwDOMJPqLM7ZoIeL",
+          "commit": {
+            "abbreviatedOid": "0da0a3c"
+          },
+          "author": "hannestschofenig",
+          "authorAssociation": "COLLABORATOR",
+          "state": "APPROVED",
+          "body": "Thanks for the update and the clarifications in the PR",
+          "createdAt": "2026-01-12T14:53:22Z",
+          "updatedAt": "2026-01-12T14:53:22Z",
+          "comments": []
+        }
+      ]
     }
   ]
 }
