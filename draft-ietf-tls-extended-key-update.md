@@ -758,7 +758,7 @@ SSLKEYLOGFILE secrets including past iterations of `CLIENT_TRAFFIC_SECRET_`,
 ## Post-Compromise Security for the Initial Exporter Secret
 
 The TLS 1.3 Key Schedule, see {{Figure 5 of TLS}}, derives the exporter_secret from the main secret. This
-exporter secret is static for the lifetime of the connection and is not updated by the EKU.
+exporter_secret is static for the lifetime of the connection and is not updated by a standard key update.
 
 This document defines an exporter interface that derives a fresh exporter secret
 whenever new application traffic keys are established through the EKU. A core design
