@@ -795,7 +795,7 @@ Transcript-Hash(ClientHello..server Finished))
 Applications that require post-compromise security MUST use the exporter
 interface defined in this document. This exporter interface is independent of
 the TLS exporter defined in {{Section 7.5 of TLS}}, which continues to use a
-static `exporter_secret` for the lifetime of the connection.
+static `exporter_secret` for the lifetime of the connection for compatiblity with "legacy" applications.
 
 ## Exporter Usage After Extended Key Update
 
