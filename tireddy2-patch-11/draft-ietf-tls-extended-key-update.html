@@ -1064,7 +1064,7 @@ svg :is([fill="white"], [fill^="#fff"]) {
 </tr></thead>
 <tfoot><tr>
 <td class="left">Tschofenig, et al.</td>
-<td class="center">Expires 16 July 2026</td>
+<td class="center">Expires 18 July 2026</td>
 <td class="right">[Page]</td>
 </tr></tfoot>
 </table>
@@ -1077,12 +1077,12 @@ svg :is([fill="white"], [fill^="#fff"]) {
 <dd class="internet-draft">draft-ietf-tls-extended-key-update-latest</dd>
 <dt class="label-published">Published:</dt>
 <dd class="published">
-<time datetime="2026-01-12" class="published">12 January 2026</time>
+<time datetime="2026-01-14" class="published">14 January 2026</time>
     </dd>
 <dt class="label-intended-status">Intended Status:</dt>
 <dd class="intended-status">Standards Track</dd>
 <dt class="label-expires">Expires:</dt>
-<dd class="expires"><time datetime="2026-07-16">16 July 2026</time></dd>
+<dd class="expires"><time datetime="2026-07-18">18 July 2026</time></dd>
 <dt class="label-authors">Authors:</dt>
 <dd class="authors">
 <div class="author">
@@ -1156,7 +1156,7 @@ and DTLS 1.3.<a href="#section-abstract-2" class="pilcrow">¶</a></p>
         time. It is inappropriate to use Internet-Drafts as reference
         material or to cite them other than as "work in progress."<a href="#section-boilerplate.1-3" class="pilcrow">¶</a></p>
 <p id="section-boilerplate.1-4">
-        This Internet-Draft will expire on 16 July 2026.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
+        This Internet-Draft will expire on 18 July 2026.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="copyright">
@@ -2104,20 +2104,15 @@ SSLKEYLOGFILE secrets including past iterations of <code>CLIENT_TRAFFIC_SECRET_<
         <h3 id="name-post-compromise-security-fo">
 <a href="#section-10.1" class="section-number selfRef">10.1. </a><a href="#name-post-compromise-security-fo" class="section-name selfRef">Post-Compromise Security for the Initial Exporter Secret</a>
         </h3>
-<p id="section-10.1-1">TLS specifies a single exporter_secret derived from the main secret. This
-exporter secret is static for the lifetime of the connection and is not updated by the EKU.<a href="#section-10.1-1" class="pilcrow">¶</a></p>
-<p id="section-10.1-2">This document defines an exporter interface that derives a fresh exporter secret
-whenever new application traffic keys are established through the EKU. A core design
-goal of this interface is that compromise of the exporter secret material at a later
-point in time will not enable an attacker to recover exporter outputs that were
-produced earlier in the connection.<a href="#section-10.1-2" class="pilcrow">¶</a></p>
-<p id="section-10.1-3">If the initial exporter secret for this interface were equal to the exporter_secret,
-this goal would not be met. The exporter outputs are deterministically derived
-from the exporter_secret. As a result, compromise of the exporter_secret
-at any point during the lifetime of the connection would allow an attacker to
-recompute all exporter outputs derived from it, including those produced earlier
-in the connection, thereby violating post-compromise security for
-exported keying material.<a href="#section-10.1-3" class="pilcrow">¶</a></p>
+<p id="section-10.1-1">The TLS 1.3 Key Schedule, see Figure 5 of <span>[<a href="#TLS" class="cite xref">TLS</a>]</span>, derives the exporter_secret from the main secret. This
+exporter_secret is static for the lifetime of the connection and is not updated by a standard key update.<a href="#section-10.1-1" class="pilcrow">¶</a></p>
+<p id="section-10.1-2">A core design goal of this specification is not met if the exporter_secret does not change.
+Therefore, this document defines an exporter interface that derives a fresh exporter secret
+whenever new application traffic keys are updated through the EKU.<a href="#section-10.1-2" class="pilcrow">¶</a></p>
+<p id="section-10.1-3">If the initial exporter secret for this new interface were identical to exporter_secret,
+then compromising exporter_secret at any point during the lifetime of the connection
+would enable an attacker to recompute all exporter outputs derived from it.
+This would break post-compromise security for exported keying material.<a href="#section-10.1-3" class="pilcrow">¶</a></p>
 <p id="section-10.1-4">Therefore, the initial exporter secret used by the exporter interface defined in
 this document, i.e., the exporter output available prior to the first Extended
 Key Update, <span class="bcp14">MUST</span> be distinct from the exporter_secret. This separation
@@ -2138,7 +2133,7 @@ Transcript-Hash(ClientHello..server Finished))
 <p id="section-10.1-7">Applications that require post-compromise security <span class="bcp14">MUST</span> use the exporter
 interface defined in this document. This exporter interface is independent of
 the TLS exporter defined in <span><a href="https://datatracker.ietf.org/doc/html/draft-ietf-tls-rfc8446bis-14#section-7.5" class="relref">Section 7.5</a> of [<a href="#TLS" class="cite xref">TLS</a>]</span>, which continues to use a
-static <code>exporter_secret</code> for the lifetime of the connection.<a href="#section-10.1-7" class="pilcrow">¶</a></p>
+static <code>exporter_secret</code> for the lifetime of the connection for compatiblity with "legacy" applications.<a href="#section-10.1-7" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="exporter-usage-after-extended-key-update">
