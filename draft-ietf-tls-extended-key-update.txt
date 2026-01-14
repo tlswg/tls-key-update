@@ -5,14 +5,14 @@
 Transport Layer Security                                   H. Tschofenig
 Internet-Draft                                                   Siemens
 Intended status: Standards Track                                M. Tüxen
-Expires: 17 July 2026                  Münster Univ. of Applied Sciences
+Expires: 18 July 2026                  Münster Univ. of Applied Sciences
                                                                 T. Reddy
                                                                    Nokia
                                                                 S. Fries
                                                                  Siemens
                                                             Y. Rosomakho
                                                                  Zscaler
-                                                         13 January 2026
+                                                         14 January 2026
 
 
        Extended Key Update for Transport Layer Security (TLS) 1.3
@@ -66,7 +66,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 17 July 2026.
+   This Internet-Draft will expire on 18 July 2026.
 
 Copyright Notice
 
@@ -96,6 +96,8 @@ Table of Contents
    8.  Post-Quantum Cryptography Considerations
    9.  SSLKEYLOGFILE Update
    10. Exporter
+     10.1.  Post-Compromise Security for the Initial Exporter Secret
+     10.2.  Exporter Usage After Extended Key Update
    11. Use of Post-Handshake Authentication and Exported
            Authenticators with Extended Key Update
      11.1.  Post-Handshake Certificate-Based Client Authentication
@@ -490,11 +492,13 @@ Table of Contents
    handshake messages are not transmitted over a reliable transport
    protocol.
 
-   Due to the possibility of an ExtendedKeyUpdate messages being lost
-   and thereby preventing the sender of that message from updating its
-   keying material, receivers MUST retain the pre-update keying material
-   until receipt and successful decryption of a message using the new
-   keys.
+   EKU messages MUST be transmitted reliably, like other DTLS handshake
+   messages.  If necessary, EKU messages MAY be fragmented as described
+   in Section 5.5 of [DTLS].  Due to the possibility of an
+   ExtendedKeyUpdate messages being lost and thereby preventing the
+   sender of that message from updating its keying material, receivers
+   MUST retain the pre-update keying material until receipt and
+   successful decryption of a message using the new keys.
 
    Due to packet loss and/or reordering, DTLS 1.3 peers MAY receive
    records from an earlier epoch.  If the necessary keys are available,
@@ -745,6 +749,11 @@ Table of Contents
    can only be deleted by the responder after receiving the
    ExtendedKeyUpdate(new_key_update) message.
 
+   Once client_/server_application_traffic_secret_N+1 and the
+   corresponding traffic keys are in use, all subsequent records,
+   including alerts and post-handshake messages MUST be protected using
+   those keys.
+
    When using this extension, it is important to consider its
    interaction with ticket-based session resumption.  If resumption
    occurs without a new (EC)DH exchange that provides forward secrecy,
@@ -813,6 +822,50 @@ Table of Contents
    CLIENT_TRAFFIC_SECRET_, SERVER_TRAFFIC_SECRET_ and EXPORTER_SECRET_.
 
 10.  Exporter
+
+10.1.  Post-Compromise Security for the Initial Exporter Secret
+
+   The TLS 1.3 Key Schedule, see Figure 5 of [TLS], derives the
+   exporter_secret from the main secret.  This exporter_secret is static
+   for the lifetime of the connection and is not updated by a standard
+   key update.
+
+   A core design goal of this specification is not met if the
+   exporter_secret does not change.  Therefore, this document defines an
+   exporter interface that derives a fresh exporter secret whenever new
+   application traffic keys are updated through the EKU.
+
+   If the initial exporter secret for this new interface were identical
+   to exporter_secret, then compromising exporter_secret at any point
+   during the lifetime of the connection would enable an attacker to
+   recompute all exporter outputs derived from it.  This would break
+   post-compromise security for exported keying material.
+
+   Therefore, the initial exporter secret used by the exporter interface
+   defined in this document, i.e., the exporter output available prior
+   to the first Extended Key Update, MUST be distinct from the
+   exporter_secret.  This separation ensures that compromise of the TLS
+   exporter interface does not compromise outputs derived from the
+   exporter interface defined in this document.
+
+   Prior to the first Extended Key Update, the exporter interface
+   provides an initial exporter secret, denoted exporter_secret_0.  This
+   secret is derived from the TLS main secret and the handshake
+   transcript, but is cryptographically independent of the TLS
+   exporter_secret.  It is computed as follows:
+
+   exporter_secret_0 =
+   Derive-Secret(Main Secret,
+   "exporter eku",
+   Transcript-Hash(ClientHello..server Finished))
+
+   Applications that require post-compromise security MUST use the
+   exporter interface defined in this document.  This exporter interface
+   is independent of the TLS exporter defined in Section 7.5 of [TLS],
+   which continues to use a static exporter_secret for the lifetime of
+   the connection for compatiblity with "legacy" applications.
+
+10.2.  Exporter Usage After Extended Key Update
 
    Protocols such as DTLS-SRTP and DTLS-over-SCTP rely on TLS or DTLS
    for key establishment, but reuse portions of the derived keying
@@ -1166,10 +1219,6 @@ Table of Contents
 
    [CCG16]    IEEE, "On Post-compromise Security", August 2016,
               <https://doi.org/10.1109/csf.2016.19>.
-
-   [CDM23]    ACM, "Keeping Up with the KEMs: Stronger Security Notions
-              for KEMs and automated analysis of KEM-based protocols",
-              November 2023, <https://eprint.iacr.org/2023/1933.pdf>.
 
    [CONFIDENTIALITY]
               Barnes, R., Schneier, B., Jennings, C., Hardie, T.,
