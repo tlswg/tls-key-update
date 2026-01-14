@@ -65,12 +65,6 @@ informative:
      title: Transport Layer Security (TLS) Extensions
      target: https://www.iana.org/assignments/tls-extensiontype-values
      date: November 2023
-  CDM23:
-     author:
-        org: ACM
-     title: "Keeping Up with the KEMs: Stronger Security Notions for KEMs and automated analysis of KEM-based protocols"
-     target: https://eprint.iacr.org/2023/1933.pdf
-     date: November 2023
   CCG16:
      author:
         org: IEEE
@@ -443,6 +437,7 @@ Auth | {CertificateVerify}
 Unlike TLS 1.3, DTLS 1.3 implementations must take into account that handshake
 messages are not transmitted over a reliable transport protocol.
 
+EKU messages MUST be transmitted reliably, like other DTLS handshake messages. If necessary, EKU messages MAY be fragmented as described in {{Section 5.5 of DTLS}}.
 Due to the possibility of an `ExtendedKeyUpdate` messages being
 lost and thereby preventing the sender of that message from updating its keying
 material, receivers MUST retain the pre-update keying material until receipt
@@ -689,6 +684,10 @@ client_/server_application_traffic_secret_N and its associated
 traffic keys can only be deleted by the responder after receiving the
 `ExtendedKeyUpdate(new_key_update)` message.
 
+Once client_/server_application_traffic_secret_N+1 and the corresponding traffic
+keys are in use, all subsequent records, including alerts and post-handshake
+messages MUST be protected using those keys.
+
 When using this extension, it is important to consider its interaction with
 ticket-based session resumption. If resumption occurs without a new (EC)DH
 exchange that provides forward secrecy, an attacker could potentially revert
@@ -755,6 +754,45 @@ SSLKEYLOGFILE secrets including past iterations of `CLIENT_TRAFFIC_SECRET_`,
 `SERVER_TRAFFIC_SECRET_` and `EXPORTER_SECRET_`.
 
 # Exporter
+
+## Post-Compromise Security for the Initial Exporter Secret
+
+The TLS 1.3 Key Schedule, see Figure 5 of {{TLS}}, derives the exporter_secret from the main secret. This
+exporter_secret is static for the lifetime of the connection and is not updated by a standard key update.
+
+A core design goal of this specification is not met if the exporter_secret does not change.
+Therefore, this document defines an exporter interface that derives a fresh exporter secret
+whenever new application traffic keys are updated through the EKU.
+
+If the initial exporter secret for this new interface were identical to exporter_secret,
+then compromising exporter_secret at any point during the lifetime of the connection
+would enable an attacker to recompute all exporter outputs derived from it.
+This would break post-compromise security for exported keying material.
+
+Therefore, the initial exporter secret used by the exporter interface defined in
+this document, i.e., the exporter output available prior to the first Extended
+Key Update, MUST be distinct from the exporter_secret. This separation
+ensures that compromise of the TLS exporter interface does not compromise outputs
+derived from the exporter interface defined in this document.
+
+Prior to the first Extended Key Update, the exporter interface provides an
+initial exporter secret, denoted exporter_secret_0. This secret is derived
+from the TLS main secret and the handshake transcript, but is cryptographically
+independent of the TLS exporter_secret. It is computed as follows:
+
+~~~~
+exporter_secret_0 =
+Derive-Secret(Main Secret,
+"exporter eku",
+Transcript-Hash(ClientHello..server Finished))
+~~~~
+
+Applications that require post-compromise security MUST use the exporter
+interface defined in this document. This exporter interface is independent of
+the TLS exporter defined in {{Section 7.5 of TLS}}, which continues to use a
+static `exporter_secret` for the lifetime of the connection for compatiblity with "legacy" applications.
+
+## Exporter Usage After Extended Key Update
 
 Protocols such as DTLS-SRTP and DTLS-over-SCTP rely on TLS or DTLS for
 key establishment, but reuse portions of the derived keying material for
