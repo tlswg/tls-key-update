@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2026-01-13T01:57:39.328752+00:00",
+  "timestamp": "2026-01-15T01:59:35.805704+00:00",
   "repo": "tlswg/tls-key-update",
   "labels": [
     {
@@ -509,15 +509,15 @@
       "id": "I_kwDOMJPqLM7KGP0U",
       "title": "Explain interactions with other handshake messages",
       "url": "https://github.com/tlswg/tls-key-update/issues/46",
-      "state": "OPEN",
+      "state": "CLOSED",
       "author": "hannestschofenig",
       "authorAssociation": "COLLABORATOR",
       "assignees": [],
       "labels": [],
       "body": "Currently we only talk about application data payloads being accepted during the different extended key update states.",
       "createdAt": "2025-09-06T18:05:00Z",
-      "updatedAt": "2025-11-13T10:48:16Z",
-      "closedAt": null,
+      "updatedAt": "2026-01-14T05:05:46Z",
+      "closedAt": "2026-01-14T05:05:45Z",
       "comments": [
         {
           "author": "tireddy2",
@@ -525,6 +525,13 @@
           "body": "Good point, I propose to add the following text:\nOnce the Extended Key Update mechanism is complete and the endpoint begins using the corresponding traffic keys, all records are encrypted with those keys, including alerts and post-handshake messages.",
           "createdAt": "2025-11-13T10:48:16Z",
           "updatedAt": "2025-11-13T10:48:16Z"
+        },
+        {
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "body": "Fixed in https://github.com/tlswg/tls-key-update/pull/92",
+          "createdAt": "2026-01-14T05:05:45Z",
+          "updatedAt": "2026-01-14T05:05:45Z"
         }
       ]
     },
@@ -589,15 +596,15 @@
       "id": "I_kwDOMJPqLM7MS8FX",
       "title": "DTLS retransmit",
       "url": "https://github.com/tlswg/tls-key-update/issues/56",
-      "state": "OPEN",
+      "state": "CLOSED",
       "author": "yaroslavros",
       "authorAssociation": "COLLABORATOR",
       "assignees": [],
       "labels": [],
       "body": "We need to clarify who retransmits what in DTLS flows in case there is a suspicion that a message was lost.",
       "createdAt": "2025-09-17T19:20:24Z",
-      "updatedAt": "2025-11-13T10:53:22Z",
-      "closedAt": null,
+      "updatedAt": "2026-01-14T05:05:24Z",
+      "closedAt": "2026-01-14T05:05:23Z",
       "comments": [
         {
           "author": "tireddy2",
@@ -605,6 +612,13 @@
           "body": "we can add the following line:\nRetransmission of Extended Key Update messages in DTLS follows the DTLS handshake retransmission procedure.",
           "createdAt": "2025-11-13T10:53:22Z",
           "updatedAt": "2025-11-13T10:53:22Z"
+        },
+        {
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "body": "Fixed in https://github.com/tlswg/tls-key-update/pull/92.",
+          "createdAt": "2026-01-14T05:05:24Z",
+          "updatedAt": "2026-01-14T05:05:24Z"
         }
       ]
     },
@@ -944,15 +958,15 @@
       "id": "I_kwDOMJPqLM7T6-YU",
       "title": "Ambiguities in version -06: Protocol diagram and state machine",
       "url": "https://github.com/tlswg/tls-key-update/issues/78",
-      "state": "OPEN",
+      "state": "CLOSED",
       "author": "muhammad-usama-sardar",
       "authorAssociation": "COLLABORATOR",
       "assignees": [],
       "labels": [],
       "body": "[A follow-up of #59 since it was closed by the authors without being properly addressed]\n\n[Opening separate issues as requested by the authors]\n\n- TLS state machines in Appendix B.2 and B.3 are very hard to read for me. Some symbols are undefined, and an explanation is missing. For example, what is (A) and (B)? There is (1), (2), (4) and (5): is there a reason for having no (3)?",
       "createdAt": "2025-10-27T07:35:36Z",
-      "updatedAt": "2025-11-22T10:06:41Z",
-      "closedAt": null,
+      "updatedAt": "2026-01-14T05:04:47Z",
+      "closedAt": "2026-01-14T05:04:47Z",
       "comments": [
         {
           "author": "muhammad-usama-sardar",
@@ -988,6 +1002,13 @@
           "body": "I don't see anything in flight on clarification of TLS state machines. Did I miss something?",
           "createdAt": "2025-11-22T10:06:41Z",
           "updatedAt": "2025-11-22T10:06:41Z"
+        },
+        {
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "body": "Addressed inhttps://github.com/tlswg/tls-key-update/pull/93.",
+          "createdAt": "2026-01-14T05:04:47Z",
+          "updatedAt": "2026-01-14T05:04:47Z"
         }
       ]
     },
@@ -1122,15 +1143,15 @@
       "id": "I_kwDOMJPqLM7XUDiA",
       "title": "Exporter_secret probably should != exporter_secret_0",
       "url": "https://github.com/tlswg/tls-key-update/issues/90",
-      "state": "OPEN",
+      "state": "CLOSED",
       "author": "ilaril",
       "authorAssociation": "NONE",
       "assignees": [],
       "labels": [],
       "body": "Currently, `exporter_secret_0` seems to equal `exporter_secret`. This requires an implementation to keep the exporter keys for the first epoch for the entire connection duration \u2014 as application might use the TLS 1.3 exporter interface.\n\nThis degrades security, as while EKU-aware applications use `exporter_secret` only for authentication \u2014 which can not be retroactively broken \u2014 those use `exporter_secret_0` for the initial encryption keys. Thus, compromise after the first epoch has ended can still compromise the data in the first epoch.\n\nThis can be fixed by making `exporter_secret_<N>` use a different label from `exporter_secret` \u2014 e.g., \"exp epoch\".",
       "createdAt": "2025-11-11T13:36:52Z",
-      "updatedAt": "2025-11-14T12:38:12Z",
-      "closedAt": null,
+      "updatedAt": "2026-01-14T05:04:24Z",
+      "closedAt": "2026-01-14T05:04:24Z",
       "comments": [
         {
           "author": "tireddy2",
@@ -1152,8 +1173,31 @@
           "body": "Thanks @ilaril  for the explanation. I propose to add the following text:\n\nTLS specifies a single exporter_secret derived from the main secret. This value is static for the entire duration of a TLS session and is not updated by EKU. The new exporter interface defined in this document derives a fresh exporter secret whenever new application traffic keys are established through the EKU mechanism. A core design goal of this interface is that compromise of exporter-secret material at a later point in time MUST NOT enable an attacker to recover exporter outputs that were produced earlier in the connection.  If the initial exporter secret for this interface were equal to the TLS exporter_secret, this property would be violated: compromise of the TLS exporter_secret at any time during the connection would allow an attacker to retroactively recompute all exporter outputs that depend on it.\n\nTherefore, the initial exporter secret used by the interface defined in this document, i.e., the exporter output available prior to the first EKU MUST be distinct from the TLS  exporter_secret. This separation ensures that compromise of the TLS exporter interface does not compromise outputs from this new exporter interface.\n\n~~~\nexporter_secret_0 = Derive-Secret(Main Secret, \"pre-update exporter\", ClientHello...server Finished)\n~~~",
           "createdAt": "2025-11-14T12:38:12Z",
           "updatedAt": "2025-11-14T12:38:12Z"
+        },
+        {
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "body": "Issue is addressed in https://github.com/tlswg/tls-key-update/pull/92.",
+          "createdAt": "2026-01-14T05:04:24Z",
+          "updatedAt": "2026-01-14T05:04:24Z"
         }
       ]
+    },
+    {
+      "number": 94,
+      "id": "I_kwDOMJPqLM7jSimq",
+      "title": "Stronger PCS",
+      "url": "https://github.com/tlswg/tls-key-update/issues/94",
+      "state": "OPEN",
+      "author": "yaronf",
+      "authorAssociation": "NONE",
+      "assignees": [],
+      "labels": [],
+      "body": "This may have been discussed/rejected at the TLS WG, if so let me know.\n\nThe document mentions an attack on PCS where an attacker breaches one of the peers and then acts as a MITM. And this can be mitigated by some post-handshake mechanisms.\n\nHowever, I think there's inherent value to EKU even in \"normal\" TLS environments where none of these mechanisms are deployed.\n\nI believe if you added a CertificateVerify-like message coming from the server in message 2 (`EKU(key_update_response`), this would address 99% of the normal TLS use cases, where the server is authenticated by a cert, prevent the MITM attack and provide full PCS.\n\nAnd yes, this does require a formal proof.",
+      "createdAt": "2026-01-14T13:47:54Z",
+      "updatedAt": "2026-01-14T13:47:54Z",
+      "closedAt": null,
+      "comments": []
     }
   ],
   "pulls": [
@@ -8078,24 +8122,26 @@
       "id": "PR_kwDOMJPqLM671sf1",
       "title": "PCS for the Initial Exporter Secret",
       "url": "https://github.com/tlswg/tls-key-update/pull/92",
-      "state": "OPEN",
+      "state": "MERGED",
       "author": "tireddy2",
       "authorAssociation": "COLLABORATOR",
       "assignees": [],
       "labels": [],
       "body": "Address issue raised in https://github.com/tlswg/tls-key-update/issues/90, https://github.com/tlswg/tls-key-update/issues/56 and https://github.com/tlswg/tls-key-update/issues/46",
       "createdAt": "2026-01-07T05:38:16Z",
-      "updatedAt": "2026-01-12T14:49:27Z",
+      "updatedAt": "2026-01-14T05:03:50Z",
       "baseRepository": "tlswg/tls-key-update",
       "baseRefName": "main",
       "baseRefOid": "81592c444f955fe1494154f0893325d8fa441a08",
       "headRepository": "tlswg/tls-key-update",
       "headRefName": "tireddy2-patch-11",
-      "headRefOid": "3811ad225e19c6fb0859e43668095551b6a494e5",
-      "closedAt": null,
-      "mergedAt": null,
-      "mergedBy": null,
-      "mergeCommit": null,
+      "headRefOid": "eb274d34670bea936c0a91a265fb1aac3e91eec9",
+      "closedAt": "2026-01-14T05:03:50Z",
+      "mergedAt": "2026-01-14T05:03:50Z",
+      "mergedBy": "tireddy2",
+      "mergeCommit": {
+        "oid": "b689787e77750caa07f8f617741facb681230777"
+      },
       "comments": [],
       "reviews": [
         {
@@ -8277,6 +8323,26 @@
               "updatedAt": "2026-01-12T14:49:28Z"
             }
           ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM7ZyhGJ",
+          "commit": {
+            "abbreviatedOid": "3811ad2"
+          },
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2026-01-13T05:31:07Z",
+          "updatedAt": "2026-01-13T05:31:07Z",
+          "comments": [
+            {
+              "originalPosition": 53,
+              "body": "\"subsequent exporter secrets were derived from it deterministically\" is not correct, subsequent exporter secrets are not derived from the initial exporter secret. \r\n\r\nI fixed the text as follows:\r\n\r\nIf the initial exporter secret for this new interface were identical to exporter_secret, then compromising exporter_secret at any point during the lifetime of the connection would enable an attacker to recompute all exporter outputs derived from it. This would break post-compromise security for exported keying material.",
+              "createdAt": "2026-01-13T05:31:07Z",
+              "updatedAt": "2026-01-13T05:31:07Z"
+            }
+          ]
         }
       ]
     },
@@ -8285,24 +8351,26 @@
       "id": "PR_kwDOMJPqLM68tXua",
       "title": "Update to Appendix",
       "url": "https://github.com/tlswg/tls-key-update/pull/93",
-      "state": "OPEN",
+      "state": "MERGED",
       "author": "tireddy2",
       "authorAssociation": "COLLABORATOR",
       "assignees": [],
       "labels": [],
       "body": "",
       "createdAt": "2026-01-12T14:07:48Z",
-      "updatedAt": "2026-01-12T14:53:22Z",
+      "updatedAt": "2026-01-13T05:38:02Z",
       "baseRepository": "tlswg/tls-key-update",
       "baseRefName": "main",
       "baseRefOid": "81592c444f955fe1494154f0893325d8fa441a08",
       "headRepository": "tlswg/tls-key-update",
       "headRefName": "tireddy2-patch-12",
       "headRefOid": "0da0a3cf2b1bb86cd3a795b0e33515f643516110",
-      "closedAt": null,
-      "mergedAt": null,
-      "mergedBy": null,
-      "mergeCommit": null,
+      "closedAt": "2026-01-13T05:38:02Z",
+      "mergedAt": "2026-01-13T05:38:02Z",
+      "mergedBy": "tireddy2",
+      "mergeCommit": {
+        "oid": "94e66eda7a37842fab74ae80b64fedb5ffd27bdd"
+      },
       "comments": [
         {
           "author": "tireddy2",
