@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2026-01-15T01:59:35.805704+00:00",
+  "timestamp": "2026-01-18T02:08:50.596821+00:00",
   "repo": "tlswg/tls-key-update",
   "labels": [
     {
@@ -1195,9 +1195,17 @@
       "labels": [],
       "body": "This may have been discussed/rejected at the TLS WG, if so let me know.\n\nThe document mentions an attack on PCS where an attacker breaches one of the peers and then acts as a MITM. And this can be mitigated by some post-handshake mechanisms.\n\nHowever, I think there's inherent value to EKU even in \"normal\" TLS environments where none of these mechanisms are deployed.\n\nI believe if you added a CertificateVerify-like message coming from the server in message 2 (`EKU(key_update_response`), this would address 99% of the normal TLS use cases, where the server is authenticated by a cert, prevent the MITM attack and provide full PCS.\n\nAnd yes, this does require a formal proof.",
       "createdAt": "2026-01-14T13:47:54Z",
-      "updatedAt": "2026-01-14T13:47:54Z",
+      "updatedAt": "2026-01-17T07:56:35Z",
       "closedAt": null,
-      "comments": []
+      "comments": [
+        {
+          "author": "yaroslavros",
+          "authorAssociation": "COLLABORATOR",
+          "body": "While I see security benefits of it, API logistics might be too costly for some TLS implementations. For instance, one may need to maintain the private key of the certificate that was used during initial handshake. Also this will add complexity to the EKU spec that is already well overdue.\nOn top of that, in absence of mTLS this would work only for the server side.\n\nIt feels to me that a variant of [draft-rosomakho-tls-cert-update-01](https://datatracker.ietf.org/doc/draft-rosomakho-tls-cert-update/) might be a better solution: a party could re-authenticate with the same certificate after EKU.",
+          "createdAt": "2026-01-17T07:28:31Z",
+          "updatedAt": "2026-01-17T07:56:35Z"
+        }
+      ]
     }
   ],
   "pulls": [
