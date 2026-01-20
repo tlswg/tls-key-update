@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2026-01-18T02:08:50.596821+00:00",
+  "timestamp": "2026-01-20T02:01:28.626904+00:00",
   "repo": "tlswg/tls-key-update",
   "labels": [
     {
@@ -1195,7 +1195,7 @@
       "labels": [],
       "body": "This may have been discussed/rejected at the TLS WG, if so let me know.\n\nThe document mentions an attack on PCS where an attacker breaches one of the peers and then acts as a MITM. And this can be mitigated by some post-handshake mechanisms.\n\nHowever, I think there's inherent value to EKU even in \"normal\" TLS environments where none of these mechanisms are deployed.\n\nI believe if you added a CertificateVerify-like message coming from the server in message 2 (`EKU(key_update_response`), this would address 99% of the normal TLS use cases, where the server is authenticated by a cert, prevent the MITM attack and provide full PCS.\n\nAnd yes, this does require a formal proof.",
       "createdAt": "2026-01-14T13:47:54Z",
-      "updatedAt": "2026-01-17T07:56:35Z",
+      "updatedAt": "2026-01-18T14:36:30Z",
       "closedAt": null,
       "comments": [
         {
@@ -1204,6 +1204,41 @@
           "body": "While I see security benefits of it, API logistics might be too costly for some TLS implementations. For instance, one may need to maintain the private key of the certificate that was used during initial handshake. Also this will add complexity to the EKU spec that is already well overdue.\nOn top of that, in absence of mTLS this would work only for the server side.\n\nIt feels to me that a variant of [draft-rosomakho-tls-cert-update-01](https://datatracker.ietf.org/doc/draft-rosomakho-tls-cert-update/) might be a better solution: a party could re-authenticate with the same certificate after EKU.",
           "createdAt": "2026-01-17T07:28:31Z",
           "updatedAt": "2026-01-17T07:56:35Z"
+        },
+        {
+          "author": "yaronf",
+          "authorAssociation": "NONE",
+          "body": "> While I see security benefits of it, API logistics might be too costly for some TLS implementations. For instance, one may need to maintain the private key of the certificate that was used during initial handshake.\n\nThe private key is long-lived, so it stays there basically forever. What needs to be maintained is a *handle* to the private key, but that's essentially the identity of the TLS peer so it's an essential detail of the connection. (To be clear, what I suggest only makes sense if the private key is in an HSM, but that's common for high-risk servers.)\n\n> Also this will add complexity to the EKU spec that is already well overdue.\n\nTrue, but sadly, the EKU spec does not provide its advertised security. Specifically its main goal is PCS, and it does not provide PCS in this scenario which falls clearly within the normal Internet threat model.\n\n> On top of that, in absence of mTLS this would work only for the server side.\n\nIf you mean that the scope is incomplete, I agree. If you mean it will not work, I disagree: the client will issue an alert and abort the connection.\n\n> \n> It feels to me that a variant of [draft-rosomakho-tls-cert-update-01](https://datatracker.ietf.org/doc/draft-rosomakho-tls-cert-update/) might be a better solution: a party could re-authenticate with the same certificate after EKU.\n\nMaybe it's time I wrote a blog about the way we are mixing in-handshake and post-handshake in the ongoing IETF work on TLS. We have millions of application developers who expect a certain level of security from TLS, and when they configure EKU (a TLS-level mechanism), they also expect PCS without resorting to application-level mechanisms. It's our job to provide that.",
+          "createdAt": "2026-01-18T08:59:41Z",
+          "updatedAt": "2026-01-18T08:59:41Z"
+        },
+        {
+          "author": "yaroslavros",
+          "authorAssociation": "COLLABORATOR",
+          "body": "First of all, I think this is an important topic that we need to discuss in a wider group - perhaps at the next IETF meeting. Thank you for bringing this up.\n\nSecondly, I think key property of EKU is to bring TLS 1.3 PCS properties on par with other modern secure protocols in their typical deployments - Wireguard, SSHv2 perform periodic re-keying but do not re-authenticate. IKEv2 has an option to re-authenticate but I have not seen that used in the wild.\n\nAs of private key for certificates - letsencrypt recently made IP address based certificates with 6 day validity. Normally fresh certificate replaces a private key as well.\n\nI wonder if we should consider an additional mechanism that would work for both parties in all cases - mTLS, traditional server only certificate based authentication or PSK. For example, something along the lines of DPoP from Oauth land, where both parties produce a key pair at the handshake time and re-validate possession of the same private key after EKU.\n\nIn any case, I would strongly prefer that such mechanism would be an addon on top of EKU described in current draft. After all, the current design with message subtype allows future extensions.\n\nAs of certificate update draft I mentioned previously - it provides Certificate Update as a part of TLS instead of relying on each application to implement exported authenticators on their layer.",
+          "createdAt": "2026-01-18T10:51:25Z",
+          "updatedAt": "2026-01-18T10:51:25Z"
+        },
+        {
+          "author": "yaronf",
+          "authorAssociation": "NONE",
+          "body": "Yep, let's discuss it with the larger group.\n\n> I wonder if we should consider an additional mechanism that would work for both parties in all cases - mTLS, traditional server only certificate based authentication or PSK. For example, something along the lines of DPoP from Oauth land, where both parties produce a key pair at the handshake time and re-validate possession of the same private key after EKU.\n\nThe problem with this idea (and why I think this needs to be done with the long-term private key) is that everything generated within the TLS session, such as all the secrets that are being derived by the TLS key schedule, is known to an attacker that breaches the server temporarily. The design constraints for EKU are really really narrow!\n\n> In any case, I would strongly prefer that such mechanism would be an addon on top of EKU described in current draft. After all, the current design with message subtype allows future extensions.\n\nPerhaps this is a good way forward, but again: the current proposal does not meet its purported security goals IMHO.",
+          "createdAt": "2026-01-18T12:47:50Z",
+          "updatedAt": "2026-01-18T12:47:50Z"
+        },
+        {
+          "author": "yaroslavros",
+          "authorAssociation": "COLLABORATOR",
+          "body": "For this to deliver expected security properties, private key would need to reside on a TPM and not be exposed in case of a memory dump. I don't see the need to generate a key pair for each TLS session. One per endpoint (with some reasonable rotation) should be enough.",
+          "createdAt": "2026-01-18T13:18:41Z",
+          "updatedAt": "2026-01-18T13:18:41Z"
+        },
+        {
+          "author": "yaronf",
+          "authorAssociation": "NONE",
+          "body": "> For this to deliver expected security properties, private key would need to reside on a TPM and not be exposed in case of a memory dump. I don't see the need to generate a key pair for each TLS session. One per endpoint (with some reasonable rotation) should be enough.\n\nJust to clarify: each client would need _many_ private keys - one for each endpoint that the client is communicating with. Otherwise you'd have privacy issues, with the keypair acting as an identifier.",
+          "createdAt": "2026-01-18T14:36:30Z",
+          "updatedAt": "2026-01-18T14:36:30Z"
         }
       ]
     }
