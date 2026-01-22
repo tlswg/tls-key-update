@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2026-01-20T02:01:28.626904+00:00",
+  "timestamp": "2026-01-22T02:05:03.590628+00:00",
   "repo": "tlswg/tls-key-update",
   "labels": [
     {
@@ -1195,7 +1195,7 @@
       "labels": [],
       "body": "This may have been discussed/rejected at the TLS WG, if so let me know.\n\nThe document mentions an attack on PCS where an attacker breaches one of the peers and then acts as a MITM. And this can be mitigated by some post-handshake mechanisms.\n\nHowever, I think there's inherent value to EKU even in \"normal\" TLS environments where none of these mechanisms are deployed.\n\nI believe if you added a CertificateVerify-like message coming from the server in message 2 (`EKU(key_update_response`), this would address 99% of the normal TLS use cases, where the server is authenticated by a cert, prevent the MITM attack and provide full PCS.\n\nAnd yes, this does require a formal proof.",
       "createdAt": "2026-01-14T13:47:54Z",
-      "updatedAt": "2026-01-18T14:36:30Z",
+      "updatedAt": "2026-01-20T13:15:24Z",
       "closedAt": null,
       "comments": [
         {
@@ -1239,6 +1239,41 @@
           "body": "> For this to deliver expected security properties, private key would need to reside on a TPM and not be exposed in case of a memory dump. I don't see the need to generate a key pair for each TLS session. One per endpoint (with some reasonable rotation) should be enough.\n\nJust to clarify: each client would need _many_ private keys - one for each endpoint that the client is communicating with. Otherwise you'd have privacy issues, with the keypair acting as an identifier.",
           "createdAt": "2026-01-18T14:36:30Z",
           "updatedAt": "2026-01-18T14:36:30Z"
+        },
+        {
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "body": "I will provide additional details. IPSec supports re-key but does not support periodic re-authentication with the same tunnel (a new tunnel has to be created) or addresses the attack discussed in the draft where an temporary attacker on the device becomes an MiTM. \n\nThe goal of the EKU draft is to provide similar functionality to IPSec. The threat discussed in the latest version of the draft came recently from the WG on whether this draft can handle an attack where the attacker who learned the main secret becomes an MiTM. \n\nWe had two options with this draft, either say the draft does not deal with it or provide a solution which rely on existing TLS post-handshake authentication mechanisms, the draft does the same to use post-handshake client authentication or exported authentication. ",
+          "createdAt": "2026-01-20T09:13:23Z",
+          "updatedAt": "2026-01-20T09:13:23Z"
+        },
+        {
+          "author": "yaroslavros",
+          "authorAssociation": "COLLABORATOR",
+          "body": "I am not a die-hard expert on IPSec, but I believe IKEv2 does support mutual re-authentication by establishing a fresh SA (AUTH_LIFETIME must be send by the responder to enforce re-authentication policy for the initiator). Modern IPSec implementations support make-before-break when switching SAs, so they keep the same \"tunnel\" as far as packet flow is concerned.\n\nAs mentioned previously, I believe this could be a good next step to improve PCS security on top of EKU. However for TLS perhaps we should look at a different approach than re-authentication since on TLS layer usually only server authenticates the client while client authentication and session management is commonly handled at the application layer.",
+          "createdAt": "2026-01-20T09:52:37Z",
+          "updatedAt": "2026-01-20T09:52:37Z"
+        },
+        {
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "body": "> I believe IKEv2 does support mutual re-authentication by establishing a fresh SA (AUTH_LIFETIME must be send by the responder to enforce re-authentication policy for the initiator). Modern IPSec implementations support make-before-break when switching SAs, so they keep the same \"tunnel\" as far as packet flow is concerned.\n\n> I am not a die-hard expert on IPSec, but I believe IKEv2 does support mutual re-authentication by establishing a fresh SA (AUTH_LIFETIME must be send by the responder to enforce re-authentication policy for the initiator). Modern IPSec implementations support make-before-break when switching SAs, so they keep the same \"tunnel\" as far as packet flow is concerned.\n\nRe-authentication does not occur within the same IKE_SA, a new IKE_SA is always created. IKEv2 does not address the threat discussed in the draft. \n\n> \n> As mentioned previously, I believe this could be a good next step to improve PCS security on top of EKU. However for TLS perhaps we should look at a different approach than re-authentication since on TLS layer usually only server authenticates the client while client authentication and session management is commonly handled at the application layer.\n\n",
+          "createdAt": "2026-01-20T11:02:57Z",
+          "updatedAt": "2026-01-20T11:02:57Z"
+        },
+        {
+          "author": "yaroslavros",
+          "authorAssociation": "COLLABORATOR",
+          "body": "New IKE_SA is not a new tunnel.\nRe-establishing TLS is much more disruptive than building a new SA and migrating to it.\nMany IKEv2 implementations support transparent periodic re-authentication in this way, but I am yet to see a TLS 1.3 based VPN solution that would implement a similar capability with transparent re-establishment of TLS session.",
+          "createdAt": "2026-01-20T11:10:08Z",
+          "updatedAt": "2026-01-20T11:10:08Z"
+        },
+        {
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "body": "> New IKE_SA is not a new tunnel. Re-establishing TLS is much more disruptive than building a new SA and migrating to it. Many IKEv2 implementations support transparent periodic re-authentication in this way, but I am yet to see a TLS 1.3 based VPN solution that would implement a similar capability with transparent re-establishment of TLS session.\n\nIn IKEv2, re-authentication always creates a new IKE_SA with fresh key exchange and authentication, while re-keying creates new SAs with fresh keys but without repeating authentication. TLS 1.3 based VPN solution can rely on EKU + RFC9261 would achieve PCS + periodic re-authentication.",
+          "createdAt": "2026-01-20T13:15:24Z",
+          "updatedAt": "2026-01-20T13:15:24Z"
         }
       ]
     }
