@@ -643,6 +643,9 @@ hash value for the next generation is computed as follows:
                                        EKU(key_update_response))
 ~~~
 
+Once transcript_hash_N+1 has been computed, transcript_hash_N can be deleted.
+No prior transcript hash values need to be retained for future EKU exchanges.
+
 The following diagram shows the key derivation hierarchy.
 
 ~~~
