@@ -1981,8 +1981,10 @@ hash value for the next generation is computed as follows:<a href="#section-7-4"
                                        EKU(key_update_response))
 </pre><a href="#section-7-5" class="pilcrow">¶</a>
 </div>
-<p id="section-7-6">The following diagram shows the key derivation hierarchy.<a href="#section-7-6" class="pilcrow">¶</a></p>
-<div class="alignLeft art-text artwork" id="section-7-7">
+<p id="section-7-6">Once transcript_hash_N+1 has been computed, transcript_hash_N can be deleted.
+No prior transcript hash values need to be retained for future EKU exchanges.<a href="#section-7-6" class="pilcrow">¶</a></p>
+<p id="section-7-7">The following diagram shows the key derivation hierarchy.<a href="#section-7-7" class="pilcrow">¶</a></p>
+<div class="alignLeft art-text artwork" id="section-7-8">
 <pre>
 
        Main Secret N
@@ -2008,9 +2010,9 @@ hash value for the next generation is computed as follows:<a href="#section-7-4"
              +-----&gt; Derive-Secret(., "res master",
              |                     transcript_hash_N+1)
                               = resumption_main_secret_N+1
-</pre><a href="#section-7-7" class="pilcrow">¶</a>
+</pre><a href="#section-7-8" class="pilcrow">¶</a>
 </div>
-<p id="section-7-8">During the initial handshake, the Main Secret is generated (see
+<p id="section-7-9">During the initial handshake, the Main Secret is generated (see
 <span><a href="https://datatracker.ietf.org/doc/html/draft-ietf-tls-rfc8446bis-14#section-7.1" class="relref">Section 7.1</a> of [<a href="#TLS" class="cite xref">TLS</a>]</span>). Since the Main Secret
 is discarded during the key derivation procedure, a derived value is
 stored. This stored value then serves as the input salt to the first
@@ -2019,32 +2021,32 @@ established value as input keying material (IKM) to produce
 main_secret_{N+1}. The derived value from this new master secret
 serves as input salt to the subsequent key update procedure, which
 also incorporates a fresh ephemeral (EC)DHE value as IKM. This
-process is repeated for each additional key update procedure.<a href="#section-7-8" class="pilcrow">¶</a></p>
-<p id="section-7-9">The traffic keys are re-derived from
+process is repeated for each additional key update procedure.<a href="#section-7-9" class="pilcrow">¶</a></p>
+<p id="section-7-10">The traffic keys are re-derived from
 client_application_traffic_secret_N+1 and
 server_application_traffic_secret_N+1, as described in
-<span><a href="https://datatracker.ietf.org/doc/html/draft-ietf-tls-rfc8446bis-14#section-7.3" class="relref">Section 7.3</a> of [<a href="#TLS" class="cite xref">TLS</a>]</span>.<a href="#section-7-9" class="pilcrow">¶</a></p>
-<p id="section-7-10">Once client_/server_application_traffic_secret_N+1 and its associated
+<span><a href="https://datatracker.ietf.org/doc/html/draft-ietf-tls-rfc8446bis-14#section-7.3" class="relref">Section 7.3</a> of [<a href="#TLS" class="cite xref">TLS</a>]</span>.<a href="#section-7-10" class="pilcrow">¶</a></p>
+<p id="section-7-11">Once client_/server_application_traffic_secret_N+1 and its associated
 traffic keys have been computed, implementations <span class="bcp14">SHOULD</span> delete
 client_/server_application_traffic_secret_N and its associated
 traffic keys as soon as possible. Note: The
 client_/server_application_traffic_secret_N and its associated
 traffic keys can only be deleted by the responder after receiving the
-<code>ExtendedKeyUpdate(new_key_update)</code> message.<a href="#section-7-10" class="pilcrow">¶</a></p>
-<p id="section-7-11">Once client_/server_application_traffic_secret_N+1 and the corresponding traffic
+<code>ExtendedKeyUpdate(new_key_update)</code> message.<a href="#section-7-11" class="pilcrow">¶</a></p>
+<p id="section-7-12">Once client_/server_application_traffic_secret_N+1 and the corresponding traffic
 keys are in use, all subsequent records, including alerts and post-handshake
-messages <span class="bcp14">MUST</span> be protected using those keys.<a href="#section-7-11" class="pilcrow">¶</a></p>
-<p id="section-7-12">When using this extension, it is important to consider its interaction with
+messages <span class="bcp14">MUST</span> be protected using those keys.<a href="#section-7-12" class="pilcrow">¶</a></p>
+<p id="section-7-13">When using this extension, it is important to consider its interaction with
 ticket-based session resumption. If resumption occurs without a new (EC)DH
 exchange that provides forward secrecy, an attacker could potentially revert
 the security context to an earlier state, thereby negating the benefits of
 the extended key update. To preserve the security guarantees provided by key
 updates, endpoints <span class="bcp14">MUST</span> either invalidate any session tickets issued prior
 to the key update or ensure that resumption always involves a fresh (EC)DH
-exchange.<a href="#section-7-12" class="pilcrow">¶</a></p>
-<p id="section-7-13">If session tickets cannot be stored securely, developers <span class="bcp14">SHOULD</span> consider
+exchange.<a href="#section-7-13" class="pilcrow">¶</a></p>
+<p id="section-7-14">If session tickets cannot be stored securely, developers <span class="bcp14">SHOULD</span> consider
 disabling ticket-based resumption in their deployments. While this approach
-may impact performance, it provides improved security properties.<a href="#section-7-13" class="pilcrow">¶</a></p>
+may impact performance, it provides improved security properties.<a href="#section-7-14" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="post-quantum-cryptography-considerations">
