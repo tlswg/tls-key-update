@@ -621,16 +621,33 @@ to include
 key exchange / PQ-KEM exchange),
 * a secret that allows the new key exchange to be cryptographically
 bound to the previously established secret,
-* the concatenation of the `ExtendedKeyUpdate(key_update_request)` and the
-`ExtendedKeyUpdate(key_update_response)` messages, which contain the key shares,
-binding the encapsulated shared secret ciphertext to IKM in case of
-hybrid key exchange, and
+* a transcript hash that is updated after each Extended Key Update exchange
+  by hashing together the previous transcript hash value and the current
+  ExtendedKeyUpdate(key_update_request) and ExtendedKeyUpdate(key_update_response)
+  messages, which contain the key shares, thereby binding the encapsulated shared
+  secret ciphertext to the IKM in the case of PQ/T hybrid or PQC key exchange and
+  cryptographically binding the newly derived secrets to the prior handshake
+  transcript and all preceding EKU exchanges, as well as to the current EKU
+  exchange, and
 * new label strings to distinguish it from the key derivation used in
 TLS 1.3.
+
+The transcript_hash_N denotes the transcript hash value associated with
+generation N. During each Extended Key Update exchange, the transcript
+hash value for the next generation is computed as follows:
+
+~~~
+
+ transcript_hash_N+1 = Transcript-Hash(transcript_hash_N ||
+                                       EKU(key_update_request) ||
+                                       EKU(key_update_response))
+~~~
 
 The following diagram shows the key derivation hierarchy.
 
 ~~~
+
+
        Main Secret N
              |
              v
@@ -640,23 +657,19 @@ The following diagram shows the key derivation hierarchy.
  (EC)DHE -> HKDF-Extract = Main Secret N+1
              |
              +-----> Derive-Secret(., "c ap traffic",
-             |                EKU(key_update_request) ||
-             |                EKU(key_update_response))
+             |                     transcript_hash_N+1)
              |                = client_application_traffic_secret_N+1
              |
              +-----> Derive-Secret(., "s ap traffic",
-             |                EKU(key_update_request) ||
-             |                EKU(key_update_response))
+             |                     transcript_hash_N+1)
              |                = server_application_traffic_secret_N+1
              |
              +-----> Derive-Secret(., "exp master",
-             |                EKU(key_update_request) ||
-             |                EKU(key_update_response))
+             |                     transcript_hash_N+1)
              |                = exporter_secret_N+1
              |
              +-----> Derive-Secret(., "res master",
-             |                EKU(key_update_request) ||
-             |                EKU(key_update_response))
+             |                     transcript_hash_N+1)
                               = resumption_main_secret_N+1
 ~~~
 
