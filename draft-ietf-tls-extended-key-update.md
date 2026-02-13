@@ -645,6 +645,8 @@ hash value for the next generation is computed as follows:
 
 Once transcript_hash_N+1 has been computed, transcript_hash_N can be deleted.
 No prior transcript hash values need to be retained for future EKU exchanges.
+transcript_hash_0 denotes the transcript hash of the TLS handshake messages prior
+to the first EKU exchange.
 
 The following diagram shows the key derivation hierarchy.
 
