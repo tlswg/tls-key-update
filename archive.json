@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2026-01-22T02:05:03.590628+00:00",
+  "timestamp": "2026-02-15T02:38:34.299036+00:00",
   "repo": "tlswg/tls-key-update",
   "labels": [
     {
@@ -8470,6 +8470,139 @@
           "body": "Thanks for the update and the clarifications in the PR",
           "createdAt": "2026-01-12T14:53:22Z",
           "updatedAt": "2026-01-12T14:53:22Z",
+          "comments": []
+        }
+      ]
+    },
+    {
+      "number": 95,
+      "id": "PR_kwDOMJPqLM7DSCbT",
+      "title": "Update to key Schedule",
+      "url": "https://github.com/tlswg/tls-key-update/pull/95",
+      "state": "OPEN",
+      "author": "tireddy2",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [],
+      "body": "This change updates the EKU key schedule to explicitly incorporate a transcript hash into EKU secret derivation. Previously, main_secret_N+1 was derived by recursively chaining from main_secret_N, which provides continuity but does not explicitly preserve transcript agreement.  It complicates the security proof for EKU.",
+      "createdAt": "2026-02-12T13:31:31Z",
+      "updatedAt": "2026-02-13T09:39:33Z",
+      "baseRepository": "tlswg/tls-key-update",
+      "baseRefName": "main",
+      "baseRefOid": "b689787e77750caa07f8f617741facb681230777",
+      "headRepository": "tlswg/tls-key-update",
+      "headRefName": "tireddy2-patch-13",
+      "headRefOid": "bf8990777002f0c120babaeefc3c4954a8eb36af",
+      "closedAt": null,
+      "mergedAt": null,
+      "mergedBy": null,
+      "mergeCommit": null,
+      "comments": [],
+      "reviews": [
+        {
+          "id": "PRR_kwDOMJPqLM7h-YjH",
+          "commit": {
+            "abbreviatedOid": "de608b2"
+          },
+          "author": "thomwiggers",
+          "authorAssociation": "NONE",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2026-02-12T14:06:39Z",
+          "updatedAt": "2026-02-12T14:06:40Z",
+          "comments": [
+            {
+              "originalPosition": 21,
+              "body": "could be worth clarifying that we don't actually need to keep all N versions of the transcript hash around, probably only the most recent one?",
+              "createdAt": "2026-02-12T14:06:40Z",
+              "updatedAt": "2026-02-12T14:06:40Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM7h-9ie",
+          "commit": {
+            "abbreviatedOid": "1fd06f4"
+          },
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2026-02-12T14:33:14Z",
+          "updatedAt": "2026-02-12T14:33:14Z",
+          "comments": [
+            {
+              "originalPosition": 21,
+              "body": "Thanks, added text. ",
+              "createdAt": "2026-02-12T14:33:14Z",
+              "updatedAt": "2026-02-12T14:33:14Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM7h_Rh8",
+          "commit": {
+            "abbreviatedOid": "de608b2"
+          },
+          "author": "stfries",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2026-02-12T14:47:21Z",
+          "updatedAt": "2026-02-12T14:47:21Z",
+          "comments": [
+            {
+              "originalPosition": 29,
+              "body": "It may be helpful to add a statement for N=0. Just to state the binding to previous handshake messages explicitly \n\nProposal to add:\n\nN=0 denotes the transcript hash of handshake messages before the first instantiation of EKU.",
+              "createdAt": "2026-02-12T14:47:21Z",
+              "updatedAt": "2026-02-12T14:47:21Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM7iNJJI",
+          "commit": {
+            "abbreviatedOid": "bf89907"
+          },
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2026-02-13T05:18:31Z",
+          "updatedAt": "2026-02-13T05:18:31Z",
+          "comments": [
+            {
+              "originalPosition": 29,
+              "body": "Added text. ",
+              "createdAt": "2026-02-13T05:18:31Z",
+              "updatedAt": "2026-02-13T05:18:31Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM7iO_Lp",
+          "commit": {
+            "abbreviatedOid": "bf89907"
+          },
+          "author": "stfries",
+          "authorAssociation": "COLLABORATOR",
+          "state": "APPROVED",
+          "body": "The changes look good for me, after the discussion with Thom. Thank you for incorporating it Tiru. ",
+          "createdAt": "2026-02-13T07:48:54Z",
+          "updatedAt": "2026-02-13T07:48:54Z",
+          "comments": []
+        },
+        {
+          "id": "PRR_kwDOMJPqLM7iRJ9v",
+          "commit": {
+            "abbreviatedOid": "bf89907"
+          },
+          "author": "thomwiggers",
+          "authorAssociation": "NONE",
+          "state": "APPROVED",
+          "body": "This seems good to me.",
+          "createdAt": "2026-02-13T09:39:33Z",
+          "updatedAt": "2026-02-13T09:39:33Z",
           "comments": []
         }
       ]
