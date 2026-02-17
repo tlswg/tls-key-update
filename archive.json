@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2026-02-15T02:38:34.299036+00:00",
+  "timestamp": "2026-02-17T02:30:55.699466+00:00",
   "repo": "tlswg/tls-key-update",
   "labels": [
     {
@@ -8486,7 +8486,7 @@
       "labels": [],
       "body": "This change updates the EKU key schedule to explicitly incorporate a transcript hash into EKU secret derivation. Previously, main_secret_N+1 was derived by recursively chaining from main_secret_N, which provides continuity but does not explicitly preserve transcript agreement.  It complicates the security proof for EKU.",
       "createdAt": "2026-02-12T13:31:31Z",
-      "updatedAt": "2026-02-13T09:39:33Z",
+      "updatedAt": "2026-02-16T17:35:11Z",
       "baseRepository": "tlswg/tls-key-update",
       "baseRefName": "main",
       "baseRefOid": "b689787e77750caa07f8f617741facb681230777",
@@ -8497,7 +8497,15 @@
       "mergedAt": null,
       "mergedBy": null,
       "mergeCommit": null,
-      "comments": [],
+      "comments": [
+        {
+          "author": "yaroslavros",
+          "authorAssociation": "COLLABORATOR",
+          "body": "I think we need some text about how updated transcripts interact with Post-Handshake Authentication (PHA).\r\nWe have a choice:\r\n1. keep PHA transcript as is. After all, PHA is virtually abandoned. The downside is that PHA will need to drag around its own separate transcript (transcript_hash_0)\r\n2. update PHA to use transcript_hash_N+1 and instruct the client to not send PHA CertificateVerify/Finished while EKU is in progress\r\n\r\nI would prefer option 2.",
+          "createdAt": "2026-02-16T17:35:10Z",
+          "updatedAt": "2026-02-16T17:35:10Z"
+        }
+      ],
       "reviews": [
         {
           "id": "PRR_kwDOMJPqLM7h-YjH",
