@@ -4,15 +4,15 @@
 
 Transport Layer Security                                   H. Tschofenig
 Internet-Draft                                                   Siemens
-Intended status: Standards Track                                M. Tüxen
-Expires: 17 August 2026                Münster Univ. of Applied Sciences
-                                                                T. Reddy
+Updates: 9261, 8446 (if approved)                               M. Tüxen
+Intended status: Standards Track       Münster Univ. of Applied Sciences
+Expires: 21 August 2026                                         T. Reddy
                                                                    Nokia
                                                                 S. Fries
                                                                  Siemens
                                                             Y. Rosomakho
                                                                  Zscaler
-                                                        13 February 2026
+                                                        17 February 2026
 
 
        Extended Key Update for Transport Layer Security (TLS) 1.3
@@ -66,7 +66,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 17 August 2026.
+   This Internet-Draft will expire on 21 August 2026.
 
 Copyright Notice
 
@@ -711,7 +711,8 @@ Table of Contents
    Once transcript_hash_N+1 has been computed, transcript_hash_N can be
    deleted.  No prior transcript hash values need to be retained for
    future EKU exchanges. transcript_hash_0 denotes the transcript hash
-   of the TLS handshake messages prior to the first EKU exchange.
+   of the initial TLS handshake, covering all messages from the
+   ClientHello up to and including the client Finished message.
 
    The following diagram shows the key derivation hierarchy.
 
@@ -955,22 +956,35 @@ Table of Contents
 
 11.1.  Post-Handshake Certificate-Based Client Authentication
 
-   When Post-handshake Certificate-Based Client Authentication
-   (Section 4.6.2 of [TLS]) is performed after an Extended Key Update is
-   complete, it produces a Finished message computed using the
-   application traffic keys of the new epoch.  This confirms that both
+   When Post-Handshake Certificate-Based Client Authentication
+   (Section 4.6.2 of [TLS]) is performed after an Extended Key Update
+   (EKU) is complete, the Handshake Context used for the transcript hash
+   is updated.  It consists of transcript_hash_N+1 concatenated with the
+   CertificateRequest message.  The Finished message is computed using a
+   MAC key derived from the Base Key of the new epoch
+   (client_application_traffic_secret_N+1).  This confirms that both
    peers are operating with the same updated traffic keys and completes
    an authenticated transition after the EKU.
+
+   To prevent cryptographic state ambiguity, the following constraints
+   apply:
+
+   *  A TLS server MUST NOT initiate a post-handshake CertificateRequest
+      while an EKU exchange is in progress.
+
+   *  If a CertificateRequest has been sent but the corresponding
+      Finished message has not yet been received, the peers MUST NOT
+      initiate an EKU exchange.
 
 11.2.  Exported Authenticators
 
    This document updates Section 5.1 of [RFC9261] to specify that, after
    an Extended Key Update has completed, the Handshake Context and
-   Finished MAC Key used for Exported Authenticators can be derived from
-   the exporter secret associated with the current epoch.
+   Finished MAC Key used for Exported Authenticators MUST be derived
+   from the exporter secret associated with the current epoch.
    Implementations that support the epoch-aware Exported Authenticators
-   interface will have to provide a means for applications to request
-   the generation or validation of Exported Authenticators using the
+   interface MUST provide a means for applications to request the
+   generation or validation of Exported Authenticators using the
    exporter secret for a specific epoch.
 
    The Handshake Context and Finished MAC Key used in both the
