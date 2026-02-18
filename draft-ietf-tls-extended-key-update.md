@@ -4,6 +4,7 @@ title: Extended Key Update for Transport Layer Security (TLS) 1.3
 abbrev: Extended Key Update for TLS
 docname: draft-ietf-tls-extended-key-update-latest
 category: std
+updates: 9261, 8446
 
 ipr: trust200902
 submissiontype: IETF
@@ -621,16 +622,39 @@ to include
 key exchange / PQ-KEM exchange),
 * a secret that allows the new key exchange to be cryptographically
 bound to the previously established secret,
-* the concatenation of the `ExtendedKeyUpdate(key_update_request)` and the
-`ExtendedKeyUpdate(key_update_response)` messages, which contain the key shares,
-binding the encapsulated shared secret ciphertext to IKM in case of
-hybrid key exchange, and
+* a transcript hash that is updated after each Extended Key Update exchange
+  by hashing together the previous transcript hash value and the current
+  ExtendedKeyUpdate(key_update_request) and ExtendedKeyUpdate(key_update_response)
+  messages, which contain the key shares, thereby binding the encapsulated shared
+  secret ciphertext to the IKM in the case of PQ/T hybrid or PQC key exchange and
+  cryptographically binding the newly derived secrets to the prior handshake
+  transcript and all preceding EKU exchanges, as well as to the current EKU
+  exchange, and
 * new label strings to distinguish it from the key derivation used in
 TLS 1.3.
+
+The transcript_hash_N denotes the transcript hash value associated with
+generation N. During each Extended Key Update exchange, the transcript
+hash value for the next generation is computed as follows:
+
+~~~
+
+ transcript_hash_N+1 = Transcript-Hash(transcript_hash_N ||
+                                       EKU(key_update_request) ||
+                                       EKU(key_update_response))
+~~~
+
+Once transcript_hash_N+1 has been computed, transcript_hash_N can be deleted.
+No prior transcript hash values need to be retained for future EKU exchanges.
+transcript_hash_0 denotes the transcript hash of the initial TLS handshake,
+covering all messages from the ClientHello up to and including the
+client Finished message.
 
 The following diagram shows the key derivation hierarchy.
 
 ~~~
+
+
        Main Secret N
              |
              v
@@ -640,23 +664,19 @@ The following diagram shows the key derivation hierarchy.
  (EC)DHE -> HKDF-Extract = Main Secret N+1
              |
              +-----> Derive-Secret(., "c ap traffic",
-             |                EKU(key_update_request) ||
-             |                EKU(key_update_response))
+             |                     transcript_hash_N+1)
              |                = client_application_traffic_secret_N+1
              |
              +-----> Derive-Secret(., "s ap traffic",
-             |                EKU(key_update_request) ||
-             |                EKU(key_update_response))
+             |                     transcript_hash_N+1)
              |                = server_application_traffic_secret_N+1
              |
              +-----> Derive-Secret(., "exp master",
-             |                EKU(key_update_request) ||
-             |                EKU(key_update_response))
+             |                     transcript_hash_N+1)
              |                = exporter_secret_N+1
              |
              +-----> Derive-Secret(., "res master",
-             |                EKU(key_update_request) ||
-             |                EKU(key_update_response))
+             |                     transcript_hash_N+1)
                               = resumption_main_secret_N+1
 ~~~
 
@@ -857,18 +877,27 @@ Exported Authenticators {{!RFC9261}}.
 
 ## Post-Handshake Certificate-Based Client Authentication
 
-When Post-handshake Certificate-Based Client Authentication (Section 4.6.2 of {{TLS}})
-is performed after an Extended Key Update is complete, it produces a Finished message
-computed using the application traffic keys of the new epoch. This confirms that both peers
-are operating with the same updated traffic keys and completes an authenticated
-transition after the EKU.
+When Post-Handshake Certificate-Based Client Authentication (Section 4.6.2 of {{TLS}}) is
+performed after an Extended Key Update (EKU) is complete, the Handshake Context used for
+the transcript hash is updated. It consists of transcript_hash_N+1 concatenated
+with the CertificateRequest message. The Finished message is computed using a
+MAC key derived from the Base Key of the new epoch (client_application_traffic_secret_N+1).
+This confirms that both peers are operating with the same updated traffic keys
+and completes an authenticated transition after the EKU.
+
+To prevent cryptographic state ambiguity, the following constraints apply:
+
+* A TLS server MUST NOT initiate a post-handshake CertificateRequest while an EKU
+  exchange is in progress.
+* If a CertificateRequest has been sent but the corresponding Finished message has not
+  yet been received, the peers MUST NOT initiate an EKU exchange.
 
 ## Exported Authenticators
 
 This document updates Section 5.1 of {{!RFC9261}} to specify that, after an
 Extended Key Update has completed, the Handshake Context and Finished MAC Key used for
-Exported Authenticators can be derived from the exporter secret associated with the current epoch.
-Implementations that support the epoch-aware Exported Authenticators interface will have to provide a means
+Exported Authenticators MUST be derived from the exporter secret associated with the current epoch.
+Implementations that support the epoch-aware Exported Authenticators interface MUST provide a means
 for applications to request the generation or validation of Exported Authenticators using
 the exporter secret for a specific epoch.
 
