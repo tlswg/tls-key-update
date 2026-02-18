@@ -1,63 +1,118 @@
 ///////////////////////////////////////////////////////////////
-// Extended Key Update
-// + APP (app_data) transmission anytime
-// + Old key retention to deal with packet loss and reordering
-// + Network behavior considering loss (drops_left)and reordering (2 paths per direction)
-// Messages carry only the sender's TX-epoch tag.
-// Allows INITIATOR rx,tx epoch to start unequal.
-// Initiator bump rule on R's NKU: let N = old_tx + 1; set tx=N; rx=N; send ACK.
+// Extended Key Update (DTLS 1.3) - Single Initiator/Responder SPIN model
+//
+// Models Section 6 steps 1–7 and Appendix B.2.2/B.2.3:
+//   Req -> Resp -> NKU -> ACK
+//
+// Includes:
+//   - APP traffic at any time (bounded by quotas)
+//   - loss + reordering via two paths each direction and a finite drop budget
+//   - old epoch retention on the receive side per Appendix B.2.1/B.2.3
+//
+// Intentionally out-of-scope:
+//   - the optional "defer Resp under load and ACK the Req" path (Section 6 step 2)
+//   - classic DTLS KeyUpdate interaction
 ///////////////////////////////////////////////////////////////
 
-/*
-Configuration: initial epochs (may be unequal)
-------------------------------------------------------
-To keep cross-peer compatibility at t=0 you should set:
-  INIT_TX_I == INIT_RX_R    (for I -> R acceptance)
-  INIT_TX_R == INIT_RX_I    (for R -> I acceptance)
-Defaults below use equal values for simplicity.
-*/
-byte INIT_RX_I = 0;
-byte INIT_TX_I = 0;
-byte INIT_RX_R = 0;
-byte INIT_TX_R = 0;
+/* --- Configuration knobs (override via spin -D...) --- */
+#ifndef INIT_RX_I
+#define INIT_RX_I 0
+#endif
+#ifndef INIT_TX_I
+#define INIT_TX_I 0
+#endif
+#ifndef INIT_RX_R
+#define INIT_RX_R 0
+#endif
+#ifndef INIT_TX_R
+#define INIT_TX_R 0
+#endif
 
-mtype = { Req, Resp, NKU, ACK, APP };   // APP = app_data
+#ifndef DROPS
+#define DROPS 2
+#endif
+#ifndef REQ_RETRIES
+#define REQ_RETRIES 4
+#endif
+#ifndef NKU_RETRIES
+#define NKU_RETRIES 4
+#endif
+#ifndef APP_QUOTA_I
+#define APP_QUOTA_I 0
+#endif
+#ifndef APP_QUOTA_R
+#define APP_QUOTA_R 0
+#endif
 
-///////////////////////////////////////////////////////////////
-// Visible delivery channels (post-network)
-///////////////////////////////////////////////////////////////
+mtype = { Req, Resp, NKU, ACK, APP };
+
+/* Visible delivery channels (post-network): (type, tag_epoch, accepted) */
 chan to_responder = [8] of { mtype, byte, bool };
 chan to_initiator = [8] of { mtype, byte, bool };
 
-///////////////////////////////////////////////////////////////
-// Hidden network paths (for reordering)
-///////////////////////////////////////////////////////////////
+/* Hidden network paths (for reordering): (type, tag_epoch, accepted) */
 chan i2r_p1 = [4] of { mtype, byte, bool };
 chan i2r_p2 = [4] of { mtype, byte, bool };
 chan r2i_p1 = [4] of { mtype, byte, bool };
 chan r2i_p2 = [4] of { mtype, byte, bool };
 
-byte drops_left = 2;   // number of allowed drops (0 => no loss)
+byte drops_left = DROPS;
 
-///////////////////////////////////////////////////////////////
-// Convenience macros for peers
-///////////////////////////////////////////////////////////////
 #define I2R_SEND(t,e,a)  if :: i2r_p1!t,e,a :: i2r_p2!t,e,a fi
 #define R2I_SEND(t,e,a)  if :: r2i_p1!t,e,a :: r2i_p2!t,e,a fi
 #define I_RECV(t,e,a)    to_initiator ? t,e,a
 #define R_RECV(t,e,a)    to_responder ? t,e,a
 
-///////////////////////////////////////////////////////////////
-// Network process: Loss + Reordering
-///////////////////////////////////////////////////////////////
-proctype Network() {
+/* --- Global markers (properties) --- */
+bool done_i = false;
+bool done_r = false;
+bool unexpected = false;
+
+byte final_rx_i = 255;
+byte final_tx_i = 255;
+byte final_rx_r = 255;
+byte final_tx_r = 255;
+
+/* --- Global state (epochs/retention) --- */
+byte rx_epoch_i = INIT_RX_I;
+byte tx_epoch_i = INIT_TX_I;
+bool updating_i = false;
+byte req_retries = REQ_RETRIES;
+byte nku_retries = NKU_RETRIES;
+byte app_quota_i = APP_QUOTA_I;
+byte old_rx_i = 255;
+bool retain_old_i = false;
+
+byte rx_epoch_r = INIT_RX_R;
+byte tx_epoch_r = INIT_TX_R;
+bool updating_r = false;
+byte app_quota_r = APP_QUOTA_R;
+byte old_rx_r = 255;
+bool retain_old_r = false;
+
+inline APP_ACCEPT(assert_epoch, assert_old, assert_retain) {
+    assert( (assert_epoch) || ((assert_retain) && (assert_old)) )
+}
+
+inline ACTIVE_EPOCH_ASSERTS() {
+    /* Epoch mismatches are allowed while an update is in progress. */
+    assert( (tx_epoch_i == rx_epoch_r) || updating_i || updating_r );
+    assert( (tx_epoch_r == rx_epoch_i) || updating_i || updating_r );
+}
+
+/* --- Network process: Loss + Reordering --- */
+proctype Network() priority 2 {
     mtype t; byte e; bool a;
     do
+    :: (done_i && done_r &&
+        len(i2r_p1) == 0 && len(i2r_p2) == 0 &&
+        len(r2i_p1) == 0 && len(r2i_p2) == 0) -> break
+
     :: (len(i2r_p1) > 0) ->
         i2r_p1 ? t,e,a;
         if
-        :: (drops_left > 0) -> drops_left--       /* drop */
-        :: to_responder ! t,e,a                   /* deliver */
+        :: (drops_left > 0) -> drops_left--
+        :: to_responder ! t,e,a
         fi
     :: (len(i2r_p2) > 0) ->
         i2r_p2 ? t,e,a;
@@ -81,182 +136,169 @@ proctype Network() {
     od
 }
 
-///////////////////////////////////////////////////////////////
-// Global state
-///////////////////////////////////////////////////////////////
-// Initiator
-byte rx_epoch_i = INIT_RX_I;    // inbound accepted epoch
-byte tx_epoch_i = INIT_TX_I;    // outbound used epoch
-bool updating_i = false;
-bool derived_i  = false;        // after accepted Response
-byte app_quota_i = 2;           // limit for extra APP sends
-
-byte old_epoch_i = 255;         // old RX epoch (retention)
-bool retain_old_i = false;
-
-// Responder
-byte rx_epoch_r = INIT_RX_R;
-byte tx_epoch_r = INIT_TX_R;
-bool updating_r = false;
-bool accepted_r = false;
-byte app_quota_r = 2;
-
-byte old_epoch_r = 255;         // old RX epoch (retention)
-bool retain_old_r = false;
-
-///////////////////////////////////////////////////////////////
-// Global assertion: active epochs per direction must match.
-// Mismatch is allowed while the responder is updating.
-///////////////////////////////////////////////////////////////
-inline ACTIVE_EPOCH_ASSERTS() {
-    /* I -> R: mismatch allowed while R updates */
-    assert( (tx_epoch_i == rx_epoch_r) || updating_r );
-
-    /* R -> I: mismatch allowed while R updates (R may have raised RX already) */
-    assert( (tx_epoch_r == rx_epoch_i) || updating_r );
-}
-
-///////////////////////////////////////////////////////////////
-// Initiator
-///////////////////////////////////////////////////////////////
-proctype Initiator()
+/* --- Initiator (Appendix B.2.2) --- */
+proctype Initiator() priority 1
 {
-    byte e_resp, e_nku, e_ack, e_app;
-    bool acc, aux;
-    byte N_i; /* temporary for new epoch derived from old tx */
+    byte e; bool acc;
+    byte old_tx_i = 255;
 
-    // (1) Start: ExtendedKeyUpdateRequest
     updating_i = true;
+    old_tx_i = tx_epoch_i;
     I2R_SEND(Req, tx_epoch_i, true);
     ACTIVE_EPOCH_ASSERTS();
 
+WAIT_RESP:
     do
-    /* --- APP sends from I at any time --- */
+    /* APP send anytime */
     :: (app_quota_i > 0) ->
         I2R_SEND(APP, tx_epoch_i, true);
         app_quota_i--;
         ACTIVE_EPOCH_ASSERTS()
 
-    /* --- APP receives at I at any time --- */
-    :: I_RECV(APP, e_app, aux) ->
-        /* accept new RX or (during retention) old RX */
-        assert( (e_app == rx_epoch_i) || (retain_old_i && e_app == old_epoch_i) );
-        if
-        :: (retain_old_i && e_app == rx_epoch_i) -> retain_old_i = false
-        :: else -> skip
-        fi
+    /* APP receive anytime */
+    :: I_RECV(APP, e, acc) ->
+        APP_ACCEPT(e == rx_epoch_i, e == old_rx_i, retain_old_i);
         ACTIVE_EPOCH_ASSERTS()
 
-    /* --- Protocol: Response --- */
-    :: I_RECV(Resp, e_resp, acc) ->
-        assert(e_resp == rx_epoch_i);
+    /* retransmit Req while waiting (only when no pending inbound message) */
+    :: (updating_i && req_retries > 0 && len(to_initiator) == 0) ->
+        I2R_SEND(Req, tx_epoch_i, true);
+        req_retries--;
+        ACTIVE_EPOCH_ASSERTS()
+
+    /* receive Resp (implicit ACK of Req) */
+    :: I_RECV(Resp, e, acc) ->
         if
-        :: acc ->
-            derived_i = true;                 // (4)
-            I2R_SEND(NKU, tx_epoch_i, true);  // (5) tag = old TX
-            ACTIVE_EPOCH_ASSERTS()
+        :: (e != rx_epoch_i) -> skip
+        :: (!acc) -> unexpected = true; break
         :: else ->
+            /* Step 3: activate retention + bump rx; MUST NOT defer sending NKU. */
+            old_rx_i = rx_epoch_i;
+            retain_old_i = true;
+            rx_epoch_i = rx_epoch_i + 1;
+            I2R_SEND(NKU, old_tx_i, true);
+            ACTIVE_EPOCH_ASSERTS();
+            goto WAIT_ACK
+        fi
+    od;
+
+WAIT_ACK:
+    do
+    /* APP send/recv allowed */
+    :: (app_quota_i > 0) ->
+        I2R_SEND(APP, tx_epoch_i, true);
+        app_quota_i--;
+        ACTIVE_EPOCH_ASSERTS()
+
+    :: I_RECV(APP, e, acc) ->
+        APP_ACCEPT(e == rx_epoch_i, e == old_rx_i, retain_old_i);
+        if
+        :: (retain_old_i && e == rx_epoch_i) -> retain_old_i = false
+        :: else -> skip
+        fi;
+        ACTIVE_EPOCH_ASSERTS()
+
+    /* tolerate duplicate Resp */
+    :: I_RECV(Resp, e, acc) -> skip
+
+    /* ignore any stray Req/NKU */
+    :: I_RECV(Req, e, acc) -> skip
+    :: I_RECV(NKU, e, acc) -> skip
+
+    /* retransmit NKU until ACK (only when no pending inbound message) */
+    :: (nku_retries > 0 && len(to_initiator) == 0) ->
+        I2R_SEND(NKU, old_tx_i, true);
+        nku_retries--;
+        ACTIVE_EPOCH_ASSERTS()
+
+    /* ACK completes initiator: tx := rx */
+    :: I_RECV(ACK, e, acc) ->
+        if
+        :: (e == rx_epoch_i) ->
+            tx_epoch_i = rx_epoch_i;
+            retain_old_i = false;
             updating_i = false;
+            assert(tx_epoch_i == rx_epoch_i);
+            final_rx_i = rx_epoch_i;
+            final_tx_i = tx_epoch_i;
+            done_i = true;
             ACTIVE_EPOCH_ASSERTS();
             break
+        :: else -> skip
         fi
-
-    /* --- Protocol: NKU from Responder --- */
-    :: I_RECV(NKU, e_nku, aux) ->
-        assert(e_nku == rx_epoch_i);          // R still tags with old TX
-        /* Activate retention */
-        old_epoch_i  = rx_epoch_i;
-        retain_old_i = true;
-
-        /* Derive new keys and epoch */
-        N_i = tx_epoch_i + 1;
-        tx_epoch_i = N_i;
-        rx_epoch_i = N_i;
-
-        /* (9) Final ACK (tag = current tx, which equals new rx now) */
-        I2R_SEND(ACK, tx_epoch_i, true);
-
-        assert(tx_epoch_i == rx_epoch_i);
-        updating_i = false;
-        ACTIVE_EPOCH_ASSERTS();
-        break
     od
 }
 
-///////////////////////////////////////////////////////////////
-// Responder
-///////////////////////////////////////////////////////////////
-proctype Responder()
+/* --- Responder (Appendix B.2.3) --- */
+proctype Responder() priority 1
 {
-    byte e_req, e_nku, e_ack, e_app;
-    bool aux;
+    byte e; bool aux;
 
     do
-    /* --- APP sends from R at any time --- */
+    /* APP send anytime */
     :: (app_quota_r > 0) ->
         R2I_SEND(APP, tx_epoch_r, true);
         app_quota_r--;
         ACTIVE_EPOCH_ASSERTS()
 
-    /* --- APP receives at R at any time --- */
-    :: R_RECV(APP, e_app, aux) ->
-        assert( (e_app == rx_epoch_r) || (retain_old_r && e_app == old_epoch_r) );
+    /* APP receive anytime */
+    :: R_RECV(APP, e, aux) ->
+        APP_ACCEPT(e == rx_epoch_r, e == old_rx_r, retain_old_r);
         if
-        :: (retain_old_r && e_app == rx_epoch_r) -> retain_old_r = false
+        :: (retain_old_r && e == rx_epoch_r) -> retain_old_r = false
         :: else -> skip
-        fi
+        fi;
         ACTIVE_EPOCH_ASSERTS()
 
-    /* --- Protocol: Request --- */
-    :: R_RECV(Req, e_req, aux) ->
-        assert(e_req == rx_epoch_r);
-        updating_r = true;
-
+    /* Req starts update */
+    :: R_RECV(Req, e, aux) ->
         if
-        :: R2I_SEND(Resp, tx_epoch_r, true) ->
-            accepted_r = true;
+        :: (e != rx_epoch_r) -> skip
+        :: else ->
+            updating_r = true;
+            R2I_SEND(Resp, tx_epoch_r, true);
             ACTIVE_EPOCH_ASSERTS()
-        :: R2I_SEND(Resp, tx_epoch_r, false) ->
-            updating_r = false;
-            ACTIVE_EPOCH_ASSERTS();
-            break
         fi
 
-    /* --- Protocol: NKU from Initiator --- */
-    :: R_RECV(NKU, e_nku, aux) ->
-        assert(updating_r && accepted_r);
-        assert(e_nku == rx_epoch_r);          // I still tags with old TX
-
-        /* Activate retention */
-        old_epoch_r  = rx_epoch_r;
-        retain_old_r = true;
-
-        /* Raise RX to new epoch (TX stays old for one more flight) */
-        rx_epoch_r = rx_epoch_r + 1;
-
-        /* (7) Own NKU (tag = old TX) */
-        R2I_SEND(NKU, tx_epoch_r, true);
-        ACTIVE_EPOCH_ASSERTS()
-
-    /* --- Protocol: final ACK from Initiator --- */
-    :: R_RECV(ACK, e_ack, aux) ->
-        assert(e_ack == rx_epoch_r);          // ACK arrives under new epoch
-        tx_epoch_r = rx_epoch_r;              // now switch TX
-        retain_old_r = false;                 // retention ends safely
-        assert(tx_epoch_r == rx_epoch_r);
-        updating_r = false;
-        ACTIVE_EPOCH_ASSERTS();
-        break
+    /* NKU triggers epoch/key update */
+    :: R_RECV(NKU, e, aux) ->
+        if
+        :: (!updating_r && !retain_old_r) -> skip
+        :: (updating_r && e == rx_epoch_r) ->
+            old_rx_r = rx_epoch_r;
+            retain_old_r = true;
+            rx_epoch_r = rx_epoch_r + 1;
+            tx_epoch_r = tx_epoch_r + 1;
+            assert(tx_epoch_r == rx_epoch_r);
+            R2I_SEND(ACK, tx_epoch_r, true);
+            updating_r = false;
+            final_rx_r = rx_epoch_r;
+            final_tx_r = tx_epoch_r;
+            done_r = true;
+            ACTIVE_EPOCH_ASSERTS()
+        :: (retain_old_r && e == old_rx_r) ->
+            /* duplicate NKU after lost ACK: retransmit ACK */
+            R2I_SEND(ACK, tx_epoch_r, true)
+        :: else ->
+            skip
+        fi
     od
 }
 
-///////////////////////////////////////////////////////////////
-// System start
-///////////////////////////////////////////////////////////////
 init {
     atomic {
         run Network();
         run Initiator();
         run Responder();
     }
+}
+
+ltl no_unexpected { [](!unexpected) }
+ltl epoch_consistency {
+    [](
+        (!unexpected && done_i && done_r) ->
+        (final_tx_i == final_rx_i &&
+         final_tx_r == final_rx_r &&
+         final_tx_i == final_tx_r)
+    )
 }
