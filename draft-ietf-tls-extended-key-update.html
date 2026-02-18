@@ -41,7 +41,7 @@ and DTLS 1.3.
     pycountry 24.6.1
     PyYAML 6.0.3
     requests 2.32.5
-    wcwidth 0.2.14
+    wcwidth 0.3.0
 -->
 <link href="draft-ietf-tls-extended-key-update.xml" rel="alternate" type="application/rfc+xml">
 <link href="#copyright" rel="license">
@@ -182,7 +182,7 @@ and DTLS 1.3.
   font-weight: 400;
   font-display: swap;
   src: local('Oxygen Mono'), local('OxygenMono-Regular'), url('https://martinthomson.github.io/rfc-css/fonts/oxygenmono-regular-latin-ext.woff2') format('woff2');
-  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
 }
 @font-face {
   font-family: 'Oxygen Mono';
@@ -190,7 +190,8 @@ and DTLS 1.3.
   font-weight: 400;
   font-display: swap;
   src: local('Oxygen Mono'), local('OxygenMono-Regular'), url('https://martinthomson.github.io/rfc-css/fonts/oxygenmono-regular-latin.woff2') format('woff2');
-  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
 }
 
 @font-face {
@@ -582,6 +583,7 @@ aside, blockquote {
 }
 blockquote {
   margin: 1em 0;
+  border-left: 2px var(--pilcrow-strong) solid;
 }
 cite {
   display: block;
@@ -652,7 +654,7 @@ a.pilcrow {
   }
 }
 @media not print {
-  :hover > a.pilcrow {
+  :hover > a.pilcrow, a.pilcrow:focus {
     opacity: 1;
   }
   a.pilcrow[href]:hover {
@@ -1060,11 +1062,11 @@ svg :is([fill="white"], [fill^="#fff"]) {
 <thead><tr>
 <td class="left">Internet-Draft</td>
 <td class="center">Extended Key Update for TLS</td>
-<td class="right">January 2026</td>
+<td class="right">February 2026</td>
 </tr></thead>
 <tfoot><tr>
 <td class="left">Tschofenig, et al.</td>
-<td class="center">Expires 18 July 2026</td>
+<td class="center">Expires 22 August 2026</td>
 <td class="right">[Page]</td>
 </tr></tfoot>
 </table>
@@ -1075,14 +1077,17 @@ svg :is([fill="white"], [fill^="#fff"]) {
 <dd class="workgroup">Transport Layer Security</dd>
 <dt class="label-internet-draft">Internet-Draft:</dt>
 <dd class="internet-draft">draft-ietf-tls-extended-key-update-latest</dd>
+<dt class="label-updates">Updates:</dt>
+<dd class="updates">
+<a href="https://www.rfc-editor.org/rfc/rfc9261" class="eref">9261</a>, <a href="https://www.rfc-editor.org/rfc/rfc8446" class="eref">8446</a> (if approved)</dd>
 <dt class="label-published">Published:</dt>
 <dd class="published">
-<time datetime="2026-01-14" class="published">14 January 2026</time>
+<time datetime="2026-02-18" class="published">18 February 2026</time>
     </dd>
 <dt class="label-intended-status">Intended Status:</dt>
 <dd class="intended-status">Standards Track</dd>
 <dt class="label-expires">Expires:</dt>
-<dd class="expires"><time datetime="2026-07-18">18 July 2026</time></dd>
+<dd class="expires"><time datetime="2026-08-22">22 August 2026</time></dd>
 <dt class="label-authors">Authors:</dt>
 <dd class="authors">
 <div class="author">
@@ -1156,7 +1161,7 @@ and DTLS 1.3.<a href="#section-abstract-2" class="pilcrow">¶</a></p>
         time. It is inappropriate to use Internet-Drafts as reference
         material or to cite them other than as "work in progress."<a href="#section-boilerplate.1-3" class="pilcrow">¶</a></p>
 <p id="section-boilerplate.1-4">
-        This Internet-Draft will expire on 18 July 2026.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
+        This Internet-Draft will expire on 22 August 2026.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="copyright">
@@ -1955,19 +1960,39 @@ key exchange / PQ-KEM exchange),<a href="#section-7-3.1.1" class="pilcrow">¶</a
 bound to the previously established secret,<a href="#section-7-3.2.1" class="pilcrow">¶</a></p>
 </li>
         <li class="normal" id="section-7-3.3">
-          <p id="section-7-3.3.1">the concatenation of the <code>ExtendedKeyUpdate(key_update_request)</code> and the
-<code>ExtendedKeyUpdate(key_update_response)</code> messages, which contain the key shares,
-binding the encapsulated shared secret ciphertext to IKM in case of
-hybrid key exchange, and<a href="#section-7-3.3.1" class="pilcrow">¶</a></p>
+          <p id="section-7-3.3.1">a transcript hash that is updated after each Extended Key Update exchange
+by hashing together the previous transcript hash value and the current
+ExtendedKeyUpdate(key_update_request) and ExtendedKeyUpdate(key_update_response)
+messages, which contain the key shares, thereby binding the encapsulated shared
+secret ciphertext to the IKM in the case of PQ/T hybrid or PQC key exchange and
+cryptographically binding the newly derived secrets to the prior handshake
+transcript and all preceding EKU exchanges, as well as to the current EKU
+exchange, and<a href="#section-7-3.3.1" class="pilcrow">¶</a></p>
 </li>
         <li class="normal" id="section-7-3.4">
           <p id="section-7-3.4.1">new label strings to distinguish it from the key derivation used in
 TLS 1.3.<a href="#section-7-3.4.1" class="pilcrow">¶</a></p>
 </li>
       </ul>
-<p id="section-7-4">The following diagram shows the key derivation hierarchy.<a href="#section-7-4" class="pilcrow">¶</a></p>
+<p id="section-7-4">The transcript_hash_N denotes the transcript hash value associated with
+generation N. During each Extended Key Update exchange, the transcript
+hash value for the next generation is computed as follows:<a href="#section-7-4" class="pilcrow">¶</a></p>
 <div class="alignLeft art-text artwork" id="section-7-5">
 <pre>
+ transcript_hash_N+1 = Transcript-Hash(transcript_hash_N ||
+                                       EKU(key_update_request) ||
+                                       EKU(key_update_response))
+</pre><a href="#section-7-5" class="pilcrow">¶</a>
+</div>
+<p id="section-7-6">Once transcript_hash_N+1 has been computed, transcript_hash_N can be deleted.
+No prior transcript hash values need to be retained for future EKU exchanges.
+transcript_hash_0 denotes the transcript hash of the initial TLS handshake,
+covering all messages from the ClientHello up to and including the
+client Finished message.<a href="#section-7-6" class="pilcrow">¶</a></p>
+<p id="section-7-7">The following diagram shows the key derivation hierarchy.<a href="#section-7-7" class="pilcrow">¶</a></p>
+<div class="alignLeft art-text artwork" id="section-7-8">
+<pre>
+
        Main Secret N
              |
              v
@@ -1977,27 +2002,23 @@ TLS 1.3.<a href="#section-7-3.4.1" class="pilcrow">¶</a></p>
  (EC)DHE -&gt; HKDF-Extract = Main Secret N+1
              |
              +-----&gt; Derive-Secret(., "c ap traffic",
-             |                EKU(key_update_request) ||
-             |                EKU(key_update_response))
+             |                     transcript_hash_N+1)
              |                = client_application_traffic_secret_N+1
              |
              +-----&gt; Derive-Secret(., "s ap traffic",
-             |                EKU(key_update_request) ||
-             |                EKU(key_update_response))
+             |                     transcript_hash_N+1)
              |                = server_application_traffic_secret_N+1
              |
              +-----&gt; Derive-Secret(., "exp master",
-             |                EKU(key_update_request) ||
-             |                EKU(key_update_response))
+             |                     transcript_hash_N+1)
              |                = exporter_secret_N+1
              |
              +-----&gt; Derive-Secret(., "res master",
-             |                EKU(key_update_request) ||
-             |                EKU(key_update_response))
+             |                     transcript_hash_N+1)
                               = resumption_main_secret_N+1
-</pre><a href="#section-7-5" class="pilcrow">¶</a>
+</pre><a href="#section-7-8" class="pilcrow">¶</a>
 </div>
-<p id="section-7-6">During the initial handshake, the Main Secret is generated (see
+<p id="section-7-9">During the initial handshake, the Main Secret is generated (see
 <span><a href="https://datatracker.ietf.org/doc/html/draft-ietf-tls-rfc8446bis-14#section-7.1" class="relref">Section 7.1</a> of [<a href="#TLS" class="cite xref">TLS</a>]</span>). Since the Main Secret
 is discarded during the key derivation procedure, a derived value is
 stored. This stored value then serves as the input salt to the first
@@ -2006,32 +2027,32 @@ established value as input keying material (IKM) to produce
 main_secret_{N+1}. The derived value from this new master secret
 serves as input salt to the subsequent key update procedure, which
 also incorporates a fresh ephemeral (EC)DHE value as IKM. This
-process is repeated for each additional key update procedure.<a href="#section-7-6" class="pilcrow">¶</a></p>
-<p id="section-7-7">The traffic keys are re-derived from
+process is repeated for each additional key update procedure.<a href="#section-7-9" class="pilcrow">¶</a></p>
+<p id="section-7-10">The traffic keys are re-derived from
 client_application_traffic_secret_N+1 and
 server_application_traffic_secret_N+1, as described in
-<span><a href="https://datatracker.ietf.org/doc/html/draft-ietf-tls-rfc8446bis-14#section-7.3" class="relref">Section 7.3</a> of [<a href="#TLS" class="cite xref">TLS</a>]</span>.<a href="#section-7-7" class="pilcrow">¶</a></p>
-<p id="section-7-8">Once client_/server_application_traffic_secret_N+1 and its associated
+<span><a href="https://datatracker.ietf.org/doc/html/draft-ietf-tls-rfc8446bis-14#section-7.3" class="relref">Section 7.3</a> of [<a href="#TLS" class="cite xref">TLS</a>]</span>.<a href="#section-7-10" class="pilcrow">¶</a></p>
+<p id="section-7-11">Once client_/server_application_traffic_secret_N+1 and its associated
 traffic keys have been computed, implementations <span class="bcp14">SHOULD</span> delete
 client_/server_application_traffic_secret_N and its associated
 traffic keys as soon as possible. Note: The
 client_/server_application_traffic_secret_N and its associated
 traffic keys can only be deleted by the responder after receiving the
-<code>ExtendedKeyUpdate(new_key_update)</code> message.<a href="#section-7-8" class="pilcrow">¶</a></p>
-<p id="section-7-9">Once client_/server_application_traffic_secret_N+1 and the corresponding traffic
+<code>ExtendedKeyUpdate(new_key_update)</code> message.<a href="#section-7-11" class="pilcrow">¶</a></p>
+<p id="section-7-12">Once client_/server_application_traffic_secret_N+1 and the corresponding traffic
 keys are in use, all subsequent records, including alerts and post-handshake
-messages <span class="bcp14">MUST</span> be protected using those keys.<a href="#section-7-9" class="pilcrow">¶</a></p>
-<p id="section-7-10">When using this extension, it is important to consider its interaction with
+messages <span class="bcp14">MUST</span> be protected using those keys.<a href="#section-7-12" class="pilcrow">¶</a></p>
+<p id="section-7-13">When using this extension, it is important to consider its interaction with
 ticket-based session resumption. If resumption occurs without a new (EC)DH
 exchange that provides forward secrecy, an attacker could potentially revert
 the security context to an earlier state, thereby negating the benefits of
 the extended key update. To preserve the security guarantees provided by key
 updates, endpoints <span class="bcp14">MUST</span> either invalidate any session tickets issued prior
 to the key update or ensure that resumption always involves a fresh (EC)DH
-exchange.<a href="#section-7-10" class="pilcrow">¶</a></p>
-<p id="section-7-11">If session tickets cannot be stored securely, developers <span class="bcp14">SHOULD</span> consider
+exchange.<a href="#section-7-13" class="pilcrow">¶</a></p>
+<p id="section-7-14">If session tickets cannot be stored securely, developers <span class="bcp14">SHOULD</span> consider
 disabling ticket-based resumption in their deployments. While this approach
-may impact performance, it provides improved security properties.<a href="#section-7-11" class="pilcrow">¶</a></p>
+may impact performance, it provides improved security properties.<a href="#section-7-14" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="post-quantum-cryptography-considerations">
@@ -2214,11 +2235,24 @@ Exported Authenticators <span>[<a href="#RFC9261" class="cite xref">RFC9261</a>]
         <h3 id="name-post-handshake-certificate-">
 <a href="#section-11.1" class="section-number selfRef">11.1. </a><a href="#name-post-handshake-certificate-" class="section-name selfRef">Post-Handshake Certificate-Based Client Authentication</a>
         </h3>
-<p id="section-11.1-1">When Post-handshake Certificate-Based Client Authentication (Section 4.6.2 of <span>[<a href="#TLS" class="cite xref">TLS</a>]</span>)
-is performed after an Extended Key Update is complete, it produces a Finished message
-computed using the application traffic keys of the new epoch. This confirms that both peers
-are operating with the same updated traffic keys and completes an authenticated
-transition after the EKU.<a href="#section-11.1-1" class="pilcrow">¶</a></p>
+<p id="section-11.1-1">When Post-Handshake Certificate-Based Client Authentication (Section 4.6.2 of <span>[<a href="#TLS" class="cite xref">TLS</a>]</span>) is
+performed after an Extended Key Update (EKU) is complete, the Handshake Context used for
+the transcript hash is updated. It consists of transcript_hash_N+1 concatenated
+with the CertificateRequest message. The Finished message is computed using a
+MAC key derived from the Base Key of the new epoch (client_application_traffic_secret_N+1).
+This confirms that both peers are operating with the same updated traffic keys
+and completes an authenticated transition after the EKU.<a href="#section-11.1-1" class="pilcrow">¶</a></p>
+<p id="section-11.1-2">To prevent cryptographic state ambiguity, the following constraints apply:<a href="#section-11.1-2" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-11.1-3.1">
+            <p id="section-11.1-3.1.1">A TLS server <span class="bcp14">MUST NOT</span> initiate a post-handshake CertificateRequest while an EKU
+exchange is in progress.<a href="#section-11.1-3.1.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-11.1-3.2">
+            <p id="section-11.1-3.2.1">If a CertificateRequest has been sent but the corresponding Finished message has not
+yet been received, the peers <span class="bcp14">MUST NOT</span> initiate an EKU exchange.<a href="#section-11.1-3.2.1" class="pilcrow">¶</a></p>
+</li>
+        </ul>
 </section>
 </div>
 <div id="exported-authenticators">
@@ -2228,8 +2262,8 @@ transition after the EKU.<a href="#section-11.1-1" class="pilcrow">¶</a></p>
         </h3>
 <p id="section-11.2-1">This document updates Section 5.1 of <span>[<a href="#RFC9261" class="cite xref">RFC9261</a>]</span> to specify that, after an
 Extended Key Update has completed, the Handshake Context and Finished MAC Key used for
-Exported Authenticators can be derived from the exporter secret associated with the current epoch.
-Implementations that support the epoch-aware Exported Authenticators interface will have to provide a means
+Exported Authenticators <span class="bcp14">MUST</span> be derived from the exporter secret associated with the current epoch.
+Implementations that support the epoch-aware Exported Authenticators interface <span class="bcp14">MUST</span> provide a means
 for applications to request the generation or validation of Exported Authenticators using
 the exporter secret for a specific epoch.<a href="#section-11.2-1" class="pilcrow">¶</a></p>
 <p id="section-11.2-2">The Handshake Context and Finished MAC Key used in both the CertificateVerify message
@@ -2570,7 +2604,7 @@ extension registry <span>[<a href="#TLS-Ext-Registry" class="cite xref">TLS-Ext-
 <dd class="break"></dd>
 <dt id="TLS-ECDHE-MLKEM">[TLS-ECDHE-MLKEM]</dt>
         <dd>
-<span class="refAuthor">Kwiatkowski, K.</span>, <span class="refAuthor">Kampanakis, P.</span>, <span class="refAuthor">Westerbaan, B.</span>, and <span class="refAuthor">D. Stebila</span>, <span class="refTitle">"Post-quantum hybrid ECDHE-MLKEM Key Agreement for TLSv1.3"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-ietf-tls-ecdhe-mlkem-03</span>, <time datetime="2025-11-21" class="refDate">21 November 2025</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-ietf-tls-ecdhe-mlkem-03">https://datatracker.ietf.org/doc/html/draft-ietf-tls-ecdhe-mlkem-03</a>&gt;</span>. </dd>
+<span class="refAuthor">Kwiatkowski, K.</span>, <span class="refAuthor">Kampanakis, P.</span>, <span class="refAuthor">Westerbaan, B.</span>, and <span class="refAuthor">D. Stebila</span>, <span class="refTitle">"Post-quantum hybrid ECDHE-MLKEM Key Agreement for TLSv1.3"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-ietf-tls-ecdhe-mlkem-04</span>, <time datetime="2026-02-08" class="refDate">8 February 2026</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-ietf-tls-ecdhe-mlkem-04">https://datatracker.ietf.org/doc/html/draft-ietf-tls-ecdhe-mlkem-04</a>&gt;</span>. </dd>
 <dd class="break"></dd>
 <dt id="TLS-Ext-Registry">[TLS-Ext-Registry]</dt>
         <dd>
@@ -2586,7 +2620,7 @@ extension registry <span>[<a href="#TLS-Ext-Registry" class="cite xref">TLS-Ext-
 <dd class="break"></dd>
 <dt id="TLS-MLKEM">[TLS-MLKEM]</dt>
         <dd>
-<span class="refAuthor">Connolly, D.</span>, <span class="refTitle">"ML-KEM Post-Quantum Key Agreement for TLS 1.3"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-ietf-tls-mlkem-05</span>, <time datetime="2025-11-02" class="refDate">2 November 2025</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-ietf-tls-mlkem-05">https://datatracker.ietf.org/doc/html/draft-ietf-tls-mlkem-05</a>&gt;</span>. </dd>
+<span class="refAuthor">Connolly, D.</span>, <span class="refTitle">"ML-KEM Post-Quantum Key Agreement for TLS 1.3"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-ietf-tls-mlkem-07</span>, <time datetime="2026-02-12" class="refDate">12 February 2026</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-ietf-tls-mlkem-07">https://datatracker.ietf.org/doc/html/draft-ietf-tls-mlkem-07</a>&gt;</span>. </dd>
 <dd class="break"></dd>
 <dt id="TLS-RENEGOTIATION">[TLS-RENEGOTIATION]</dt>
       <dd>
