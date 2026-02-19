@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2026-02-17T02:30:55.699466+00:00",
+  "timestamp": "2026-02-19T02:33:17.136989+00:00",
   "repo": "tlswg/tls-key-update",
   "labels": [
     {
@@ -8479,24 +8479,26 @@
       "id": "PR_kwDOMJPqLM7DSCbT",
       "title": "Update to key Schedule",
       "url": "https://github.com/tlswg/tls-key-update/pull/95",
-      "state": "OPEN",
+      "state": "MERGED",
       "author": "tireddy2",
       "authorAssociation": "COLLABORATOR",
       "assignees": [],
       "labels": [],
       "body": "This change updates the EKU key schedule to explicitly incorporate a transcript hash into EKU secret derivation. Previously, main_secret_N+1 was derived by recursively chaining from main_secret_N, which provides continuity but does not explicitly preserve transcript agreement.  It complicates the security proof for EKU.",
       "createdAt": "2026-02-12T13:31:31Z",
-      "updatedAt": "2026-02-16T17:35:11Z",
+      "updatedAt": "2026-02-18T13:33:36Z",
       "baseRepository": "tlswg/tls-key-update",
       "baseRefName": "main",
       "baseRefOid": "b689787e77750caa07f8f617741facb681230777",
       "headRepository": "tlswg/tls-key-update",
       "headRefName": "tireddy2-patch-13",
-      "headRefOid": "bf8990777002f0c120babaeefc3c4954a8eb36af",
-      "closedAt": null,
-      "mergedAt": null,
-      "mergedBy": null,
-      "mergeCommit": null,
+      "headRefOid": "270078b000be5c381c87dd1aa54ab4a92bd1bf2a",
+      "closedAt": "2026-02-18T13:33:27Z",
+      "mergedAt": "2026-02-18T13:33:27Z",
+      "mergedBy": "hannestschofenig",
+      "mergeCommit": {
+        "oid": "fb0c8c256513985cb2f208e1f1c55f059471613f"
+      },
       "comments": [
         {
           "author": "yaroslavros",
@@ -8504,6 +8506,34 @@
           "body": "I think we need some text about how updated transcripts interact with Post-Handshake Authentication (PHA).\r\nWe have a choice:\r\n1. keep PHA transcript as is. After all, PHA is virtually abandoned. The downside is that PHA will need to drag around its own separate transcript (transcript_hash_0)\r\n2. update PHA to use transcript_hash_N+1 and instruct the client to not send PHA CertificateVerify/Finished while EKU is in progress\r\n\r\nI would prefer option 2.",
           "createdAt": "2026-02-16T17:35:10Z",
           "updatedAt": "2026-02-16T17:35:10Z"
+        },
+        {
+          "author": "stfries",
+          "authorAssociation": "COLLABORATOR",
+          "body": "Option 2 would also look better for me. Having two transcript hashes, which address the handshake protocol seems odd. \r\nBTW, I was not aware that PHA would be abandoned. Any hint on that? ",
+          "createdAt": "2026-02-17T07:39:38Z",
+          "updatedAt": "2026-02-17T07:39:49Z"
+        },
+        {
+          "author": "yaroslavros",
+          "authorAssociation": "COLLABORATOR",
+          "body": "> BTW, I was not aware that PHA would be abandoned. Any hint on that? \n\nIt is explicitly prohibited in QUIC and HTTP/2.\nIt is not supported in a number of popular TLS implementations including BoringSSL, aws-lc, s2n-tls, mbedTLS and rustls. It is also not supported in Apple and Microsoft TLS stacks built-in the relevant operating systems.\n\nIn fact, the only mainstream TLS implementations supporting PHA seem to be OpenSSL and WolfSSL.\n\nI'm happy to be corrected.",
+          "createdAt": "2026-02-17T08:16:51Z",
+          "updatedAt": "2026-02-17T08:16:51Z"
+        },
+        {
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "body": "> I think we need some text about how updated transcripts interact with Post-Handshake Authentication (PHA). We have a choice:\r\n> \r\n>     1. keep PHA transcript as is. After all, PHA is virtually abandoned. The downside is that PHA will need to drag around its own separate transcript (transcript_hash_0)\r\n> \r\n>     2. update PHA to use transcript_hash_N+1 and instruct the client to not send PHA CertificateVerify/Finished while EKU is in progress\r\n> \r\n> \r\n> I would prefer option 2.\r\n\r\nThe draft already uses Option 2 as one of the mitigations to detect MiTM, I updated it use transcript_hash_N+1 and server will not initiate CertificateRequest while EKU is in progress, please check. ",
+          "createdAt": "2026-02-17T08:29:03Z",
+          "updatedAt": "2026-02-17T08:29:03Z"
+        },
+        {
+          "author": "hannestschofenig",
+          "authorAssociation": "COLLABORATOR",
+          "body": "I am OK with the proposed changes.",
+          "createdAt": "2026-02-18T13:30:57Z",
+          "updatedAt": "2026-02-18T13:30:57Z"
         }
       ],
       "reviews": [
@@ -8611,6 +8641,19 @@
           "body": "This seems good to me.",
           "createdAt": "2026-02-13T09:39:33Z",
           "updatedAt": "2026-02-13T09:39:33Z",
+          "comments": []
+        },
+        {
+          "id": "PRR_kwDOMJPqLM7jPZWz",
+          "commit": {
+            "abbreviatedOid": "270078b"
+          },
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "How do we handle race condition when client initiates EKU request and at the same time server sends CertificateREquest ?\nIt is a problem for RFC9261 as well (EKU request and authenticator request cross paths simultaneously).\n\n",
+          "createdAt": "2026-02-17T08:42:10Z",
+          "updatedAt": "2026-02-17T08:42:10Z",
           "comments": []
         }
       ]
