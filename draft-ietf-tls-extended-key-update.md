@@ -885,13 +885,6 @@ MAC key derived from the Base Key of the new epoch (client_application_traffic_s
 This confirms that both peers are operating with the same updated traffic keys
 and completes an authenticated transition after the EKU.
 
-To prevent cryptographic state ambiguity, the following constraints apply:
-
-* A TLS server MUST NOT initiate a post-handshake CertificateRequest while an EKU
-  exchange is in progress.
-* If a CertificateRequest has been sent but the corresponding Finished message has not
-  yet been received, the peers MUST NOT initiate an EKU exchange.
-
 ## Exported Authenticators
 
 This document updates Section 5.1 of {{!RFC9261}} to specify that, after an
@@ -922,6 +915,20 @@ epoch identifier used for their derivation can be conveyed in the
 certificate_request_context field, allowing the peer, particularly in
 DTLS where records may be reordered, to determine the correct exporter
 secret for validation.
+
+## Serialization of Extended Key Update and Post-Handshake Authentication
+
+To prevent cryptographic state ambiguity, EKU and post-handshake authentication operations MUST NOT be processed concurrently. For the purposes of this section, post-handshake authentication includes Post-Handshake Certificate-Based Client Authentication and Exported Authenticator exchanges.
+
+The following constraints apply to both TLS and DTLS:
+
+- An endpoint MUST NOT initiate post-handshake authentication while an EKU exchange is in progress.
+
+- If post-handshake authentication has been initiated and the corresponding authentication exchange has not yet completed, neither endpoint MUST initiate an EKU exchange.
+
+- In a cross-flight condition, if a TLS client sends an EKU request and, before receiving a response, receives a `CertificateRequest` or an `AuthenticatorRequest` from the TLS server, or if the TLS server sends an EKU request and, before receiving a response, receives an `AuthenticatorRequest` from the client, the endpoints MUST defer the EKU exchange and proceed with the post-handshake authentication exchange. The endpoints MUST NOT complete the EKU exchange or transition epochs until the authentication exchange has completed.
+
+In DTLS, deferred EKU requests are acknowledged as specified in {{DTLSC}}.
 
 #  Security Considerations
 
