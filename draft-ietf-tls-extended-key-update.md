@@ -928,7 +928,7 @@ The following constraints apply to both TLS 1.3 and DTLS 1.3:
 
 - In a cross-flight condition, if a (D)TLS client sends an EKU request and, before receiving a response, receives a `CertificateRequest` or an `AuthenticatorRequest` from the (D)TLS server, or if the (D)TLS server sends an EKU request and, before receiving a response, receives an `AuthenticatorRequest` from the (D)TLS client, the endpoints MUST complete the EKU exchange before processing or responding to the post-handshake authentication request. Authentication messages (`Certificate`, `CertificateVerify`, `Finished`, or `Authenticator`) MUST be generated only after the EKU exchange has completed. This ensures that post-handshake authentication confirms that both peers derived the same updated traffic secrets and detects any divergence resulting from interference during the EKU exchange.
 
-In DTLS 1.3, if a post-handshake authentication request is deferred as described above, it is acknowledged in accordance with the DTLS handshake reliability procedure.
+In DTLS 1.3, if a post-handshake authentication request is deferred as described above, it is acknowledged in accordance with the DTLS handshake reliability procedure specified in Section 7.1 of {{!DTLS=RFC9147}}.
 
 #  Security Considerations
 
