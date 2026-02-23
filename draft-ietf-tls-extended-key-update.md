@@ -931,7 +931,7 @@ cryptographic consistency.
 Once a `CertificateRequest` has been sent, the corresponding
 authentication exchange completes using the application traffic secret
 generation that was active when it was initiated, as required by the
-transcript and key derivation rules defined in Section 4.4 of {{-TLS}}.
+transcript and key derivation rules defined in Section 4.4 of {{TLS}}.
 
 An endpoint MUST NOT complete an EKU exchange in a manner that
 transitions to new application traffic secrets while a PHA exchange
