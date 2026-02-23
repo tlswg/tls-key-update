@@ -916,19 +916,44 @@ certificate_request_context field, allowing the peer, particularly in
 DTLS where records may be reordered, to determine the correct exporter
 secret for validation.
 
-## Serialization of Extended Key Update and Post-Handshake Authentication
+## Interaction of Extended Key Update and Post-Handshake Authentication
 
-To prevent cryptographic state ambiguity, EKU and post-handshake authentication operations MUST NOT be processed concurrently. For the purposes of this section, post-handshake authentication includes Post-Handshake Certificate-Based Client Authentication and Exported Authenticator exchanges.
+EKU and post-handshake authentication may both occur during the lifetime
+of a (D)TLS connection.  Post-Handshake Certificate-Based Client
+Authentication (PHA) is bound to the handshake transcript and computes
+its `Finished` message using a key derived from the application traffic
+secret that is active at the time the `CertificateRequest` is sent.
+Therefore, specific ordering constraints are required to preserve
+cryptographic consistency.
+
+### Post-Handshake Certificate-Based Client Authentication
+
+Once a `CertificateRequest` has been sent, the corresponding
+authentication exchange completes using the application traffic secret
+generation that was active when it was initiated, as required by the
+transcript and key derivation rules defined in Section 4.4 of {{-TLS}}.
+
+An endpoint MUST NOT complete an EKU exchange in a manner that
+transitions to new application traffic secrets while a PHA exchange
+is in progress.
 
 The following constraints apply to both TLS 1.3 and DTLS 1.3:
 
-- An endpoint MUST NOT initiate post-handshake authentication while an EKU exchange is in progress.
+* An endpoint MUST NOT initiate post-handshake authentication while an
+  EKU exchange is in progress.
 
-- If post-handshake authentication has been initiated and the corresponding authentication exchange has not yet completed, neither endpoint MUST initiate an EKU exchange.
+* If post-handshake authentication has been initiated and the corresponding
+  authentication exchange has not yet completed, neither endpoint
+  MUST initiate an EKU exchange.
 
-- In a cross-flight condition, if a (D)TLS client sends an EKU request and, before receiving a response, receives a `CertificateRequest` or an `AuthenticatorRequest` from the (D)TLS server, or if the (D)TLS server sends an EKU request and, before receiving a response, receives an `AuthenticatorRequest` from the (D)TLS client, the endpoints MUST complete the EKU exchange before processing or responding to the post-handshake authentication request. Authentication messages (`Certificate`, `CertificateVerify`, `Finished`, or `Authenticator`) MUST be generated only after the EKU exchange has completed. This ensures that post-handshake authentication confirms that both peers derived the same updated traffic secrets and detects any divergence resulting from interference during the EKU exchange.
+* In a cross-flight condition, if a (D)TLS client sends an EKU request and,
+  before receiving a response, receives a `CertificateRequest` from the
+  (D)TLS server, the endpoints MUST defer completion of the EKU exchange
+  and proceed with the post-handshake authentication exchange. The endpoints
+  MUST NOT transition to new application traffic secrets until the
+  authentication exchange has completed.
 
-In DTLS 1.3, if a post-handshake authentication request is deferred as described above, it is acknowledged in accordance with the DTLS handshake reliability procedure specified in Section 7.1 of {{!DTLS=RFC9147}}.
+In DTLS, deferred EKU requests are acknowledged as specified in {{DTLSC}}.
 
 #  Security Considerations
 
