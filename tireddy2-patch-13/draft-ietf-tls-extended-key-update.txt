@@ -1042,7 +1042,7 @@ Table of Contents
 
    In DTLS 1.3, if a post-handshake authentication request is deferred
    as described above, it is acknowledged in accordance with the DTLS
-   handshake reliability procedure.
+   handshake reliability procedure specified in Section 7.1 of [DTLS].
 
 12.  Security Considerations
 
