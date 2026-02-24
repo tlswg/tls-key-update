@@ -921,17 +921,12 @@ secret for validation.
 EKU and post-handshake authentication may both occur during the lifetime
 of a (D)TLS connection.  Post-Handshake Certificate-Based Client
 Authentication (PHA) is bound to the handshake transcript and computes
-its `Finished` message using a key derived from the application traffic
-secret that is active at the time the `CertificateRequest` is sent.
-Therefore, specific ordering constraints are required to preserve
-cryptographic consistency.
+its `Finished` message as specified in Section 4.4 of {{TLS}}, using a key
+derived from the application traffic secret that is active at the time
+the `CertificateRequest` is sent. Therefore, specific ordering constraints
+are required to preserve cryptographic consistency.
 
 ### Post-Handshake Certificate-Based Client Authentication
-
-Once a `CertificateRequest` has been sent, the corresponding
-authentication exchange completes using the application traffic secret
-generation that was active when it was initiated, as required by the
-transcript and key derivation rules defined in Section 4.4 of {{TLS}}.
 
 An endpoint MUST NOT complete an EKU exchange in a manner that
 transitions to new application traffic secrets while a PHA exchange
@@ -939,12 +934,10 @@ is in progress.
 
 The following constraints apply to both TLS 1.3 and DTLS 1.3:
 
-* An endpoint MUST NOT initiate post-handshake authentication while an
-  EKU exchange is in progress.
+* An endpoint MUST NOT initiate PHA while an EKU exchange is in progress.
 
-* If post-handshake authentication has been initiated and the corresponding
-  authentication exchange has not yet completed, neither endpoint
-  MUST initiate an EKU exchange.
+* If PHA has been initiated and the corresponding authentication exchange
+  has not yet completed, neither endpoint MUST initiate an EKU exchange.
 
 * In a cross-flight condition, if a (D)TLS client sends an EKU request and,
   before receiving a response, receives a `CertificateRequest` from the
@@ -953,7 +946,18 @@ The following constraints apply to both TLS 1.3 and DTLS 1.3:
   MUST NOT transition to new application traffic secrets until the
   authentication exchange has completed.
 
-In DTLS, deferred EKU requests are acknowledged as specified in {{DTLSC}}.
+In DTLS, deferred EKU request is acknowledged as specified in {{DTLSC}}.
+
+### Exported Authenticators
+
+Because the exporter interface defined in this document is epoch-aware,
+the exporter secret used for an Exported Authenticator exchange is
+explicitly determined by the epoch selected by the application.
+
+As a result, cross-flight exchanges of EKU and `AuthenticatorRequest`
+messages do not introduce cryptographic ambiguity. Therefore, no
+serialization requirement is imposed between EKU and Exported Authenticator
+exchanges.
 
 #  Security Considerations
 
