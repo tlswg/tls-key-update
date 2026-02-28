@@ -461,7 +461,7 @@ has the following steps:
    sending a response if system load or resource constraints prevent immediate processing.
    In such cases, the responder MUST acknowledge receipt of the key_update_request with an ACK and, once
    sufficient resources become available, retransmit the key_update_response until it is acknowledged by the
-   initiator.
+   initiator. key_update_response and ACK message MAY be received out of order; a late ACK MUST be ignored and MUST NOT affect the extended key update state machine.
 
 1. On receipt of `ExtendedKeyUpdate(key_update_response)` the initiator derives a secret key based on the
    exchanged key shares. This message also serves as an implicit acknowledgment of the
@@ -885,13 +885,6 @@ MAC key derived from the Base Key of the new epoch (client_application_traffic_s
 This confirms that both peers are operating with the same updated traffic keys
 and completes an authenticated transition after the EKU.
 
-To prevent cryptographic state ambiguity, the following constraints apply:
-
-* A TLS server MUST NOT initiate a post-handshake CertificateRequest while an EKU
-  exchange is in progress.
-* If a CertificateRequest has been sent but the corresponding Finished message has not
-  yet been received, the peers MUST NOT initiate an EKU exchange.
-
 ## Exported Authenticators
 
 This document updates Section 5.1 of {{!RFC9261}} to specify that, after an
@@ -922,6 +915,49 @@ epoch identifier used for their derivation can be conveyed in the
 certificate_request_context field, allowing the peer, particularly in
 DTLS where records may be reordered, to determine the correct exporter
 secret for validation.
+
+## Interaction of Extended Key Update and Post-Handshake Authentication
+
+EKU and post-handshake authentication may both occur during the lifetime
+of a (D)TLS connection.  Post-Handshake Certificate-Based Client
+Authentication (PHA) is bound to the handshake transcript and computes
+its `Finished` message as specified in Section 4.4 of {{TLS}}, using a key
+derived from the application traffic secret that is active at the time
+the `CertificateRequest` is sent. Therefore, specific ordering constraints
+are required to preserve cryptographic consistency.
+
+### Post-Handshake Certificate-Based Client Authentication
+
+An endpoint MUST NOT complete an EKU exchange in a manner that
+transitions to new application traffic secrets while a PHA exchange
+is in progress.
+
+The following constraints apply to both TLS 1.3 and DTLS 1.3:
+
+* An endpoint MUST NOT initiate PHA while an EKU exchange is in progress.
+
+* If PHA has been initiated and the corresponding authentication exchange
+  has not yet completed, neither endpoint MUST initiate an EKU exchange.
+
+* In a cross-flight condition, if a (D)TLS client sends an EKU request and,
+  before receiving a response, receives a `CertificateRequest` from the
+  (D)TLS server, the endpoints MUST defer completion of the EKU exchange
+  and proceed with the post-handshake authentication exchange. The endpoints
+  MUST NOT transition to new application traffic secrets until the
+  authentication exchange has completed.
+
+In DTLS, deferred EKU request is acknowledged as specified in {{DTLSC}}.
+
+### Exported Authenticators
+
+Because the exporter interface defined in this document is epoch-aware,
+the exporter secret used for an Exported Authenticator exchange is
+explicitly determined by the epoch selected by the application.
+
+As a result, cross-flight exchanges of EKU and `AuthenticatorRequest`
+messages do not introduce cryptographic ambiguity. Therefore, no
+serialization requirement is imposed between EKU and Exported Authenticator
+exchanges.
 
 #  Security Considerations
 
