@@ -709,17 +709,18 @@ keys are in use, all subsequent records, including alerts and post-handshake
 messages MUST be protected using those keys.
 
 When using this extension, it is important to consider its interaction with
-ticket-based session resumption. If resumption occurs without a new (EC)DH
-exchange that provides forward secrecy, an attacker could potentially revert
-the security context to an earlier state, thereby negating the benefits of
-the extended key update. To preserve the security guarantees provided by key
-updates, endpoints MUST either invalidate any session tickets issued prior
-to the key update or ensure that resumption always involves a fresh (EC)DH
-exchange.
+PSK-based resumption using PSKs established via the NewSessionTicket mechanism
+defined in {{TLS}}. If an attacker temporarily compromises endpoint memory and
+obtains such PSKs, those PSKs are sufficient to establish new authenticated TLS
+connections. Even if an implementation invalidates previously issued PSKs upon
+completion of the EKU exchange, an attacker who has obtained such a PSK
+may initiate and complete a resumed session prior to that invalidation.
+Extended Key Update does not prevent this use of compromised PSKs.
 
-If session tickets cannot be stored securely, developers SHOULD consider
-disabling ticket-based resumption in their deployments. While this approach
-may impact performance, it provides improved security properties.
+Because compromise of endpoint memory typically exposes PSKs and
+permits subsequent authenticated connections using those PSKs, endpoints that
+enable EKU and require that compromise not enable such subsequent authenticated
+connections MUST disable PSK-based resumption.
 
 # Post-Quantum Cryptography Considerations
 
