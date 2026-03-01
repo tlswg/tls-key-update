@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2026-02-26T02:28:09.898115+00:00",
+  "timestamp": "2026-03-01T02:41:13.329579+00:00",
   "repo": "tlswg/tls-key-update",
   "labels": [
     {
@@ -8663,24 +8663,26 @@
       "id": "PR_kwDOMJPqLM7FLVx4",
       "title": "Cross-flight of EKU and post-handshake messages",
       "url": "https://github.com/tlswg/tls-key-update/pull/96",
-      "state": "OPEN",
+      "state": "MERGED",
       "author": "tireddy2",
       "authorAssociation": "COLLABORATOR",
       "assignees": [],
       "labels": [],
       "body": "",
       "createdAt": "2026-02-20T14:17:25Z",
-      "updatedAt": "2026-02-24T08:02:53Z",
+      "updatedAt": "2026-02-28T12:19:27Z",
       "baseRepository": "tlswg/tls-key-update",
       "baseRefName": "main",
       "baseRefOid": "710b459ce04451dd2bc1517f9a468e4d71de8be0",
       "headRepository": "tlswg/tls-key-update",
       "headRefName": "tireddy2-patch-13",
       "headRefOid": "aa6f1d8691efeb30f3326922b5e98c45fb51d9bd",
-      "closedAt": null,
-      "mergedAt": null,
-      "mergedBy": null,
-      "mergeCommit": null,
+      "closedAt": "2026-02-28T12:19:27Z",
+      "mergedAt": "2026-02-28T12:19:27Z",
+      "mergedBy": "tireddy2",
+      "mergeCommit": {
+        "oid": "6b26d402e9ddf8dad984ea77e08b4782a56afef4"
+      },
       "comments": [
         {
           "author": "tireddy2",
@@ -8848,6 +8850,106 @@
               "body": "Fixed. ",
               "createdAt": "2026-02-23T14:55:09Z",
               "updatedAt": "2026-02-23T14:55:09Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM7mrrmT",
+          "commit": {
+            "abbreviatedOid": "aa6f1d8"
+          },
+          "author": "hannestschofenig",
+          "authorAssociation": "COLLABORATOR",
+          "state": "APPROVED",
+          "body": "Thanks for the work on the PR, Tiru!",
+          "createdAt": "2026-02-28T08:02:33Z",
+          "updatedAt": "2026-02-28T08:02:33Z",
+          "comments": []
+        }
+      ]
+    },
+    {
+      "number": 97,
+      "id": "PR_kwDOMJPqLM7HBB1O",
+      "title": "Issue with session resumption",
+      "url": "https://github.com/tlswg/tls-key-update/pull/97",
+      "state": "OPEN",
+      "author": "tireddy2",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [],
+      "body": "",
+      "createdAt": "2026-02-28T15:20:09Z",
+      "updatedAt": "2026-02-28T17:59:15Z",
+      "baseRepository": "tlswg/tls-key-update",
+      "baseRefName": "main",
+      "baseRefOid": "6b26d402e9ddf8dad984ea77e08b4782a56afef4",
+      "headRepository": "tlswg/tls-key-update",
+      "headRefName": "tireddy2-patch-14",
+      "headRefOid": "ff65c3c9510dd69a97ceffa80d0ef6fe771ea967",
+      "closedAt": null,
+      "mergedAt": null,
+      "mergedBy": null,
+      "mergeCommit": null,
+      "comments": [],
+      "reviews": [
+        {
+          "id": "PRR_kwDOMJPqLM7mtVvI",
+          "commit": {
+            "abbreviatedOid": "ff65c3c"
+          },
+          "author": "hannestschofenig",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2026-02-28T17:56:44Z",
+          "updatedAt": "2026-02-28T17:56:45Z",
+          "comments": [
+            {
+              "originalPosition": 23,
+              "body": "Of course keys have to be stored somewhere but there are many different layers of software where they can be stored. The assumption in the draft in general is that there are good and bad ways to store the keys. If they are all in the same place then there is a problem.",
+              "createdAt": "2026-02-28T17:56:45Z",
+              "updatedAt": "2026-02-28T17:56:45Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM7mtWAP",
+          "commit": {
+            "abbreviatedOid": "ff65c3c"
+          },
+          "author": "hannestschofenig",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2026-02-28T17:57:41Z",
+          "updatedAt": "2026-02-28T17:57:42Z",
+          "comments": [
+            {
+              "originalPosition": 26,
+              "body": "There is only PSK-based resumption. So, I am not sure what the last sentence adds.\n\nIt seems to imply that we should not use resumption, which I proposed in the past to make the design simpler.",
+              "createdAt": "2026-02-28T17:57:42Z",
+              "updatedAt": "2026-02-28T17:57:42Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM7mtWU2",
+          "commit": {
+            "abbreviatedOid": "ff65c3c"
+          },
+          "author": "hannestschofenig",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2026-02-28T17:59:15Z",
+          "updatedAt": "2026-02-28T17:59:15Z",
+          "comments": [
+            {
+              "originalPosition": 20,
+              "body": "If an implementation invalidates the resumption tickets then they cannot be used. Of course, an attacker can use these tickets before they have been invalidated. ",
+              "createdAt": "2026-02-28T17:59:15Z",
+              "updatedAt": "2026-02-28T17:59:15Z"
             }
           ]
         }
