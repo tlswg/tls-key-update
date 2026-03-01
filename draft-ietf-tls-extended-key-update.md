@@ -710,17 +710,26 @@ messages MUST be protected using those keys.
 
 When using this extension, it is important to consider its interaction with
 PSK-based resumption using PSKs established via the NewSessionTicket mechanism
-defined in {{TLS}}. If an attacker temporarily compromises endpoint memory and
-obtains such PSKs, those PSKs are sufficient to establish new authenticated TLS
-connections. Even if an implementation invalidates previously issued PSKs upon
-completion of the EKU exchange, an attacker who has obtained such a PSK
-may initiate and complete a resumed session prior to that invalidation.
-Extended Key Update does not prevent this use of compromised PSKs.
+defined in {{TLS}}.
 
-Because compromise of endpoint memory typically exposes PSKs and
-permits subsequent authenticated connections using those PSKs, endpoints that
-enable EKU and require that compromise not enable such subsequent authenticated
-connections MUST disable PSK-based resumption.
+Extended Key Update provides post-compromise recovery for the connection in which
+it is performed. The recovery guarantees of this mechanism depend on the assumed
+compromise model. In a compromise model where exposure of endpoint memory reveals PSKs,
+established via the NewSessionTicket mechanism, those PSKs are sufficient to establish
+new authenticated TLS connections. Even if an implementation invalidates previously
+issued PSKs upon completion of the EKU exchange, an attacker who has obtained such
+a PSK may initiate and complete a resumed session prior to that invalidation. In such
+a model, Extended Key Update does not prevent use of previously issued PSKs.
+
+Accordingly, endpoints that enable EKU and operate under a compromise model in which
+endpoint memory exposure reveals PSKs MUST disable resumption.
+
+In deployment models where PSKs are protected using secure storage or isolation mechanisms
+that prevent their exposure under the assumed compromise model, resumption may remain
+compatible with the intended recovery guarantees of Extended Key Update. To prevent rollback
+of the recovering connection to pre-update keying material, an endpoint MUST invalidate
+all PSKs established under the previous application traffic secrets immediately after
+installing the updated application traffic secrets derived from the EKU key schedule.
 
 # Post-Quantum Cryptography Considerations
 
