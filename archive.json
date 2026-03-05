@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2026-03-03T02:32:30.220927+00:00",
+  "timestamp": "2026-03-05T02:28:32.618623+00:00",
   "repo": "tlswg/tls-key-update",
   "labels": [
     {
@@ -8880,7 +8880,7 @@
       "labels": [],
       "body": "",
       "createdAt": "2026-02-28T15:20:09Z",
-      "updatedAt": "2026-03-01T16:44:25Z",
+      "updatedAt": "2026-03-04T14:47:34Z",
       "baseRepository": "tlswg/tls-key-update",
       "baseRefName": "main",
       "baseRefOid": "6b26d402e9ddf8dad984ea77e08b4782a56afef4",
@@ -9025,6 +9025,66 @@
           "createdAt": "2026-03-01T16:44:25Z",
           "updatedAt": "2026-03-01T16:44:25Z",
           "comments": []
+        },
+        {
+          "id": "PRR_kwDOMJPqLM7nWJTv",
+          "commit": {
+            "abbreviatedOid": "18cbbe8"
+          },
+          "author": "thomwiggers",
+          "authorAssociation": "NONE",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2026-03-03T09:33:36Z",
+          "updatedAt": "2026-03-03T09:33:36Z",
+          "comments": [
+            {
+              "originalPosition": 35,
+              "body": "I find this bit of text confusing: it first suggests that \"resumption may remain compatible\" but then goes on to say PSKs must be invalidated. \n\nIn theory, it is possible that the compromise of application traffic secrets can be independent of compromise of the main secret/resumption main secret, e.g., if the application traffic keys are loaded in a network accelerator but the main key schedule remains in a more secure environment. In this case, maybe not revoking the PSK is okay? \n\nWe're getting very much into the weeds here though...  I also don't know what is necessary/required/desirable with regards to the use cases to which EKU is required (after all, if you could tolerate resumptions, doing resumption with PSK-DHE was already a way to achieve mostly the same outcome as this draft aims to get).",
+              "createdAt": "2026-03-03T09:33:36Z",
+              "updatedAt": "2026-03-03T09:33:36Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM7napCK",
+          "commit": {
+            "abbreviatedOid": "18cbbe8"
+          },
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2026-03-03T13:15:03Z",
+          "updatedAt": "2026-03-03T13:15:04Z",
+          "comments": [
+            {
+              "originalPosition": 35,
+              "body": "The intent is not to require maintaining PSKs across EKU exchanges. Each EKU generates a new resumption_master_secret, and PSKs are derived from the one that is current at the time they are issued. PSKs created before an EKU belong to an earlier epoch. After the connection moves to a new epoch, the server does not need to keep the previous resumption_master_secret or its PSKs. This prevents accumulation of old PSKs and avoids rollback to earlier key material. This is intended for scenarios where PSKs are not compromised.",
+              "createdAt": "2026-03-03T13:15:04Z",
+              "updatedAt": "2026-03-03T13:15:04Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM7n2yMH",
+          "commit": {
+            "abbreviatedOid": "18cbbe8"
+          },
+          "author": "thomwiggers",
+          "authorAssociation": "NONE",
+          "state": "CHANGES_REQUESTED",
+          "body": "",
+          "createdAt": "2026-03-04T14:47:28Z",
+          "updatedAt": "2026-03-04T14:47:34Z",
+          "comments": [
+            {
+              "originalPosition": 35,
+              "body": "Okay, the way things are currently phrased it sounds like you are concerned with the PSK security despite first saying that the PSKs may be secure ",
+              "createdAt": "2026-03-04T14:47:28Z",
+              "updatedAt": "2026-03-04T14:47:34Z"
+            }
+          ]
         }
       ]
     }
