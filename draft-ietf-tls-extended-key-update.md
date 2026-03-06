@@ -730,6 +730,9 @@ compatible with the intended recovery guarantees of Extended Key Update. To prev
 of the recovering connection to pre-update keying material, an endpoint MUST invalidate
 all PSKs established under the previous application traffic secrets immediately after
 installing the updated application traffic secrets derived from the EKU key schedule.
+It prevents use of PSKs based on earlier key material. This ensures that PSKs derived
+from earlier keying material cannot be used after the EKUs completes. This guidance
+applies to deployments where PSKs are assumed not to be compromised.
 
 # Post-Quantum Cryptography Considerations
 
@@ -971,7 +974,7 @@ exchanges.
 
 #  Security Considerations
 
-This section discusses additional security and operational aspects introduced by the Extended Key Update mechanism. All security considerations of TLS 1.3 {{TLS}} and DTLS.13 {{!DTLS=RFC9147}} continue to apply.
+This section discusses additional security and operational aspects introduced by the Extended Key Update mechanism. All security considerations of TLS 1.3 {{TLS}} and DTLS 1.3 {{!DTLS=RFC9147}} continue to apply.
 
 ## Scope of Key Compromise {#scope}
 
