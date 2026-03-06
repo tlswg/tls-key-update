@@ -2072,9 +2072,9 @@ compatible with the intended recovery guarantees of Extended Key Update. To prev
 of the recovering connection to pre-update keying material, an endpoint <span class="bcp14">MUST</span> invalidate
 all PSKs established under the previous application traffic secrets immediately after
 installing the updated application traffic secrets derived from the EKU key schedule.
-It prevents use of PSKs based on earlier key material. This ensures that PSKs derived
-from earlier keying material cannot be used after the EKUs completes. This guidance
-applies to deployments where PSKs are assumed not to be compromised.<a href="#section-7-16" class="pilcrow">¶</a></p>
+This ensures that PSKs derived from earlier keying material cannot be used after the
+EKUs completes. This guidance applies to deployments where PSKs are assumed not to be
+compromised.<a href="#section-7-16" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="post-quantum-cryptography-considerations">
