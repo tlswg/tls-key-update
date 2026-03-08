@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2026-03-05T02:28:32.618623+00:00",
+  "timestamp": "2026-03-08T02:31:35.244131+00:00",
   "repo": "tlswg/tls-key-update",
   "labels": [
     {
@@ -8880,13 +8880,13 @@
       "labels": [],
       "body": "",
       "createdAt": "2026-02-28T15:20:09Z",
-      "updatedAt": "2026-03-04T14:47:34Z",
+      "updatedAt": "2026-03-06T19:31:59Z",
       "baseRepository": "tlswg/tls-key-update",
       "baseRefName": "main",
       "baseRefOid": "6b26d402e9ddf8dad984ea77e08b4782a56afef4",
       "headRepository": "tlswg/tls-key-update",
       "headRefName": "tireddy2-patch-14",
-      "headRefOid": "18cbbe8b300087aed2880117bd141739e1889450",
+      "headRefOid": "6b271d04a31f244cd1e13ac838a0a74236c784f7",
       "closedAt": null,
       "mergedAt": null,
       "mergedBy": null,
@@ -9085,8 +9085,115 @@
               "updatedAt": "2026-03-04T14:47:34Z"
             }
           ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM7oj01B",
+          "commit": {
+            "abbreviatedOid": "18cbbe8"
+          },
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2026-03-06T06:38:01Z",
+          "updatedAt": "2026-03-06T06:38:01Z",
+          "comments": [
+            {
+              "originalPosition": 35,
+              "body": "Updated text for clarity, please review it.",
+              "createdAt": "2026-03-06T06:38:01Z",
+              "updatedAt": "2026-03-06T06:38:01Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM7oyv34",
+          "commit": {
+            "abbreviatedOid": "6b271d0"
+          },
+          "author": "stfries",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2026-03-06T19:31:24Z",
+          "updatedAt": "2026-03-06T19:31:24Z",
+          "comments": [
+            {
+              "originalPosition": 35,
+              "body": "First of all thank you for addressing this point Tiru. The updated text reads fine from me and explains the approach and boundary conitions,",
+              "createdAt": "2026-03-06T19:31:24Z",
+              "updatedAt": "2026-03-06T19:31:25Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM7oyweb",
+          "commit": {
+            "abbreviatedOid": "6b271d0"
+          },
+          "author": "stfries",
+          "authorAssociation": "COLLABORATOR",
+          "state": "APPROVED",
+          "body": "The changes look good to me and address the raised point to my understanding. ",
+          "createdAt": "2026-03-06T19:31:59Z",
+          "updatedAt": "2026-03-06T19:31:59Z",
+          "comments": []
         }
       ]
+    },
+    {
+      "number": 98,
+      "id": "PR_kwDOMJPqLM7IYJZz",
+      "title": "Create fatt-review",
+      "url": "https://github.com/tlswg/tls-key-update/pull/98",
+      "state": "CLOSED",
+      "author": "seanturner",
+      "authorAssociation": "CONTRIBUTOR",
+      "assignees": [],
+      "labels": [],
+      "body": "",
+      "createdAt": "2026-03-06T02:09:10Z",
+      "updatedAt": "2026-03-06T02:10:35Z",
+      "baseRepository": "tlswg/tls-key-update",
+      "baseRefName": "main",
+      "baseRefOid": "6b26d402e9ddf8dad984ea77e08b4782a56afef4",
+      "headRepository": "tlswg/tls-key-update",
+      "headRefName": "seanturner-fatt-review",
+      "headRefOid": "9bcee10296ecede3e64bcdb56b64f15d47a251e9",
+      "closedAt": "2026-03-06T02:10:35Z",
+      "mergedAt": null,
+      "mergedBy": null,
+      "mergeCommit": null,
+      "comments": [],
+      "reviews": []
+    },
+    {
+      "number": 99,
+      "id": "PR_kwDOMJPqLM7IYMOd",
+      "title": "Create FATT Report on EKU.pdf",
+      "url": "https://github.com/tlswg/tls-key-update/pull/99",
+      "state": "MERGED",
+      "author": "seanturner",
+      "authorAssociation": "CONTRIBUTOR",
+      "assignees": [],
+      "labels": [],
+      "body": "",
+      "createdAt": "2026-03-06T02:13:17Z",
+      "updatedAt": "2026-03-06T06:22:56Z",
+      "baseRepository": "tlswg/tls-key-update",
+      "baseRefName": "main",
+      "baseRefOid": "6b26d402e9ddf8dad984ea77e08b4782a56afef4",
+      "headRepository": "tlswg/tls-key-update",
+      "headRefName": "seanturner-fatt-review-01",
+      "headRefOid": "aec76c7f6415cadd74a2f49753681524c4e4e28d",
+      "closedAt": "2026-03-06T06:22:56Z",
+      "mergedAt": "2026-03-06T06:22:55Z",
+      "mergedBy": "tireddy2",
+      "mergeCommit": {
+        "oid": "876ccacd24de47b5627d7cc84b121813f4aa4c1e"
+      },
+      "comments": [],
+      "reviews": []
     }
   ]
 }
