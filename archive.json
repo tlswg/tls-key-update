@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2026-03-10T02:24:39.637310+00:00",
+  "timestamp": "2026-03-12T02:30:15.967147+00:00",
   "repo": "tlswg/tls-key-update",
   "labels": [
     {
@@ -1276,6 +1276,22 @@
           "updatedAt": "2026-01-20T13:15:24Z"
         }
       ]
+    },
+    {
+      "number": 100,
+      "id": "I_kwDOMJPqLM7yDlDn",
+      "title": "Justify the threat model",
+      "url": "https://github.com/tlswg/tls-key-update/issues/100",
+      "state": "OPEN",
+      "author": "muhammad-usama-sardar",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [],
+      "body": "> Extended Key Update assumes a transient compromise of the current application traffic keys, not a persistent attacker with ongoing access to key material. The procedure itself does not rely on long-term private keys; those are assumed to remain secure, as they are typically stored in a secure element, such as a Trusted Execution Environment (TEE), Hardware Security Module (HSM), or Trusted Platform Module (TPM). In contrast, application traffic keys are stored within the rich operating system, where short-term exposure due to memory disclosure or transient compromise may occur.\n\nIf one uses a TEE, then why not put the application traffic keys also into it?\n\nSee further discussion in the thread, e.g., [here](https://mailarchive.ietf.org/arch/msg/tls/eWUXfSuhygQQZ0MfPcHdpzQNoA0/)",
+      "createdAt": "2026-03-11T22:21:57Z",
+      "updatedAt": "2026-03-11T22:21:57Z",
+      "closedAt": null,
+      "comments": []
     }
   ],
   "pulls": [
@@ -8873,24 +8889,26 @@
       "id": "PR_kwDOMJPqLM7HBB1O",
       "title": "Issue with session resumption",
       "url": "https://github.com/tlswg/tls-key-update/pull/97",
-      "state": "OPEN",
+      "state": "MERGED",
       "author": "tireddy2",
       "authorAssociation": "COLLABORATOR",
       "assignees": [],
       "labels": [],
       "body": "",
       "createdAt": "2026-02-28T15:20:09Z",
-      "updatedAt": "2026-03-08T23:45:34Z",
+      "updatedAt": "2026-03-10T06:00:04Z",
       "baseRepository": "tlswg/tls-key-update",
       "baseRefName": "main",
       "baseRefOid": "6b26d402e9ddf8dad984ea77e08b4782a56afef4",
       "headRepository": "tlswg/tls-key-update",
       "headRefName": "tireddy2-patch-14",
       "headRefOid": "6b271d04a31f244cd1e13ac838a0a74236c784f7",
-      "closedAt": null,
-      "mergedAt": null,
-      "mergedBy": null,
-      "mergeCommit": null,
+      "closedAt": "2026-03-10T06:00:04Z",
+      "mergedAt": "2026-03-10T06:00:04Z",
+      "mergedBy": "tireddy2",
+      "mergeCommit": {
+        "oid": "d06056003b1784bdb34c97471a6ba38ec4a079ac"
+      },
       "comments": [],
       "reviews": [
         {
