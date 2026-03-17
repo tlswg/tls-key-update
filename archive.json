@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2026-03-12T02:30:15.967147+00:00",
+  "timestamp": "2026-03-17T02:30:02.518763+00:00",
   "repo": "tlswg/tls-key-update",
   "labels": [
     {
@@ -1290,6 +1290,22 @@
       "body": "> Extended Key Update assumes a transient compromise of the current application traffic keys, not a persistent attacker with ongoing access to key material. The procedure itself does not rely on long-term private keys; those are assumed to remain secure, as they are typically stored in a secure element, such as a Trusted Execution Environment (TEE), Hardware Security Module (HSM), or Trusted Platform Module (TPM). In contrast, application traffic keys are stored within the rich operating system, where short-term exposure due to memory disclosure or transient compromise may occur.\n\nIf one uses a TEE, then why not put the application traffic keys also into it?\n\nSee further discussion in the thread, e.g., [here](https://mailarchive.ietf.org/arch/msg/tls/eWUXfSuhygQQZ0MfPcHdpzQNoA0/)",
       "createdAt": "2026-03-11T22:21:57Z",
       "updatedAt": "2026-03-11T22:21:57Z",
+      "closedAt": null,
+      "comments": []
+    },
+    {
+      "number": 101,
+      "id": "I_kwDOMJPqLM7zf_zf",
+      "title": "Address IANA Early Review",
+      "url": "https://github.com/tlswg/tls-key-update/issues/101",
+      "state": "OPEN",
+      "author": "seanturner",
+      "authorAssociation": "CONTRIBUTOR",
+      "assignees": [],
+      "labels": [],
+      "body": "Please address IANA early review comments; see [message](https://mailarchive.ietf.org/arch/msg/tls/dwKgSKZZdjaS2fOcY4EP90IJzoQ/).",
+      "createdAt": "2026-03-16T23:04:27Z",
+      "updatedAt": "2026-03-16T23:04:27Z",
       "closedAt": null,
       "comments": []
     }
