@@ -66,6 +66,12 @@ informative:
      title: Transport Layer Security (TLS) Extensions
      target: https://www.iana.org/assignments/tls-extensiontype-values
      date: November 2023
+  TLS-Param-Registry:
+     author:
+        org: IANA
+     title: Transport Layer Security (TLS) Parameters
+     target: https://www.iana.org/assignments/tls-parameters
+     date: November 2023
   CCG16:
      author:
         org: IEEE
@@ -98,7 +104,7 @@ and DTLS 1.3.
 
 The Transport Layer Security (TLS) 1.3 protocol provides forward secrecy by using
 fresh ephemeral key exchange during the initial handshake. In the base protocol,
-this key exchange is performed with (EC)DHE. By registering new NamedGroup codepoints, TLS specifications also define 
+this key exchange is performed with (EC)DHE. By registering new NamedGroup codepoints, TLS specifications also define
 hybrid and post-quantum key exchange mechanisms for the same purpose. This ensures
 that encrypted communication remains confidential even if an attacker later obtains
 a party's long-term private key, protecting against passive adversaries who record
@@ -1050,7 +1056,7 @@ extension registry {{TLS-Ext-Registry}}:
 ## TLS HandshakeType
 
 IANA is requested to add the following entry to the "TLS HandshakeType"
-registry {{TLS-Ext-Registry}}:
+registry {{TLS-Param-Registry}}:
 
 *  Value: TBD2
 *  Description: extended_key_update
@@ -1059,8 +1065,8 @@ registry {{TLS-Ext-Registry}}:
 
 ## ExtendedKeyUpdate Message Subtypes Registry {#iana-eku-registry}
 
-IANA is requested to create a new registry "TLS ExtendedKeyUpdate Message Subtypes", within the
-existing "Transport Layer Security (TLS) Parameters" registry {{TLS-Ext-Registry}}.
+IANA is requested to create a new registry "TLS ExtendedKeyUpdate Message Subtypes", within the existing "Transport Layer Security (TLS) Parameters" registry group
+{{TLS-Param-Registry}}.
 This new registry reserves types used for Extended Key Update entries.
 The initial contents of this registry are as follows.
 
