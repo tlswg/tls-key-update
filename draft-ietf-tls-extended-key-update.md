@@ -137,7 +137,7 @@ rather than key derivation.
 
 This specification defines a TLS extension that introduces an extended key update
 mechanism for sessions established with classical (EC)DHE, hybrid
-classical/post-quantum key exchange, or post-quantum KEM exchange. Unlike the
+PQ/T hybrid key exchange, or post-quantum KEM exchange. Unlike the
 standard key update, this mechanism allows peers to inject fresh key exchange
 input from the negotiated mechanism into an active session. By periodically
 rerunning the negotiated key exchange, this extension enables the derivation of
