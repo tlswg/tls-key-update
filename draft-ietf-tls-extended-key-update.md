@@ -136,7 +136,7 @@ threat, especially when session keys are not refreshed with fresh key exchange i
 rather than key derivation.
 
 This specification defines a TLS extension that introduces an extended key update
-mechanism for sessions established with classical (EC)DHE, hybrid
+mechanism for sessions established with traditional (EC)DHE, hybrid
 PQ/T hybrid key exchange, or post-quantum KEM exchange. Unlike the
 standard key update, this mechanism allows peers to inject fresh key exchange
 input from the negotiated mechanism into an active session. By periodically
