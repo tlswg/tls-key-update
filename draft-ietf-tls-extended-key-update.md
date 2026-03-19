@@ -121,7 +121,7 @@ KeyUpdate message was introduced to offer limited rekeying functionality, it doe
 not fulfill the same cryptographic role as renegotiation and cannot refresh
 the TLS main secret and consequently cannot derive new secrets from fresh key
 exchange input. This limitation applies regardless of whether the session was
-established with classical (EC)DHE, a hybrid classical/post-quantum exchange,
+established with traditional (EC)DHE, a post-quantum/traditional (PQ/T) hybrid exchange,
 or a post-quantum KEM exchange.
 
 Security guidance from national agencies, such as ANSSI (France {{ANSSI}}), recommends the
