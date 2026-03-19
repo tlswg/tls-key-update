@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2026-03-17T02:30:02.518763+00:00",
+  "timestamp": "2026-03-19T02:36:39.446630+00:00",
   "repo": "tlswg/tls-key-update",
   "labels": [
     {
@@ -9241,6 +9241,425 @@
       },
       "comments": [],
       "reviews": []
+    },
+    {
+      "number": 102,
+      "id": "PR_kwDOMJPqLM7Li5jq",
+      "title": "Editorial Changes",
+      "url": "https://github.com/tlswg/tls-key-update/pull/102",
+      "state": "OPEN",
+      "author": "hannestschofenig",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [],
+      "body": "After reading the entire document again I noticed some minor editorial glitches, including redundant text, missing articles, too long sentence, etc. In this PR I made a few changes.\r\n\r\nThe PQC section is a bit weak as well but I have not managed to re-work it. Maybe someone of you has an idea on how we could improve the text.",
+      "createdAt": "2026-03-18T13:33:15Z",
+      "updatedAt": "2026-03-19T01:52:41Z",
+      "baseRepository": "tlswg/tls-key-update",
+      "baseRefName": "main",
+      "baseRefOid": "d06056003b1784bdb34c97471a6ba38ec4a079ac",
+      "headRepository": "tlswg/tls-key-update",
+      "headRefName": "hannestschofenig-patch-6",
+      "headRefOid": "4c44f77365adaa3ffcf6df103fdc2cd5c3abdcc0",
+      "closedAt": null,
+      "mergedAt": null,
+      "mergedBy": null,
+      "mergeCommit": null,
+      "comments": [],
+      "reviews": [
+        {
+          "id": "PRR_kwDOMJPqLM7slFKZ",
+          "commit": {
+            "abbreviatedOid": "4c44f77"
+          },
+          "author": "stfries",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2026-03-18T16:20:36Z",
+          "updatedAt": "2026-03-18T16:20:37Z",
+          "comments": [
+            {
+              "originalPosition": 51,
+              "body": "I actually found the statement regarding the two phases helpful. To shorten it, we could include the following: \n\n\"As for the key_update message, the extended_key_update message can be sent by either peer after it has sent a Finished message. \"",
+              "createdAt": "2026-03-18T16:20:37Z",
+              "updatedAt": "2026-03-18T16:20:37Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM7slG2w",
+          "commit": {
+            "abbreviatedOid": "4c44f77"
+          },
+          "author": "stfries",
+          "authorAssociation": "COLLABORATOR",
+          "state": "APPROVED",
+          "body": "Hi Hannes, \nthanks for the update.\nJust proposed a smaller enhancement when sending EKU is possible.\nBest regards\nsteffen",
+          "createdAt": "2026-03-18T16:21:39Z",
+          "updatedAt": "2026-03-18T16:21:39Z",
+          "comments": []
+        },
+        {
+          "id": "PRR_kwDOMJPqLM7swRyg",
+          "commit": {
+            "abbreviatedOid": "4c44f77"
+          },
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2026-03-19T01:42:22Z",
+          "updatedAt": "2026-03-19T01:42:23Z",
+          "comments": [
+            {
+              "originalPosition": 25,
+              "body": "```suggestion\nusing the old keys. The Responder MUST ensure that it has received `ExtendedKeyUpdate(new_key_update)`,\n```",
+              "createdAt": "2026-03-19T01:42:22Z",
+              "updatedAt": "2026-03-19T01:42:23Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM7swYGe",
+          "commit": {
+            "abbreviatedOid": "4c44f77"
+          },
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2026-03-19T01:47:35Z",
+          "updatedAt": "2026-03-19T01:47:35Z",
+          "comments": [
+            {
+              "originalPosition": 107,
+              "body": "The change does not align with Figure 5 in https://datatracker.ietf.org/doc/draft-ietf-tls-rfc8446bis/, it uses Main Secret ",
+              "createdAt": "2026-03-19T01:47:35Z",
+              "updatedAt": "2026-03-19T01:47:35Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM7swaVy",
+          "commit": {
+            "abbreviatedOid": "4c44f77"
+          },
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2026-03-19T01:49:38Z",
+          "updatedAt": "2026-03-19T01:49:38Z",
+          "comments": [
+            {
+              "originalPosition": 114,
+              "body": "Same nit as above. ",
+              "createdAt": "2026-03-19T01:49:38Z",
+              "updatedAt": "2026-03-19T01:49:38Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM7swb6c",
+          "commit": {
+            "abbreviatedOid": "4c44f77"
+          },
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2026-03-19T01:51:01Z",
+          "updatedAt": "2026-03-19T01:51:01Z",
+          "comments": [
+            {
+              "originalPosition": 132,
+              "body": "```suggestion\nmain_secret_N+1. The derived value from this new main secret\n```",
+              "createdAt": "2026-03-19T01:51:01Z",
+              "updatedAt": "2026-03-19T01:51:01Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM7swd54",
+          "commit": {
+            "abbreviatedOid": "4c44f77"
+          },
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "Identified few nits, rest of the changes look good. ",
+          "createdAt": "2026-03-19T01:52:41Z",
+          "updatedAt": "2026-03-19T01:52:41Z",
+          "comments": []
+        }
+      ]
+    },
+    {
+      "number": 103,
+      "id": "PR_kwDOMJPqLM7Li5s3",
+      "title": "Updated introduction",
+      "url": "https://github.com/tlswg/tls-key-update/pull/103",
+      "state": "OPEN",
+      "author": "hannestschofenig",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [],
+      "body": "After re-reading the introduction I though that the PQC aspect did not receive enough attention in the introduction. So, I made some minor wording changes.",
+      "createdAt": "2026-03-18T13:33:24Z",
+      "updatedAt": "2026-03-19T02:30:07Z",
+      "baseRepository": "tlswg/tls-key-update",
+      "baseRefName": "main",
+      "baseRefOid": "d06056003b1784bdb34c97471a6ba38ec4a079ac",
+      "headRepository": "tlswg/tls-key-update",
+      "headRefName": "intro-update",
+      "headRefOid": "4416093ec7438843975606292577cabbf875cf77",
+      "closedAt": null,
+      "mergedAt": null,
+      "mergedBy": null,
+      "mergeCommit": null,
+      "comments": [],
+      "reviews": [
+        {
+          "id": "PRR_kwDOMJPqLM7sk1Vh",
+          "commit": {
+            "abbreviatedOid": "6c94205"
+          },
+          "author": "stfries",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2026-03-18T16:11:50Z",
+          "updatedAt": "2026-03-18T16:11:50Z",
+          "comments": [
+            {
+              "originalPosition": 44,
+              "body": "I would propose to replace the part: \n\"this extension enables the derivation of new traffic keys that are independent of prior key material.\"\nwith \n\"this extension enables the derivation of new traffic keys that are independent of main secrets from prior epochs.\"\nor \"this extension enables the derivation of new traffic keys that are independent of key material from prior epochs.\"\n\nJust to underline that EKU enables the establishment of a new main secret. ",
+              "createdAt": "2026-03-18T16:11:50Z",
+              "updatedAt": "2026-03-18T16:11:50Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM7sk3cU",
+          "commit": {
+            "abbreviatedOid": "6c94205"
+          },
+          "author": "stfries",
+          "authorAssociation": "COLLABORATOR",
+          "state": "APPROVED",
+          "body": "Hi Hannes, thanks for the further update. It is certainly good to underline the target of the draft. I just had a smaller comment regarding one formulation for the independence from previous key material. \nBest regards\nsteffen",
+          "createdAt": "2026-03-18T16:13:10Z",
+          "updatedAt": "2026-03-18T16:13:10Z",
+          "comments": []
+        },
+        {
+          "id": "PRR_kwDOMJPqLM7swthP",
+          "commit": {
+            "abbreviatedOid": "6c94205"
+          },
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2026-03-19T02:06:00Z",
+          "updatedAt": "2026-03-19T02:06:00Z",
+          "comments": [
+            {
+              "originalPosition": 9,
+              "body": "```suggestion\nthis key exchange is performed with (EC)DHE, and by registering new NamedGroup codepoints defined\n```",
+              "createdAt": "2026-03-19T02:06:00Z",
+              "updatedAt": "2026-03-19T02:06:00Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM7swxAZ",
+          "commit": {
+            "abbreviatedOid": "6c94205"
+          },
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2026-03-19T02:08:50Z",
+          "updatedAt": "2026-03-19T02:08:50Z",
+          "comments": [
+            {
+              "originalPosition": 9,
+              "body": "By mistake, I committed the suggestion; the PQ/T hybrid and PQC KEM drafts do not define TLS extensions. ",
+              "createdAt": "2026-03-19T02:08:50Z",
+              "updatedAt": "2026-03-19T02:23:36Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM7sw2cY",
+          "commit": {
+            "abbreviatedOid": "4416093"
+          },
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2026-03-19T02:13:24Z",
+          "updatedAt": "2026-03-19T02:13:25Z",
+          "comments": [
+            {
+              "originalPosition": 24,
+              "body": "```suggestion\nestablished with traditional (EC)DHE, a post-quantum/traditional (PQ/T) hybrid exchange,\n```",
+              "createdAt": "2026-03-19T02:13:24Z",
+              "updatedAt": "2026-03-19T02:19:11Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM7sw258",
+          "commit": {
+            "abbreviatedOid": "4416093"
+          },
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2026-03-19T02:13:48Z",
+          "updatedAt": "2026-03-19T02:13:48Z",
+          "comments": [
+            {
+              "originalPosition": 24,
+              "body": "https://datatracker.ietf.org/doc/rfc9794/ which defines terminology uses traditional and PQ/T hybrid.",
+              "createdAt": "2026-03-19T02:13:48Z",
+              "updatedAt": "2026-03-19T02:24:16Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM7sw3dR",
+          "commit": {
+            "abbreviatedOid": "4416093"
+          },
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2026-03-19T02:14:14Z",
+          "updatedAt": "2026-03-19T02:14:14Z",
+          "comments": [
+            {
+              "originalPosition": 39,
+              "body": "```suggestion\nmechanism for sessions established with traditional (EC)DHE, hybrid\n```",
+              "createdAt": "2026-03-19T02:14:14Z",
+              "updatedAt": "2026-03-19T02:14:14Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM7sw37A",
+          "commit": {
+            "abbreviatedOid": "4416093"
+          },
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2026-03-19T02:14:36Z",
+          "updatedAt": "2026-03-19T02:14:36Z",
+          "comments": [
+            {
+              "originalPosition": 40,
+              "body": "```suggestion\nPQ/T hybrid key exchange, or post-quantum KEM exchange. Unlike the\n```",
+              "createdAt": "2026-03-19T02:14:36Z",
+              "updatedAt": "2026-03-19T02:16:43Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM7sw6zY",
+          "commit": {
+            "abbreviatedOid": "4416093"
+          },
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2026-03-19T02:17:01Z",
+          "updatedAt": "2026-03-19T02:17:01Z",
+          "comments": [
+            {
+              "originalPosition": 56,
+              "body": "```suggestion\n* a secret derived from the (EC)DHE exchange (or from a PQ/T hybrid or\n```",
+              "createdAt": "2026-03-19T02:17:01Z",
+              "updatedAt": "2026-03-19T02:17:01Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM7sw77t",
+          "commit": {
+            "abbreviatedOid": "4416093"
+          },
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2026-03-19T02:17:58Z",
+          "updatedAt": "2026-03-19T02:17:59Z",
+          "comments": [
+            {
+              "originalPosition": 65,
+              "body": "```suggestion\n  secret ciphertext to the IKM in the case of PQ/T hybrid or\n```",
+              "createdAt": "2026-03-19T02:17:59Z",
+              "updatedAt": "2026-03-19T02:17:59Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM7sw-iy",
+          "commit": {
+            "abbreviatedOid": "4416093"
+          },
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "Identified few nits. ",
+          "createdAt": "2026-03-19T02:20:01Z",
+          "updatedAt": "2026-03-19T02:20:01Z",
+          "comments": []
+        },
+        {
+          "id": "PRR_kwDOMJPqLM7sxIOc",
+          "commit": {
+            "abbreviatedOid": "4416093"
+          },
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2026-03-19T02:28:08Z",
+          "updatedAt": "2026-03-19T02:28:08Z",
+          "comments": [
+            {
+              "originalPosition": 9,
+              "body": "```suggestion\nthis key exchange is performed with (EC)DHE. By registering new NamedGroup codepoints, TLS specifications also define \n```",
+              "createdAt": "2026-03-19T02:28:08Z",
+              "updatedAt": "2026-03-19T02:28:32Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM7sxKkY",
+          "commit": {
+            "abbreviatedOid": "4416093"
+          },
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "state": "CHANGES_REQUESTED",
+          "body": "",
+          "createdAt": "2026-03-19T02:30:07Z",
+          "updatedAt": "2026-03-19T02:30:07Z",
+          "comments": []
+        }
+      ]
     }
   ]
 }
