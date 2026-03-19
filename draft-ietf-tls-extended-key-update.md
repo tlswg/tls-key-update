@@ -380,7 +380,9 @@ The handshake framing uses a single `HandshakeType` for this message
 
 {{fig-key-update}} shows the high-level interaction between a TLS 1.3 client
 and server, while {{fig-key-update2}} illustrates an example message exchange
-including the updated keys.
+including the updated keys. Similar to the `key_update message`, the
+`extended_key_update` message can be sent by either peer after sending its
+Finished message.
 
 ~~~
        Client                                           Server
