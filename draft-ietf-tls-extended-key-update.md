@@ -141,7 +141,7 @@ PQ/T hybrid key exchange, or post-quantum KEM exchange. Unlike the
 standard key update, this mechanism allows peers to inject fresh key exchange
 input from the negotiated mechanism into an active session. By periodically
 rerunning the negotiated key exchange, this extension enables the derivation of
-new traffic keys that are independent of prior key material. As noted in
+new traffic keys that are independent of main secrets from prior epochs. As noted in
 {{Appendix F of !TLS=I-D.ietf-tls-rfc8446bis}},
 this approach mitigates the risk of static key exfiltration and shifts the attacker
 burden toward dynamic key exfiltration.
