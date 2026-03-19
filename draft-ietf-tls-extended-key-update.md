@@ -340,7 +340,7 @@ send keys.
 the responder MUST update its receive keys.
 
 Both initiator and responder MUST encrypt their `ExtendedKeyUpdate` messages
-using the old keys. The Responder MUST that it has received `ExtendedKeyUpdate(new_key_update)`,
+using the old keys. The Responder MUST ensure that it has received `ExtendedKeyUpdate(new_key_update)`,
 encrypted with the old key, before accepting any messages encrypted with the new keys.
 
 If TLS peers independently initiate the extended key update and the
