@@ -675,7 +675,7 @@ is discarded during the key derivation procedure, a derived value is
 stored. This stored value then serves as the input salt to the first
 key update procedure that incorporates the ephemeral (EC)DHE-
 established value as input keying material (IKM) to produce
-main_secret_N+1. The derived value from this new master secret
+main_secret_N+1. The derived value from this new main secret
 serves as input salt to the subsequent key update procedure, which
 also incorporates a fresh ephemeral (EC)DHE value as IKM. This
 process is repeated for each additional key update procedure.
