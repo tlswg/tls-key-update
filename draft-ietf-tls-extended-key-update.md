@@ -625,7 +625,7 @@ The design of the key derivation function for computing the next
 generation of application_traffic_secret is motivated by the desire
 to include
 
-* a secret derived from the (EC)DHE exchange (or from a hybrid or
+* a secret derived from the (EC)DHE exchange (or from a PQ/T hybrid or
 post-quantum KEM exchange),
 * a secret that allows the new key exchange to be cryptographically
 bound to the previously established secret,
