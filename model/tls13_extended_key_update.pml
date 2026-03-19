@@ -14,6 +14,18 @@
 //       peer < local  => ignore
 //       peer == local => abort ("unexpected_message")
 //       peer > local  => abandon local initiation; act as responder
+//   - Optional abstract post-handshake authentication (PHA) flow:
+//       PHAReq (CertificateRequest-like) -> PHAFin (Finished-like)
+//   - Optional abstract Exported Authenticator (EA, RFC 9261) flow:
+//       EAReq (AuthenticatorRequest-like) -> EAFin (Authenticator-like)
+//     triggered by application events, in both directions
+//   - Optional spontaneous server authentication:
+//       server sends EAFin without prior EAReq
+//     with guards aligned to RFC 8446 Section 4.6.2 constraints:
+//       * no PHA request while EKU is in progress
+//       * no EKU request accepted while PHA is pending
+//       * EKU requests observed during PHA are deferred and resumed after PHA
+//       * no EKU epoch transition while PHA is pending
 //
 // Optional APP traffic can be enabled to sanity-check acceptance under
 // the current receive key generation (no DTLS-like retention in TLS).
@@ -44,7 +56,27 @@
 #define APP_QUOTA 0
 #endif
 
-mtype = { Req, Resp, NKU, APP };
+/* Optional PHA abstraction (disabled by default to preserve legacy runs). */
+#ifndef ENABLE_PHA
+#define ENABLE_PHA 0
+#endif
+#ifndef PHA_TRIGGER_B
+#define PHA_TRIGGER_B 1
+#endif
+#ifndef ENABLE_EA
+#define ENABLE_EA 0
+#endif
+#ifndef EA_TRIGGER_A
+#define EA_TRIGGER_A 1
+#endif
+#ifndef EA_TRIGGER_B
+#define EA_TRIGGER_B 1
+#endif
+#ifndef EA_SPONT_TRIGGER_B
+#define EA_SPONT_TRIGGER_B 1
+#endif
+
+mtype = { Req, Resp, NKU, APP, PHAReq, PHAFin, EAReq, EAFin };
 
 /* (type, key_generation_tag, key_exchange) */
 chan a2b = [2] of { mtype, byte, byte };
@@ -58,6 +90,21 @@ chan b2a = [2] of { mtype, byte, byte };
 bool done_a = false;
 bool done_b = false;
 bool unexpected = false;
+bool pha_pending = false;
+bool pha_done = false;
+bool pha_req_sent = false;
+bool ea_pending = false;
+bool ea_done = false;
+bool ea_req_sent_a = false;
+bool ea_req_sent_b = false;
+bool ea_spont_pending = false;
+bool ea_spont_sent_b = false;
+bool deferred_req_a = false;
+bool deferred_req_b = false;
+byte deferred_kx_a = 255;
+byte deferred_kx_b = 255;
+
+#define AUTH_PENDING (pha_pending || ea_pending || ea_spont_pending)
 
 byte final_send_a = 255;
 byte final_recv_a = 255;
@@ -88,6 +135,29 @@ proctype PeerA() priority 1
 
 MAIN:
     do
+    :: (!AUTH_PENDING && deferred_req_a) ->
+        if
+        :: (!updating) ->
+            updating = true;
+            initiated = false;
+            peer_kx_active = deferred_kx_a;
+            A2B_SEND(Resp, send_key, local_kx);
+            send_key = send_key + 1
+        :: else -> skip
+        fi;
+        deferred_req_a = false
+
+    :: (ENABLE_PHA && PHA_TRIGGER_B && !pha_req_sent && !updating && !AUTH_PENDING) ->
+        /* Abstract server-side post-handshake CertificateRequest. */
+        B2A_SEND(PHAReq, send_key, 0);
+        pha_pending = true;
+        pha_req_sent = true
+    :: (ENABLE_EA && EA_TRIGGER_A && !ea_req_sent_a && !updating && !AUTH_PENDING) ->
+        /* Application-triggered Exported Authenticator request (A->B). */
+        A2B_SEND(EAReq, send_key, 0);
+        ea_pending = true;
+        ea_req_sent_a = true
+
     :: (app_quota > 0) ->
         A2B_SEND(APP, send_key, 0);
         app_quota--
@@ -95,8 +165,33 @@ MAIN:
     :: A_RECV(APP, g, kx) ->
         assert(g == recv_key)
 
+    :: A_RECV(PHAReq, g, kx) ->
+        assert(g == recv_key);
+        /* Defer EKU while PHA is outstanding. */
+        A2B_SEND(PHAFin, send_key, 0)
+    :: A_RECV(EAReq, g, kx) ->
+        assert(g == recv_key);
+        /* Respond with abstract Exported Authenticator. */
+        A2B_SEND(EAFin, send_key, 0)
+    :: A_RECV(EAFin, g, kx) ->
+        assert(g == recv_key);
+        if
+        :: ea_pending ->
+            ea_pending = false;
+            ea_done = true
+        :: ea_spont_pending ->
+            ea_spont_pending = false;
+            ea_done = true
+        :: else -> skip
+        fi
+
     :: A_RECV(Req, g, kx) ->
         assert(g == recv_key); /* EKU messages under old keys */
+        if
+        :: AUTH_PENDING ->
+            deferred_req_a = true;
+            deferred_kx_a = kx
+        :: else ->
         if
         :: (!updating) ->
             updating = true;
@@ -124,9 +219,11 @@ MAIN:
             :: else -> unexpected = true; break
             fi
         fi
+        fi
 
     :: A_RECV(Resp, g, kx) ->
         if
+        :: AUTH_PENDING -> skip
         :: (!updating || !initiated) -> skip
         :: (g != recv_key) -> skip
         :: else ->
@@ -145,6 +242,7 @@ MAIN:
 
     :: A_RECV(NKU, g, kx) ->
         if
+        :: AUTH_PENDING -> skip
         :: (!updating || initiated) -> skip
         :: (g != recv_key) -> unexpected = true; break
         :: else ->
@@ -189,6 +287,29 @@ proctype PeerB() priority 1
 
 MAIN:
     do
+    :: (!AUTH_PENDING && deferred_req_b) ->
+        if
+        :: (!updating) ->
+            updating = true;
+            initiated = false;
+            peer_kx_active = deferred_kx_b;
+            B2A_SEND(Resp, send_key, local_kx);
+            send_key = send_key + 1
+        :: else -> skip
+        fi;
+        deferred_req_b = false
+
+    :: (ENABLE_EA && EA_TRIGGER_B && !ea_req_sent_b && !updating && !AUTH_PENDING) ->
+        /* Application-triggered Exported Authenticator request (B->A). */
+        B2A_SEND(EAReq, send_key, 0);
+        ea_pending = true;
+        ea_req_sent_b = true
+    :: (ENABLE_EA && EA_SPONT_TRIGGER_B && !ea_spont_sent_b && !updating && !AUTH_PENDING) ->
+        /* Spontaneous server authentication without prior request. */
+        B2A_SEND(EAFin, send_key, 0);
+        ea_spont_pending = true;
+        ea_spont_sent_b = true
+
     :: (app_quota > 0) ->
         B2A_SEND(APP, send_key, 0);
         app_quota--
@@ -196,8 +317,36 @@ MAIN:
     :: B_RECV(APP, g, kx) ->
         assert(g == recv_key)
 
+    :: B_RECV(PHAFin, g, kx) ->
+        assert(g == recv_key);
+        if
+        :: pha_pending ->
+            pha_pending = false;
+            pha_done = true
+        :: else -> skip
+        fi
+    :: B_RECV(EAReq, g, kx) ->
+        assert(g == recv_key);
+        B2A_SEND(EAFin, send_key, 0)
+    :: B_RECV(EAFin, g, kx) ->
+        assert(g == recv_key);
+        if
+        :: ea_pending ->
+            ea_pending = false;
+            ea_done = true
+        :: ea_spont_pending ->
+            ea_spont_pending = false;
+            ea_done = true
+        :: else -> skip
+        fi
+
     :: B_RECV(Req, g, kx) ->
         assert(g == recv_key);
+        if
+        :: AUTH_PENDING ->
+            deferred_req_b = true;
+            deferred_kx_b = kx
+        :: else ->
         if
         :: (!updating) ->
             updating = true;
@@ -221,9 +370,11 @@ MAIN:
             :: else -> unexpected = true; break
             fi
         fi
+        fi
 
     :: B_RECV(Resp, g, kx) ->
         if
+        :: AUTH_PENDING -> skip
         :: (!updating || !initiated) -> skip
         :: (g != recv_key) -> skip
         :: else ->
@@ -240,6 +391,7 @@ MAIN:
 
     :: B_RECV(NKU, g, kx) ->
         if
+        :: AUTH_PENDING -> skip
         :: (!updating || initiated) -> skip
         :: (g != recv_key) -> unexpected = true; break
         :: else ->

@@ -16,6 +16,11 @@
 //   - APP traffic allowed any time
 //   - simple loss/reordering via two paths each direction
 //   - bounded retransmissions for Req and NKU
+//   - optional abstract post-handshake authentication (PHA) flow:
+//       PHAReq -> PHAFin
+//     with EKU deferral while PHA is pending (no epoch progress during PHA)
+//   - optional abstract Exported Authenticator (RFC 9261):
+//       EAReq -> EAFin (application-triggered, both directions)
 //
 // Liveness update (2026-02):
 //   Under lossy stress, retries can be exhausted without protocol progress.
@@ -82,11 +87,29 @@
 #ifndef RESP_WAIT_RETRIES
 #define RESP_WAIT_RETRIES 4
 #endif
+#ifndef ENABLE_PHA
+#define ENABLE_PHA 0
+#endif
+#ifndef PHA_TRIGGER_B
+#define PHA_TRIGGER_B 1
+#endif
+#ifndef ENABLE_EA
+#define ENABLE_EA 0
+#endif
+#ifndef EA_TRIGGER_A
+#define EA_TRIGGER_A 1
+#endif
+#ifndef EA_TRIGGER_B
+#define EA_TRIGGER_B 1
+#endif
+#ifndef EA_SPONT_TRIGGER_B
+#define EA_SPONT_TRIGGER_B 1
+#endif
 
 /* Network loss budget */
 byte drops_left = DROPS;
 
-mtype = { Req, Resp, NKU, ACK, APP };
+mtype = { Req, Resp, NKU, ACK, APP, PHAReq, PHAFin, EAReq, EAFin };
 
 /* Visible delivery channels (post-network) */
 chan to_a = [4] of { mtype, byte, byte, bool }; /* (type, tag_epoch, kx, accepted) */
@@ -109,6 +132,23 @@ bool done_b = false;
 bool unexpected = false;
 bool abort_a = false;
 bool abort_b = false;
+bool pha_pending = false;
+bool pha_done = false;
+bool pha_req_sent = false;
+bool ea_pending = false;
+bool ea_done = false;
+bool ea_req_sent_a = false;
+bool ea_req_sent_b = false;
+bool ea_spont_pending_b = false;
+bool ea_spont_sent_b = false;
+bool deferred_req_a = false;
+bool deferred_req_b = false;
+byte deferred_req_e_a = 255;
+byte deferred_req_e_b = 255;
+byte deferred_req_kx_a = 255;
+byte deferred_req_kx_b = 255;
+
+#define AUTH_PENDING (pha_pending || ea_pending || ea_spont_pending_b)
 
 /* Snapshots for LTL checks once peers are done */
 byte final_rx_a = 255;
@@ -190,6 +230,22 @@ proctype PeerA() priority 1
 
 WAIT_RESP:
     do
+    :: (!AUTH_PENDING && deferred_req_a) ->
+        if
+        :: (!updating && (deferred_req_e_a == rx || (retain_old && deferred_req_e_a == old_rx))) ->
+            updating = true;
+            initiated = false;
+            peer_kx_active = deferred_req_kx_a;
+            A2B_SEND(Resp, tx, local_kx, true)
+        :: else -> skip
+        fi;
+        deferred_req_a = false
+
+    :: (ENABLE_EA && EA_TRIGGER_A && !ea_req_sent_a && !updating && !AUTH_PENDING) ->
+        A2B_SEND(EAReq, tx, 0, true);
+        ea_pending = true;
+        ea_req_sent_a = true
+
     /* APP send anytime */
     :: (app_quota > 0) ->
         A2B_SEND(APP, tx, 0, true);
@@ -205,6 +261,21 @@ WAIT_RESP:
             fi
         :: (retain_old && e == old_rx) -> skip
         :: else -> skip
+        fi
+
+    :: A_RECV(PHAReq, e, kx, acc) ->
+        A2B_SEND(PHAFin, tx, 0, true)
+    :: A_RECV(EAReq, e, kx, acc) ->
+        A2B_SEND(EAFin, tx, 0, true)
+    :: A_RECV(EAFin, e, kx, acc) ->
+        if
+        :: ea_pending ->
+            ea_pending = false;
+            ea_done = true
+        :: else ->
+            /* spontaneous server EA is acknowledged in DTLS */
+            A2B_SEND(ACK, tx, 0, true);
+            ea_done = true
         fi
 
     /* retransmit Req while waiting (only when no pending inbound message) */
@@ -232,6 +303,11 @@ WAIT_RESP:
     /* crossed Req */
     :: A_RECV(Req, e, kx, acc) ->
         if
+        :: AUTH_PENDING ->
+            deferred_req_a = true;
+            deferred_req_e_a = e;
+            deferred_req_kx_a = kx;
+            A2B_SEND(ACK, tx, 0, true)
         :: ((e == rx) || (retain_old && e == old_rx)) ->
             if
             :: (!updating) ->
@@ -266,6 +342,7 @@ WAIT_RESP:
     /* receive Resp (implicit ACK of Req) */
     :: A_RECV(Resp, e, kx, acc) ->
         if
+        :: AUTH_PENDING -> skip
         :: (e != rx) -> skip
         :: (!updating || !initiated) ->
             /* ignore stray Resp */
@@ -284,6 +361,7 @@ WAIT_RESP:
     /* responder receives NKU: bump rx+tx and ACK */
     :: A_RECV(NKU, e, kx, acc) ->
         if
+        :: AUTH_PENDING -> skip
         :: !((e == rx) || (retain_old && e == old_rx)) -> skip
         :: (updating && !initiated && e == rx) ->
             old_rx = rx;
@@ -303,6 +381,18 @@ WAIT_RESP:
         :: else ->
             /* ignore stray/duplicate NKU */
             skip
+        fi
+
+    :: A_RECV(PHAFin, e, kx, acc) -> skip
+    :: A_RECV(EAReq, e, kx, acc) -> A2B_SEND(EAFin, tx, 0, true)
+    :: A_RECV(EAFin, e, kx, acc) ->
+        if
+        :: ea_pending ->
+            ea_pending = false;
+            ea_done = true
+        :: else ->
+            A2B_SEND(ACK, tx, 0, true);
+            ea_done = true
         fi
     od;
 
@@ -338,11 +428,24 @@ WAIT_ACK:
         /* discard */
         skip
 
+    :: A_RECV(PHAReq, e, kx, acc) -> A2B_SEND(PHAFin, tx, 0, true)
+    :: A_RECV(PHAFin, e, kx, acc) -> skip
+    :: A_RECV(EAReq, e, kx, acc) -> A2B_SEND(EAFin, tx, 0, true)
+    :: A_RECV(EAFin, e, kx, acc) ->
+        if
+        :: ea_pending ->
+            ea_pending = false;
+            ea_done = true
+        :: else ->
+            A2B_SEND(ACK, tx, 0, true);
+            ea_done = true
+        fi
+
     /* retransmit NKU until ACK (only when no pending inbound message) */
-    :: (nku_retries > 0 && len(to_a) == 0) ->
+    :: (!AUTH_PENDING && nku_retries > 0 && len(to_a) == 0) ->
         A2B_SEND(NKU, tx, 0, true);
         nku_retries--
-    :: (nku_retries == 0 && len(to_a) == 0) ->
+    :: (!AUTH_PENDING && nku_retries == 0 && len(to_a) == 0) ->
         /* No further progress possible as initiator after bounded NKU retries. */
         abort_a = true;
         updating = false;
@@ -351,6 +454,7 @@ WAIT_ACK:
     /* ACK completes initiator: bump tx to rx */
     :: A_RECV(ACK, e, kx, acc) ->
         if
+        :: AUTH_PENDING -> skip
         :: (e == rx) ->
             tx = rx;
             retain_old = false;
@@ -399,6 +503,31 @@ proctype PeerB() priority 1
 
 WAIT_RESP:
     do
+    :: (!AUTH_PENDING && deferred_req_b) ->
+        if
+        :: (!updating && (deferred_req_e_b == rx || (retain_old && deferred_req_e_b == old_rx))) ->
+            updating = true;
+            initiated = false;
+            peer_kx_active = deferred_req_kx_b;
+            B2A_SEND(Resp, tx, local_kx, true)
+        :: else -> skip
+        fi;
+        deferred_req_b = false
+
+    :: (ENABLE_PHA && PHA_TRIGGER_B && !pha_req_sent && !updating && !AUTH_PENDING) ->
+        B2A_SEND(PHAReq, tx, 0, true);
+        pha_pending = true;
+        pha_req_sent = true
+    :: (ENABLE_EA && EA_TRIGGER_B && !ea_req_sent_b && !updating && !AUTH_PENDING) ->
+        B2A_SEND(EAReq, tx, 0, true);
+        ea_pending = true;
+        ea_req_sent_b = true
+    :: (ENABLE_EA && EA_SPONT_TRIGGER_B && !ea_spont_sent_b && !updating && !AUTH_PENDING) ->
+        /* spontaneous server authentication without prior request */
+        B2A_SEND(EAFin, tx, 0, true);
+        ea_spont_pending_b = true;
+        ea_spont_sent_b = true
+
     :: (app_quota > 0) ->
         B2A_SEND(APP, tx, 0, true);
         app_quota--
@@ -410,6 +539,33 @@ WAIT_RESP:
             :: else -> skip
             fi
         :: (retain_old && e == old_rx) -> skip
+        :: else -> skip
+        fi
+
+    :: B_RECV(PHAFin, e, kx, acc) ->
+        if
+        :: pha_pending ->
+            pha_pending = false;
+            pha_done = true
+        :: else -> skip
+        fi
+    :: B_RECV(EAReq, e, kx, acc) ->
+        B2A_SEND(EAFin, tx, 0, true)
+    :: B_RECV(EAFin, e, kx, acc) ->
+        if
+        :: ea_pending ->
+            ea_pending = false;
+            ea_done = true
+        :: ea_spont_pending_b ->
+            ea_spont_pending_b = false;
+            ea_done = true
+        :: else -> skip
+        fi
+    :: B_RECV(ACK, e, kx, acc) ->
+        if
+        :: ea_spont_pending_b ->
+            ea_spont_pending_b = false;
+            ea_done = true
         :: else -> skip
         fi
 
@@ -436,6 +592,11 @@ WAIT_RESP:
 
     :: B_RECV(Req, e, kx, acc) ->
         if
+        :: AUTH_PENDING ->
+            deferred_req_b = true;
+            deferred_req_e_b = e;
+            deferred_req_kx_b = kx;
+            B2A_SEND(ACK, tx, 0, true)
         :: ((e == rx) || (retain_old && e == old_rx)) ->
             if
             :: (!updating) ->
@@ -464,6 +625,7 @@ WAIT_RESP:
 
     :: B_RECV(Resp, e, kx, acc) ->
         if
+        :: AUTH_PENDING -> skip
         :: (e != rx) -> skip
         :: (!updating || !initiated) -> skip
         :: else ->
@@ -478,6 +640,7 @@ WAIT_RESP:
 
     :: B_RECV(NKU, e, kx, acc) ->
         if
+        :: AUTH_PENDING -> skip
         :: !((e == rx) || (retain_old && e == old_rx)) -> skip
         :: (updating && !initiated && e == rx) ->
             old_rx = rx;
@@ -493,6 +656,26 @@ WAIT_RESP:
             done_b = true;
         :: (completed && retain_old && e == old_rx) ->
             B2A_SEND(ACK, tx, 0, true)
+        :: else -> skip
+        fi
+
+    :: B_RECV(PHAReq, e, kx, acc) -> B2A_SEND(PHAFin, tx, 0, true)
+    :: B_RECV(EAReq, e, kx, acc) -> B2A_SEND(EAFin, tx, 0, true)
+    :: B_RECV(EAFin, e, kx, acc) ->
+        if
+        :: ea_pending ->
+            ea_pending = false;
+            ea_done = true
+        :: ea_spont_pending_b ->
+            ea_spont_pending_b = false;
+            ea_done = true
+        :: else -> skip
+        fi
+    :: B_RECV(ACK, e, kx, acc) ->
+        if
+        :: ea_spont_pending_b ->
+            ea_spont_pending_b = false;
+            ea_done = true
         :: else -> skip
         fi
     od;
@@ -525,10 +708,24 @@ WAIT_ACK:
         /* discard */
         skip
 
-    :: (nku_retries > 0 && len(to_b) == 0) ->
+    :: B_RECV(PHAReq, e, kx, acc) -> B2A_SEND(PHAFin, tx, 0, true)
+    :: B_RECV(PHAFin, e, kx, acc) -> skip
+    :: B_RECV(EAReq, e, kx, acc) -> B2A_SEND(EAFin, tx, 0, true)
+    :: B_RECV(EAFin, e, kx, acc) ->
+        if
+        :: ea_pending ->
+            ea_pending = false;
+            ea_done = true
+        :: ea_spont_pending_b ->
+            ea_spont_pending_b = false;
+            ea_done = true
+        :: else -> skip
+        fi
+
+    :: (!AUTH_PENDING && nku_retries > 0 && len(to_b) == 0) ->
         B2A_SEND(NKU, tx, 0, true);
         nku_retries--
-    :: (nku_retries == 0 && len(to_b) == 0) ->
+    :: (!AUTH_PENDING && nku_retries == 0 && len(to_b) == 0) ->
         /* No further progress possible as initiator after bounded NKU retries. */
         abort_b = true;
         updating = false;
@@ -536,6 +733,10 @@ WAIT_ACK:
 
     :: B_RECV(ACK, e, kx, acc) ->
         if
+        :: ea_spont_pending_b ->
+            ea_spont_pending_b = false;
+            ea_done = true
+        :: AUTH_PENDING -> skip
         :: (e == rx) ->
             tx = rx;
             retain_old = false;

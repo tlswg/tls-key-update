@@ -5,6 +5,12 @@
 *.txt
 *.upload
 *~
+.spin_tmp/
+_spin_*.tmp
+pan
+pan.*
+*.trail
+trail
 .tags
 /*-[0-9][0-9].xml
 /.gems/
@@ -15,6 +21,9 @@
 /lib
 /node_modules/
 /versioned/
+/logs/
+/model/cluster_jobs/
+/pan_tmp
 Gemfile.lock
 archive.json
 draft-tschofenig-tls-extended-key-update.xml

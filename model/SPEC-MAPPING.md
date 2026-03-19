@@ -17,6 +17,27 @@ The current SPIN models focus on three core properties:
   synchronized key/epoch state.
 - `no_deadlock`: liveness/progress property (model-specific terminal condition).
 
+## PHA/EA Modeling Assumptions
+
+The models include an abstract representation of post-handshake authentication
+mechanisms to check EKU sequencing/progress constraints without modeling crypto
+internals.
+
+- **PHA abstraction (RFC 8446 §4.6.2-inspired):**
+  - represented as `PHAReq -> PHAFin`.
+  - message-level certificate chain and `CertificateVerify` details are not modeled.
+- **EA abstraction (RFC 9261-inspired):**
+  - request/response path represented as `EAReq -> EAFin`.
+  - spontaneous server authentication is represented as one-way `EAFin` from server.
+  - in DTLS models, spontaneous `EAFin` is acknowledged with `ACK`.
+- **Shared sequencing rule in all models:**
+  - EKU progress is blocked while authentication is pending.
+  - EKU requests observed during pending auth are deferred and resumed afterwards.
+- **Out-of-scope for PHA/EA in all models:**
+  - certificate object/content validation,
+  - Finished MAC/transcript cryptography,
+  - exporter-secret/key schedule internals and API behavior.
+
 Model-to-property coverage:
 
 - `model/tls13_extended_key_update.pml`:
@@ -45,11 +66,14 @@ Model-to-property coverage:
 - Figure 3 / Section 5.1 (key update ordering overview)
 
 **Configuration**
-- You can override `E`, `INITIATE_A`, `INITIATE_B`, `KX_A`, `KX_B`, `APP_QUOTA` via `spin -D...`.
+- You can override `E`, `INITIATE_A`, `INITIATE_B`, `KX_A`, `KX_B`, `APP_QUOTA`,
+  `ENABLE_PHA`, `PHA_TRIGGER_B`, `ENABLE_EA`, `EA_TRIGGER_A`, `EA_TRIGGER_B`,
+  `EA_SPONT_TRIGGER_B` via `spin -D...`.
 
 **Model entities**
 - Peers: `PeerA`, `PeerB` (either can initiate)
-- Messages: `Req`, `Resp`, `NKU` (and optional `APP`)
+- Messages: `Req`, `Resp`, `NKU` (and optional `APP`, `PHAReq`, `PHAFin`,
+  `EAReq`, `EAFin`)
 - Abstracted `KeyShareEntry.key_exchange`: `KX_A`, `KX_B` carried in `Req`
 - Key state (per peer): `send_key`, `recv_key` (counters representing “current/new”)
 - Abort: `unexpected` (represents `"unexpected_message"`)
@@ -66,12 +90,28 @@ Model-to-property coverage:
   send `Resp` and advance responder `send_key` (matches “derive new secrets; update SEND keys”)
 - **B.1.1 Initiator receives Resp**: `recv_key++`, send `NKU` (still under old keys), then `send_key++`
 - **B.1.2 Responder receives NKU**: `recv_key++` and finish
+- **RFC 8446 §4.6.2 abstraction (optional)**:
+  - `PHAReq` models a post-handshake `CertificateRequest`-like trigger
+  - `PHAFin` models a post-handshake Finished-like response
+  - guards/deferral enforce:
+    - no `PHAReq` while EKU is locally in progress,
+    - no EKU progress while authentication is pending,
+    - EKU `Req` observed during outstanding auth is deferred and resumed afterward.
+- **RFC 9261 abstraction (optional)**:
+  - request/response EA: `EAReq` -> `EAFin` (app-triggered, both directions),
+  - spontaneous server EA: server sends `EAFin` without prior `EAReq`.
 
 **Important abstraction choices**
 - The TLS wire detail “NKU encrypted under old keys” is represented only by the
   ordering of increments (no crypto).
 - The model does not include the classic TLS `KeyUpdate` message type; therefore
   the “classic KeyUpdate ⇒ unexpected_message” rule is out of scope here.
+- PHA is modeled as an abstract two-message control flow (`PHAReq`/`PHAFin`);
+  certificate chains, transcript/MAC key derivation, and authenticator APIs are
+  not modeled.
+- EA is modeled as an abstract two-message control flow (`EAReq`/`EAFin`) plus
+  optional spontaneous server `EAFin`; full RFC 9261 message structures and
+  crypto transcript binding are out of scope.
 
 ## `model/extended_key_update.pml`
 
@@ -89,10 +129,13 @@ Model-to-property coverage:
 
 **Configuration**
 - You can override `INIT_RX_I`, `INIT_TX_I`, `INIT_RX_R`, `INIT_TX_R`, `DROPS`, `REQ_RETRIES`, `NKU_RETRIES`, `APP_QUOTA_I`, `APP_QUOTA_R` via `spin -D...`.
+- Additional auth-related knobs: `ENABLE_PHA`, `PHA_TRIGGER_R`, `ENABLE_EA`,
+  `EA_TRIGGER_I`, `EA_TRIGGER_R`, `EA_SPONT_TRIGGER_R`.
 
 **Model entities**
 - Processes: `Initiator`, `Responder`, `Network`
 - Messages: `Req`, `Resp`, `NKU`, `ACK`, `APP`
+- Optional auth messages: `PHAReq`, `PHAFin`, `EAReq`, `EAFin`
 - Epoch state:
   - initiator: `rx_epoch_i`, `tx_epoch_i`, `old_rx_i`, `retain_old_i`
   - responder: `rx_epoch_r`, `tx_epoch_r`, `old_rx_r`, `retain_old_r`
@@ -131,6 +174,14 @@ Model-to-property coverage:
   - initiator clears retention on `ACK` (step 7 / Appendix B.2.2)
   - responder clears retention on first `APP` received at the new `rx` (Appendix B.2.3)
   The model does not attempt to model DTLS record-layer replay windows.
+- PHA/EA are abstract control flows:
+  - PHA: `PHAReq`/`PHAFin`
+  - EA request/response: `EAReq`/`EAFin`
+  - spontaneous server EA: responder sends `EAFin` without prior `EAReq`, and
+    initiator acknowledges with `ACK`.
+- EKU vs auth sequencing is encoded via a shared pending-auth guard; EKU
+  transitions are blocked while auth is outstanding and deferred requests are
+  resumed after auth completion.
 
 ## `model/extended_key_update_crossed.pml`
 
@@ -147,10 +198,13 @@ Model-to-property coverage:
 
 **Configuration**
 - You can override `DROPS`, `REQ_RETRIES`, `NKU_RETRIES`, `APP_QUOTA`, `KX_A`, `KX_B` via `spin -D...`.
+- Additional auth-related knobs: `ENABLE_PHA`, `PHA_TRIGGER_B`, `ENABLE_EA`,
+  `EA_TRIGGER_A`, `EA_TRIGGER_B`, `EA_SPONT_TRIGGER_B`.
 
 **Model entities**
 - Peers: `PeerA`, `PeerB` (either can initiate; both enabled by default)
 - Messages: `Req`, `Resp`, `NKU`, `ACK`, `APP`
+- Optional auth messages: `PHAReq`, `PHAFin`, `EAReq`, `EAFin`
 - Abstracted `KeyShareEntry.key_exchange`: `KX_A`, `KX_B` carried in `Req`
 - Epoch state per peer: `rx`, `tx`, `old_rx`, `retain_old`
 - Abort: `unexpected` (represents `"unexpected_message"`)
@@ -187,6 +241,9 @@ Model-to-property coverage:
   modeled as a separate path here.
 - Classic DTLS `KeyUpdate` vs EKU interaction is not modeled (no classic KeyUpdate
   message type in the model).
+- PHA and EA are intentionally abstracted; certificate objects, Finished MAC
+  derivation, exporter transcript binding, and authenticator payload validation
+  are not modeled.
 
 ## Transcript Hash Updates
 
@@ -208,9 +265,11 @@ SPIN models.
 **Out-of-scope in current models**
 - Cryptographic key schedule details:
   - no HKDF inputs, no transcript hash state, no `transcript_hash_N` evolution.
-- PHA / Exported Authenticator protocol flows:
-  - no `CertificateRequest`, no Finished MAC-key derivation, no exporter-secret API.
-- New sequencing constraints from PR #95 around EKU vs. post-handshake auth.
+- PHA / Exported Authenticator concrete protocol content:
+  - no certificate objects, no Finished MAC-key derivation, no exporter-secret API.
+- Message-level sequencing constraints around EKU vs post-handshake auth are
+  abstractly modeled in all three models via pending-auth guards and deferred EKU
+  request handling; cryptographic transcript linkage remains out of scope.
 
 **When model updates become necessary**
 - If verification goals include transcript-binding correctness, add an abstract
@@ -220,6 +279,7 @@ SPIN models.
   for `CertificateRequest` and auth completion and encode guards:
   - no EKU while post-handshake auth is outstanding,
   - no post-handshake certificate request while EKU is in progress.
+  (This abstraction now exists for TLS and both DTLS models.)
 
 ## Appendix C (Security Goals) vs. Models
 

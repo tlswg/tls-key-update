@@ -8,6 +8,13 @@
 //   - APP traffic at any time (bounded by quotas)
 //   - loss + reordering via two paths each direction and a finite drop budget
 //   - old epoch retention on the receive side per Appendix B.2.1/B.2.3
+//   - optional abstract post-handshake authentication (PHA) interleaving:
+//       PHAReq -> PHAFin (RFC 8446 Section 4.6.2-inspired guardrails)
+//       with deferred EKU processing until PHA completion
+//   - optional abstract Exported Authenticator (RFC 9261):
+//       EAReq -> EAFin (application-triggered)
+//   - optional spontaneous server authentication:
+//       responder sends EAFin without prior EAReq; initiator ACKs it
 //
 // Intentionally out-of-scope:
 //   - the optional "defer Resp under load and ACK the Req" path (Section 6 step 2)
@@ -43,8 +50,26 @@
 #ifndef APP_QUOTA_R
 #define APP_QUOTA_R 0
 #endif
+#ifndef ENABLE_PHA
+#define ENABLE_PHA 0
+#endif
+#ifndef PHA_TRIGGER_R
+#define PHA_TRIGGER_R 1
+#endif
+#ifndef ENABLE_EA
+#define ENABLE_EA 0
+#endif
+#ifndef EA_TRIGGER_I
+#define EA_TRIGGER_I 1
+#endif
+#ifndef EA_TRIGGER_R
+#define EA_TRIGGER_R 1
+#endif
+#ifndef EA_SPONT_TRIGGER_R
+#define EA_SPONT_TRIGGER_R 1
+#endif
 
-mtype = { Req, Resp, NKU, ACK, APP };
+mtype = { Req, Resp, NKU, ACK, APP, PHAReq, PHAFin, EAReq, EAFin };
 
 /* Visible delivery channels (post-network): (type, tag_epoch, accepted) */
 chan to_responder = [8] of { mtype, byte, bool };
@@ -67,6 +92,19 @@ byte drops_left = DROPS;
 bool done_i = false;
 bool done_r = false;
 bool unexpected = false;
+bool pha_pending = false;
+bool pha_done = false;
+bool pha_req_sent = false;
+bool ea_pending = false;
+bool ea_done = false;
+bool ea_req_sent_i = false;
+bool ea_req_sent_r = false;
+bool ea_spont_pending_r = false;
+bool ea_spont_sent_r = false;
+bool deferred_req_r = false;
+byte deferred_req_epoch_r = 255;
+
+#define AUTH_PENDING (pha_pending || ea_pending || ea_spont_pending_r)
 
 byte final_rx_i = 255;
 byte final_tx_i = 255;
@@ -149,6 +187,12 @@ proctype Initiator() priority 1
 
 WAIT_RESP:
     do
+    :: (ENABLE_EA && EA_TRIGGER_I && !ea_req_sent_i && !updating_i && !AUTH_PENDING) ->
+        I2R_SEND(EAReq, tx_epoch_i, true);
+        ea_pending = true;
+        ea_req_sent_i = true;
+        ACTIVE_EPOCH_ASSERTS()
+
     /* APP send anytime */
     :: (app_quota_i > 0) ->
         I2R_SEND(APP, tx_epoch_i, true);
@@ -160,8 +204,27 @@ WAIT_RESP:
         APP_ACCEPT(e == rx_epoch_i, e == old_rx_i, retain_old_i);
         ACTIVE_EPOCH_ASSERTS()
 
+    /* abstract client-side PHA response */
+    :: I_RECV(PHAReq, e, acc) ->
+        I2R_SEND(PHAFin, tx_epoch_i, true);
+        ACTIVE_EPOCH_ASSERTS()
+    :: I_RECV(EAReq, e, acc) ->
+        I2R_SEND(EAFin, tx_epoch_i, true);
+        ACTIVE_EPOCH_ASSERTS()
+    :: I_RECV(EAFin, e, acc) ->
+        if
+        :: ea_pending ->
+            ea_pending = false;
+            ea_done = true
+        :: else ->
+            /* spontaneous server EA is acknowledged in DTLS */
+            I2R_SEND(ACK, tx_epoch_i, true);
+            ea_done = true
+        fi;
+        ACTIVE_EPOCH_ASSERTS()
+
     /* retransmit Req while waiting (only when no pending inbound message) */
-    :: (updating_i && req_retries > 0 && len(to_initiator) == 0) ->
+    :: (!AUTH_PENDING && updating_i && req_retries > 0 && len(to_initiator) == 0) ->
         I2R_SEND(Req, tx_epoch_i, true);
         req_retries--;
         ACTIVE_EPOCH_ASSERTS()
@@ -169,6 +232,7 @@ WAIT_RESP:
     /* receive Resp (implicit ACK of Req) */
     :: I_RECV(Resp, e, acc) ->
         if
+        :: AUTH_PENDING -> skip
         :: (e != rx_epoch_i) -> skip
         :: (!acc) -> unexpected = true; break
         :: else ->
@@ -180,6 +244,9 @@ WAIT_RESP:
             ACTIVE_EPOCH_ASSERTS();
             goto WAIT_ACK
         fi
+
+    /* deferred-request ACK while PHA is outstanding */
+    :: I_RECV(ACK, e, acc) -> skip
     od;
 
 WAIT_ACK:
@@ -204,9 +271,21 @@ WAIT_ACK:
     /* ignore any stray Req/NKU */
     :: I_RECV(Req, e, acc) -> skip
     :: I_RECV(NKU, e, acc) -> skip
+    :: I_RECV(PHAReq, e, acc) -> I2R_SEND(PHAFin, tx_epoch_i, true)
+    :: I_RECV(PHAFin, e, acc) -> skip
+    :: I_RECV(EAReq, e, acc) -> I2R_SEND(EAFin, tx_epoch_i, true)
+    :: I_RECV(EAFin, e, acc) ->
+        if
+        :: ea_pending ->
+            ea_pending = false;
+            ea_done = true
+        :: else ->
+            I2R_SEND(ACK, tx_epoch_i, true);
+            ea_done = true
+        fi
 
     /* retransmit NKU until ACK (only when no pending inbound message) */
-    :: (nku_retries > 0 && len(to_initiator) == 0) ->
+    :: (!AUTH_PENDING && nku_retries > 0 && len(to_initiator) == 0) ->
         I2R_SEND(NKU, old_tx_i, true);
         nku_retries--;
         ACTIVE_EPOCH_ASSERTS()
@@ -214,6 +293,7 @@ WAIT_ACK:
     /* ACK completes initiator: tx := rx */
     :: I_RECV(ACK, e, acc) ->
         if
+        :: AUTH_PENDING -> skip
         :: (e == rx_epoch_i) ->
             tx_epoch_i = rx_epoch_i;
             retain_old_i = false;
@@ -235,6 +315,34 @@ proctype Responder() priority 1
     byte e; bool aux;
 
     do
+    :: (!AUTH_PENDING && deferred_req_r) ->
+        if
+        :: (deferred_req_epoch_r == rx_epoch_r) ->
+            updating_r = true;
+            R2I_SEND(Resp, tx_epoch_r, true)
+        :: else -> skip
+        fi;
+        deferred_req_r = false;
+        ACTIVE_EPOCH_ASSERTS()
+
+    /* abstract server-side PHA request */
+    :: (ENABLE_PHA && PHA_TRIGGER_R && !pha_req_sent && !updating_r && !AUTH_PENDING) ->
+        R2I_SEND(PHAReq, tx_epoch_r, true);
+        pha_pending = true;
+        pha_req_sent = true;
+        ACTIVE_EPOCH_ASSERTS()
+    :: (ENABLE_EA && EA_TRIGGER_R && !ea_req_sent_r && !updating_r && !AUTH_PENDING) ->
+        R2I_SEND(EAReq, tx_epoch_r, true);
+        ea_pending = true;
+        ea_req_sent_r = true;
+        ACTIVE_EPOCH_ASSERTS()
+    :: (ENABLE_EA && EA_SPONT_TRIGGER_R && !ea_spont_sent_r && !updating_r && !AUTH_PENDING) ->
+        /* Spontaneous server authentication without prior request. */
+        R2I_SEND(EAFin, tx_epoch_r, true);
+        ea_spont_pending_r = true;
+        ea_spont_sent_r = true;
+        ACTIVE_EPOCH_ASSERTS()
+
     /* APP send anytime */
     :: (app_quota_r > 0) ->
         R2I_SEND(APP, tx_epoch_r, true);
@@ -250,9 +358,43 @@ proctype Responder() priority 1
         fi;
         ACTIVE_EPOCH_ASSERTS()
 
+    /* abstract server-side PHA completion */
+    :: R_RECV(PHAFin, e, aux) ->
+        if
+        :: pha_pending ->
+            pha_pending = false;
+            pha_done = true
+        :: else -> skip
+        fi;
+        ACTIVE_EPOCH_ASSERTS()
+    :: R_RECV(EAFin, e, aux) ->
+        if
+        :: ea_pending ->
+            ea_pending = false;
+            ea_done = true
+        :: else -> skip
+        fi;
+        ACTIVE_EPOCH_ASSERTS()
+    :: R_RECV(EAReq, e, aux) ->
+        R2I_SEND(EAFin, tx_epoch_r, true);
+        ACTIVE_EPOCH_ASSERTS()
+    :: R_RECV(ACK, e, aux) ->
+        if
+        :: ea_spont_pending_r ->
+            ea_spont_pending_r = false;
+            ea_done = true
+        :: else -> skip
+        fi;
+        ACTIVE_EPOCH_ASSERTS()
+
     /* Req starts update */
     :: R_RECV(Req, e, aux) ->
         if
+        :: AUTH_PENDING ->
+            deferred_req_r = true;
+            deferred_req_epoch_r = e;
+            /* deferred-request ACK in DTLS mode */
+            R2I_SEND(ACK, tx_epoch_r, true)
         :: (e != rx_epoch_r) -> skip
         :: else ->
             updating_r = true;
@@ -263,6 +405,7 @@ proctype Responder() priority 1
     /* NKU triggers epoch/key update */
     :: R_RECV(NKU, e, aux) ->
         if
+        :: AUTH_PENDING -> skip
         :: (!updating_r && !retain_old_r) -> skip
         :: (updating_r && e == rx_epoch_r) ->
             old_rx_r = rx_epoch_r;
