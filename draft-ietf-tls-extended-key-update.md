@@ -98,7 +98,7 @@ and DTLS 1.3.
 
 The Transport Layer Security (TLS) 1.3 protocol provides forward secrecy by using
 fresh ephemeral key exchange during the initial handshake. In the base protocol,
-this key exchange is performed with (EC)DHE, and current TLS extensions also define
+this key exchange is performed with (EC)DHE, and by registering new NamedGroup codepoints defined
 hybrid and post-quantum key exchange mechanisms for the same purpose. This ensures
 that encrypted communication remains confidential even if an attacker later obtains
 a party's long-term private key, protecting against passive adversaries who record
