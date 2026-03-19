@@ -633,7 +633,7 @@ bound to the previously established secret,
   by hashing together the previous transcript hash value and the current
   ExtendedKeyUpdate(key_update_request) and ExtendedKeyUpdate(key_update_response)
   messages, which contain the key shares, thereby binding the encapsulated shared
-  secret ciphertext to the IKM in the case of hybrid classical/post-quantum or
+  secret ciphertext to the IKM in the case of PQ/T hybrid or
   post-quantum-only key exchange and
   cryptographically binding the newly derived secrets to the prior handshake
   transcript and all preceding EKU exchanges, as well as to the current EKU
