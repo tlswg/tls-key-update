@@ -167,8 +167,8 @@ Table of Contents
    role as renegotiation and cannot refresh the TLS main secret and
    consequently cannot derive new secrets from fresh key exchange input.
    This limitation applies regardless of whether the session was
-   established with classical (EC)DHE, a hybrid classical/post-quantum
-   exchange, or a post-quantum KEM exchange.
+   established with traditional (EC)DHE, a post-quantum/traditional (PQ/
+   T) hybrid exchange, or a post-quantum KEM exchange.
 
    Security guidance from national agencies, such as ANSSI (France
    [ANSSI]), recommends the periodic renewal of cryptographic keys
