@@ -97,10 +97,12 @@ and DTLS 1.3.
 #  Introduction
 
 The Transport Layer Security (TLS) 1.3 protocol provides forward secrecy by using
-an ephemeral Diffie-Hellman (DHE) key exchange during the initial handshake. This
-ensures that encrypted communication remains confidential even if an attacker
-later obtains a party's long-term private key, protecting against passive adversaries
-who record encrypted traffic for later decryption.
+fresh ephemeral key exchange during the initial handshake. In the base protocol,
+this key exchange is performed with (EC)DHE. By registering new NamedGroup codepoints, TLS specifications also define 
+hybrid and post-quantum key exchange mechanisms for the same purpose. This ensures
+that encrypted communication remains confidential even if an attacker later obtains
+a party's long-term private key, protecting against passive adversaries who record
+encrypted traffic for later decryption.
 
 TLS 1.3 also includes a KeyUpdate mechanism that allows traffic keys to be refreshed
 during an established session. However, this mechanism does not provide
@@ -117,7 +119,10 @@ session lifetime. Due to protocol complexity and known vulnerabilities, renegoti
 was first restricted by {{?TLS-RENEGOTIATION=RFC5746}} and ultimately removed in TLS 1.3. While the
 KeyUpdate message was introduced to offer limited rekeying functionality, it does
 not fulfill the same cryptographic role as renegotiation and cannot refresh
-the TLS main secret and consequently cannot derive new secrets from fresh DHE input.
+the TLS main secret and consequently cannot derive new secrets from fresh key
+exchange input. This limitation applies regardless of whether the session was
+established with traditional (EC)DHE, a post-quantum/traditional (PQ/T) hybrid exchange,
+or a post-quantum KEM exchange.
 
 Security guidance from national agencies, such as ANSSI (France {{ANSSI}}), recommends the
 periodic renewal of cryptographic keys during long-lived sessions to limit the
@@ -131,12 +136,14 @@ threat, especially when session keys are not refreshed with fresh key exchange i
 rather than key derivation.
 
 This specification defines a TLS extension that introduces an extended key update
-mechanism. Unlike the standard key update, this mechanism allows peers to perform a
-fresh Diffie-Hellman exchange within an active session using one of the groups
-negotiated during the initial handshake. By periodically rerunning (EC)DHE, this
-extension enables the derivation of new traffic keys that are independent of
-prior key material. As noted in {{Appendix F of !TLS=I-D.ietf-tls-rfc8446bis}}, this
-approach mitigates the risk of static key exfiltration and shifts the attacker
+mechanism for sessions established with traditional (EC)DHE, hybrid
+PQ/T hybrid key exchange, or post-quantum KEM exchange. Unlike the
+standard key update, this mechanism allows peers to inject fresh key exchange
+input from the negotiated mechanism into an active session. By periodically
+rerunning the negotiated key exchange, this extension enables the derivation of
+new traffic keys that are independent of main secrets from prior epochs. As noted in
+{{Appendix F of !TLS=I-D.ietf-tls-rfc8446bis}},
+this approach mitigates the risk of static key exfiltration and shifts the attacker
 burden toward dynamic key exfiltration.
 
 The proposed extension is applicable to both TLS 1.3 {{TLS}} and DTLS 1.3  {{!DTLS=RFC9147}}. For clarity,
@@ -150,6 +157,9 @@ otherwise specified.
 To distinguish the key update procedure defined in {{TLS}}
 from the key update procedure specified in this document, we use the terms
 "standard key update" and "extended key update", respectively.
+
+For terminology regarding traditional and PQ/T hybrid algorithms please
+see {{?RFC9794}}.
 
 In this document, we use the term post-compromise security, as defined in
 {{CCG16}}. We assume that an adversary may obtain
@@ -609,17 +619,19 @@ The design of the key derivation function for computing the next
 generation of application_traffic_secret is motivated by the desire
 to include
 
-* a secret derived from the (EC)DHE exchange (or from the hybrid
-key exchange / PQ-KEM exchange),
+* a secret derived from the (EC)DHE exchange (or from a PQ/T hybrid or
+post-quantum KEM exchange),
 * a secret that allows the new key exchange to be cryptographically
 bound to the previously established secret,
 * a transcript hash that is updated after each Extended Key Update exchange
   by hashing together the previous transcript hash value with the current
   ExtendedKeyUpdate(key_update_request) and ExtendedKeyUpdate(key_update_response)
-  messages, which carry the key shares. This construction binds the encapsulated
-  shared-secret ciphertext to the IKM in PQ/T hybrid and PQC key exchanges, and
-  cryptographically binds the newly derived secrets to the prior handshake
-  transcript, all preceding EKU exchanges, and the current EKU exchange; and
+  messages, which contain the key shares, thereby binding the encapsulated shared
+  secret ciphertext to the IKM in the case of PQ/T hybrid or
+  post-quantum-only key exchange and
+  cryptographically binding the newly derived secrets to the prior handshake
+  transcript and all preceding EKU exchanges, as well as to the current EKU
+  exchange, and
 * new label strings to distinguish it from the key derivation used in
 TLS 1.3.
 
