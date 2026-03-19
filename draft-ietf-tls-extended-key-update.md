@@ -158,6 +158,9 @@ To distinguish the key update procedure defined in {{TLS}}
 from the key update procedure specified in this document, we use the terms
 "standard key update" and "extended key update", respectively.
 
+For terminology regarding traditional and PQ/T hybrid algorithms please
+see {{?RFC9794}}.
+
 In this document, we use the term post-compromise security, as defined in
 {{CCG16}}. We assume that an adversary may obtain
 access to the application traffic keys.
