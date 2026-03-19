@@ -333,7 +333,7 @@ key update. The responder MAY defer sending a response if system load or resourc
 constraints prevent immediate processing. In such cases, the response MUST
 be sent once sufficient resources become available.
 
-1. After the responder sends `ExtendedKeyUpdate(key_update_response)` it
+1. After the responder sends the `ExtendedKeyUpdate(key_update_response)` it
 MUST update its send keys.
 
 1. Upon receipt of an `ExtendedKeyUpdate(key_update_response)` the initiator
@@ -343,16 +343,15 @@ complete the process. The initiator MUST NOT defer derivation of the secrets and
 sending the ExtendedKeyUpdate(new_key_update) message as it would stall the
 communication.
 
-1. After sending `ExtendedKeyUpdate(new_key_update)` initiator MUST update its
+1. After sending `ExtendedKeyUpdate(new_key_update)`, the initiator MUST update its
 send keys.
 
-1. After receiving the initiator’s `ExtendedKeyUpdate(new_key_update)`,
+1. Upon receiving the initiator’s `ExtendedKeyUpdate(new_key_update)`,
 the responder MUST update its receive keys.
 
 Both initiator and responder MUST encrypt their `ExtendedKeyUpdate` messages
-with the old keys. Responder MUST ensure that the `ExtendedKeyUpdate(new_key_update)`
-encrypted with the old key is received before accepting any messages encrypted with
-the new key.
+using the old keys. The Responder MUST ensure that it has received `ExtendedKeyUpdate(new_key_update)`,
+encrypted with the old key, before accepting any messages encrypted with the new keys.
 
 If TLS peers independently initiate the extended key update and the
 requests cross in flight, the `ExtendedKeyUpdate(key_update_request)` with the
@@ -389,21 +388,11 @@ The handshake framing uses a single `HandshakeType` for this message
 
 ## TLS 1.3 Extended Key Update Example
 
-While {{fig-key-update}} shows the high-level interaction between a
-TLS 1.3 client and server, this section shows an example message exchange
-with information about the updated keys added.
-
-There are two phases:
-
-1. The support for the functionality in this specification
-is negotiated in the ClientHello and the EncryptedExtensions
-messages.
-
-2. Once the initial handshake is completed, a key update can be
-triggered.
-
-{{fig-key-update2}} provides an overview of the exchange starting
-with the initial negotiation followed by the key update.
+{{fig-key-update}} shows the high-level interaction between a TLS 1.3 client
+and server, while {{fig-key-update2}} illustrates an example message exchange
+including the updated keys. Similar to the `key_update message`, the
+`extended_key_update` message can be sent by either peer after sending its
+Finished message.
 
 ~~~
        Client                                           Server
@@ -448,7 +437,8 @@ Auth | {CertificateVerify}
 Unlike TLS 1.3, DTLS 1.3 implementations must take into account that handshake
 messages are not transmitted over a reliable transport protocol.
 
-EKU messages MUST be transmitted reliably, like other DTLS handshake messages. If necessary, EKU messages MAY be fragmented as described in {{Section 5.5 of DTLS}}.
+EKU messages MUST be transmitted reliably, like other DTLS handshake messages.
+If necessary, EKU messages MAY be fragmented as described in {{Section 5.5 of DTLS}}.
 Due to the possibility of an `ExtendedKeyUpdate` messages being
 lost and thereby preventing the sender of that message from updating its keying
 material, receivers MUST retain the pre-update keying material until receipt
@@ -456,8 +446,9 @@ and successful decryption of a message using the new keys.
 
 Due to packet loss and/or reordering, DTLS 1.3 peers MAY receive records from an
 earlier epoch. If the necessary keys are available, implementations SHOULD attempt
-to process such records; however, they MAY choose to discard them. The exchange
-has the following steps:
+to process such records; however, they MAY choose to discard them.
+
+The exchange has the following steps:
 
 1. The initiator sends an `ExtendedKeyUpdate(key_update_request)` message, which contains a
    key share. While an extended key update is in progress, the initiator MUST NOT
@@ -633,7 +624,7 @@ post-quantum KEM exchange),
 * a secret that allows the new key exchange to be cryptographically
 bound to the previously established secret,
 * a transcript hash that is updated after each Extended Key Update exchange
-  by hashing together the previous transcript hash value and the current
+  by hashing together the previous transcript hash value with the current
   ExtendedKeyUpdate(key_update_request) and ExtendedKeyUpdate(key_update_response)
   messages, which contain the key shares, thereby binding the encapsulated shared
   secret ciphertext to the IKM in the case of PQ/T hybrid or
@@ -661,18 +652,16 @@ transcript_hash_0 denotes the transcript hash of the initial TLS handshake,
 covering all messages from the ClientHello up to and including the
 client Finished message.
 
-The following diagram shows the key derivation hierarchy.
+{{key-hierarchy}} shows the key derivation hierarchy.
 
 ~~~
-
-
-       Main Secret N
+       main_secret_N
              |
              v
        Derive-Secret(., "derived", "")
              |
              v
- (EC)DHE -> HKDF-Extract = Main Secret N+1
+ (EC)DHE -> HKDF-Extract = main_secret_N+1
              |
              +-----> Derive-Secret(., "c ap traffic",
              |                     transcript_hash_N+1)
@@ -690,14 +679,15 @@ The following diagram shows the key derivation hierarchy.
              |                     transcript_hash_N+1)
                               = resumption_main_secret_N+1
 ~~~
+{: #key-hierarchy title="Key Derivation Hierarchy."}
 
 During the initial handshake, the Main Secret is generated (see
-{{Section 7.1 of TLS}}). Since the Main Secret
+{{Section 7.1 of TLS}}). Since the main_secret
 is discarded during the key derivation procedure, a derived value is
 stored. This stored value then serves as the input salt to the first
 key update procedure that incorporates the ephemeral (EC)DHE-
 established value as input keying material (IKM) to produce
-main_secret_{N+1}. The derived value from this new master secret
+main_secret_N+1. The derived value from this new main secret
 serves as input salt to the subsequent key update procedure, which
 also incorporates a fresh ephemeral (EC)DHE value as IKM. This
 process is repeated for each additional key update procedure.
@@ -763,7 +753,7 @@ the `key_exchange` fields of the constituent algorithms. This same
 approach is reused during the Extended Key Update, when new key
 shares are exchanged.
 
-The specification in {{?TLS-MLKEM=I-D.ietf-tls-mlkem}} registers the lattice-based
+{{?TLS-MLKEM=I-D.ietf-tls-mlkem}} registers the lattice-based
 ML-KEM algorithm and its variants, such as ML-KEM-512, ML-KEM-768 and
 ML-KEM-1024. The KEM encapsulation key or KEM ciphertext is represented
 as a 'KeyShareEntry' field. This same approach is reused during the
