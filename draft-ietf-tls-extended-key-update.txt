@@ -6,13 +6,13 @@ Transport Layer Security                                   H. Tschofenig
 Internet-Draft                                                   Siemens
 Updates: 9261, 8446 (if approved)                               M. Tüxen
 Intended status: Standards Track       Münster Univ. of Applied Sciences
-Expires: 11 September 2026                                      T. Reddy
+Expires: 21 September 2026                                      T. Reddy
                                                                    Nokia
                                                                 S. Fries
                                                                  Siemens
                                                             Y. Rosomakho
                                                                  Zscaler
-                                                           10 March 2026
+                                                           20 March 2026
 
 
        Extended Key Update for Transport Layer Security (TLS) 1.3
@@ -66,7 +66,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 11 September 2026.
+   This Internet-Draft will expire on 21 September 2026.
 
 Copyright Notice
 
@@ -138,8 +138,11 @@ Table of Contents
 1.  Introduction
 
    The Transport Layer Security (TLS) 1.3 protocol provides forward
-   secrecy by using an ephemeral Diffie-Hellman (DHE) key exchange
-   during the initial handshake.  This ensures that encrypted
+   secrecy by using fresh ephemeral key exchange during the initial
+   handshake.  In the base protocol, this key exchange is performed with
+   (EC)DHE.  By registering new NamedGroup codepoints, TLS
+   specifications also define hybrid and post-quantum key exchange
+   mechanisms for the same purpose.  This ensures that encrypted
    communication remains confidential even if an attacker later obtains
    a party's long-term private key, protecting against passive
    adversaries who record encrypted traffic for later decryption.
@@ -162,7 +165,10 @@ Table of Contents
    TLS 1.3.  While the KeyUpdate message was introduced to offer limited
    rekeying functionality, it does not fulfill the same cryptographic
    role as renegotiation and cannot refresh the TLS main secret and
-   consequently cannot derive new secrets from fresh DHE input.
+   consequently cannot derive new secrets from fresh key exchange input.
+   This limitation applies regardless of whether the session was
+   established with traditional (EC)DHE, a post-quantum/traditional (PQ/
+   T) hybrid exchange, or a post-quantum KEM exchange.
 
    Security guidance from national agencies, such as ANSSI (France
    [ANSSI]), recommends the periodic renewal of cryptographic keys
@@ -178,14 +184,16 @@ Table of Contents
    exchange input rather than key derivation.
 
    This specification defines a TLS extension that introduces an
-   extended key update mechanism.  Unlike the standard key update, this
-   mechanism allows peers to perform a fresh Diffie-Hellman exchange
-   within an active session using one of the groups negotiated during
-   the initial handshake.  By periodically rerunning (EC)DHE, this
-   extension enables the derivation of new traffic keys that are
-   independent of prior key material.  As noted in Appendix F of [TLS],
-   this approach mitigates the risk of static key exfiltration and
-   shifts the attacker burden toward dynamic key exfiltration.
+   extended key update mechanism for sessions established with
+   traditional (EC)DHE, hybrid PQ/T hybrid key exchange, or post-quantum
+   KEM exchange.  Unlike the standard key update, this mechanism allows
+   peers to inject fresh key exchange input from the negotiated
+   mechanism into an active session.  By periodically rerunning the
+   negotiated key exchange, this extension enables the derivation of new
+   traffic keys that are independent of main secrets from prior epochs.
+   As noted in Appendix F of [TLS], this approach mitigates the risk of
+   static key exfiltration and shifts the attacker burden toward dynamic
+   key exfiltration.
 
    The proposed extension is applicable to both TLS 1.3 [TLS] and DTLS
    1.3 [DTLS].  For clarity, the term "TLS" is used throughout this
@@ -202,6 +210,9 @@ Table of Contents
    To distinguish the key update procedure defined in [TLS] from the key
    update procedure specified in this document, we use the terms
    "standard key update" and "extended key update", respectively.
+
+   For terminology regarding traditional and PQ/T hybrid algorithms
+   please see [RFC9794].
 
    In this document, we use the term post-compromise security, as
    defined in [CCG16].  We assume that an adversary may obtain access to
@@ -379,8 +390,9 @@ Table of Contents
        processing.  In such cases, the response MUST be sent once
        sufficient resources become available.
 
-   3.  After the responder sends ExtendedKeyUpdate(key_update_response)
-       it MUST update its send keys.
+   3.  After the responder sends the
+       ExtendedKeyUpdate(key_update_response) it MUST update its send
+       keys.
 
    4.  Upon receipt of an ExtendedKeyUpdate(key_update_response) the
        initiator derives the new secrets from the exchanged key shares.
@@ -390,17 +402,16 @@ Table of Contents
        and sending the ExtendedKeyUpdate(new_key_update) message as it
        would stall the communication.
 
-   5.  After sending ExtendedKeyUpdate(new_key_update) initiator MUST
-       update its send keys.
+   5.  After sending ExtendedKeyUpdate(new_key_update), the initiator
+       MUST update its send keys.
 
-   6.  After receiving the initiator’s
-       ExtendedKeyUpdate(new_key_update), the responder MUST update its
-       receive keys.
+   6.  Upon receiving the initiator’s ExtendedKeyUpdate(new_key_update),
+       the responder MUST update its receive keys.
 
    Both initiator and responder MUST encrypt their ExtendedKeyUpdate
-   messages with the old keys.  Responder MUST ensure that the
-   ExtendedKeyUpdate(new_key_update) encrypted with the old key is
-   received before accepting any messages encrypted with the new key.
+   messages using the old keys.  The Responder MUST ensure that it has
+   received ExtendedKeyUpdate(new_key_update), encrypted with the old
+   key, before accepting any messages encrypted with the new keys.
 
    If TLS peers independently initiate the extended key update and the
    requests cross in flight, the ExtendedKeyUpdate(key_update_request)
@@ -437,21 +448,11 @@ Table of Contents
 
 5.1.  TLS 1.3 Extended Key Update Example
 
-   While Figure 1 shows the high-level interaction between a TLS 1.3
-   client and server, this section shows an example message exchange
-   with information about the updated keys added.
-
-   There are two phases:
-
-   1.  The support for the functionality in this specification is
-       negotiated in the ClientHello and the EncryptedExtensions
-       messages.
-
-   2.  Once the initial handshake is completed, a key update can be
-       triggered.
-
-   Figure 3 provides an overview of the exchange starting with the
-   initial negotiation followed by the key update.
+   Figure 1 shows the high-level interaction between a TLS 1.3 client
+   and server, while Figure 3 illustrates an example message exchange
+   including the updated keys.  Similar to the key_update message, the
+   extended_key_update message can be sent by either peer after sending
+   its Finished message.
 
         Client                                           Server
 
@@ -507,7 +508,9 @@ Table of Contents
    Due to packet loss and/or reordering, DTLS 1.3 peers MAY receive
    records from an earlier epoch.  If the necessary keys are available,
    implementations SHOULD attempt to process such records; however, they
-   MAY choose to discard them.  The exchange has the following steps:
+   MAY choose to discard them.
+
+   The exchange has the following steps:
 
    1.  The initiator sends an ExtendedKeyUpdate(key_update_request)
        message, which contains a key share.  While an extended key
@@ -688,21 +691,21 @@ Table of Contents
    generation of application_traffic_secret is motivated by the desire
    to include
 
-   *  a secret derived from the (EC)DHE exchange (or from the hybrid key
-      exchange / PQ-KEM exchange),
+   *  a secret derived from the (EC)DHE exchange (or from a PQ/T hybrid
+      or post-quantum KEM exchange),
 
    *  a secret that allows the new key exchange to be cryptographically
       bound to the previously established secret,
 
    *  a transcript hash that is updated after each Extended Key Update
       exchange by hashing together the previous transcript hash value
-      and the current ExtendedKeyUpdate(key_update_request) and
+      with the current ExtendedKeyUpdate(key_update_request) and
       ExtendedKeyUpdate(key_update_response) messages, which contain the
       key shares, thereby binding the encapsulated shared secret
-      ciphertext to the IKM in the case of PQ/T hybrid or PQC key
-      exchange and cryptographically binding the newly derived secrets
-      to the prior handshake transcript and all preceding EKU exchanges,
-      as well as to the current EKU exchange, and
+      ciphertext to the IKM in the case of PQ/T hybrid or post-quantum-
+      only key exchange and cryptographically binding the newly derived
+      secrets to the prior handshake transcript and all preceding EKU
+      exchanges, as well as to the current EKU exchange, and
 
    *  new label strings to distinguish it from the key derivation used
       in TLS 1.3.
@@ -721,15 +724,15 @@ Table of Contents
    of the initial TLS handshake, covering all messages from the
    ClientHello up to and including the client Finished message.
 
-   The following diagram shows the key derivation hierarchy.
+   Figure 7 shows the key derivation hierarchy.
 
-          Main Secret N
+          main_secret_N
                 |
                 v
           Derive-Secret(., "derived", "")
                 |
                 v
-    (EC)DHE -> HKDF-Extract = Main Secret N+1
+    (EC)DHE -> HKDF-Extract = main_secret_N+1
                 |
                 +-----> Derive-Secret(., "c ap traffic",
                 |                     transcript_hash_N+1)
@@ -747,16 +750,18 @@ Table of Contents
                 |                     transcript_hash_N+1)
                                  = resumption_main_secret_N+1
 
+                    Figure 7: Key Derivation Hierarchy.
+
    During the initial handshake, the Main Secret is generated (see
-   Section 7.1 of [TLS]).  Since the Main Secret is discarded during the
+   Section 7.1 of [TLS]).  Since the main_secret is discarded during the
    key derivation procedure, a derived value is stored.  This stored
    value then serves as the input salt to the first key update procedure
    that incorporates the ephemeral (EC)DHE- established value as input
-   keying material (IKM) to produce main_secret_{N+1}. The derived value
-   from this new master secret serves as input salt to the subsequent
-   key update procedure, which also incorporates a fresh ephemeral
-   (EC)DHE value as IKM.  This process is repeated for each additional
-   key update procedure.
+   keying material (IKM) to produce main_secret_N+1.  The derived value
+   from this new main secret serves as input salt to the subsequent key
+   update procedure, which also incorporates a fresh ephemeral (EC)DHE
+   value as IKM.  This process is repeated for each additional key
+   update procedure.
 
    The traffic keys are re-derived from
    client_application_traffic_secret_N+1 and
@@ -825,10 +830,10 @@ Table of Contents
    algorithms.  This same approach is reused during the Extended Key
    Update, when new key shares are exchanged.
 
-   The specification in [TLS-MLKEM] registers the lattice-based ML-KEM
-   algorithm and its variants, such as ML-KEM-512, ML-KEM-768 and ML-
-   KEM-1024.  The KEM encapsulation key or KEM ciphertext is represented
-   as a 'KeyShareEntry' field.  This same approach is reused during the
+   [TLS-MLKEM] registers the lattice-based ML-KEM algorithm and its
+   variants, such as ML-KEM-512, ML-KEM-768 and ML-KEM-1024.  The KEM
+   encapsulation key or KEM ciphertext is represented as a
+   'KeyShareEntry' field.  This same approach is reused during the
    Extended Key Update, when new key shares are exchanged.
 
 9.  SSLKEYLOGFILE Update
@@ -1178,7 +1183,7 @@ Table of Contents
 13.2.  TLS HandshakeType
 
    IANA is requested to add the following entry to the "TLS
-   HandshakeType" registry [TLS-Ext-Registry]:
+   HandshakeType" registry [TLS-Param-Registry]:
 
    *  Value: TBD2
 
@@ -1192,9 +1197,9 @@ Table of Contents
 
    IANA is requested to create a new registry "TLS ExtendedKeyUpdate
    Message Subtypes", within the existing "Transport Layer Security
-   (TLS) Parameters" registry [TLS-Ext-Registry].  This new registry
-   reserves types used for Extended Key Update entries.  The initial
-   contents of this registry are as follows.
+   (TLS) Parameters" registry group [TLS-Param-Registry].  This new
+   registry reserves types used for Extended Key Update entries.  The
+   initial contents of this registry are as follows.
 
          +=======+=====================+=========+===============+
          | Value | Description         | DTLS-OK | Reference     |
@@ -1299,9 +1304,9 @@ Table of Contents
 
    [TLS-FLAGS]
               Nir, Y., "A Flags Extension for TLS 1.3", Work in
-              Progress, Internet-Draft, draft-ietf-tls-tlsflags-16, 14
-              September 2025, <https://datatracker.ietf.org/doc/html/
-              draft-ietf-tls-tlsflags-16>.
+              Progress, Internet-Draft, draft-ietf-tls-tlsflags-17, 17
+              March 2026, <https://datatracker.ietf.org/doc/html/draft-
+              ietf-tls-tlsflags-17>.
 
 14.2.  Informative References
 
@@ -1329,6 +1334,11 @@ Table of Contents
    [RFC8447]  Salowey, J. and S. Turner, "IANA Registry Updates for TLS
               and DTLS", RFC 8447, DOI 10.17487/RFC8447, August 2018,
               <https://www.rfc-editor.org/rfc/rfc8447>.
+
+   [RFC9794]  Driscoll, F., Parsons, M., and B. Hale, "Terminology for
+              Post-Quantum Traditional Hybrid Schemes", RFC 9794,
+              DOI 10.17487/RFC9794, June 2025,
+              <https://www.rfc-editor.org/rfc/rfc9794>.
 
    [TLS-ECDHE-MLKEM]
               Kwiatkowski, K., Kampanakis, P., Westerbaan, B., and D.
@@ -1363,6 +1373,11 @@ Table of Contents
               mlkem-07, 12 February 2026,
               <https://datatracker.ietf.org/doc/html/draft-ietf-tls-
               mlkem-07>.
+
+   [TLS-Param-Registry]
+              IANA, "Transport Layer Security (TLS) Parameters",
+              November 2023,
+              <https://www.iana.org/assignments/tls-parameters>.
 
    [TLS-RENEGOTIATION]
               Rescorla, E., Ray, M., Dispensa, S., and N. Oskov,
