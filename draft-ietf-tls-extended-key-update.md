@@ -215,7 +215,7 @@ This specification defines three ExtendedKeyUpdate message subtypes:
 
 - `key_update_request` (0)
 - `key_update_response` (1)
-- `new_key_update` (2)
+- `key_update_finish` (2)
 
 New ExtendedKeyUpdate message subtypes are assigned by IANA as described in {{iana-eku-registry}}.
 
@@ -267,7 +267,7 @@ Auth | {CertificateVerify}
                                   ...
   [EKU(key_update_request)]N   -------->
                                <--------  [EKU(key_update_response)]N
-      [EKU(new_key_update)]N   -------->
+   [EKU(key_update_finish)]N   -------->
                                   ...
        [Application Data]N+1   <------->  [Application Data]N+1
 
@@ -296,7 +296,7 @@ The `ExtendedKeyUpdate` wire format is:
 enum {
    key_update_request(0),
    key_update_response(1),
-   new_key_update(2),
+   key_update_finish(2),
    (255)
 } ExtendedKeyUpdateType;
 
@@ -309,7 +309,7 @@ struct {
       case key_update_response: {
           KeyShareEntry key_share;
       }
-      case new_key_update: {
+      case key_update_finish: {
           /* empty */
       }
    };
@@ -344,19 +344,19 @@ MUST update its send keys.
 
 1. Upon receipt of an `ExtendedKeyUpdate(key_update_response)` the initiator
 derives the new secrets from the exchanged key shares. The initiator then updates
-its receive keys and sends an empty ExtendedKeyUpdate(new_key_update) message to
+its receive keys and sends an empty ExtendedKeyUpdate(key_update_finish) message to
 complete the process. The initiator MUST NOT defer derivation of the secrets and
-sending the ExtendedKeyUpdate(new_key_update) message as it would stall the
+sending the ExtendedKeyUpdate(key_update_finish) message as it would stall the
 communication.
 
-1. After sending `ExtendedKeyUpdate(new_key_update)`, the initiator MUST update its
+1. After sending `ExtendedKeyUpdate(key_update_finish)`, the initiator MUST update its
 send keys.
 
-1. Upon receiving the initiator’s `ExtendedKeyUpdate(new_key_update)`,
+1. Upon receiving the initiator’s `ExtendedKeyUpdate(key_update_finish)`,
 the responder MUST update its receive keys.
 
 Both initiator and responder MUST encrypt their `ExtendedKeyUpdate` messages
-using the old keys. The Responder MUST ensure that it has received `ExtendedKeyUpdate(new_key_update)`,
+using the old keys. The Responder MUST ensure that it has received `ExtendedKeyUpdate(key_update_finish)`,
 encrypted with the old key, before accepting any messages encrypted with the new keys.
 
 If TLS peers independently initiate the extended key update and the
@@ -432,7 +432,7 @@ Auth | {CertificateVerify}
                                         # and updates SEND keys here
 # Client derives new secrets
 # and updates RECEIVE keys here
-        [EKU(new_key_update)]  -------->
+     [EKU(key_update_finish)]  -------->
 # Client updates SEND keys here
                                     # Server updates RECEIVE keys here
 ~~~
@@ -475,18 +475,18 @@ The exchange has the following steps:
    initiator's `ExtendedKeyUpdate(key_update_request)`, so no separate ACK is required. The initiator MUST
    update its receive keys and epoch value. The initiator MUST NOT defer derivation of the secrets.
 
-1. The initiator transmits an `ExtendedKeyUpdate(new_key_update)` message. This message is subject to DTLS
+1. The initiator transmits an `ExtendedKeyUpdate(key_update_finish)` message. This message is subject to DTLS
    retransmission until acknowledged.
 
 1. The responder MUST acknowledge the received message by sending an ACK message.
 
-1. After the responder receives the initiator's `ExtendedKeyUpdate(new_key_update)`,
+1. After the responder receives the initiator's `ExtendedKeyUpdate(key_update_finish)`,
    the responder MUST update its send key and epoch value. With the receipt of
    that message, the responder MUST also update its receive keys.
 
 1.  On receipt of the ACK message, the initiator updates its send key and epoch
     value. If this ACK is not received, the initiator re-transmits its
-    `ExtendedKeyUpdate(new_key_update)` until ACK is received. The key update is
+    `ExtendedKeyUpdate(key_update_finish)` until ACK is received. The key update is
     complete once this ACK is processed by the initiator.
 
 The handshake framing uses a single `HandshakeType` for this message
@@ -573,11 +573,11 @@ Client                            Server
 # (rx:=rx+1; tx still old)
 [C: tx=3, rx=4]                   [S: tx=3, rx=3]
 
-[EKU(new_key_update)]      -------->
-# Sender's NKU is tagged with OLD tx (3).
+[EKU(key_update_finish)]   -------->
+# Sender's Fin is tagged with OLD tx (3).
 
 # Epoch switch point:
-# Step 6: responder bumps BOTH tx and rx on NKU-in:
+# Step 6: responder bumps BOTH tx and rx on Fin-in:
 [C: tx=3, rx=4]                   [S: tx=4, rx=4]
 
                            <-------- [ACK] (tag=new)
@@ -605,7 +605,7 @@ the message transmission.
 | <------------ APP  | 3/3 -> 3/3     | 3/3 -> 3/3   |
 | req -------------> | 3/3 -> 3/3     | 3/3 -> 3/3   |
 | <------------ resp | 3/3 -> 3/4     | 3/3 -> 3/3   | <- step 3
-| NKU  ------------> | 3/4 -> 3/4     | 3/3 -> 4/4   | <- step 6
+| Fin  ------------> | 3/4 -> 3/4     | 3/3 -> 4/4   | <- step 6
 | <------------- ACK | 3/4 -> 4/4     | 4/4 -> 4/4   | <- step 7
 | APP -------------> | 4/4 -> 4/4     | 4/4 -> 4/4   |
 | <------------- APP | 4/4 -> 4/4     | 4/4 -> 4/4   |
@@ -709,7 +709,7 @@ client_/server_application_traffic_secret_N and its associated
 traffic keys as soon as possible. Note: The
 client_/server_application_traffic_secret_N and its associated
 traffic keys can only be deleted by the responder after receiving the
-`ExtendedKeyUpdate(new_key_update)` message.
+`ExtendedKeyUpdate(key_update_finish)` message.
 
 Once client_/server_application_traffic_secret_N+1 and the corresponding traffic
 keys are in use, all subsequent records, including alerts and post-handshake
@@ -1074,7 +1074,7 @@ The initial contents of this registry are as follows.
 | --- | --- | --- | --- |
 | 0 | key_update_request | Y | This document |
 | 1 | key_update_response | Y | This document |
-| 2 | new_key_update | Y | This document |
+| 2 | key_update_finish | Y | This document |
 | 3-255 | Unassigned | | |
 
 New assignments in the "TLS ExtendedKeyUpdate Types" registry will be administered by
@@ -1140,7 +1140,7 @@ For editorial reasons we abbreviate the protocol message types:
 
  * Req - ExtendedKeyUpdate(request)
  * Resp - ExtendedKeyUpdate(response)
- * NKU - ExtendedKeyUpdate(new_key_update)
+ * Fin - ExtendedKeyUpdate(key_update_finish)
  * ACK - Acknowledgement message from {{Section 7 of DTLS}}
  * APP - application data payloads
 
@@ -1186,7 +1186,7 @@ This section describes the initiator and responder state machines.
 |
 |  (2) recv Resp with key_share:
 |      derive new secrets
-|      send NKU (encrypted under old keys)
+|      send Fin (encrypted under old keys)
 |      update SEND key (send_key := new)
 |      update RECEIVE key (receive_key := new)
 |      set updating=0
@@ -1198,7 +1198,7 @@ This section describes the initiator and responder state machines.
 
 Notes:
 
-- NKU message is sent under old keys.
+- Fin message is sent under old keys.
 - If a classic KeyUpdate arrives (EKU negotiated), ABORT "unexpected_message".
 - Crossed-requests: ignore the request with LOWER lexicographic key_exchange; if equal, abort.
 
@@ -1223,14 +1223,14 @@ Notes:
 |   must send once resources free)
 |  derive new secrets
 |  update SEND keys (send_key := new)
-|  --> WAIT_I_NKU
+|  --> WAIT_I_FIN
       v
 +----------------------+
-| WAIT_I_NKU           |
+| WAIT_I_FIN           |
 | updating=1           |
 +----------------------+
       |
-(2) recv NKU (encrypted under old keys)
+(2) recv Fin (encrypted under old keys)
     update RECEIVE keys (receive_key := new)
     set updating=0
       v
@@ -1260,7 +1260,7 @@ The following variables and abbreviations are used in the state machine diagrams
 - retain_old - when true, receiver accepts tags old_rx and rx.
 - tag=... - the TX-epoch value written on an outgoing message.
 - e==... - the epoch tag carried on an incoming message (what the peer sent).
-- FINISHED / START / WAIT_RESP / WAIT_I_NKU / WAIT_R_NKU / ACTIVATE RETENTION / RESPOND / WAIT_ACK - diagram states; FINISHED denotes the steady state after success.
+- FINISHED / START / WAIT_RESP / WAIT_I_FIN / WAIT_R_FIN / ACTIVATE RETENTION / RESPOND / WAIT_ACK - diagram states; FINISHED denotes the steady state after success.
 
 Crossed requests. If both peers independently initiate the extended key update and the key_update_request messages cross in flight, compare the KeyShareEntry.key_exchange values. The request with the lower lexicographic value must be ignored. If the values are equal, the endpoint must abort with an "unexpected_message" alert. If the peer's value is higher than the local one, the endpoint abandons its in-flight update and processes the peer's request as responder.
 
@@ -1268,7 +1268,7 @@ Crossed requests. If both peers independently initiate the extended key update a
 
 The initiator starts in the START state with matching epochs (rx := E; tx := E). It sends a Req and enters WAIT_RESP (updating := 1). While waiting, APP data may be sent at any time (tagged with the current tx) and received according to the APP acceptance rule below.
 
-Once the responder returns Resp with a tag matching the current rx, the initiator derives new key material. It then sends NKU still tagged with the old tx. The initiator activates retention mode: the old epoch is remembered, the receive epoch is incremented, and application data is accepted under both epochs for a transition period. Initiator moves to WAIT_ACK.
+Once the responder returns Resp with a tag matching the current rx, the initiator derives new key material. It then sends Fin still tagged with the old tx. The initiator activates retention mode: the old epoch is remembered, the receive epoch is incremented, and application data is accepted under both epochs for a transition period. Initiator moves to WAIT_ACK.
 
 If a peer key_update_request arrives while in WAIT_RESP (crossed updates), apply the crossed-request rule above. If the peer's key_exchange is higher, abandon the local update (updating := 0) and continue as responder: send key_update_response, derive new secrets, then proceed with the responder flow. If lower, ignore the peer's request; if equal, abort with "unexpected_message".
 
@@ -1317,7 +1317,7 @@ Throughout the process:
 | retain_old=1; rx++  |
 +---------------------+
           |
-(2) send NKU [tag=old tx]
+(2) send Fin [tag=old tx]
           v
 +------------------------------+
 | WAIT_ACK (updating = 1)      |
@@ -1339,7 +1339,7 @@ The responder starts in the START state with synchronized transmit and receive e
 
 Upon receiving an `ExtendedKeyUpdate(key_update_request)` (Req), the responder transitions to RESPOND. The responder may defer sending `ExtendedKeyUpdate(key_update_response)` under load; in that case it must acknowledge the request with an ACK and retransmit the response until it is acknowledged by the initiator, as specified in DTLS considerations. When sent, `ExtendedKeyUpdate(key_update_response)` is tagged with the current tx.
 
-After an `ExtendedKeyUpdate(new_key_update)` (NKU) is received with the correct epoch, the responder:
+After an `ExtendedKeyUpdate(key_update_finish)` (Fin) is received with the correct epoch, the responder:
 
 1. activates retention (old_rx := rx; retain_old := 1),
 1. increments both epochs (rx++, tx++),
@@ -1368,11 +1368,11 @@ APP acceptance rule (receiver): accept if e == rx or (retain_old && e == old_rx)
       |  until acknowledged by the initiator)
       v
 +---------------+
-| WAIT_I_NKU    |
+| WAIT_I_FIN    |
 | (updating=1)  |
 +-------+-------+
       |
-(2) recv NKU [e==rx]      (assert accepted)
+(2) recv Fin [e==rx]      (assert accepted)
       |
 +---------------------+
 | ACTIVATE RETENTION  |
