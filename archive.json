@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2026-03-19T02:36:39.446630+00:00",
+  "timestamp": "2026-03-22T02:37:48.632314+00:00",
   "repo": "tlswg/tls-key-update",
   "labels": [
     {
@@ -1289,9 +1289,101 @@
       "labels": [],
       "body": "> Extended Key Update assumes a transient compromise of the current application traffic keys, not a persistent attacker with ongoing access to key material. The procedure itself does not rely on long-term private keys; those are assumed to remain secure, as they are typically stored in a secure element, such as a Trusted Execution Environment (TEE), Hardware Security Module (HSM), or Trusted Platform Module (TPM). In contrast, application traffic keys are stored within the rich operating system, where short-term exposure due to memory disclosure or transient compromise may occur.\n\nIf one uses a TEE, then why not put the application traffic keys also into it?\n\nSee further discussion in the thread, e.g., [here](https://mailarchive.ietf.org/arch/msg/tls/eWUXfSuhygQQZ0MfPcHdpzQNoA0/)",
       "createdAt": "2026-03-11T22:21:57Z",
-      "updatedAt": "2026-03-11T22:21:57Z",
+      "updatedAt": "2026-03-20T08:36:50Z",
       "closedAt": null,
-      "comments": []
+      "comments": [
+        {
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "body": "EKU addresses a specific and well-defined threat model: the TLS stack runs in the rich OS, application traffic keys are in rich OS memory, and the long-term key is protected in a secure element. Placing traffic keys in a TEE while the TLS stack runs in the rich OS is not a practical deployment model. The rich OS would need to invoke the TEE for every record encryption operation, making it both impractical at scale and ineffective. \n\nAs discussed in Appendix F.1.5 of draft-ietf-tls-rfc8446bis, TLS does not offer post-compromise security if the long-term key is compromised. EKU does not address that scenario, it addresses transient compromise of application traffic keys.\n\nThis is precisely why Appendix F.1.5 of the TLS specification discusses frequent (EC)DHE exchanges as the mechanism to address key exfiltration, converting static key exfiltration (extract once, decrypt forever) into dynamic key exfiltration (must continuously extract fresh material). EKU operationalizes this recommendation for long-lived TLS connections. ",
+          "createdAt": "2026-03-19T02:57:30Z",
+          "updatedAt": "2026-03-19T02:57:30Z"
+        },
+        {
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "body": "Further, simply copying the keys from the rich OS into the TEE would expose them to both environments, defeating the purpose of the isolation, since the rich OS would still have had access to them at the point of transfer.\n\n",
+          "createdAt": "2026-03-19T07:07:17Z",
+          "updatedAt": "2026-03-19T07:07:17Z"
+        },
+        {
+          "author": "muhammad-usama-sardar",
+          "authorAssociation": "COLLABORATOR",
+          "body": "> EKU addresses a specific and well-defined threat model: the TLS stack runs in the rich OS, application traffic keys are in rich OS memory, and the long-term key is protected in a secure element. Placing traffic keys in a TEE while the TLS stack runs in the rich OS is not a practical deployment model. The rich OS would need to invoke the TEE for every record encryption operation, making it both impractical at scale and ineffective.\n\nIs this realistic? Could you please share a link for real-world deployment of this arrangement?\n\nI believe TLS stack should run within the TEE. If it is outside the TEE, then it cannot be measured and thus can be manipulated. This kills the whole security argument of TEEs.\n\n\n> Further, simply copying the keys from the rich OS into the TEE would expose them to both environments, defeating the purpose of the isolation, since the rich OS would still have had access to them at the point of transfer.\n\nI believe same applies as above. IMHO the isolation is meant to protect the TEE from the rest of the environment, and not as a boundary.\n\n",
+          "createdAt": "2026-03-19T11:29:46Z",
+          "updatedAt": "2026-03-19T11:29:46Z"
+        },
+        {
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "body": "> > EKU addresses a specific and well-defined threat model: the TLS stack runs in the rich OS, application traffic keys are in rich OS memory, and the long-term key is protected in a secure element. Placing traffic keys in a TEE while the TLS stack runs in the rich OS is not a practical deployment model. The rich OS would need to invoke the TEE for every record encryption operation, making it both impractical at scale and ineffective.\n> \n> Is this realistic? Could you please share a link for real-world deployment of this arrangement?\n> \n> I believe TLS stack should run within the TEE. If it is outside the TEE, then it cannot be measured and thus can be manipulated. This kills the whole security argument of TEEs.\n\nThe draft makes no claims that TLS stack runs in a TEE. \n\nFor instance see, https://docs.aws.amazon.com/cloudhsm/latest/userguide/ssl-offload-overview.html https://docs.paloaltonetworks.com/whats-new/new-features/may-2024/tlsv1-3-support-for-hsm-integration-inbound-inspection-decryption and https://developers.cloudflare.com/ssl/keyless-ssl/hardware-security-modules/\n\n> \n> > Further, simply copying the keys from the rich OS into the TEE would expose them to both environments, defeating the purpose of the isolation, since the rich OS would still have had access to them at the point of transfer.\n> \n> I believe same applies as above. IMHO the isolation is meant to protect the TEE from the rest of the environment, and not as a boundary.\n\nTLS has been deployed for decades with the private key protected in an HSM/secure element and the TLS stack running in the rich OS. This is the foundational deployment model that predates confidential computing entirely. Confidential computing is a relatively recent addition to the security landscape. TLS and HSMs have coexisted in this exact split architecture for several years.\n\n\n\n\n",
+          "createdAt": "2026-03-19T13:49:20Z",
+          "updatedAt": "2026-03-19T13:49:20Z"
+        },
+        {
+          "author": "muhammad-usama-sardar",
+          "authorAssociation": "COLLABORATOR",
+          "body": "I am not sure why you are talking about **HSMs**. My [issue](https://github.com/tlswg/tls-key-update/issues/100#issue-4061024487) is very clearly about **TEEs**. So please don't mention irrelevant things and links. Let's be focused on the main issue.\n\n> > > EKU addresses a specific and well-defined threat model: the TLS stack runs in the rich OS, application traffic keys are in rich OS memory, and the long-term key is protected in a secure element. Placing traffic keys in a TEE while the TLS stack runs in the rich OS is not a practical deployment model. The rich OS would need to invoke the TEE for every record encryption operation, making it both impractical at scale and ineffective.\n> > \n> > \n> > Is this realistic? Could you please share a link for real-world deployment of this arrangement?\n> > I believe TLS stack should run within the TEE. If it is outside the TEE, then it cannot be measured and thus can be manipulated. This kills the whole security argument of TEEs.\n> \n> The draft makes no claims that TLS stack runs in a TEE.\n\n\nAll examples you are giving here are from **HSM**. My question was about **TEE**. You do mention TEE in the [draft](https://www.ietf.org/archive/id/draft-ietf-tls-extended-key-update-11.html#section-12.1):\n\n> The procedure itself does not rely on long-\n>    term private keys; those are assumed to remain secure, as they are\n>    typically stored in a secure element, such as a **Trusted Execution**\n>    **Environment (TEE)**, Hardware Security Module (HSM), or Trusted\n>    Platform Module (TPM).\n> \n\n---\n> \n> For instance see, https://docs.aws.amazon.com/cloudhsm/latest/userguide/ssl-offload-overview.html \n\n\nQuoting from above ref:\n> As part of this process, the server offloads some of the cryptographic processing to the **HSMs** in the AWS CloudHSM cluster\n\n---\n> https://docs.paloaltonetworks.com/whats-new/new-features/may-2024/tlsv1-3-support-for-hsm-integration-inbound-inspection-decryption\n\nQuoting from above ref:\n> PAN-OS 11.2 resolves this issue by adding support for inbound inspection of TLSv1.3 sessions when private keys are protected by an **HSM**.\n\n---\n>  and https://developers.cloudflare.com/ssl/keyless-ssl/hardware-security-modules/\n\nQuoting from above ref:\n> In addition to private keys stored on disk, Keyless SSL supports keys stored in a **Hardware Security Module (HSM)** via the PKCS#11 standard.\n\n---\n> > > Further, simply copying the keys from the rich OS into the TEE would expose them to both environments, defeating the purpose of the isolation, since the rich OS would still have had access to them at the point of transfer.\n> > \n> > \n> > I believe same applies as above. IMHO the isolation is meant to protect the TEE from the rest of the environment, and not as a boundary.\n> \n> TLS has been deployed for decades with the private key protected in an **HSM/secure element** and the TLS stack running in the rich OS. This is the foundational deployment model that predates confidential computing entirely. Confidential computing is a relatively recent addition to the security landscape. TLS and HSMs have coexisted in this exact split architecture for several years.\n\nNeither HSM nor secure element is my concern. Please focus on the issue.",
+          "createdAt": "2026-03-19T16:08:53Z",
+          "updatedAt": "2026-03-19T16:08:53Z"
+        },
+        {
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "body": "You may want to look into https://www.amongbytes.com/posts/20210112-optee-openssl-engine/20210112-optee-openssl-engine.html. \n\nI would like to clarify that the mention of TEE, HSM and TPM is illustrative of common secure storage and compute options to generate signatures using long-term private key, not a claim about any specific deployment architecture.",
+          "createdAt": "2026-03-20T02:24:05Z",
+          "updatedAt": "2026-03-20T02:24:05Z"
+        },
+        {
+          "author": "muhammad-usama-sardar",
+          "authorAssociation": "COLLABORATOR",
+          "body": "> You may want to look into https://www.amongbytes.com/posts/20210112-optee-openssl-engine/20210112-optee-openssl-engine.html.\n> \n\nWhether Arm TrustZone itself is a TEE is debatable. Most folks in the Confidential Computing community (e.g., Confidential Computing Consortium) deny Arm TrustZone being a TEE. Do you have an example with Intel SGX, Intel TDX, AMD SEV-SNP, Arm CCA etc.?\n\n> I would like to clarify that the mention of TEE, HSM and TPM is illustrative of common secure storage and compute options to generate signatures using long-term private key, not a claim about any specific deployment architecture.\n\nFair point. But if you want to mention TEE, please justify it. ",
+          "createdAt": "2026-03-20T05:14:29Z",
+          "updatedAt": "2026-03-20T05:14:29Z"
+        },
+        {
+          "author": "ekr",
+          "authorAssociation": "NONE",
+          "body": "I would actually strike this text entirely, as I don't think it's true that private keys are *typically* stored in TEEs. In fact, in my experience they are typically *not* stored in TEEs. It's potentially still the case that there is some benefit for EKU in this case, so I don't think we need TEEs to justify it. You could also say it \"could\" be stored in a TEE.",
+          "createdAt": "2026-03-20T05:20:06Z",
+          "updatedAt": "2026-03-20T05:20:06Z"
+        },
+        {
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "body": "Thanks @ekr for the suggestion. I will update the text as follows:\n\nThe procedure itself does not rely on long-term private keys; those are assumed to remain secure, as they are typically stored in a secure element, such as a Hardware Security Module (HSM) or Trusted Platform Module (TPM), or could be stored in a Trusted Execution Environment (TEE).",
+          "createdAt": "2026-03-20T05:33:38Z",
+          "updatedAt": "2026-03-20T05:33:38Z"
+        },
+        {
+          "author": "ekr",
+          "authorAssociation": "NONE",
+          "body": "Sorry, my point is that they are typically not in *any* secure storage.\n\n",
+          "createdAt": "2026-03-20T05:38:57Z",
+          "updatedAt": "2026-03-20T05:38:57Z"
+        },
+        {
+          "author": "muhammad-usama-sardar",
+          "authorAssociation": "COLLABORATOR",
+          "body": "> I would actually strike this text entirely, as I don't think it's true that private keys are typically stored in TEEs. In fact, in my experience they are typically not stored in TEEs. It's potentially still the case that there is some benefit for EKU in this case, so I don't think we need TEEs to justify it. You could also say it \"could\" be stored in a TEE.\n\nCompletely removing TEE and not implying it implicitly anywhere will resolve this specific issue. \n\nBut the threat model still needs justification. Why are traffic keys more vulnerable than the private key?",
+          "createdAt": "2026-03-20T05:53:23Z",
+          "updatedAt": "2026-03-20T05:53:23Z"
+        },
+        {
+          "author": "ekr",
+          "authorAssociation": "NONE",
+          "body": "I don't think there is a problem with having TEEs in the same sentence here. It's not an unreasonable deployment model to have the signing keys in the TEE and the traffic keys elsewhere. Really all that needs to be fixed is the factual claim that those keys are *typically* in secure storage. Rather, you can say that they sometimes are and that this mechanism provides value in that case.\n",
+          "createdAt": "2026-03-20T06:02:01Z",
+          "updatedAt": "2026-03-20T06:02:01Z"
+        },
+        {
+          "author": "muhammad-usama-sardar",
+          "authorAssociation": "COLLABORATOR",
+          "body": "> It's not an unreasonable deployment model to have the signing keys in the TEE and the traffic keys elsewhere. \n\nOut of curisoty, do you have a pointer for me? I haven't seen that and I suspect we don't have the same definition of TEE in mind.\n\n> Really all that needs to be fixed is the factual claim that those keys are _typically_ in secure storage. Rather, you can say that they sometimes are and that this mechanism provides value in that case.\n\nThat works for me.",
+          "createdAt": "2026-03-20T08:36:50Z",
+          "updatedAt": "2026-03-20T08:36:50Z"
+        }
+      ]
     },
     {
       "number": 101,
@@ -1306,6 +1398,22 @@
       "body": "Please address IANA early review comments; see [message](https://mailarchive.ietf.org/arch/msg/tls/dwKgSKZZdjaS2fOcY4EP90IJzoQ/).",
       "createdAt": "2026-03-16T23:04:27Z",
       "updatedAt": "2026-03-16T23:04:27Z",
+      "closedAt": null,
+      "comments": []
+    },
+    {
+      "number": 105,
+      "id": "I_kwDOMJPqLM70xQPV",
+      "title": "Suggest renaming new_key_update",
+      "url": "https://github.com/tlswg/tls-key-update/issues/105",
+      "state": "OPEN",
+      "author": "davidben",
+      "authorAssociation": "NONE",
+      "assignees": [],
+      "labels": [],
+      "body": "This is the most minor of minor comments, but now that we're down to three messages, `new_key_update` is a little odd of a name. `key_update_response` is also a key-applying message.\n\nPerhaps `key_update_finish` or so? Matches the naming scheme of the other key, and captures that this finishes the transaction.",
+      "createdAt": "2026-03-20T08:21:23Z",
+      "updatedAt": "2026-03-20T08:21:23Z",
       "closedAt": null,
       "comments": []
     }
@@ -9247,24 +9355,26 @@
       "id": "PR_kwDOMJPqLM7Li5jq",
       "title": "Editorial Changes",
       "url": "https://github.com/tlswg/tls-key-update/pull/102",
-      "state": "OPEN",
+      "state": "MERGED",
       "author": "hannestschofenig",
       "authorAssociation": "COLLABORATOR",
       "assignees": [],
       "labels": [],
       "body": "After reading the entire document again I noticed some minor editorial glitches, including redundant text, missing articles, too long sentence, etc. In this PR I made a few changes.\r\n\r\nThe PQC section is a bit weak as well but I have not managed to re-work it. Maybe someone of you has an idea on how we could improve the text.",
       "createdAt": "2026-03-18T13:33:15Z",
-      "updatedAt": "2026-03-19T01:52:41Z",
+      "updatedAt": "2026-03-19T08:04:31Z",
       "baseRepository": "tlswg/tls-key-update",
       "baseRefName": "main",
-      "baseRefOid": "d06056003b1784bdb34c97471a6ba38ec4a079ac",
+      "baseRefOid": "d25345af2c78fc7e0102754024dfe9ab33b89bbb",
       "headRepository": "tlswg/tls-key-update",
       "headRefName": "hannestschofenig-patch-6",
-      "headRefOid": "4c44f77365adaa3ffcf6df103fdc2cd5c3abdcc0",
-      "closedAt": null,
-      "mergedAt": null,
-      "mergedBy": null,
-      "mergeCommit": null,
+      "headRefOid": "078532b80a0890f58b75589de5753b06a22ea43a",
+      "closedAt": "2026-03-19T08:04:30Z",
+      "mergedAt": "2026-03-19T08:04:30Z",
+      "mergedBy": "tireddy2",
+      "mergeCommit": {
+        "oid": "bdaeac8c6faa5007791bfed35d93c578eba569bc"
+      },
       "comments": [],
       "reviews": [
         {
@@ -9392,6 +9502,26 @@
           "createdAt": "2026-03-19T01:52:41Z",
           "updatedAt": "2026-03-19T01:52:41Z",
           "comments": []
+        },
+        {
+          "id": "PRR_kwDOMJPqLM7s0K67",
+          "commit": {
+            "abbreviatedOid": "4c44f77"
+          },
+          "author": "hannestschofenig",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2026-03-19T06:23:09Z",
+          "updatedAt": "2026-03-19T06:23:09Z",
+          "comments": [
+            {
+              "originalPosition": 51,
+              "body": "Added this sentence",
+              "createdAt": "2026-03-19T06:23:09Z",
+              "updatedAt": "2026-03-19T06:23:09Z"
+            }
+          ]
         }
       ]
     },
@@ -9400,24 +9530,26 @@
       "id": "PR_kwDOMJPqLM7Li5s3",
       "title": "Updated introduction",
       "url": "https://github.com/tlswg/tls-key-update/pull/103",
-      "state": "OPEN",
+      "state": "MERGED",
       "author": "hannestschofenig",
       "authorAssociation": "COLLABORATOR",
       "assignees": [],
       "labels": [],
       "body": "After re-reading the introduction I though that the PQC aspect did not receive enough attention in the introduction. So, I made some minor wording changes.",
       "createdAt": "2026-03-18T13:33:24Z",
-      "updatedAt": "2026-03-19T02:30:07Z",
+      "updatedAt": "2026-03-19T07:27:14Z",
       "baseRepository": "tlswg/tls-key-update",
       "baseRefName": "main",
       "baseRefOid": "d06056003b1784bdb34c97471a6ba38ec4a079ac",
       "headRepository": "tlswg/tls-key-update",
       "headRefName": "intro-update",
-      "headRefOid": "4416093ec7438843975606292577cabbf875cf77",
-      "closedAt": null,
-      "mergedAt": null,
-      "mergedBy": null,
-      "mergeCommit": null,
+      "headRefOid": "b1a3a05dc7f2367a193cbfcec73057be47a380b3",
+      "closedAt": "2026-03-19T07:27:14Z",
+      "mergedAt": "2026-03-19T07:27:14Z",
+      "mergedBy": "tireddy2",
+      "mergeCommit": {
+        "oid": "d25345af2c78fc7e0102754024dfe9ab33b89bbb"
+      },
       "comments": [],
       "reviews": [
         {
@@ -9657,6 +9789,89 @@
           "body": "",
           "createdAt": "2026-03-19T02:30:07Z",
           "updatedAt": "2026-03-19T02:30:07Z",
+          "comments": []
+        },
+        {
+          "id": "PRR_kwDOMJPqLM7s0NOR",
+          "commit": {
+            "abbreviatedOid": "973c9aa"
+          },
+          "author": "hannestschofenig",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2026-03-19T06:26:39Z",
+          "updatedAt": "2026-03-19T06:26:39Z",
+          "comments": [
+            {
+              "originalPosition": 44,
+              "body": "```suggestion\nnew traffic keys that are independent of main secrets from prior epochs. As noted in\n```",
+              "createdAt": "2026-03-19T06:26:39Z",
+              "updatedAt": "2026-03-19T06:26:39Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM7s05t5",
+          "commit": {
+            "abbreviatedOid": "b1a3a05"
+          },
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "state": "APPROVED",
+          "body": "",
+          "createdAt": "2026-03-19T07:22:12Z",
+          "updatedAt": "2026-03-19T07:22:12Z",
+          "comments": []
+        }
+      ]
+    },
+    {
+      "number": 104,
+      "id": "PR_kwDOMJPqLM7L2PH3",
+      "title": "Address IANA",
+      "url": "https://github.com/tlswg/tls-key-update/pull/104",
+      "state": "MERGED",
+      "author": "tireddy2",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [],
+      "body": "",
+      "createdAt": "2026-03-19T13:09:32Z",
+      "updatedAt": "2026-03-20T11:32:43Z",
+      "baseRepository": "tlswg/tls-key-update",
+      "baseRefName": "main",
+      "baseRefOid": "bdaeac8c6faa5007791bfed35d93c578eba569bc",
+      "headRepository": "tlswg/tls-key-update",
+      "headRefName": "tireddy2-patch-15",
+      "headRefOid": "440b87d11a927fa875cd5c6f6ca6671374c42171",
+      "closedAt": "2026-03-20T11:32:40Z",
+      "mergedAt": "2026-03-20T11:32:40Z",
+      "mergedBy": "hannestschofenig",
+      "mergeCommit": {
+        "oid": "dd939c85e10c435eae712dc45e2adc12fb017afe"
+      },
+      "comments": [
+        {
+          "author": "seanturner",
+          "authorAssociation": "CONTRIBUTOR",
+          "body": "Closes #101.",
+          "createdAt": "2026-03-19T23:46:03Z",
+          "updatedAt": "2026-03-19T23:46:03Z"
+        }
+      ],
+      "reviews": [
+        {
+          "id": "PRR_kwDOMJPqLM7tSP77",
+          "commit": {
+            "abbreviatedOid": "440b87d"
+          },
+          "author": "hannestschofenig",
+          "authorAssociation": "COLLABORATOR",
+          "state": "APPROVED",
+          "body": "Thanks for picking this issue up.",
+          "createdAt": "2026-03-20T11:32:34Z",
+          "updatedAt": "2026-03-20T11:32:34Z",
           "comments": []
         }
       ]
