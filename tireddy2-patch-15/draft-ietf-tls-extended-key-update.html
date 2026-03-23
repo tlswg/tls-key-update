@@ -2062,16 +2062,16 @@ defined in <span>[<a href="#TLS" class="cite xref">TLS</a>]</span>.<a href="#sec
 <p id="section-7-14">EKU provides post-compromise recovery for the TLS connection in which it is performed.
 The recovery guarantees depend on the assumed compromise model. In typical deployment
 environments, PSKs established via the NewSessionTicket mechanism are generated and
-stored in memory within the main operating system, and compromise of endpoint memory
-reveals such PSKs. These PSKs are sufficient to establish new authenticated TLS
-connections. Even if an implementation invalidates previously issued PSKs upon
-completion of the EKU exchange, an attacker that has already obtained such a PSK may
-initiate and complete a resumed session prior to that invalidation. In such
-environments, EKU does not prevent the use of previously issued PSKs.<a href="#section-7-14" class="pilcrow">¶</a></p>
+reside in memory within the main operating system. Although such PSKs may subsequently
+be stored in secure storage, they are exposed during this initial processing window,
+and compromise of endpoint memory during this period is sufficient to reveal them.
+Consequently, later protection using secure storage does not prevent their prior
+compromise. These PSKs are sufficient to establish new authenticated TLS connections. Even if an implementation invalidates previously issued PSKs upon completion of the
+EKU exchange, an attacker that has already obtained such a PSK may initiate and
+complete a resumed session prior to that invalidation. In such environments, EKU does
+not prevent the use of previously issued PSKs.<a href="#section-7-14" class="pilcrow">¶</a></p>
 <p id="section-7-15">Accordingly, endpoints that enable EKU <span class="bcp14">MUST</span> disable resumption using PSKs established
 via the NewSessionTicket mechanism.<a href="#section-7-15" class="pilcrow">¶</a></p>
-<p id="section-7-16">Deployments that protect PSKs using secure storage <span class="bcp14">MUST</span> also follow this requirement,
-in order to avoid complexity and ensure a consistent security model.<a href="#section-7-16" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="post-quantum-cryptography-considerations">

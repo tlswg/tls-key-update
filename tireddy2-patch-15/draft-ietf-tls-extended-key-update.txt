@@ -790,21 +790,20 @@ Table of Contents
    it is performed.  The recovery guarantees depend on the assumed
    compromise model.  In typical deployment environments, PSKs
    established via the NewSessionTicket mechanism are generated and
-   stored in memory within the main operating system, and compromise of
-   endpoint memory reveals such PSKs.  These PSKs are sufficient to
-   establish new authenticated TLS connections.  Even if an
-   implementation invalidates previously issued PSKs upon completion of
-   the EKU exchange, an attacker that has already obtained such a PSK
-   may initiate and complete a resumed session prior to that
-   invalidation.  In such environments, EKU does not prevent the use of
-   previously issued PSKs.
+   reside in memory within the main operating system.  Although such
+   PSKs may subsequently be stored in secure storage, they are exposed
+   during this initial processing window, and compromise of endpoint
+   memory during this period is sufficient to reveal them.
+   Consequently, later protection using secure storage does not prevent
+   their prior compromise.  These PSKs are sufficient to establish new
+   authenticated TLS connections.  Even if an implementation invalidates
+   previously issued PSKs upon completion of the EKU exchange, an
+   attacker that has already obtained such a PSK may initiate and
+   complete a resumed session prior to that invalidation.  In such
+   environments, EKU does not prevent the use of previously issued PSKs.
 
    Accordingly, endpoints that enable EKU MUST disable resumption using
    PSKs established via the NewSessionTicket mechanism.
-
-   Deployments that protect PSKs using secure storage MUST also follow
-   this requirement, in order to avoid complexity and ensure a
-   consistent security model.
 
 8.  Post-Quantum Cryptography Considerations
 
