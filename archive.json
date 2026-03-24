@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2026-03-22T02:37:48.632314+00:00",
+  "timestamp": "2026-03-24T02:29:45.767042+00:00",
   "repo": "tlswg/tls-key-update",
   "labels": [
     {
@@ -1188,15 +1188,15 @@
       "id": "I_kwDOMJPqLM7jSimq",
       "title": "Stronger PCS",
       "url": "https://github.com/tlswg/tls-key-update/issues/94",
-      "state": "OPEN",
+      "state": "CLOSED",
       "author": "yaronf",
       "authorAssociation": "NONE",
       "assignees": [],
       "labels": [],
       "body": "This may have been discussed/rejected at the TLS WG, if so let me know.\n\nThe document mentions an attack on PCS where an attacker breaches one of the peers and then acts as a MITM. And this can be mitigated by some post-handshake mechanisms.\n\nHowever, I think there's inherent value to EKU even in \"normal\" TLS environments where none of these mechanisms are deployed.\n\nI believe if you added a CertificateVerify-like message coming from the server in message 2 (`EKU(key_update_response`), this would address 99% of the normal TLS use cases, where the server is authenticated by a cert, prevent the MITM attack and provide full PCS.\n\nAnd yes, this does require a formal proof.",
       "createdAt": "2026-01-14T13:47:54Z",
-      "updatedAt": "2026-01-20T13:15:24Z",
-      "closedAt": null,
+      "updatedAt": "2026-03-23T09:54:43Z",
+      "closedAt": "2026-03-23T09:54:43Z",
       "comments": [
         {
           "author": "yaroslavros",
@@ -1274,6 +1274,13 @@
           "body": "> New IKE_SA is not a new tunnel. Re-establishing TLS is much more disruptive than building a new SA and migrating to it. Many IKEv2 implementations support transparent periodic re-authentication in this way, but I am yet to see a TLS 1.3 based VPN solution that would implement a similar capability with transparent re-establishment of TLS session.\n\nIn IKEv2, re-authentication always creates a new IKE_SA with fresh key exchange and authentication, while re-keying creates new SAs with fresh keys but without repeating authentication. TLS 1.3 based VPN solution can rely on EKU + RFC9261 would achieve PCS + periodic re-authentication.",
           "createdAt": "2026-01-20T13:15:24Z",
           "updatedAt": "2026-01-20T13:15:24Z"
+        },
+        {
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "body": "t was discussed at the IETF 125 meeting that mandatory authentication following EKU will be addressed in a separate draft. This draft already leverages RFC 9261 and post-handshake client authentication. \n\nI am closing this issue. ",
+          "createdAt": "2026-03-23T09:54:43Z",
+          "updatedAt": "2026-03-23T09:54:43Z"
         }
       ]
     },
@@ -1390,15 +1397,15 @@
       "id": "I_kwDOMJPqLM7zf_zf",
       "title": "Address IANA Early Review",
       "url": "https://github.com/tlswg/tls-key-update/issues/101",
-      "state": "OPEN",
+      "state": "CLOSED",
       "author": "seanturner",
       "authorAssociation": "CONTRIBUTOR",
       "assignees": [],
       "labels": [],
       "body": "Please address IANA early review comments; see [message](https://mailarchive.ietf.org/arch/msg/tls/dwKgSKZZdjaS2fOcY4EP90IJzoQ/).",
       "createdAt": "2026-03-16T23:04:27Z",
-      "updatedAt": "2026-03-16T23:04:27Z",
-      "closedAt": null,
+      "updatedAt": "2026-03-22T12:21:25Z",
+      "closedAt": "2026-03-22T12:21:25Z",
       "comments": []
     },
     {
@@ -1406,14 +1413,30 @@
       "id": "I_kwDOMJPqLM70xQPV",
       "title": "Suggest renaming new_key_update",
       "url": "https://github.com/tlswg/tls-key-update/issues/105",
-      "state": "OPEN",
+      "state": "CLOSED",
       "author": "davidben",
       "authorAssociation": "NONE",
       "assignees": [],
       "labels": [],
       "body": "This is the most minor of minor comments, but now that we're down to three messages, `new_key_update` is a little odd of a name. `key_update_response` is also a key-applying message.\n\nPerhaps `key_update_finish` or so? Matches the naming scheme of the other key, and captures that this finishes the transaction.",
       "createdAt": "2026-03-20T08:21:23Z",
-      "updatedAt": "2026-03-20T08:21:23Z",
+      "updatedAt": "2026-03-23T09:42:43Z",
+      "closedAt": "2026-03-23T09:42:43Z",
+      "comments": []
+    },
+    {
+      "number": 108,
+      "id": "I_kwDOMJPqLM71U793",
+      "title": "Disable Tickets",
+      "url": "https://github.com/tlswg/tls-key-update/issues/108",
+      "state": "OPEN",
+      "author": "hannestschofenig",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [],
+      "body": "Suggestion: Disable tickets when this extension is negotiated.\n\nReason: Unnecessary complexity for unknown use cases.",
+      "createdAt": "2026-03-22T12:36:30Z",
+      "updatedAt": "2026-03-22T12:36:30Z",
       "closedAt": null,
       "comments": []
     }
@@ -9537,7 +9560,7 @@
       "labels": [],
       "body": "After re-reading the introduction I though that the PQC aspect did not receive enough attention in the introduction. So, I made some minor wording changes.",
       "createdAt": "2026-03-18T13:33:24Z",
-      "updatedAt": "2026-03-19T07:27:14Z",
+      "updatedAt": "2026-03-22T12:20:57Z",
       "baseRepository": "tlswg/tls-key-update",
       "baseRefName": "main",
       "baseRefOid": "d06056003b1784bdb34c97471a6ba38ec4a079ac",
@@ -9875,6 +9898,149 @@
           "comments": []
         }
       ]
+    },
+    {
+      "number": 106,
+      "id": "PR_kwDOMJPqLM7Me44G",
+      "title": "Removed mention of TEE",
+      "url": "https://github.com/tlswg/tls-key-update/pull/106",
+      "state": "OPEN",
+      "author": "hannestschofenig",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [],
+      "body": "",
+      "createdAt": "2026-03-22T12:24:06Z",
+      "updatedAt": "2026-03-23T20:24:50Z",
+      "baseRepository": "tlswg/tls-key-update",
+      "baseRefName": "main",
+      "baseRefOid": "dd939c85e10c435eae712dc45e2adc12fb017afe",
+      "headRepository": "tlswg/tls-key-update",
+      "headRefName": "hannestschofenig-patch-7",
+      "headRefOid": "4550bf9e16ea3fe731a8a59725eeb9d057be0501",
+      "closedAt": null,
+      "mergedAt": null,
+      "mergedBy": null,
+      "mergeCommit": null,
+      "comments": [
+        {
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "body": "Addresses https://github.com/tlswg/tls-key-update/pull/106 ",
+          "createdAt": "2026-03-23T09:55:32Z",
+          "updatedAt": "2026-03-23T09:55:32Z"
+        },
+        {
+          "author": "seanturner",
+          "authorAssociation": "CONTRIBUTOR",
+          "body": "@tireddy2 is that 100 not 106?",
+          "createdAt": "2026-03-23T20:24:50Z",
+          "updatedAt": "2026-03-23T20:24:50Z"
+        }
+      ],
+      "reviews": [
+        {
+          "id": "PRR_kwDOMJPqLM7t2tyV",
+          "commit": {
+            "abbreviatedOid": "4550bf9"
+          },
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2026-03-23T09:52:52Z",
+          "updatedAt": "2026-03-23T09:52:53Z",
+          "comments": [
+            {
+              "originalPosition": 8,
+              "body": "I am thinking of adding more details, see if the below revised text makes sense:\n\nThe procedure itself does not rely on long-term private keys. They may be stored in a secure element, such as a Hardware Security Module (HSM or may reside in the main operating system. Two threat vectors are relevant here. In the first, the long-term private key remains secure while application traffic keys in the main OS are transiently compromised, EKU addresses this case for the current TLS connection. In the second, the long-term private key is itself compromised, in this case, the current TLS connection is still protected by EKU, but all future TLS connections are at risk since the attacker can impersonate the server using the stolen private key. \n",
+              "createdAt": "2026-03-23T09:52:53Z",
+              "updatedAt": "2026-03-23T09:53:07Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM7t2vJM",
+          "commit": {
+            "abbreviatedOid": "4550bf9"
+          },
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "Proposed updated text to discuss the threat model. ",
+          "createdAt": "2026-03-23T09:53:49Z",
+          "updatedAt": "2026-03-23T09:53:49Z",
+          "comments": []
+        }
+      ]
+    },
+    {
+      "number": 107,
+      "id": "PR_kwDOMJPqLM7Me7Hr",
+      "title": "Rename new_key_update to key_update_finish",
+      "url": "https://github.com/tlswg/tls-key-update/pull/107",
+      "state": "MERGED",
+      "author": "hannestschofenig",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [],
+      "body": "Based on https://github.com/tlswg/tls-key-update/issues/105",
+      "createdAt": "2026-03-22T12:33:11Z",
+      "updatedAt": "2026-03-23T08:43:45Z",
+      "baseRepository": "tlswg/tls-key-update",
+      "baseRefName": "main",
+      "baseRefOid": "dd939c85e10c435eae712dc45e2adc12fb017afe",
+      "headRepository": "tlswg/tls-key-update",
+      "headRefName": "hannestschofenig-patch-8",
+      "headRefOid": "7727507c58f9a20943dee96b68ec6973b0eff981",
+      "closedAt": "2026-03-23T08:43:45Z",
+      "mergedAt": "2026-03-23T08:43:45Z",
+      "mergedBy": "tireddy2",
+      "mergeCommit": {
+        "oid": "59185c9fc4eed618a2734e881d8f7cf37dec317c"
+      },
+      "comments": [],
+      "reviews": [
+        {
+          "id": "PRR_kwDOMJPqLM7t1NH4",
+          "commit": {
+            "abbreviatedOid": "7727507"
+          },
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "state": "APPROVED",
+          "body": "",
+          "createdAt": "2026-03-23T08:43:31Z",
+          "updatedAt": "2026-03-23T08:43:31Z",
+          "comments": []
+        }
+      ]
+    },
+    {
+      "number": 109,
+      "id": "PR_kwDOMJPqLM7Mo9td",
+      "title": "Update to disable PSKs",
+      "url": "https://github.com/tlswg/tls-key-update/pull/109",
+      "state": "OPEN",
+      "author": "tireddy2",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [],
+      "body": "https://github.com/tlswg/tls-key-update/issues/108",
+      "createdAt": "2026-03-23T10:35:14Z",
+      "updatedAt": "2026-03-23T10:36:20Z",
+      "baseRepository": "tlswg/tls-key-update",
+      "baseRefName": "main",
+      "baseRefOid": "59185c9fc4eed618a2734e881d8f7cf37dec317c",
+      "headRepository": "tlswg/tls-key-update",
+      "headRefName": "tireddy2-patch-15",
+      "headRefOid": "93db67e854bd7b0f31f4eb053ec7e237bbf4c09a",
+      "closedAt": null,
+      "mergedAt": null,
+      "mergedBy": null,
+      "mergeCommit": null,
+      "comments": [],
+      "reviews": []
     }
   ]
 }
