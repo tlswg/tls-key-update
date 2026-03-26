@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2026-03-24T02:29:45.767042+00:00",
+  "timestamp": "2026-03-26T02:41:49.674134+00:00",
   "repo": "tlswg/tls-key-update",
   "labels": [
     {
@@ -1454,7 +1454,7 @@
       "labels": [],
       "body": "",
       "createdAt": "2024-07-04T18:23:11Z",
-      "updatedAt": "2024-07-06T08:16:10Z",
+      "updatedAt": "2026-03-25T05:53:58Z",
       "baseRepository": "tlswg/tls-key-update",
       "baseRefName": "main",
       "baseRefOid": "b39ead032117c5749ba065e717e2f17e815b47d5",
@@ -9911,7 +9911,7 @@
       "labels": [],
       "body": "",
       "createdAt": "2026-03-22T12:24:06Z",
-      "updatedAt": "2026-03-23T20:24:50Z",
+      "updatedAt": "2026-03-24T05:02:49Z",
       "baseRepository": "tlswg/tls-key-update",
       "baseRefName": "main",
       "baseRefOid": "dd939c85e10c435eae712dc45e2adc12fb017afe",
@@ -9926,9 +9926,9 @@
         {
           "author": "tireddy2",
           "authorAssociation": "COLLABORATOR",
-          "body": "Addresses https://github.com/tlswg/tls-key-update/pull/106 ",
+          "body": "Addresses https://github.com/tlswg/tls-key-update/issues/100",
           "createdAt": "2026-03-23T09:55:32Z",
-          "updatedAt": "2026-03-23T09:55:32Z"
+          "updatedAt": "2026-03-24T05:02:36Z"
         },
         {
           "author": "seanturner",
@@ -9936,6 +9936,13 @@
           "body": "@tireddy2 is that 100 not 106?",
           "createdAt": "2026-03-23T20:24:50Z",
           "updatedAt": "2026-03-23T20:24:50Z"
+        },
+        {
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "body": "> @tireddy2 is that 100 not 106?\r\n\r\nThanks, fixed. ",
+          "createdAt": "2026-03-24T05:02:49Z",
+          "updatedAt": "2026-03-24T05:02:49Z"
         }
       ],
       "reviews": [
