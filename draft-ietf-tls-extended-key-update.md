@@ -978,15 +978,21 @@ This section discusses additional security and operational aspects introduced by
 
 ## Scope of Key Compromise {#scope}
 
-Extended Key Update assumes a transient compromise of the current application
-traffic keys, not a persistent attacker with ongoing access to key material.
-The procedure itself does not rely on long-term private keys; those are assumed
-to remain secure, as they are typically stored in a hardware security module.
-In contrast, application traffic
-keys are stored within the rich operating system, where short-term exposure due
-to memory disclosure or transient compromise may occur. Post-compromise security
-can be re-established, provided the compromise is no longer active when an
-Extended Key Update is performed.
+Extended Key Update (EKU) assumes a transient compromise of the current application
+traffic keys, rather than a persistent attacker with ongoing access to key material.
+The EKU procedure does not rely on long-term private keys, which may be stored in a
+secure element (e.g., a Hardware Security Module (HSM)) or within the rich OS.
+
+Two threat scenarios are relevant:
+
+1. The long-term private key remains secure, while application traffic keys in the
+rich operating system are temporarily exposed. EKU addresses this case for the current
+TLS connection.
+
+2. If the long-term private key in the rich OS is compromised, EKU can still protect
+the current TLS connection by updating traffic keys. However, all future TLS
+connections are at risk, as the attacker can impersonate the endpoint using the stolen
+private key.
 
 Extended Key Update can restore confidentiality only if the attacker no longer
 has access to either peer. If an adversary retains access to current application traffic
