@@ -988,9 +988,8 @@ This section discusses additional security and operational aspects introduced by
 Extended Key Update assumes a transient compromise of the current application
 traffic keys, not a persistent attacker with ongoing access to key material.
 The procedure itself does not rely on long-term private keys; those are assumed
-to remain secure, as they are typically stored in a secure element, such as a
-Trusted Execution Environment (TEE), Hardware Security Module (HSM),
-or Trusted Platform Module (TPM). In contrast, application traffic
+to remain secure, as they are typically stored in a hardware security module.
+In contrast, application traffic
 keys are stored within the rich operating system, where short-term exposure due
 to memory disclosure or transient compromise may occur. Post-compromise security
 can be re-established, provided the compromise is no longer active when an
