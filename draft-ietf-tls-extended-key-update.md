@@ -722,7 +722,7 @@ defined in {{TLS}}.
 EKU provides post-compromise recovery for the TLS connection in which it is performed.
 The recovery guarantees depend on the assumed compromise model. In typical deployment
 environments, PSKs established via the NewSessionTicket mechanism are generated and
-reside in memory within the main operating system. Although such PSKs may subsequently
+reside in memory within the rich operating system. Although such PSKs may subsequently
 be stored in secure storage, they are exposed during this initial processing window,
 and compromise of endpoint memory during this period is sufficient to reveal them.
 Consequently, later protection using secure storage does not prevent their prior
