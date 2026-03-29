@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2026-03-26T02:41:49.674134+00:00",
+  "timestamp": "2026-03-29T02:47:58.244474+00:00",
   "repo": "tlswg/tls-key-update",
   "labels": [
     {
@@ -9904,24 +9904,26 @@
       "id": "PR_kwDOMJPqLM7Me44G",
       "title": "Removed mention of TEE",
       "url": "https://github.com/tlswg/tls-key-update/pull/106",
-      "state": "OPEN",
+      "state": "MERGED",
       "author": "hannestschofenig",
       "authorAssociation": "COLLABORATOR",
       "assignees": [],
       "labels": [],
       "body": "",
       "createdAt": "2026-03-22T12:24:06Z",
-      "updatedAt": "2026-03-24T05:02:49Z",
+      "updatedAt": "2026-03-27T06:48:19Z",
       "baseRepository": "tlswg/tls-key-update",
       "baseRefName": "main",
       "baseRefOid": "dd939c85e10c435eae712dc45e2adc12fb017afe",
       "headRepository": "tlswg/tls-key-update",
       "headRefName": "hannestschofenig-patch-7",
       "headRefOid": "4550bf9e16ea3fe731a8a59725eeb9d057be0501",
-      "closedAt": null,
-      "mergedAt": null,
-      "mergedBy": null,
-      "mergeCommit": null,
+      "closedAt": "2026-03-27T06:48:19Z",
+      "mergedAt": "2026-03-27T06:48:19Z",
+      "mergedBy": "tireddy2",
+      "mergeCommit": {
+        "oid": "03b52dbbec5baf5f708d82f7c1d7291956038dae"
+      },
       "comments": [
         {
           "author": "tireddy2",
@@ -9978,6 +9980,26 @@
           "createdAt": "2026-03-23T09:53:49Z",
           "updatedAt": "2026-03-23T09:53:49Z",
           "comments": []
+        },
+        {
+          "id": "PRR_kwDOMJPqLM7vaS5W",
+          "commit": {
+            "abbreviatedOid": "4550bf9"
+          },
+          "author": "hannestschofenig",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2026-03-26T18:55:34Z",
+          "updatedAt": "2026-03-26T18:55:34Z",
+          "comments": [
+            {
+              "originalPosition": 8,
+              "body": "I am OK with the change you proposed. If you want to add more text I would suggest to create a new PR.",
+              "createdAt": "2026-03-26T18:55:34Z",
+              "updatedAt": "2026-03-26T18:55:34Z"
+            }
+          ]
         }
       ]
     },
@@ -10028,26 +10050,115 @@
       "id": "PR_kwDOMJPqLM7Mo9td",
       "title": "Update to disable PSKs",
       "url": "https://github.com/tlswg/tls-key-update/pull/109",
-      "state": "OPEN",
+      "state": "MERGED",
       "author": "tireddy2",
       "authorAssociation": "COLLABORATOR",
       "assignees": [],
       "labels": [],
       "body": "https://github.com/tlswg/tls-key-update/issues/108",
       "createdAt": "2026-03-23T10:35:14Z",
-      "updatedAt": "2026-03-23T10:36:20Z",
+      "updatedAt": "2026-03-27T08:54:50Z",
       "baseRepository": "tlswg/tls-key-update",
       "baseRefName": "main",
       "baseRefOid": "59185c9fc4eed618a2734e881d8f7cf37dec317c",
       "headRepository": "tlswg/tls-key-update",
       "headRefName": "tireddy2-patch-15",
-      "headRefOid": "93db67e854bd7b0f31f4eb053ec7e237bbf4c09a",
+      "headRefOid": "948afe16a6bef60b67fc56011271e2c2634efd28",
+      "closedAt": "2026-03-27T06:48:59Z",
+      "mergedAt": "2026-03-27T06:48:59Z",
+      "mergedBy": "tireddy2",
+      "mergeCommit": {
+        "oid": "a783ea6b5dfdcb80ac67b2453ba427dc02705305"
+      },
+      "comments": [],
+      "reviews": [
+        {
+          "id": "PRR_kwDOMJPqLM7vaVF0",
+          "commit": {
+            "abbreviatedOid": "93db67e"
+          },
+          "author": "hannestschofenig",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2026-03-26T18:56:47Z",
+          "updatedAt": "2026-03-26T18:56:48Z",
+          "comments": [
+            {
+              "originalPosition": 28,
+              "body": "```suggestion\nreside in memory within the rich operating system. Although such PSKs may subsequently\n```",
+              "createdAt": "2026-03-26T18:56:47Z",
+              "updatedAt": "2026-03-26T18:56:48Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM7vaXXO",
+          "commit": {
+            "abbreviatedOid": "93db67e"
+          },
+          "author": "hannestschofenig",
+          "authorAssociation": "COLLABORATOR",
+          "state": "APPROVED",
+          "body": "I support disabling resumption with tickets for the EKU. Thanks for the PR, Tiru",
+          "createdAt": "2026-03-26T18:57:50Z",
+          "updatedAt": "2026-03-26T18:57:50Z",
+          "comments": []
+        }
+      ]
+    },
+    {
+      "number": 110,
+      "id": "PR_kwDOMJPqLM7N9mtz",
+      "title": "Update to discuss threat model",
+      "url": "https://github.com/tlswg/tls-key-update/pull/110",
+      "state": "OPEN",
+      "author": "tireddy2",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [],
+      "body": "",
+      "createdAt": "2026-03-27T07:05:06Z",
+      "updatedAt": "2026-03-27T15:00:41Z",
+      "baseRepository": "tlswg/tls-key-update",
+      "baseRefName": "main",
+      "baseRefOid": "a783ea6b5dfdcb80ac67b2453ba427dc02705305",
+      "headRepository": "tlswg/tls-key-update",
+      "headRefName": "tireddy2-patch-16",
+      "headRefOid": "8fa0fe1bad2b6276ad9ee3e6cca9abe2751ec293",
       "closedAt": null,
       "mergedAt": null,
       "mergedBy": null,
       "mergeCommit": null,
       "comments": [],
-      "reviews": []
+      "reviews": [
+        {
+          "id": "PRR_kwDOMJPqLM7vtzjy",
+          "commit": {
+            "abbreviatedOid": "8fa0fe1"
+          },
+          "author": "stfries",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "Hi Tiru, \nthanks for the update. I have just two smaller comments included. \nBest regards\nSteffen",
+          "createdAt": "2026-03-27T14:58:24Z",
+          "updatedAt": "2026-03-27T15:00:41Z",
+          "comments": [
+            {
+              "originalPosition": 15,
+              "body": "In general I agree, as the long-term private key is not used n the EKU procedure. Nevertheless, there is an indirect relation to the long term keys as they are applied in the initial handshake and the transcript hash contains the result of using the long-term keys. \n\nProposal to replace \n\"The EKU procedure does not rely on long-term private keys,which may be stored in a secure element (e.g., a Hardware Security Module (HSM)) or within the rich OS.\"\nwith\n\"The EKU procedure does not employ long-term private keys in the update procedure. Long-term private keys may be stored in a secure element (e.g., a Hardware Security Module (HSM)) or within the rich OS. Moreover, they may be stored differently than the TLS main secret or the derived traffic secrets.\"",
+              "createdAt": "2026-03-27T14:58:25Z",
+              "updatedAt": "2026-03-27T15:00:41Z"
+            },
+            {
+              "originalPosition": 25,
+              "body": "maybe nitpicking: \n\"... the current TLS connection by updating **the main secret and** traffic keys. \"",
+              "createdAt": "2026-03-27T14:59:23Z",
+              "updatedAt": "2026-03-27T15:00:41Z"
+            }
+          ]
+        }
+      ]
     }
   ]
 }
