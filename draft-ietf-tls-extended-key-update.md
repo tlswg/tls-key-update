@@ -981,7 +981,7 @@ This section discusses additional security and operational aspects introduced by
 Extended Key Update (EKU) assumes a transient compromise of the current application
 traffic keys, rather than a persistent attacker with ongoing access to key material.
 The EKU procedure does not rely on long-term private keys, which may be stored in a
-secure element (e.g., a Hardware Security Module (HSM)) or within the rich OS.
+secure element (e.g., a Hardware Security Module (HSM)) or within the rich OS. Moreover, they may be stored differently than the main secret or the traffic keys.
 
 Two threat scenarios are relevant:
 
@@ -990,9 +990,9 @@ rich operating system are temporarily exposed. EKU addresses this case for the c
 TLS connection.
 
 2. If the long-term private key in the rich OS is compromised, EKU can still protect
-the current TLS connection by updating traffic keys. However, all future TLS
-connections are at risk, as the attacker can impersonate the endpoint using the stolen
-private key.
+the current TLS connection by updating the main secret and traffic keys. However, all
+future TLS connections are at risk, as the attacker can impersonate the endpoint using
+the stolen private key.
 
 Extended Key Update can restore confidentiality only if the attacker no longer
 has access to either peer. If an adversary retains access to current application traffic
