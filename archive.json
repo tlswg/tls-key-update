@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2026-03-29T02:47:58.244474+00:00",
+  "timestamp": "2026-03-31T02:43:32.159439+00:00",
   "repo": "tlswg/tls-key-update",
   "labels": [
     {
@@ -10119,13 +10119,13 @@
       "labels": [],
       "body": "",
       "createdAt": "2026-03-27T07:05:06Z",
-      "updatedAt": "2026-03-27T15:00:41Z",
+      "updatedAt": "2026-03-29T07:06:36Z",
       "baseRepository": "tlswg/tls-key-update",
       "baseRefName": "main",
       "baseRefOid": "a783ea6b5dfdcb80ac67b2453ba427dc02705305",
       "headRepository": "tlswg/tls-key-update",
       "headRefName": "tireddy2-patch-16",
-      "headRefOid": "8fa0fe1bad2b6276ad9ee3e6cca9abe2751ec293",
+      "headRefOid": "1e530f91589aa5d39d1df9e006db215a3a35ce7d",
       "closedAt": null,
       "mergedAt": null,
       "mergedBy": null,
@@ -10155,6 +10155,46 @@
               "body": "maybe nitpicking: \n\"... the current TLS connection by updating **the main secret and** traffic keys. \"",
               "createdAt": "2026-03-27T14:59:23Z",
               "updatedAt": "2026-03-27T15:00:41Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM7v_tEI",
+          "commit": {
+            "abbreviatedOid": "8fa0fe1"
+          },
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2026-03-29T07:06:09Z",
+          "updatedAt": "2026-03-29T07:06:09Z",
+          "comments": [
+            {
+              "originalPosition": 15,
+              "body": "Thanks, fixed. ",
+              "createdAt": "2026-03-29T07:06:09Z",
+              "updatedAt": "2026-03-29T07:06:09Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM7v_tFj",
+          "commit": {
+            "abbreviatedOid": "8fa0fe1"
+          },
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2026-03-29T07:06:17Z",
+          "updatedAt": "2026-03-29T07:06:17Z",
+          "comments": [
+            {
+              "originalPosition": 25,
+              "body": "Fixed. ",
+              "createdAt": "2026-03-29T07:06:17Z",
+              "updatedAt": "2026-03-29T07:06:17Z"
             }
           ]
         }
