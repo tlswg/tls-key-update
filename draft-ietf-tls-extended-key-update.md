@@ -981,7 +981,8 @@ This section discusses additional security and operational aspects introduced by
 Extended Key Update (EKU) assumes a transient compromise of the current application
 traffic keys, rather than a persistent attacker with ongoing access to key material.
 The EKU procedure does not rely on long-term private keys, which may be stored in a
-secure element (e.g., a Hardware Security Module (HSM)) or within the rich OS. Moreover, they may be stored differently than the main secret or the traffic keys.
+secure element (e.g., a Hardware Security Module (HSM)) or within the rich OS.
+Moreover, in security‑critical scenarios, these long‑term private keys are typically stored separately from the primary secret or the traffic keys.
 
 Two threat scenarios are relevant:
 
