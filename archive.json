@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2026-03-31T02:43:32.159439+00:00",
+  "timestamp": "2026-04-02T02:39:49.337367+00:00",
   "repo": "tlswg/tls-key-update",
   "labels": [
     {
@@ -1429,15 +1429,15 @@
       "id": "I_kwDOMJPqLM71U793",
       "title": "Disable Tickets",
       "url": "https://github.com/tlswg/tls-key-update/issues/108",
-      "state": "OPEN",
+      "state": "CLOSED",
       "author": "hannestschofenig",
       "authorAssociation": "COLLABORATOR",
       "assignees": [],
       "labels": [],
       "body": "Suggestion: Disable tickets when this extension is negotiated.\n\nReason: Unnecessary complexity for unknown use cases.",
       "createdAt": "2026-03-22T12:36:30Z",
-      "updatedAt": "2026-03-22T12:36:30Z",
-      "closedAt": null,
+      "updatedAt": "2026-03-31T10:51:37Z",
+      "closedAt": "2026-03-31T10:51:37Z",
       "comments": []
     }
   ],
@@ -10112,24 +10112,26 @@
       "id": "PR_kwDOMJPqLM7N9mtz",
       "title": "Update to discuss threat model",
       "url": "https://github.com/tlswg/tls-key-update/pull/110",
-      "state": "OPEN",
+      "state": "MERGED",
       "author": "tireddy2",
       "authorAssociation": "COLLABORATOR",
       "assignees": [],
       "labels": [],
       "body": "",
       "createdAt": "2026-03-27T07:05:06Z",
-      "updatedAt": "2026-03-29T07:06:36Z",
+      "updatedAt": "2026-04-01T07:05:39Z",
       "baseRepository": "tlswg/tls-key-update",
       "baseRefName": "main",
       "baseRefOid": "a783ea6b5dfdcb80ac67b2453ba427dc02705305",
       "headRepository": "tlswg/tls-key-update",
       "headRefName": "tireddy2-patch-16",
-      "headRefOid": "1e530f91589aa5d39d1df9e006db215a3a35ce7d",
-      "closedAt": null,
-      "mergedAt": null,
-      "mergedBy": null,
-      "mergeCommit": null,
+      "headRefOid": "617525d60efaa840ad1fef0c10dd1dc9a56fc00a",
+      "closedAt": "2026-04-01T07:05:39Z",
+      "mergedAt": "2026-04-01T07:05:39Z",
+      "mergedBy": "tireddy2",
+      "mergeCommit": {
+        "oid": "27d67bdfde0e13738bb568b9e8e6293f09d40878"
+      },
       "comments": [],
       "reviews": [
         {
@@ -10197,6 +10199,39 @@
               "updatedAt": "2026-03-29T07:06:17Z"
             }
           ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM7wl5xB",
+          "commit": {
+            "abbreviatedOid": "1e530f9"
+          },
+          "author": "hannestschofenig",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2026-03-31T10:50:23Z",
+          "updatedAt": "2026-03-31T10:50:23Z",
+          "comments": [
+            {
+              "originalPosition": 16,
+              "body": "```suggestion\nsecure element (e.g., a Hardware Security Module (HSM)) or within the rich OS.\nMoreover, in security\u2011critical scenarios, these long\u2011term private keys are typically stored separately from the primary secret or the traffic keys.\n```",
+              "createdAt": "2026-03-31T10:50:23Z",
+              "updatedAt": "2026-03-31T10:50:23Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM7wl64p",
+          "commit": {
+            "abbreviatedOid": "1e530f9"
+          },
+          "author": "hannestschofenig",
+          "authorAssociation": "COLLABORATOR",
+          "state": "APPROVED",
+          "body": "Thanks for the PR, Tiru",
+          "createdAt": "2026-03-31T10:51:19Z",
+          "updatedAt": "2026-03-31T10:51:19Z",
+          "comments": []
         }
       ]
     }
