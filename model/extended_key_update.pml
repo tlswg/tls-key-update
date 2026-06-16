@@ -2,7 +2,7 @@
 // Extended Key Update (DTLS 1.3) - Single Initiator/Responder SPIN model
 //
 // Models Section 6 steps 1–7 and Appendix B.2.2/B.2.3:
-//   Req -> Resp -> NKU -> ACK
+//   Req -> Resp -> Fin -> ACK
 //
 // Includes:
 //   - APP traffic at any time (bounded by quotas)
@@ -15,10 +15,11 @@
 //       EAReq -> EAFin (application-triggered)
 //   - optional spontaneous server authentication:
 //       responder sends EAFin without prior EAReq; initiator ACKs it
-//
-// Intentionally out-of-scope:
-//   - the optional "defer Resp under load and ACK the Req" path (Section 6 step 2)
-//   - classic DTLS KeyUpdate interaction
+//   - optional responder deferral path:
+//       ACK Req first, then send/retransmit Resp later
+//   - optional invalid-message injection (disabled by default) covers:
+//       classic KeyUpdate, unknown EKU subtype, EKU before Finished, and
+//       wrong KeyShareEntry group.
 ///////////////////////////////////////////////////////////////
 
 /* --- Configuration knobs (override via spin -D...) --- */
@@ -41,8 +42,8 @@
 #ifndef REQ_RETRIES
 #define REQ_RETRIES 4
 #endif
-#ifndef NKU_RETRIES
-#define NKU_RETRIES 4
+#ifndef FIN_RETRIES
+#define FIN_RETRIES 4
 #endif
 #ifndef APP_QUOTA_I
 #define APP_QUOTA_I 0
@@ -68,8 +69,20 @@
 #ifndef EA_SPONT_TRIGGER_R
 #define EA_SPONT_TRIGGER_R 1
 #endif
+#ifndef DEFER_RESP
+#define DEFER_RESP 0
+#endif
+#ifndef RESP_RETRIES
+#define RESP_RETRIES 2
+#endif
+#ifndef INJECT_ERRORS
+#define INJECT_ERRORS 0
+#endif
 
-mtype = { Req, Resp, NKU, ACK, APP, PHAReq, PHAFin, EAReq, EAFin };
+mtype = {
+    Req, Resp, Fin, ACK, APP, PHAReq, PHAFin, EAReq, EAFin,
+    KeyUpdate, UnknownEKU, EarlyEKU, BadGroupReq, BadGroupResp
+};
 
 /* Visible delivery channels (post-network): (type, tag_epoch, accepted) */
 chan to_responder = [8] of { mtype, byte, bool };
@@ -92,6 +105,7 @@ byte drops_left = DROPS;
 bool done_i = false;
 bool done_r = false;
 bool unexpected = false;
+bool illegal_parameter = false;
 bool pha_pending = false;
 bool pha_done = false;
 bool pha_req_sent = false;
@@ -104,7 +118,7 @@ bool ea_spont_sent_r = false;
 bool deferred_req_r = false;
 byte deferred_req_epoch_r = 255;
 
-#define AUTH_PENDING (pha_pending || ea_pending || ea_spont_pending_r)
+#define PHA_PENDING (pha_pending)
 
 byte final_rx_i = 255;
 byte final_tx_i = 255;
@@ -115,8 +129,9 @@ byte final_tx_r = 255;
 byte rx_epoch_i = INIT_RX_I;
 byte tx_epoch_i = INIT_TX_I;
 bool updating_i = false;
+bool req_acked_i = false;
 byte req_retries = REQ_RETRIES;
-byte nku_retries = NKU_RETRIES;
+byte fin_retries = FIN_RETRIES;
 byte app_quota_i = APP_QUOTA_I;
 byte old_rx_i = 255;
 bool retain_old_i = false;
@@ -124,6 +139,9 @@ bool retain_old_i = false;
 byte rx_epoch_r = INIT_RX_R;
 byte tx_epoch_r = INIT_TX_R;
 bool updating_r = false;
+bool deferred_resp_r = false;
+bool resp_sent_r = false;
+byte resp_retries_r = RESP_RETRIES;
 byte app_quota_r = APP_QUOTA_R;
 byte old_rx_r = 255;
 bool retain_old_r = false;
@@ -136,6 +154,17 @@ inline ACTIVE_EPOCH_ASSERTS() {
     /* Epoch mismatches are allowed while an update is in progress. */
     assert( (tx_epoch_i == rx_epoch_r) || updating_i || updating_r );
     assert( (tx_epoch_r == rx_epoch_i) || updating_i || updating_r );
+}
+
+inline RESPOND_TO_REQ_R() {
+    updating_r = true;
+    if
+    :: R2I_SEND(Resp, tx_epoch_r, true)
+    :: (DEFER_RESP) ->
+        deferred_resp_r = true;
+        resp_sent_r = false;
+        R2I_SEND(ACK, tx_epoch_r, true)
+    fi
 }
 
 /* --- Network process: Loss + Reordering --- */
@@ -187,7 +216,7 @@ proctype Initiator() priority 1
 
 WAIT_RESP:
     do
-    :: (ENABLE_EA && EA_TRIGGER_I && !ea_req_sent_i && !updating_i && !AUTH_PENDING) ->
+    :: (ENABLE_EA && EA_TRIGGER_I && !ea_req_sent_i) ->
         I2R_SEND(EAReq, tx_epoch_i, true);
         ea_pending = true;
         ea_req_sent_i = true;
@@ -203,6 +232,11 @@ WAIT_RESP:
     :: I_RECV(APP, e, acc) ->
         APP_ACCEPT(e == rx_epoch_i, e == old_rx_i, retain_old_i);
         ACTIVE_EPOCH_ASSERTS()
+    :: I_RECV(KeyUpdate, e, acc) -> unexpected = true; break
+    :: I_RECV(UnknownEKU, e, acc) -> unexpected = true; break
+    :: I_RECV(EarlyEKU, e, acc) -> unexpected = true; break
+    :: I_RECV(BadGroupReq, e, acc) -> illegal_parameter = true; break
+    :: I_RECV(BadGroupResp, e, acc) -> illegal_parameter = true; break
 
     /* abstract client-side PHA response */
     :: I_RECV(PHAReq, e, acc) ->
@@ -224,7 +258,7 @@ WAIT_RESP:
         ACTIVE_EPOCH_ASSERTS()
 
     /* retransmit Req while waiting (only when no pending inbound message) */
-    :: (!AUTH_PENDING && updating_i && req_retries > 0 && len(to_initiator) == 0) ->
+    :: (!PHA_PENDING && updating_i && !req_acked_i && req_retries > 0 && len(to_initiator) == 0) ->
         I2R_SEND(Req, tx_epoch_i, true);
         req_retries--;
         ACTIVE_EPOCH_ASSERTS()
@@ -232,21 +266,26 @@ WAIT_RESP:
     /* receive Resp (implicit ACK of Req) */
     :: I_RECV(Resp, e, acc) ->
         if
-        :: AUTH_PENDING -> skip
+        :: PHA_PENDING -> skip
         :: (e != rx_epoch_i) -> skip
         :: (!acc) -> unexpected = true; break
         :: else ->
-            /* Step 3: activate retention + bump rx; MUST NOT defer sending NKU. */
+            req_acked_i = true;
+            /* Step 3: activate retention + bump rx; MUST NOT defer sending Fin. */
             old_rx_i = rx_epoch_i;
             retain_old_i = true;
             rx_epoch_i = rx_epoch_i + 1;
-            I2R_SEND(NKU, old_tx_i, true);
+            I2R_SEND(Fin, old_tx_i, true);
             ACTIVE_EPOCH_ASSERTS();
             goto WAIT_ACK
         fi
 
-    /* deferred-request ACK while PHA is outstanding */
-    :: I_RECV(ACK, e, acc) -> skip
+    /* ACK confirms Req delivery if the responder deferred Resp. */
+    :: I_RECV(ACK, e, acc) ->
+        if
+        :: (e == rx_epoch_i) -> req_acked_i = true
+        :: else -> skip
+        fi
     od;
 
 WAIT_ACK:
@@ -264,13 +303,18 @@ WAIT_ACK:
         :: else -> skip
         fi;
         ACTIVE_EPOCH_ASSERTS()
+    :: I_RECV(KeyUpdate, e, acc) -> unexpected = true; break
+    :: I_RECV(UnknownEKU, e, acc) -> unexpected = true; break
+    :: I_RECV(EarlyEKU, e, acc) -> unexpected = true; break
+    :: I_RECV(BadGroupReq, e, acc) -> illegal_parameter = true; break
+    :: I_RECV(BadGroupResp, e, acc) -> illegal_parameter = true; break
 
     /* tolerate duplicate Resp */
     :: I_RECV(Resp, e, acc) -> skip
 
-    /* ignore any stray Req/NKU */
+    /* ignore any stray Req/Fin */
     :: I_RECV(Req, e, acc) -> skip
-    :: I_RECV(NKU, e, acc) -> skip
+    :: I_RECV(Fin, e, acc) -> skip
     :: I_RECV(PHAReq, e, acc) -> I2R_SEND(PHAFin, tx_epoch_i, true)
     :: I_RECV(PHAFin, e, acc) -> skip
     :: I_RECV(EAReq, e, acc) -> I2R_SEND(EAFin, tx_epoch_i, true)
@@ -284,16 +328,16 @@ WAIT_ACK:
             ea_done = true
         fi
 
-    /* retransmit NKU until ACK (only when no pending inbound message) */
-    :: (!AUTH_PENDING && nku_retries > 0 && len(to_initiator) == 0) ->
-        I2R_SEND(NKU, old_tx_i, true);
-        nku_retries--;
+    /* retransmit Fin until ACK (only when no pending inbound message) */
+    :: (!PHA_PENDING && fin_retries > 0 && len(to_initiator) == 0) ->
+        I2R_SEND(Fin, old_tx_i, true);
+        fin_retries--;
         ACTIVE_EPOCH_ASSERTS()
 
     /* ACK completes initiator: tx := rx */
     :: I_RECV(ACK, e, acc) ->
         if
-        :: AUTH_PENDING -> skip
+        :: PHA_PENDING -> skip
         :: (e == rx_epoch_i) ->
             tx_epoch_i = rx_epoch_i;
             retain_old_i = false;
@@ -315,28 +359,32 @@ proctype Responder() priority 1
     byte e; bool aux;
 
     do
-    :: (!AUTH_PENDING && deferred_req_r) ->
+    :: (!PHA_PENDING && deferred_req_r) ->
         if
         :: (deferred_req_epoch_r == rx_epoch_r) ->
-            updating_r = true;
-            R2I_SEND(Resp, tx_epoch_r, true)
+            RESPOND_TO_REQ_R()
         :: else -> skip
         fi;
         deferred_req_r = false;
         ACTIVE_EPOCH_ASSERTS()
+    :: (!PHA_PENDING && deferred_resp_r && resp_retries_r > 0) ->
+        R2I_SEND(Resp, tx_epoch_r, true);
+        resp_sent_r = true;
+        resp_retries_r--;
+        ACTIVE_EPOCH_ASSERTS()
 
     /* abstract server-side PHA request */
-    :: (ENABLE_PHA && PHA_TRIGGER_R && !pha_req_sent && !updating_r && !AUTH_PENDING) ->
+    :: (ENABLE_PHA && PHA_TRIGGER_R && !pha_req_sent && !updating_r && !PHA_PENDING) ->
         R2I_SEND(PHAReq, tx_epoch_r, true);
         pha_pending = true;
         pha_req_sent = true;
         ACTIVE_EPOCH_ASSERTS()
-    :: (ENABLE_EA && EA_TRIGGER_R && !ea_req_sent_r && !updating_r && !AUTH_PENDING) ->
+    :: (ENABLE_EA && EA_TRIGGER_R && !ea_req_sent_r) ->
         R2I_SEND(EAReq, tx_epoch_r, true);
         ea_pending = true;
         ea_req_sent_r = true;
         ACTIVE_EPOCH_ASSERTS()
-    :: (ENABLE_EA && EA_SPONT_TRIGGER_R && !ea_spont_sent_r && !updating_r && !AUTH_PENDING) ->
+    :: (ENABLE_EA && EA_SPONT_TRIGGER_R && !ea_spont_sent_r) ->
         /* Spontaneous server authentication without prior request. */
         R2I_SEND(EAFin, tx_epoch_r, true);
         ea_spont_pending_r = true;
@@ -357,6 +405,11 @@ proctype Responder() priority 1
         :: else -> skip
         fi;
         ACTIVE_EPOCH_ASSERTS()
+    :: R_RECV(KeyUpdate, e, aux) -> unexpected = true; break
+    :: R_RECV(UnknownEKU, e, aux) -> unexpected = true; break
+    :: R_RECV(EarlyEKU, e, aux) -> unexpected = true; break
+    :: R_RECV(BadGroupReq, e, aux) -> illegal_parameter = true; break
+    :: R_RECV(BadGroupResp, e, aux) -> illegal_parameter = true; break
 
     /* abstract server-side PHA completion */
     :: R_RECV(PHAFin, e, aux) ->
@@ -390,22 +443,25 @@ proctype Responder() priority 1
     /* Req starts update */
     :: R_RECV(Req, e, aux) ->
         if
-        :: AUTH_PENDING ->
+        :: PHA_PENDING ->
             deferred_req_r = true;
             deferred_req_epoch_r = e;
             /* deferred-request ACK in DTLS mode */
             R2I_SEND(ACK, tx_epoch_r, true)
         :: (e != rx_epoch_r) -> skip
+        :: (updating_r && deferred_resp_r && !resp_sent_r) ->
+            R2I_SEND(ACK, tx_epoch_r, true)
+        :: (updating_r) ->
+            R2I_SEND(Resp, tx_epoch_r, true)
         :: else ->
-            updating_r = true;
-            R2I_SEND(Resp, tx_epoch_r, true);
+            RESPOND_TO_REQ_R();
             ACTIVE_EPOCH_ASSERTS()
         fi
 
-    /* NKU triggers epoch/key update */
-    :: R_RECV(NKU, e, aux) ->
+    /* Fin triggers epoch/key update */
+    :: R_RECV(Fin, e, aux) ->
         if
-        :: AUTH_PENDING -> skip
+        :: PHA_PENDING -> skip
         :: (!updating_r && !retain_old_r) -> skip
         :: (updating_r && e == rx_epoch_r) ->
             old_rx_r = rx_epoch_r;
@@ -415,12 +471,14 @@ proctype Responder() priority 1
             assert(tx_epoch_r == rx_epoch_r);
             R2I_SEND(ACK, tx_epoch_r, true);
             updating_r = false;
+            deferred_resp_r = false;
+            resp_sent_r = false;
             final_rx_r = rx_epoch_r;
             final_tx_r = tx_epoch_r;
             done_r = true;
             ACTIVE_EPOCH_ASSERTS()
         :: (retain_old_r && e == old_rx_r) ->
-            /* duplicate NKU after lost ACK: retransmit ACK */
+            /* duplicate Fin after lost ACK: retransmit ACK */
             R2I_SEND(ACK, tx_epoch_r, true)
         :: else ->
             skip
@@ -428,18 +486,40 @@ proctype Responder() priority 1
     od
 }
 
+proctype ErrorInjector()
+{
+    if
+    :: (INJECT_ERRORS) ->
+        if
+        :: I2R_SEND(KeyUpdate, INIT_TX_I, true)
+        :: R2I_SEND(KeyUpdate, INIT_TX_R, true)
+        :: I2R_SEND(UnknownEKU, INIT_TX_I, true)
+        :: R2I_SEND(UnknownEKU, INIT_TX_R, true)
+        :: I2R_SEND(EarlyEKU, INIT_TX_I, true)
+        :: R2I_SEND(EarlyEKU, INIT_TX_R, true)
+        :: I2R_SEND(BadGroupReq, INIT_TX_I, true)
+        :: R2I_SEND(BadGroupReq, INIT_TX_R, true)
+        :: I2R_SEND(BadGroupResp, INIT_TX_I, true)
+        :: R2I_SEND(BadGroupResp, INIT_TX_R, true)
+        fi
+    :: else -> skip
+    fi
+}
+
 init {
     atomic {
         run Network();
         run Initiator();
         run Responder();
+        run ErrorInjector();
     }
 }
 
 ltl no_unexpected { [](!unexpected) }
+ltl no_illegal_parameter { [](!illegal_parameter) }
 ltl epoch_consistency {
     [](
-        (!unexpected && done_i && done_r) ->
+        (!unexpected && !illegal_parameter && done_i && done_r) ->
         (final_tx_i == final_rx_i &&
          final_tx_r == final_rx_r &&
          final_tx_i == final_tx_r)

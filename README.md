@@ -34,28 +34,45 @@ The `model/` directory contains three PROMELA/SPIN models:
 
 - `model/tls13_extended_key_update.pml`
   - TLS 1.3 EKU state machine (lower state-space, no DTLS ACK/retention path).
-  - Primary checks: `no_unexpected`, `key_sync`.
+  - Primary checks: `no_unexpected`, `no_illegal_parameter`, `key_sync`.
 - `model/extended_key_update.pml`
   - DTLS EKU model with one initiator and one responder (no crossed requests).
-  - Primary checks: `no_unexpected`, `epoch_consistency`.
+  - Primary checks: `no_unexpected`, `no_illegal_parameter`, `epoch_consistency`.
 - `model/extended_key_update_crossed.pml`
   - DTLS EKU with crossed requests, loss/reordering, retry bounds, and liveness stress.
-  - Primary checks: `no_unexpected`, `epoch_consistency`, `no_deadlock`.
+  - Primary checks: `no_unexpected`, `no_illegal_parameter`, `epoch_consistency`, `no_deadlock`.
 
 Detailed model/spec mapping and scope notes are documented in:
 
 - `model/SPEC-MAPPING.md`
 
-To run verification in a separate `/tmp` working directory (to avoid generating
-`pan.*` and other SPIN artifacts in the repo), use:
+This repository currently does not include a `scripts/spin-check.sh` wrapper.
+Run SPIN from a separate `/tmp` working directory to avoid generating `pan.*`
+and other SPIN artifacts in the repo:
 
 ```sh
-./scripts/spin-check.sh all
+repo=$(pwd)
+work=$(mktemp -d /tmp/eku-spin.XXXXXX)
+
+(cd "$work" && spin -search -ltl no_unexpected "$repo/model/tls13_extended_key_update.pml")
+(cd "$work" && spin -search -ltl no_illegal_parameter "$repo/model/tls13_extended_key_update.pml")
+(cd "$work" && spin -search -ltl key_sync "$repo/model/tls13_extended_key_update.pml")
+(cd "$work" && spin -search -ltl no_unexpected "$repo/model/extended_key_update.pml")
+(cd "$work" && spin -search -ltl no_illegal_parameter "$repo/model/extended_key_update.pml")
+(cd "$work" && spin -search -ltl epoch_consistency "$repo/model/extended_key_update.pml")
+(cd "$work" && spin -search -ltl no_unexpected "$repo/model/extended_key_update_crossed.pml")
+(cd "$work" && spin -search -ltl no_illegal_parameter "$repo/model/extended_key_update_crossed.pml")
+(cd "$work" && spin -search -ltl epoch_consistency "$repo/model/extended_key_update_crossed.pml")
+(cd "$work" && spin -search -ltl no_deadlock "$repo/model/extended_key_update_crossed.pml")
 ```
 
-For larger state spaces (especially crossed requests), pass additional
-`--define` values and `pan` options:
+For larger state spaces (especially crossed requests), use smaller or larger
+compile-time bounds directly with `spin -D...`:
 
 ```sh
-./scripts/spin-check.sh crossed --define DROPS=0 --pan-args "-m200000 -w18"
+(cd "$work" && spin -DDROPS=0 -DREQ_RETRIES=1 -DFIN_RETRIES=1 -search -ltl no_unexpected "$repo/model/extended_key_update_crossed.pml")
 ```
+
+Optional paths can be enabled with `-DDEFER_RESP=1` for DTLS deferred
+responses and `-DINJECT_ERRORS=1` for negative-message injection. The negative
+input configuration is expected to violate the corresponding safety claim.
