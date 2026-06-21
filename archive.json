@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2026-05-17T03:49:41.666723+00:00",
+  "timestamp": "2026-06-21T04:43:24.367570+00:00",
   "repo": "tlswg/tls-key-update",
   "labels": [
     {
@@ -1452,9 +1452,17 @@
       "labels": [],
       "body": "The abstract currently says that EKU \u201cperforms a fresh Diffie-Hellman exchange within an active session\u201d. This may give the impression that the mechanism is limited to classical (EC)DHE.\n\nBased on my quick diagonal reading of the document, it seems that a fresh hybrid or pure post-quantum exchange would also be performed if the initial handshake used a hybrid or pure PQ exchange, respectively. If I understand this correctly, it would be good to reword the abstract more generally, or to clarify that EKU uses the key exchange mechanism negotiated in the handshake.\n\n(And thanks for the work on this!)",
       "createdAt": "2026-05-16T00:55:40Z",
-      "updatedAt": "2026-05-16T00:55:40Z",
+      "updatedAt": "2026-06-18T22:04:30Z",
       "closedAt": null,
-      "comments": []
+      "comments": [
+        {
+          "author": "123ashik5",
+          "authorAssociation": "NONE",
+          "body": "<img width=\"720\" height=\"1650\" alt=\"Image\" src=\"https://github.com/user-attachments/assets/e2c32fb2-ca68-4d7b-b923-52b0859802e5\" />",
+          "createdAt": "2026-06-18T22:04:30Z",
+          "updatedAt": "2026-06-18T22:04:30Z"
+        }
+      ]
     }
   ],
   "pulls": [
