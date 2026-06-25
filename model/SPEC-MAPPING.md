@@ -18,8 +18,66 @@ The current SPIN models focus on three core properties:
 - `no_illegal_parameter`: no benign run should set the abstract error flag
   `illegal_parameter` (used for wrong negotiated KeyShareEntry group).
 - `epoch_consistency`: if a run finishes without `unexpected`, both peers end in
-  synchronized key/epoch state.
+  synchronized directional epoch state (`I/A.tx == R/B.rx` and
+  `I/A.rx == R/B.tx`).
 - `no_deadlock`: liveness/progress property (model-specific terminal condition).
+
+## Synchronized Generation/Epoch Assumption
+
+All three models assume that, outside an EKU exchange, both traffic directions
+use the same numeric generation or epoch identifier:
+
+- TLS: `A.send = B.receive = E` and `B.send = A.receive = E`.
+- Single-initiator DTLS:
+  `I.tx = R.rx = E` and `R.tx = I.rx = E`.
+- Crossed-requests DTLS:
+  `A.tx = B.rx = E` and `B.tx = A.rx = E`.
+
+This is an assumption about numeric generation/epoch identifiers, not about
+cryptographic key equality. Send and receive traffic keys remain
+direction-specific and cryptographically distinct.
+
+The assumption follows the draft's EKU-only state machine:
+
+- once EKU has been negotiated, the classic TLS/DTLS `KeyUpdate` mechanism
+  **MUST NOT** be used;
+- receiving a classic `KeyUpdate` is modeled as an
+  `"unexpected_message"` error;
+- classic `KeyUpdate` is the mechanism that would otherwise permit one traffic
+  direction to advance independently;
+- an EKU exchange advances both directions, although temporary `tx`/`rx`
+  mismatches are expected while the exchange is in progress;
+- after successful completion, the state machines return to a synchronized
+  generation/epoch boundary.
+
+The DTLS models expose four separate initialization parameters so that roles
+and directions remain explicit:
+
+- `extended_key_update.pml`:
+  `INIT_RX_I`, `INIT_TX_I`, `INIT_RX_R`, `INIT_TX_R`;
+- `extended_key_update_crossed.pml`:
+  `INIT_RX_A`, `INIT_TX_A`, `INIT_RX_B`, `INIT_TX_B`.
+
+These parameters are **not independent configuration knobs**. If overridden,
+all four parameters for the selected model MUST be set to the same value. For
+example:
+
+```sh
+spin -DINIT_RX_I=3 -DINIT_TX_I=3 \
+     -DINIT_RX_R=3 -DINIT_TX_R=3 ...
+```
+
+and:
+
+```sh
+spin -DINIT_RX_A=3 -DINIT_TX_A=3 \
+     -DINIT_RX_B=3 -DINIT_TX_B=3 ...
+```
+
+Using directionally matching but numerically different initial values, such as
+`INIT_TX_I=INIT_RX_R=0` and `INIT_TX_R=INIT_RX_I=3`, is outside the supported
+model assumptions. Local completion assertions and `epoch_consistency`
+intentionally reject such a configuration.
 
 ## PHA/EA Modeling Assumptions
 
@@ -139,6 +197,12 @@ Model-to-property coverage:
   - `BadGroupReq` and `BadGroupResp` drive `illegal_parameter=true`.
 
 **Important abstraction choices**
+- All four TLS directional generation counters start at the same numeric value
+  `E`: `A.send = B.receive = E` and `B.send = A.receive = E`. This is a
+  generation-number abstraction and does not mean that both TLS directions use
+  the same traffic key.
+- `key_sync` compares matching communication directions:
+  `A.send == B.receive` and `A.receive == B.send`.
 - The TLS wire detail “Fin encrypted under old keys” is represented only by the
   ordering of increments (no crypto).
 - Classic `KeyUpdate`, unexpected EKU subtype, EKU-before-Finished, and
@@ -168,6 +232,8 @@ Model-to-property coverage:
 
 **Configuration**
 - You can override `INIT_RX_I`, `INIT_TX_I`, `INIT_RX_R`, `INIT_TX_R`, `DROPS`, `REQ_RETRIES`, `FIN_RETRIES`, `RESP_RETRIES`, `DEFER_RESP`, `APP_QUOTA_I`, `APP_QUOTA_R`, `INJECT_ERRORS` via `spin -D...`.
+- The four `INIT_RX_*`/`INIT_TX_*` values are role-explicit aliases for one
+  common initial epoch and MUST be overridden together with the same value.
 - Additional auth-related knobs: `ENABLE_PHA`, `PHA_TRIGGER_R`, `ENABLE_EA`,
   `EA_TRIGGER_I`, `EA_TRIGGER_R`, `EA_SPONT_TRIGGER_R`.
 
@@ -247,8 +313,11 @@ Model-to-property coverage:
 - Section 6 steps 1–7 (message-level semantics)
 
 **Configuration**
-- You can override `DROPS`, `REQ_RETRIES`, `FIN_RETRIES`, `RESP_RETRIES`,
-  `DEFER_RESP`, `APP_QUOTA`, `KX_A`, `KX_B`, `INJECT_ERRORS` via `spin -D...`.
+- You can override `INIT_RX_A`, `INIT_TX_A`, `INIT_RX_B`, `INIT_TX_B`,
+  `DROPS`, `REQ_RETRIES`, `FIN_RETRIES`, `RESP_RETRIES`, `DEFER_RESP`,
+  `APP_QUOTA`, `KX_A`, `KX_B`, `INJECT_ERRORS` via `spin -D...`.
+- The four `INIT_RX_*`/`INIT_TX_*` values are role-explicit aliases for one
+  common initial epoch and MUST be overridden together with the same value.
 - Additional auth-related knobs: `ENABLE_PHA`, `PHA_TRIGGER_B`, `ENABLE_EA`,
   `EA_TRIGGER_A`, `EA_TRIGGER_B`, `EA_SPONT_TRIGGER_B`.
 

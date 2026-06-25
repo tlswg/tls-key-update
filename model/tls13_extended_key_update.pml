@@ -36,6 +36,17 @@
 // the current receive key generation (no DTLS-like retention in TLS).
 ///////////////////////////////////////////////////////////////
 
+/*
+ * Modeling assumption: all four directional generation counters start at the
+ * same numeric generation E:
+ *
+ *   A.send = B.receive = E   (A -> B)
+ *   B.send = A.receive = E   (B -> A)
+ *
+ * This does not mean that TLS uses the same traffic key in both directions.
+ * E is only an abstract generation number; the directional keys remain
+ * distinct.
+ */
 #ifndef E
 #define E 0
 #endif
@@ -475,8 +486,7 @@ ltl no_illegal_parameter { [](!illegal_parameter) }
 ltl key_sync {
     [](
         (!unexpected && !illegal_parameter && done_a && done_b) ->
-        (final_send_a == final_receive_a &&
-         final_send_b == final_receive_b &&
-         final_send_a == final_send_b)
+        (final_send_a == final_receive_b &&
+         final_receive_a == final_send_b)
     )
 }

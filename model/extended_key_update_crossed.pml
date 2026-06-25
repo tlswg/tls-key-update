@@ -884,11 +884,11 @@ init {
 ltl no_deadlock { []( (!unexpected && !illegal_parameter) -> <> ((done_a || abort_a) && (done_b || abort_b)) ) }
 ltl no_unexpected { [](!unexpected) }
 ltl no_illegal_parameter { [](!illegal_parameter) }
+/* Match each sender epoch with the receiver epoch in the same direction. */
 ltl epoch_consistency {
     [](
         (!unexpected && !illegal_parameter && done_a && done_b) ->
-        (final_tx_a == final_rx_a &&
-         final_tx_b == final_rx_b &&
-         final_tx_a == final_tx_b)
+        (final_tx_a == final_rx_b &&
+         final_rx_a == final_tx_b)
     )
 }

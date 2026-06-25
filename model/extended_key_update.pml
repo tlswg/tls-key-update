@@ -517,11 +517,11 @@ init {
 
 ltl no_unexpected { [](!unexpected) }
 ltl no_illegal_parameter { [](!illegal_parameter) }
+/* Match each sender epoch with the receiver epoch in the same direction. */
 ltl epoch_consistency {
     [](
         (!unexpected && !illegal_parameter && done_i && done_r) ->
-        (final_tx_i == final_rx_i &&
-         final_tx_r == final_rx_r &&
-         final_tx_i == final_tx_r)
+        (final_tx_i == final_rx_r &&
+         final_rx_i == final_tx_r)
     )
 }

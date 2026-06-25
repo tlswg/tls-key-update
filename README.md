@@ -35,6 +35,8 @@ The `model/` directory contains three PROMELA/SPIN models:
 - `model/tls13_extended_key_update.pml`
   - TLS 1.3 EKU state machine (lower state-space, no DTLS ACK/retention path).
   - Primary checks: `no_unexpected`, `no_illegal_parameter`, `key_sync`.
+  - Assumes all directional generation counters start at the same numeric
+    generation `E`; `key_sync` compares sender and receiver per direction.
 - `model/extended_key_update.pml`
   - DTLS EKU model with one initiator and one responder (no crossed requests).
   - Primary checks: `no_unexpected`, `no_illegal_parameter`, `epoch_consistency`.
@@ -46,9 +48,38 @@ Detailed model/spec mapping and scope notes are documented in:
 
 - `model/SPEC-MAPPING.md`
 
-This repository currently does not include a `scripts/spin-check.sh` wrapper.
-Run SPIN from a separate `/tmp` working directory to avoid generating `pan.*`
-and other SPIN artifacts in the repo:
+Running the model checks requires SPIN and a C compiler. On Debian/Ubuntu, they
+can be installed with:
+
+```sh
+sudo apt-get install spin gcc
+```
+
+SPIN verification consists of three steps: generate `pan.c` from the Promela
+model, compile `pan.c`, and run the resulting verifier. The repository script
+performs these steps explicitly in a temporary directory:
+
+```sh
+spin -a model.pml
+gcc -O2 -o pan pan.c
+./pan -a -N property_name
+```
+
+To run verification in a separate `/tmp` working directory (to avoid generating
+`pan.*` and other SPIN artifacts in the repo), use:
+
+```sh
+./scripts/spin-check.sh all
+```
+
+For larger state spaces (especially crossed requests), pass additional
+`--define` values and `pan` options:
+
+```sh
+./scripts/spin-check.sh crossed --define DROPS=0 --pan-args "-m200000 -w18"
+```
+
+Alternatively, you can also execute the command individually:
 
 ```sh
 repo=$(pwd)
@@ -65,6 +96,11 @@ work=$(mktemp -d /tmp/eku-spin.XXXXXX)
 (cd "$work" && spin -search -ltl epoch_consistency "$repo/model/extended_key_update_crossed.pml")
 (cd "$work" && spin -search -ltl no_deadlock "$repo/model/extended_key_update_crossed.pml")
 ```
+
+The `spin -search` form automatically generates and compiles the verifier
+before running it; no separate compilation command is needed for these
+individual commands. Run the block from the repository root so that
+`repo=$(pwd)` points to the correct directory.
 
 For larger state spaces (especially crossed requests), use smaller or larger
 compile-time bounds directly with `spin -D...`:
