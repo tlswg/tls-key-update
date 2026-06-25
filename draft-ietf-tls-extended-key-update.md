@@ -1019,11 +1019,9 @@ subsequent application data remains confidential.
 ## Post-Compromise Security
 
 Extended Key Update provides post-compromise security for long-lived TLS sessions.
-To ensure post-compromise security guarantees:
-
-* Each update MUST use freshly generated ephemeral key-exchange material. Implementations MUST NOT reuse
-  ephemeral key-exchange material across updates or across TLS sessions.
-
+To ensure post-compromise security guarantees each update MUST use freshly generated
+ephemeral key exchange material. Implementations MUST NOT reuse ephemeral key
+exchange material across updates or across TLS sessions.
 
 ## Denial-of-Service (DoS)
 
