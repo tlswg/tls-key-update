@@ -632,7 +632,7 @@ bound to the previously established secret,
 hashing the previous transcript hash together with the current
 ExtendedKeyUpdate(key_update_request) and
 ExtendedKeyUpdate(key_update_response) messages. This binds any
-encapsulation ciphertexts used in PQ/T hybrid or post-quantum key exchanges
+encapsulation ciphertext and public key used in PQ/T hybrid or post-quantum key exchanges
 to the IKM and cryptographically binds the newly derived secrets to the
 original handshake transcript, all prior EKU exchanges, and the current EKU
 exchange, and
