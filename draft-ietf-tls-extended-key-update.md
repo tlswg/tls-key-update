@@ -696,12 +696,10 @@ update procedure, which also incorporates a fresh shared secret as
 IKM. This process is repeated for each additional key update procedure.
 
 The shared secret is determined by the negotiated key exchange mechanism.
-In the base protocol, this mechanism is (EC)DHE (see {{Section 7.4 of TLS}}).
-For SecP256r1MLKEM768, defined in {{I-D.ietf-tls-ecdhe-mlkem}}, the
-shared secret is the concatenation of the ECDHE and ML-KEM shared
-secrets. For mlkem512, defined in {{I-D.ietf-tls-mlkem}}, the ML-KEM
-shared secret is provided to the key schedule in place of the (EC)DHE
-shared secret.
+In the base protocol, this mechanism is (EC)DHE (see {{Section 7.4 of
+TLS}}). Post-quantum and hybrid key exchange mechanisms derive the
+shared secret as specified by their respective definitions. See also
+{{pqc-cons}}.
 
 The traffic keys are re-derived from
 client_application_traffic_secret_N+1 and
@@ -740,29 +738,31 @@ not prevent the use of previously issued PSKs.
 Accordingly, endpoints that enable EKU MUST disable resumption using PSKs established
 via the NewSessionTicket mechanism.
 
-# Post-Quantum Cryptography Considerations
+# Post-Quantum Cryptography Considerations {#pqc-cons}
 
-Hybrid key exchange refers to the simultaneous use of multiple key
-exchange algorithms, with the resulting shared secret derived by
-combining the outputs of each. The goal of this approach is to maintain
-security even if all but one of the component algorithms are later found
-to be vulnerable.
+The shared secret used by the Extended Key Update mechanism is derived according
+to the negotiated key exchange method. As a result, this specification supports
+the same classes of key establishment mechanisms as TLS itself, including traditional
+Diffie-Hellman-based key exchanges, post-quantum key encapsulation mechanisms (KEMs),
+and hybrid combinations thereof.
 
-The transition to post-quantum cryptography has motivated the adoption of
-hybrid key exchanges in TLS, as described in
-{{?TLS-HYBRID=I-D.ietf-tls-hybrid-design}}. Specific hybrid groups
-have been registered in {{?TLS-ECDHE-MLKEM=I-D.ietf-tls-ecdhe-mlkem}}.
-When hybrid key exchange is used, the `key_exchange` field of each
-`KeyShareEntry` in the initial handshake is formed by concatenating
-the `key_exchange` fields of the constituent algorithms. This same
-approach is reused during the Extended Key Update, when new key
-shares are exchanged.
+In the base TLS protocol, the shared secret is typically established using (EC)DHE
+(see {{Section 7.4 of TLS}}). Recent extensions have introduced support for post-quantum
+and hybrid key establishment mechanisms to facilitate the transition to post-quantum
+cryptography. The rationale for this transition and the associated terminology are
+discussed in {{RFC9958}} and {{RFC9794}}, respectively.
 
-{{?TLS-MLKEM=I-D.ietf-tls-mlkem}} registers the lattice-based
-ML-KEM algorithm and its variants, such as ML-KEM-512, ML-KEM-768 and
-ML-KEM-1024. The KEM encapsulation key or KEM ciphertext is represented
-as a 'KeyShareEntry' field. This same approach is reused during the
-Extended Key Update, when new key shares are exchanged.
+For hybrid mechanisms such as SecP256r1MLKEM768, defined in {{I-D.ietf-tls-ecdhe-mlkem}},
+the shared secret is derived by combining the outputs of the constituent algorithms;
+specifically, it is the concatenation of the ECDHE and ML-KEM shared secrets. For
+ML-KEM-only key exchange, as defined in {{I-D.ietf-tls-mlkem}}, the ML-KEM shared
+secret is provided directly to the TLS key schedule in place of the (EC)DHE shared
+secret.
+
+The Extended Key Update protocol reuses the key exchange representation defined by the
+negotiated mechanism. Consequently, the exchange of fresh key shares during an Extended
+Key Update follows the same encoding and shared-secret derivation rules as the
+corresponding TLS handshake.
 
 # SSLKEYLOGFILE Update
 
