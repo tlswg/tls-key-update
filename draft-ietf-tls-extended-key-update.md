@@ -664,8 +664,8 @@ client Finished message.
              v
        Derive-Secret(., "derived", "")
              |
-             v
- (EC)DHE -> HKDF-Extract = main_secret_N+1
+Shared       v
+Secret -> HKDF-Extract = main_secret_N+1
              |
              +-----> Derive-Secret(., "c ap traffic",
              |                     transcript_hash_N+1)
@@ -689,12 +689,19 @@ During the initial handshake, the Main Secret is generated (see
 {{Section 7.1 of TLS}}). Since the main_secret
 is discarded during the key derivation procedure, a derived value is
 stored. This stored value then serves as the input salt to the first
-key update procedure that incorporates the ephemeral (EC)DHE-
-established value as input keying material (IKM) to produce
-main_secret_N+1. The derived value from this new main secret
-serves as input salt to the subsequent key update procedure, which
-also incorporates a fresh ephemeral (EC)DHE value as IKM. This
-process is repeated for each additional key update procedure.
+key update procedure that incorporates the shared secret as input
+keying material (IKM) to produce main_secret_N+1. The derived value
+from this new main secret serves as input salt to the subsequent key
+update procedure, which also incorporates a fresh shared secret as
+IKM. This process is repeated for each additional key update procedure.
+
+The shared secret is determined by the negotiated key exchange mechanism.
+In the base protocol, this mechanism is (EC)DHE (see {{Section 7.4 of TLS}}).
+For SecP256r1MLKEM768, defined in {{I-D.ietf-tls-ecdhe-mlkem}}, the
+shared secret is the concatenation of the ECDHE and ML-KEM shared
+secrets. For mlkem512, defined in {{I-D.ietf-tls-mlkem}}, the ML-KEM
+shared secret is provided to the key schedule in place of the (EC)DHE
+shared secret.
 
 The traffic keys are re-derived from
 client_application_traffic_secret_N+1 and
@@ -724,7 +731,8 @@ reside in memory within the rich operating system. Although such PSKs may subseq
 be stored in secure storage, they are exposed during this initial processing window,
 and compromise of endpoint memory during this period is sufficient to reveal them.
 Consequently, later protection using secure storage does not prevent their prior
-compromise. These PSKs are sufficient to establish new authenticated TLS connections. Even if an implementation invalidates previously issued PSKs upon completion of the
+compromise. These PSKs are sufficient to establish new authenticated TLS connections.
+Even if an implementation invalidates previously issued PSKs upon completion of the
 EKU exchange, an attacker that has already obtained such a PSK may initiate and
 complete a resumed session prior to that invalidation. In such environments, EKU does
 not prevent the use of previously issued PSKs.
