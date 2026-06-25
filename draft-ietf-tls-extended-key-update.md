@@ -1106,27 +1106,19 @@ extension registry {{TLS-Ext-Registry}}:
 
 We would like to thank the members of the "TSVWG DTLS for SCTP
 Requirements Design Team" for their discussion. The members, in
-no particular order, were:
-
-*  Marcelo Ricardo Leitner
-*  Zaheduzzaman Sarker
-*  Magnus Westerlund
-*  John Mattsson
-*  Claudio Porfiri
-*  Xin Long
-*  Michael Tüxen
-*  Hannes Tschofenig
-*  K Tirumaleswar Reddy
-*  Bertrand Rault
+no particular order, were: Marcelo Ricardo Leitner, Xin Long,
+John Mattsson, Claudio Porfiri, Bertrand Rault, K Tirumaleswar Reddy,
+Zaheduzzaman Sarker, Hannes Tschofenig, Michael Tüxen, and
+Magnus Westerlund.
 
 Additionally, we would like to thank the chairs of the
 Transport and Services Working Group (tsvwg) Gorry Fairhurst and
 Marten Seemann as well as the responsible area director Martin Duke.
 
-Finally, we would like to thank Martin Thomson, Ilari Liusvaara,
-Benjamin Kaduk, Scott Fluhrer, Dennis Jackson, David Benjamin,
-Matthijs van Duin, Rifaat Shekh-Yusef, Joe Birr-Pixton, Eric Rescorla,
-and Thom Wiggers for their review comments.
+Finally, we would like to thank David Benjamin, Joe Birr-Pixton,
+Matthijs van Duin, Scott Fluhrer, Dennis Jackson, Benjamin Kaduk,
+Ilari Liusvaara, Eric Rescorla, Rifaat Shekh-Yusef, Martin Thomson,
+Mathy Vanhoef, and Thom Wiggers for their review comments.
 
 # State Machines
 
