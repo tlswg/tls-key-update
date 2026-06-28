@@ -176,8 +176,8 @@ refer to application traffic keys and because the Extended Key Update procedure
 occurs after the handshake phase has completed, no handshake traffic keys
 are involved.
 
-In this document, send key refers to the [sender]_write_key, and receive key
-refers to the [receiver]_write_key. These keys are derived from the active
+In this document, send key refers to the \[sender\]_write_key, and receive key
+refers to the \[receiver\]_write_key. These keys are derived from the active
 client_application_traffic_secret_N and server_application_traffic_secret_N,
 as defined in (D)TLS 1.3 {{TLS}}, and are replaced with new ones
 after each successful Extended Key Update.
@@ -1050,7 +1050,7 @@ extension registry {{TLS-Ext-Registry}}:
 *  Flag Name: extended_key_update
 *  Messages: CH, EE
 *  Recommended: Y
-*  Reference: [This document]
+*  Reference: This document
 
 ## TLS HandshakeType
 
@@ -1060,7 +1060,7 @@ registry {{TLS-Param-Registry}}:
 *  Value: TBD2
 *  Description: extended_key_update
 *  DTLS-OK: Y
-*  Reference: [This document]
+*  Reference: This document
 
 ## ExtendedKeyUpdate Message Subtypes Registry {#iana-eku-registry}
 
@@ -1299,7 +1299,7 @@ Throughout the process:
  |    |    |                if peer == local -> ABORT  (Error)
  |    |    |                if peer > local  -> ABANDON update;
  |    |    |                                    updating := 0;
- |	   |    |                                    act as RESPONDER
+ |    |    |                                    act as RESPONDER
  |    |    |
  |    |    +-- APP send (anytime)           (Self-Loop)
  |    |
