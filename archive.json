@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2026-06-21T04:43:24.367570+00:00",
+  "timestamp": "2026-06-28T04:10:04.245015+00:00",
   "repo": "tlswg/tls-key-update",
   "labels": [
     {
@@ -1452,17 +1452,33 @@
       "labels": [],
       "body": "The abstract currently says that EKU \u201cperforms a fresh Diffie-Hellman exchange within an active session\u201d. This may give the impression that the mechanism is limited to classical (EC)DHE.\n\nBased on my quick diagonal reading of the document, it seems that a fresh hybrid or pure post-quantum exchange would also be performed if the initial handshake used a hybrid or pure PQ exchange, respectively. If I understand this correctly, it would be good to reword the abstract more generally, or to clarify that EKU uses the key exchange mechanism negotiated in the handshake.\n\n(And thanks for the work on this!)",
       "createdAt": "2026-05-16T00:55:40Z",
-      "updatedAt": "2026-06-18T22:04:30Z",
+      "updatedAt": "2026-06-25T11:13:52Z",
       "closedAt": null,
       "comments": [
         {
-          "author": "123ashik5",
-          "authorAssociation": "NONE",
-          "body": "<img width=\"720\" height=\"1650\" alt=\"Image\" src=\"https://github.com/user-attachments/assets/e2c32fb2-ca68-4d7b-b923-52b0859802e5\" />",
-          "createdAt": "2026-06-18T22:04:30Z",
-          "updatedAt": "2026-06-18T22:04:30Z"
+          "author": "hannestschofenig",
+          "authorAssociation": "COLLABORATOR",
+          "body": "Thanks for your review, Mathy! You are completely correct in your understanding of what the document is trying to accomplish.\n\nRe-reading the draft I agree with you that we have had a stronger bias in wording towards traditional cryptography. I have created a few PRs to improve the description.",
+          "createdAt": "2026-06-25T11:13:52Z",
+          "updatedAt": "2026-06-25T11:13:52Z"
         }
       ]
+    },
+    {
+      "number": 113,
+      "id": "I_kwDOMJPqLM8AAAABGq1t3A",
+      "title": "Naming: EKU is not a good abbreviation",
+      "url": "https://github.com/tlswg/tls-key-update/issues/113",
+      "state": "OPEN",
+      "author": "hannestschofenig",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [],
+      "body": "We have been using the term Extended Key Update or EKU to describe the functionality of this document.\n\nIn a recent discussion I noticed that this was a poor naming. EKU is also known for \"Extended Key Usage\" in the security field.\n\nI was wondering whether we should try to find a better name. Suggestions?\n",
+      "createdAt": "2026-06-25T09:33:40Z",
+      "updatedAt": "2026-06-25T09:33:40Z",
+      "closedAt": null,
+      "comments": []
     }
   ],
   "pulls": [
@@ -10258,6 +10274,238 @@
           "comments": []
         }
       ]
+    },
+    {
+      "number": 112,
+      "id": "PR_kwDOMJPqLM7qe7ot",
+      "title": "Updated Abstract and Acknowledgments",
+      "url": "https://github.com/tlswg/tls-key-update/pull/112",
+      "state": "OPEN",
+      "author": "hannestschofenig",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [],
+      "body": "Update based on feedback from Mathy Vanhoef, see https://github.com/tlswg/tls-key-update/issues/111\r\n\r\nThe abstract now does not only focus on Diffie-Hellmann. Also updated the acknowledgment list.",
+      "createdAt": "2026-06-25T09:12:53Z",
+      "updatedAt": "2026-06-25T13:23:41Z",
+      "baseRepository": "tlswg/tls-key-update",
+      "baseRefName": "main",
+      "baseRefOid": "27d67bdfde0e13738bb568b9e8e6293f09d40878",
+      "headRepository": "tlswg/tls-key-update",
+      "headRefName": "hannestschofenig-patch-9",
+      "headRefOid": "646d66b2f18b605ac572294a79cf7fadc48f731d",
+      "closedAt": null,
+      "mergedAt": null,
+      "mergedBy": null,
+      "mergeCommit": null,
+      "comments": [],
+      "reviews": [
+        {
+          "id": "PRR_kwDOMJPqLM8AAAABEHiqVw",
+          "commit": {
+            "abbreviatedOid": "646d66b"
+          },
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "state": "APPROVED",
+          "body": "",
+          "createdAt": "2026-06-25T13:23:41Z",
+          "updatedAt": "2026-06-25T13:23:41Z",
+          "comments": []
+        }
+      ]
+    },
+    {
+      "number": 114,
+      "id": "PR_kwDOMJPqLM7qg5LB",
+      "title": "Wording changes in Updating Traffic Keys",
+      "url": "https://github.com/tlswg/tls-key-update/pull/114",
+      "state": "OPEN",
+      "author": "hannestschofenig",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [],
+      "body": "Make the text more PQC-friendly",
+      "createdAt": "2026-06-25T10:35:18Z",
+      "updatedAt": "2026-06-25T14:09:18Z",
+      "baseRepository": "tlswg/tls-key-update",
+      "baseRefName": "main",
+      "baseRefOid": "27d67bdfde0e13738bb568b9e8e6293f09d40878",
+      "headRepository": "tlswg/tls-key-update",
+      "headRefName": "hannestschofenig-patch-10",
+      "headRefOid": "e88e7c0eed0684efeeda2ebc804c39ca49065e73",
+      "closedAt": null,
+      "mergedAt": null,
+      "mergedBy": null,
+      "mergeCommit": null,
+      "comments": [],
+      "reviews": [
+        {
+          "id": "PRR_kwDOMJPqLM8AAAABEHocqQ",
+          "commit": {
+            "abbreviatedOid": "66f300a"
+          },
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2026-06-25T13:34:14Z",
+          "updatedAt": "2026-06-25T13:38:54Z",
+          "comments": [
+            {
+              "originalPosition": 22,
+              "body": "```suggestion\nencapsulation ciphertext and public key used in PQ/T hybrid or post-quantum key exchanges\n```",
+              "createdAt": "2026-06-25T13:34:14Z",
+              "updatedAt": "2026-06-25T13:38:54Z"
+            },
+            {
+              "originalPosition": 25,
+              "body": "```suggestion\nexchange, and the corresponding KEM public key and encapsulation ciphertext, and\n```",
+              "createdAt": "2026-06-25T13:38:03Z",
+              "updatedAt": "2026-06-25T13:38:54Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM8AAAABEHrdXQ",
+          "commit": {
+            "abbreviatedOid": "66f300a"
+          },
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2026-06-25T13:39:42Z",
+          "updatedAt": "2026-06-25T13:39:42Z",
+          "comments": [
+            {
+              "originalPosition": 24,
+              "body": "```suggestion\noriginal handshake transcript, all prior EKU exchanges, the current EKU\n```",
+              "createdAt": "2026-06-25T13:39:42Z",
+              "updatedAt": "2026-06-25T13:39:42Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM8AAAABEH7zgw",
+          "commit": {
+            "abbreviatedOid": "e88e7c0"
+          },
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "state": "APPROVED",
+          "body": "",
+          "createdAt": "2026-06-25T14:09:18Z",
+          "updatedAt": "2026-06-25T14:09:18Z",
+          "comments": []
+        }
+      ]
+    },
+    {
+      "number": 115,
+      "id": "PR_kwDOMJPqLM7qhfZp",
+      "title": "Updated Section Updating Traffic Keys",
+      "url": "https://github.com/tlswg/tls-key-update/pull/115",
+      "state": "OPEN",
+      "author": "hannestschofenig",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [],
+      "body": "My aim was to make the text more PQC friendly.",
+      "createdAt": "2026-06-25T11:00:44Z",
+      "updatedAt": "2026-06-25T13:42:56Z",
+      "baseRepository": "tlswg/tls-key-update",
+      "baseRefName": "hannestschofenig-patch-10",
+      "baseRefOid": "66f300ac28c3f8eda9fd60acd7c6ebe82bdb5f89",
+      "headRepository": "tlswg/tls-key-update",
+      "headRefName": "hannestschofenig-patch-11",
+      "headRefOid": "0a709f03a26571d09191383c76d0d49f04829d6e",
+      "closedAt": null,
+      "mergedAt": null,
+      "mergedBy": null,
+      "mergeCommit": null,
+      "comments": [],
+      "reviews": [
+        {
+          "id": "PRR_kwDOMJPqLM8AAAABEHtPxw",
+          "commit": {
+            "abbreviatedOid": "0a709f0"
+          },
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "state": "APPROVED",
+          "body": "",
+          "createdAt": "2026-06-25T13:42:56Z",
+          "updatedAt": "2026-06-25T13:42:56Z",
+          "comments": []
+        }
+      ]
+    },
+    {
+      "number": 116,
+      "id": "PR_kwDOMJPqLM7qh6-p",
+      "title": "Wording Improvements",
+      "url": "https://github.com/tlswg/tls-key-update/pull/116",
+      "state": "OPEN",
+      "author": "hannestschofenig",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [],
+      "body": "",
+      "createdAt": "2026-06-25T11:21:10Z",
+      "updatedAt": "2026-06-25T13:44:30Z",
+      "baseRepository": "tlswg/tls-key-update",
+      "baseRefName": "main",
+      "baseRefOid": "27d67bdfde0e13738bb568b9e8e6293f09d40878",
+      "headRepository": "tlswg/tls-key-update",
+      "headRefName": "hannestschofenig-patch-12",
+      "headRefOid": "89e39f1e67b0183e300ce91d5e9927b8ac73b225",
+      "closedAt": null,
+      "mergedAt": null,
+      "mergedBy": null,
+      "mergeCommit": null,
+      "comments": [],
+      "reviews": [
+        {
+          "id": "PRR_kwDOMJPqLM8AAAABEHuMlQ",
+          "commit": {
+            "abbreviatedOid": "89e39f1"
+          },
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "state": "APPROVED",
+          "body": "",
+          "createdAt": "2026-06-25T13:44:30Z",
+          "updatedAt": "2026-06-25T13:44:30Z",
+          "comments": []
+        }
+      ]
+    },
+    {
+      "number": 117,
+      "id": "PR_kwDOMJPqLM7qtORS",
+      "title": "Updated model",
+      "url": "https://github.com/tlswg/tls-key-update/pull/117",
+      "state": "OPEN",
+      "author": "hannestschofenig",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [],
+      "body": "This PR only contains updates to the model and not to the draft. It mainly aims to get the draft and the models aligned.",
+      "createdAt": "2026-06-25T19:12:46Z",
+      "updatedAt": "2026-06-25T19:13:33Z",
+      "baseRepository": "tlswg/tls-key-update",
+      "baseRefName": "main",
+      "baseRefOid": "27d67bdfde0e13738bb568b9e8e6293f09d40878",
+      "headRepository": "tlswg/tls-key-update",
+      "headRefName": "updated_model",
+      "headRefOid": "85a26825ec29f63b6ded60b55e07fe5643bea6ca",
+      "closedAt": null,
+      "mergedAt": null,
+      "mergedBy": null,
+      "mergeCommit": null,
+      "comments": [],
+      "reviews": []
     }
   ]
 }
