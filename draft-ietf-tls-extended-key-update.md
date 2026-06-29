@@ -629,19 +629,17 @@ The design of the key derivation function for computing the next
 generation of application_traffic_secret is motivated by the desire
 to include
 
-* a secret derived from the (EC)DHE exchange (or from a PQ/T hybrid or
-post-quantum KEM exchange),
+* a secret derived from the negotiated key exchange, whether (EC)DHE, post-quantum KEM, or a PQ/T hybrid mechanism,
 * a secret that allows the new key exchange to be cryptographically
 bound to the previously established secret,
-* a transcript hash that is updated after each Extended Key Update exchange
-  by hashing together the previous transcript hash value with the current
-  ExtendedKeyUpdate(key_update_request) and ExtendedKeyUpdate(key_update_response)
-  messages, which contain the key shares, thereby binding the encapsulated shared
-  secret ciphertext to the IKM in the case of PQ/T hybrid or
-  post-quantum-only key exchange and
-  cryptographically binding the newly derived secrets to the prior handshake
-  transcript and all preceding EKU exchanges, as well as to the current EKU
-  exchange, and
+* a transcript hash that is updated after each Extended Key Update exchange by
+hashing the previous transcript hash together with the current
+ExtendedKeyUpdate(key_update_request) and
+ExtendedKeyUpdate(key_update_response) messages. This binds any
+encapsulation ciphertext and public key used in PQ/T hybrid or post-quantum key exchanges
+to the IKM and cryptographically binds the newly derived secrets to the
+original handshake transcript, all prior EKU exchanges, the current EKU
+exchange, and the corresponding KEM public key and encapsulation ciphertext, and
 * new label strings to distinguish it from the key derivation used in
 TLS 1.3.
 
