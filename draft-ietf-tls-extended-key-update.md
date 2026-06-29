@@ -84,17 +84,21 @@ informative:
 
 TLS 1.3 ensures forward secrecy by performing an ephemeral Diffie-Hellman key exchange
 during the initial handshake, protecting past communications even if a party's
-long-term keys (typically a private key with a corresponding certificate) are later compromised. While the built-in KeyUpdate mechanism allows
-application traffic keys to be refreshed during a session, it does not incorporate
-fresh entropy from a new key exchange and therefore does not provide post-compromise security.
-This limitation can pose a security risk in long-lived sessions, such as
-those found in industrial IoT or telecommunications environments.
+long-term keys (typically a private key with a corresponding certificate) are later
+compromised.
+
+While the built-in KeyUpdate mechanism allows application traffic keys to be refreshed
+during a session, it does not incorporate fresh entropy from a new key exchange and
+therefore does not provide post-compromise security. This limitation can pose a security
+risk in long-lived sessions, such as those found in industrial IoT or telecommunications
+environments.
 
 To address this, this specification defines an extended key update mechanism that
-performs a fresh Diffie-Hellman exchange within an active session, thereby
-ensuring post-compromise security. By forcing attackers
-to exfiltrate new key material repeatedly, this approach mitigates the risks
-associated with static key compromise. Regular renewal of session keys helps
+performs a fresh execution of the key exchange negotiated during the initial handshake
+within an active session, thereby ensuring post-compromise security.
+
+By forcing attackers to exfiltrate new key material repeatedly, this approach mitigates
+the risks associated with static key compromise. Regular renewal of session keys helps
 contain the impact of such compromises. The extension is applicable to both TLS 1.3
 and DTLS 1.3.
 
@@ -104,11 +108,11 @@ and DTLS 1.3.
 
 The Transport Layer Security (TLS) 1.3 protocol provides forward secrecy by using
 fresh ephemeral key exchange during the initial handshake. In the base protocol,
-this key exchange is performed with (EC)DHE. By registering new NamedGroup codepoints, TLS specifications also define
-hybrid and post-quantum key exchange mechanisms for the same purpose. This ensures
-that encrypted communication remains confidential even if an attacker later obtains
-a party's long-term private key, protecting against passive adversaries who record
-encrypted traffic for later decryption.
+this key exchange is performed with (EC)DHE. By registering new NamedGroup codepoints,
+TLS specifications also define hybrid and post-quantum key exchange mechanisms for
+the same purpose. This ensures that encrypted communication remains confidential even
+if an attacker later obtains a party's long-term private key, protecting against passive
+adversaries who record encrypted traffic for later decryption.
 
 TLS 1.3 also includes a KeyUpdate mechanism that allows traffic keys to be refreshed
 during an established session. However, this mechanism does not provide
@@ -1102,27 +1106,19 @@ extension registry {{TLS-Ext-Registry}}:
 
 We would like to thank the members of the "TSVWG DTLS for SCTP
 Requirements Design Team" for their discussion. The members, in
-no particular order, were:
-
-*  Marcelo Ricardo Leitner
-*  Zaheduzzaman Sarker
-*  Magnus Westerlund
-*  John Mattsson
-*  Claudio Porfiri
-*  Xin Long
-*  Michael Tüxen
-*  Hannes Tschofenig
-*  K Tirumaleswar Reddy
-*  Bertrand Rault
+no particular order, were: Marcelo Ricardo Leitner, Xin Long,
+John Mattsson, Claudio Porfiri, Bertrand Rault, K Tirumaleswar Reddy,
+Zaheduzzaman Sarker, Hannes Tschofenig, Michael Tüxen, and
+Magnus Westerlund.
 
 Additionally, we would like to thank the chairs of the
 Transport and Services Working Group (tsvwg) Gorry Fairhurst and
 Marten Seemann as well as the responsible area director Martin Duke.
 
-Finally, we would like to thank Martin Thomson, Ilari Liusvaara,
-Benjamin Kaduk, Scott Fluhrer, Dennis Jackson, David Benjamin,
-Matthijs van Duin, Rifaat Shekh-Yusef, Joe Birr-Pixton, Eric Rescorla,
-and Thom Wiggers for their review comments.
+Finally, we would like to thank David Benjamin, Joe Birr-Pixton,
+Matthijs van Duin, Scott Fluhrer, Dennis Jackson, Benjamin Kaduk,
+Ilari Liusvaara, Eric Rescorla, Rifaat Shekh-Yusef, Martin Thomson,
+Mathy Vanhoef, and Thom Wiggers for their review comments.
 
 # State Machines
 
