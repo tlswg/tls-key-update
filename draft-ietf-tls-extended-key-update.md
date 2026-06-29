@@ -941,7 +941,7 @@ secret for validation.
 
 ## Interaction of Extended Key Update and Post-Handshake Authentication
 
-EKU and post-handshake authentication may both occur during the lifetime
+EKU and Post-Handshake Authentication may both occur during the lifetime
 of a (D)TLS connection.  Post-Handshake Certificate-Based Client
 Authentication (PHA) is bound to the handshake transcript and computes
 its `Finished` message as specified in Section 4.4 of {{TLS}}, using a key
@@ -965,7 +965,7 @@ The following constraints apply to both TLS 1.3 and DTLS 1.3:
 * In a cross-flight condition, if a (D)TLS client sends an EKU request and,
   before receiving a response, receives a `CertificateRequest` from the
   (D)TLS server, the endpoints MUST defer completion of the EKU exchange
-  and proceed with the post-handshake authentication exchange. The endpoints
+  and proceed with the Post-Handshake Authentication exchange. The endpoints
   MUST NOT transition to new application traffic secrets until the
   authentication exchange has completed.
 
@@ -1007,12 +1007,12 @@ the stolen private key.
 
 Extended Key Update can restore confidentiality only if the attacker no longer
 has access to either peer. If an adversary retains access to current application traffic
-keys and can act as a man-in-the-middle during the Extended Key Update, then the
+keys and can act as an active attacker during the Extended Key Update, then the
 update cannot restore security unless {{exported}} is used.
 
 If one of the mechanisms defined in {{exported}} is not used, the attacker can
 impersonate each endpoint, substitute EKU messages, and maintain control
-of the communication. When Post-handshake Certificate-Based Client Authentication
+of the communication. When Post-Handshake Certificate-Based Client Authentication
 or the modified Exported Authenticator mechanism is used, the authentication messages
 are bound to the keys established after the EKU. Any modification or substitution of
 EKU messages therefore becomes detectable, preventing this attack.
@@ -1029,11 +1029,9 @@ subsequent application data remains confidential.
 ## Post-Compromise Security
 
 Extended Key Update provides post-compromise security for long-lived TLS sessions.
-To ensure post-compromise security guarantees:
-
-* Each update MUST use freshly generated ephemeral key-exchange material. Implementations MUST NOT reuse
-  ephemeral key-exchange material across updates or across TLS sessions.
-
+To ensure post-compromise security guarantees each update MUST use freshly generated
+ephemeral key exchange material. Implementations MUST NOT reuse ephemeral key
+exchange material across updates or across TLS sessions.
 
 ## Denial-of-Service (DoS)
 
@@ -1418,7 +1416,7 @@ Once Extended Key Update has been negotiated for a session, peers rely exclusive
 
 ## Detecting Divergent Key State
 
-As described in {{exported}}, both Post-handshake Certificate-Based Client Authentication and Exported Authenticators can be used after an Extended Key Update to confirm that both endpoints derived the same
+As described in {{exported}}, both Post-Handshake Certificate-Based Client Authentication and Exported Authenticators can be used after an Extended Key Update to confirm that both endpoints derived the same
 traffic keys. Because the authentication messages produced by these mechanisms depend on values
 derived from the updated traffic keys, any divergence in those traffic keys causes validation to fail,
 revealing interference by an active attacker.
