@@ -54,6 +54,9 @@ author:
 normative:
 
 informative:
+  I-D.ietf-tls-ecdhe-mlkem:
+  I-D.ietf-tls-mlkem:
+  RFC9958:
   ANSSI:
      author:
         org: ANSSI
