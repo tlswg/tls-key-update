@@ -6,13 +6,13 @@ Transport Layer Security                                   H. Tschofenig
 Internet-Draft                                                   Siemens
 Updates: 9261, 8446 (if approved)                               M. Tüxen
 Intended status: Standards Track       Münster Univ. of Applied Sciences
-Expires: 28 September 2026                                      T. Reddy
+Expires: 31 December 2026                                       T. Reddy
                                                                    Nokia
                                                                 S. Fries
                                                                  Siemens
                                                             Y. Rosomakho
                                                                  Zscaler
-                                                           27 March 2026
+                                                            29 June 2026
 
 
        Extended Key Update for Transport Layer Security (TLS) 1.3
@@ -23,18 +23,21 @@ Abstract
    TLS 1.3 ensures forward secrecy by performing an ephemeral Diffie-
    Hellman key exchange during the initial handshake, protecting past
    communications even if a party's long-term keys (typically a private
-   key with a corresponding certificate) are later compromised.  While
-   the built-in KeyUpdate mechanism allows application traffic keys to
-   be refreshed during a session, it does not incorporate fresh entropy
-   from a new key exchange and therefore does not provide post-
+   key with a corresponding certificate) are later compromised.
+
+   While the built-in KeyUpdate mechanism allows application traffic
+   keys to be refreshed during a session, it does not incorporate fresh
+   entropy from a new key exchange and therefore does not provide post-
    compromise security.  This limitation can pose a security risk in
    long-lived sessions, such as those found in industrial IoT or
    telecommunications environments.
 
    To address this, this specification defines an extended key update
-   mechanism that performs a fresh Diffie-Hellman exchange within an
-   active session, thereby ensuring post-compromise security.  By
-   forcing attackers to exfiltrate new key material repeatedly, this
+   mechanism that performs a fresh execution of the key exchange
+   negotiated during the initial handshake within an active session,
+   thereby ensuring post-compromise security.
+
+   By forcing attackers to exfiltrate new key material repeatedly, this
    approach mitigates the risks associated with static key compromise.
    Regular renewal of session keys helps contain the impact of such
    compromises.  The extension is applicable to both TLS 1.3 and DTLS
@@ -66,7 +69,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 28 September 2026.
+   This Internet-Draft will expire on 31 December 2026.
 
 Copyright Notice
 
@@ -692,21 +695,21 @@ Table of Contents
    generation of application_traffic_secret is motivated by the desire
    to include
 
-   *  a secret derived from the (EC)DHE exchange (or from a PQ/T hybrid
-      or post-quantum KEM exchange),
+   *  a secret derived from the negotiated key exchange, whether
+      (EC)DHE, post-quantum KEM, or a PQ/T hybrid mechanism,
 
    *  a secret that allows the new key exchange to be cryptographically
       bound to the previously established secret,
 
    *  a transcript hash that is updated after each Extended Key Update
-      exchange by hashing together the previous transcript hash value
-      with the current ExtendedKeyUpdate(key_update_request) and
-      ExtendedKeyUpdate(key_update_response) messages, which contain the
-      key shares, thereby binding the encapsulated shared secret
-      ciphertext to the IKM in the case of PQ/T hybrid or post-quantum-
-      only key exchange and cryptographically binding the newly derived
-      secrets to the prior handshake transcript and all preceding EKU
-      exchanges, as well as to the current EKU exchange, and
+      exchange by hashing the previous transcript hash together with the
+      current ExtendedKeyUpdate(key_update_request) and
+      ExtendedKeyUpdate(key_update_response) messages.  This binds any
+      encapsulation ciphertext and public key used in PQ/T hybrid or
+      post-quantum key exchanges to the IKM and cryptographically binds
+      the newly derived secrets to the original handshake transcript,
+      all prior EKU exchanges, the current EKU exchange, and the
+      corresponding KEM public key and encapsulation ciphertext, and
 
    *  new label strings to distinguish it from the key derivation used
       in TLS 1.3.
@@ -732,8 +735,8 @@ Table of Contents
                 v
           Derive-Secret(., "derived", "")
                 |
-                v
-    (EC)DHE -> HKDF-Extract = main_secret_N+1
+   Shared       v
+   Secret -> HKDF-Extract = main_secret_N+1
                 |
                 +-----> Derive-Secret(., "c ap traffic",
                 |                     transcript_hash_N+1)
@@ -757,12 +760,17 @@ Table of Contents
    Section 7.1 of [TLS]).  Since the main_secret is discarded during the
    key derivation procedure, a derived value is stored.  This stored
    value then serves as the input salt to the first key update procedure
-   that incorporates the ephemeral (EC)DHE- established value as input
-   keying material (IKM) to produce main_secret_N+1.  The derived value
-   from this new main secret serves as input salt to the subsequent key
-   update procedure, which also incorporates a fresh ephemeral (EC)DHE
-   value as IKM.  This process is repeated for each additional key
-   update procedure.
+   that incorporates the shared secret as input keying material (IKM) to
+   produce main_secret_N+1.  The derived value from this new main secret
+   serves as input salt to the subsequent key update procedure, which
+   also incorporates a fresh shared secret as IKM.  This process is
+   repeated for each additional key update procedure.
+
+   The shared secret is determined by the negotiated key exchange
+   mechanism.  In the base protocol, this mechanism is (EC)DHE (see
+   Section 7.4 of [TLS]).  Post-quantum and hybrid key exchange
+   mechanisms derive the shared secret as specified by their respective
+   definitions.  See also Section 8.
 
    The traffic keys are re-derived from
    client_application_traffic_secret_N+1 and
@@ -807,26 +815,33 @@ Table of Contents
 
 8.  Post-Quantum Cryptography Considerations
 
-   Hybrid key exchange refers to the simultaneous use of multiple key
-   exchange algorithms, with the resulting shared secret derived by
-   combining the outputs of each.  The goal of this approach is to
-   maintain security even if all but one of the component algorithms are
-   later found to be vulnerable.
+   The shared secret used by the Extended Key Update mechanism is
+   derived according to the negotiated key exchange method.  As a
+   result, this specification supports the same classes of key
+   establishment mechanisms as TLS itself, including traditional Diffie-
+   Hellman-based key exchanges, post-quantum key encapsulation
+   mechanisms (KEMs), and hybrid combinations thereof.
 
-   The transition to post-quantum cryptography has motivated the
-   adoption of hybrid key exchanges in TLS, as described in
-   [TLS-HYBRID].  Specific hybrid groups have been registered in
-   [TLS-ECDHE-MLKEM].  When hybrid key exchange is used, the
-   key_exchange field of each KeyShareEntry in the initial handshake is
-   formed by concatenating the key_exchange fields of the constituent
-   algorithms.  This same approach is reused during the Extended Key
-   Update, when new key shares are exchanged.
+   In the base TLS protocol, the shared secret is typically established
+   using (EC)DHE (see Section 7.4 of [TLS]).  Recent extensions have
+   introduced support for post-quantum and hybrid key establishment
+   mechanisms to facilitate the transition to post-quantum cryptography.
+   The rationale for this transition and the associated terminology are
+   discussed in [RFC9958] and [RFC9794], respectively.
 
-   [TLS-MLKEM] registers the lattice-based ML-KEM algorithm and its
-   variants, such as ML-KEM-512, ML-KEM-768 and ML-KEM-1024.  The KEM
-   encapsulation key or KEM ciphertext is represented as a
-   'KeyShareEntry' field.  This same approach is reused during the
-   Extended Key Update, when new key shares are exchanged.
+   For hybrid mechanisms such as SecP256r1MLKEM768, defined in
+   [I-D.ietf-tls-ecdhe-mlkem], the shared secret is derived by combining
+   the outputs of the constituent algorithms; specifically, it is the
+   concatenation of the ECDHE and ML-KEM shared secrets.  For ML-KEM-
+   only key exchange, as defined in [I-D.ietf-tls-mlkem], the ML-KEM
+   shared secret is provided directly to the TLS key schedule in place
+   of the (EC)DHE shared secret.
+
+   The Extended Key Update protocol reuses the key exchange
+   representation defined by the negotiated mechanism.  Consequently,
+   the exchange of fresh key shares during an Extended Key Update
+   follows the same encoding and shared-secret derivation rules as the
+   corresponding TLS handshake.
 
 9.  SSLKEYLOGFILE Update
 
@@ -1027,7 +1042,7 @@ Table of Contents
 11.3.  Interaction of Extended Key Update and Post-Handshake
        Authentication
 
-   EKU and post-handshake authentication may both occur during the
+   EKU and Post-Handshake Authentication may both occur during the
    lifetime of a (D)TLS connection.  Post-Handshake Certificate-Based
    Client Authentication (PHA) is bound to the handshake transcript and
    computes its Finished message as specified in Section 4.4 of [TLS],
@@ -1054,8 +1069,8 @@ Table of Contents
    *  In a cross-flight condition, if a (D)TLS client sends an EKU
       request and, before receiving a response, receives a
       CertificateRequest from the (D)TLS server, the endpoints MUST
-      defer completion of the EKU exchange and proceed with the post-
-      handshake authentication exchange.  The endpoints MUST NOT
+      defer completion of the EKU exchange and proceed with the Post-
+      Handshake Authentication exchange.  The endpoints MUST NOT
       transition to new application traffic secrets until the
       authentication exchange has completed.
 
@@ -1083,26 +1098,36 @@ Table of Contents
 
 12.1.  Scope of Key Compromise
 
-   Extended Key Update assumes a transient compromise of the current
-   application traffic keys, not a persistent attacker with ongoing
-   access to key material.  The procedure itself does not rely on long-
-   term private keys; those are assumed to remain secure, as they are
-   typically stored in a hardware security module.  In contrast,
-   application traffic keys are stored within the rich operating system,
-   where short-term exposure due to memory disclosure or transient
-   compromise may occur.  Post-compromise security can be re-
-   established, provided the compromise is no longer active when an
-   Extended Key Update is performed.
+   Extended Key Update (EKU) assumes a transient compromise of the
+   current application traffic keys, rather than a persistent attacker
+   with ongoing access to key material.  The EKU procedure does not rely
+   on long-term private keys, which may be stored in a secure element
+   (e.g., a Hardware Security Module (HSM)) or within the rich OS.
+   Moreover, in security-critical scenarios, these long-term private
+   keys are typically stored separately from the primary secret or the
+   traffic keys.
+
+   Two threat scenarios are relevant:
+
+   1.  The long-term private key remains secure, while application
+       traffic keys in the rich operating system are temporarily
+       exposed.  EKU addresses this case for the current TLS connection.
+
+   2.  If the long-term private key in the rich OS is compromised, EKU
+       can still protect the current TLS connection by updating the main
+       secret and traffic keys.  However, all future TLS connections are
+       at risk, as the attacker can impersonate the endpoint using the
+       stolen private key.
 
    Extended Key Update can restore confidentiality only if the attacker
    no longer has access to either peer.  If an adversary retains access
-   to current application traffic keys and can act as a man-in-the-
-   middle during the Extended Key Update, then the update cannot restore
+   to current application traffic keys and can act as an active attacker
+   during the Extended Key Update, then the update cannot restore
    security unless Section 11 is used.
 
    If one of the mechanisms defined in Section 11 is not used, the
    attacker can impersonate each endpoint, substitute EKU messages, and
-   maintain control of the communication.  When Post-handshake
+   maintain control of the communication.  When Post-Handshake
    Certificate-Based Client Authentication or the modified Exported
    Authenticator mechanism is used, the authentication messages are
    bound to the keys established after the EKU.  Any modification or
@@ -1123,11 +1148,10 @@ Table of Contents
 12.2.  Post-Compromise Security
 
    Extended Key Update provides post-compromise security for long-lived
-   TLS sessions.  To ensure post-compromise security guarantees:
-
-   *  Each update MUST use freshly generated ephemeral key-exchange
-      material.  Implementations MUST NOT reuse ephemeral key-exchange
-      material across updates or across TLS sessions.
+   TLS sessions.  To ensure post-compromise security guarantees each
+   update MUST use freshly generated ephemeral key exchange material.
+   Implementations MUST NOT reuse ephemeral key exchange material across
+   updates or across TLS sessions.
 
 12.3.  Denial-of-Service (DoS)
 
@@ -1169,7 +1193,7 @@ Table of Contents
 
    *  Recommended: Y
 
-   *  Reference: [This document]
+   *  Reference: This document
 
 13.2.  TLS HandshakeType
 
@@ -1182,7 +1206,7 @@ Table of Contents
 
    *  DTLS-OK: Y
 
-   *  Reference: [This document]
+   *  Reference: This document
 
 13.3.  ExtendedKeyUpdate Message Subtypes Registry
 
@@ -1317,6 +1341,21 @@ Table of Contents
               DOI 10.17487/RFC7624, August 2015,
               <https://www.rfc-editor.org/rfc/rfc7624>.
 
+   [I-D.ietf-tls-ecdhe-mlkem]
+              Kwiatkowski, K., Kampanakis, P., Westerbaan, B., and D.
+              Stebila, "Post-quantum hybrid ECDHE-MLKEM Key Agreement
+              for TLSv1.3", Work in Progress, Internet-Draft, draft-
+              ietf-tls-ecdhe-mlkem-05, 26 May 2026,
+              <https://datatracker.ietf.org/doc/html/draft-ietf-tls-
+              ecdhe-mlkem-05>.
+
+   [I-D.ietf-tls-mlkem]
+              Connolly, D., "ML-KEM Post-Quantum Key Agreement for TLS
+              1.3", Work in Progress, Internet-Draft, draft-ietf-tls-
+              mlkem-08, 24 June 2026,
+              <https://datatracker.ietf.org/doc/html/draft-ietf-tls-
+              mlkem-08>.
+
    [RFC8126]  Cotton, M., Leiba, B., and T. Narten, "Guidelines for
               Writing an IANA Considerations Section in RFCs", BCP 26,
               RFC 8126, DOI 10.17487/RFC8126, June 2017,
@@ -1331,25 +1370,15 @@ Table of Contents
               DOI 10.17487/RFC9794, June 2025,
               <https://www.rfc-editor.org/rfc/rfc9794>.
 
-   [TLS-ECDHE-MLKEM]
-              Kwiatkowski, K., Kampanakis, P., Westerbaan, B., and D.
-              Stebila, "Post-quantum hybrid ECDHE-MLKEM Key Agreement
-              for TLSv1.3", Work in Progress, Internet-Draft, draft-
-              ietf-tls-ecdhe-mlkem-04, 8 February 2026,
-              <https://datatracker.ietf.org/doc/html/draft-ietf-tls-
-              ecdhe-mlkem-04>.
+   [RFC9958]  Banerjee, A., Reddy.K, T., Schoinianakis, D., Hollebeek,
+              T., and M. Ounsworth, "Post-Quantum Cryptography for
+              Engineers", RFC 9958, DOI 10.17487/RFC9958, June 2026,
+              <https://www.rfc-editor.org/rfc/rfc9958>.
 
    [TLS-Ext-Registry]
               IANA, "Transport Layer Security (TLS) Extensions",
               November 2023, <https://www.iana.org/assignments/tls-
               extensiontype-values>.
-
-   [TLS-HYBRID]
-              Stebila, D., Fluhrer, S., and S. Gueron, "Hybrid key
-              exchange in TLS 1.3", Work in Progress, Internet-Draft,
-              draft-ietf-tls-hybrid-design-16, 7 September 2025,
-              <https://datatracker.ietf.org/doc/html/draft-ietf-tls-
-              hybrid-design-16>.
 
    [TLS-KEYLOGFILE]
               Thomson, M., Rosomakho, Y., and H. Tschofenig, "The
@@ -1357,13 +1386,6 @@ Table of Contents
               Draft, draft-ietf-tls-keylogfile-05, 9 June 2025,
               <https://datatracker.ietf.org/doc/html/draft-ietf-tls-
               keylogfile-05>.
-
-   [TLS-MLKEM]
-              Connolly, D., "ML-KEM Post-Quantum Key Agreement for TLS
-              1.3", Work in Progress, Internet-Draft, draft-ietf-tls-
-              mlkem-07, 12 February 2026,
-              <https://datatracker.ietf.org/doc/html/draft-ietf-tls-
-              mlkem-07>.
 
    [TLS-Param-Registry]
               IANA, "Transport Layer Security (TLS) Parameters",
@@ -1380,36 +1402,19 @@ Appendix A.  Acknowledgments
 
    We would like to thank the members of the "TSVWG DTLS for SCTP
    Requirements Design Team" for their discussion.  The members, in no
-   particular order, were:
-
-   *  Marcelo Ricardo Leitner
-
-   *  Zaheduzzaman Sarker
-
-   *  Magnus Westerlund
-
-   *  John Mattsson
-
-   *  Claudio Porfiri
-
-   *  Xin Long
-
-   *  Michael Tüxen
-
-   *  Hannes Tschofenig
-
-   *  K Tirumaleswar Reddy
-
-   *  Bertrand Rault
+   particular order, were: Marcelo Ricardo Leitner, Xin Long, John
+   Mattsson, Claudio Porfiri, Bertrand Rault, K Tirumaleswar Reddy,
+   Zaheduzzaman Sarker, Hannes Tschofenig, Michael Tüxen, and Magnus
+   Westerlund.
 
    Additionally, we would like to thank the chairs of the Transport and
    Services Working Group (tsvwg) Gorry Fairhurst and Marten Seemann as
    well as the responsible area director Martin Duke.
 
-   Finally, we would like to thank Martin Thomson, Ilari Liusvaara,
-   Benjamin Kaduk, Scott Fluhrer, Dennis Jackson, David Benjamin,
-   Matthijs van Duin, Rifaat Shekh-Yusef, Joe Birr-Pixton, Eric
-   Rescorla, and Thom Wiggers for their review comments.
+   Finally, we would like to thank David Benjamin, Joe Birr-Pixton,
+   Matthijs van Duin, Scott Fluhrer, Dennis Jackson, Benjamin Kaduk,
+   Ilari Liusvaara, Eric Rescorla, Rifaat Shekh-Yusef, Martin Thomson,
+   Mathy Vanhoef, and Thom Wiggers for their review comments.
 
 Appendix B.  State Machines
 
@@ -1637,7 +1642,7 @@ B.2.2.  State Machine (Initiator)
     |    |    |                if peer == local -> ABORT  (Error)
     |    |    |                if peer > local  -> ABANDON update;
     |    |    |                                    updating := 0;
-    |         |    |                                    act as RESPONDER
+    |    |    |                                    act as RESPONDER
     |    |    |
     |    |    +-- APP send (anytime)           (Self-Loop)
     |    |
@@ -1794,7 +1799,7 @@ C.3.  Elimination of Standard KeyUpdate
 
 C.4.  Detecting Divergent Key State
 
-   As described in Section 11, both Post-handshake Certificate-Based
+   As described in Section 11, both Post-Handshake Certificate-Based
    Client Authentication and Exported Authenticators can be used after
    an Extended Key Update to confirm that both endpoints derived the
    same traffic keys.  Because the authentication messages produced by

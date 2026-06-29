@@ -13,35 +13,38 @@
 <meta content="
        TLS 1.3 ensures forward secrecy by performing an ephemeral Diffie-Hellman key exchange
 during the initial handshake, protecting past communications even if a party's
-long-term keys (typically a private key with a corresponding certificate) are later compromised. While the built-in KeyUpdate mechanism allows
-application traffic keys to be refreshed during a session, it does not incorporate
-fresh entropy from a new key exchange and therefore does not provide post-compromise security.
-This limitation can pose a security risk in long-lived sessions, such as
-those found in industrial IoT or telecommunications environments. 
+long-term keys (typically a private key with a corresponding certificate) are later
+compromised. 
+       While the built-in KeyUpdate mechanism allows application traffic keys to be refreshed
+during a session, it does not incorporate fresh entropy from a new key exchange and
+therefore does not provide post-compromise security. This limitation can pose a security
+risk in long-lived sessions, such as those found in industrial IoT or telecommunications
+environments. 
        To address this, this specification defines an extended key update mechanism that
-performs a fresh Diffie-Hellman exchange within an active session, thereby
-ensuring post-compromise security. By forcing attackers
-to exfiltrate new key material repeatedly, this approach mitigates the risks
-associated with static key compromise. Regular renewal of session keys helps
+performs a fresh execution of the key exchange negotiated during the initial handshake
+within an active session, thereby ensuring post-compromise security. 
+       By forcing attackers to exfiltrate new key material repeatedly, this approach mitigates
+the risks associated with static key compromise. Regular renewal of session keys helps
 contain the impact of such compromises. The extension is applicable to both TLS 1.3
 and DTLS 1.3. 
     " name="description">
-<meta content="xml2rfc 3.32.0" name="generator">
+<meta content="xml2rfc 3.34.0" name="generator">
 <meta content="Internet-Draft" name="keyword">
 <meta content="draft-ietf-tls-extended-key-update-latest" name="ietf.draft">
 <!-- Generator version information:
-  xml2rfc 3.32.0
-    Python 3.12.12
-    ConfigArgParse 1.7
+  xml2rfc 3.34.0
+    Python 3.14.5
+    ConfigArgParse 1.7.5
     google-i18n-address 3.1.1
     intervaltree 3.2.1
     Jinja2 3.1.6
-    lxml 6.0.2
-    platformdirs 4.9.4
+    lxml 6.1.1
+    natsort 8.4.0
+    platformdirs 4.10.0
     pycountry 24.6.1
     PyYAML 6.0.3
-    requests 2.32.5
-    wcwidth 0.6.0
+    requests 2.33.1
+    wcwidth 0.8.1
 -->
 <link href="draft-ietf-tls-extended-key-update.xml" rel="alternate" type="application/rfc+xml">
 <link href="#copyright" rel="license">
@@ -308,16 +311,19 @@ h1, h2, h3, h4, h5, h6 {
   font-size-adjust: 0.5;
   color: var(--title-color);
 }
-h1#title {
-  font-size: 32px;
-  line-height: 40px;
-  clear: both;
-}
-h1#title, h1#rfcnum {
-  margin: 1.5em 0 0.2em;
-}
-h1#rfcnum + h1#title {
-  margin: 0.2em 0;
+h1 {
+  &#title {
+    font-size: 32px;
+    line-height: 40px;
+    clear: both;
+    margin: 1.5em 0 0.2em;
+  }
+  &#rfcnum {
+    margin: 1.5em 0 0.2em;
+    & + h1#title {
+      margin: 0.2em 0;
+    }
+  }
 }
 
 h1, h2, h3 {
@@ -337,10 +343,10 @@ h4, h5, h6 {
 #abstract+p {
   font-size: 18px;
   line-height: 24px;
-}
-#abstract+p code, #abstract+p samp, #abstract+p tt {
-  font-size: 16px;
-  line-height: 0;
+  & code, & samp, & tt {
+    font-size: 16px;
+    line-height: 0;
+  }
 }
 
 p {
@@ -351,59 +357,59 @@ p {
 div {
   margin: 0;
 }
-.alignRight.art-text {
-  background-color: var(--highlight-color);
-  border: 1px solid var(--line-color);
-  border-radius: 3px;
-  padding: 0.5em 1em 0;
-  margin-bottom: 0.5em;
-}
-.alignRight.art-text pre {
-  padding: 0;
-  width: auto;
-}
 .alignRight {
   margin: 1em 0;
-}
-.alignRight > *:first-child {
-  border: none;
-  margin: 0;
-  float: right;
-  clear: both;
-}
-.alignRight > *:nth-child(2) {
-  clear: both;
-  display: block;
-  border: none;
+  &.art-text {
+    background-color: var(--highlight-color);
+    border: 1px solid var(--line-color);
+    border-radius: 3px;
+    padding: 0.5em 1em 0;
+    margin-bottom: 0.5em;
+    & pre {
+      padding: 0;
+      width: auto;
+    }
+  }
+  & > *:first-child {
+    border: none;
+    margin: 0;
+    float: right;
+    clear: both;
+  }
+  & > *:nth-child(2) {
+    clear: both;
+    display: block;
+    border: none;
+  }
 }
 svg {
   display: block;
-}
-/* font-family isn't space-separated, but =~ will have to do */
-svg[font-family~="monospace" i], svg [font-family~="monospace" i] {
-  font-family: var(--font-mono);
-}
-.alignCenter.art-text {
-  background-color: var(--highlight-color);
-  border: 1px solid var(--line-color);
-  border-radius: 3px;
-  padding: 0.5em 1em 0;
-  margin-bottom: 0.5em;
-}
-.alignCenter.art-text pre {
-  padding: 0;
-  width: auto;
+  /* font-family isn't space-separated, but =~ will have to do */
+  &[font-family~="monospace" i], & [font-family~="monospace" i] {
+    font-family: var(--font-mono);
+  }
 }
 .alignCenter {
   margin: 1em 0;
-}
-.alignCenter > *:first-child {
-  border: none;
-  /* this isn't optimal, but it's an existence proof.  PrinceXML doesn't
-     support flexbox yet.
-  */
-  display: table;
-  margin: 0 auto;
+  &.art-text {
+    background-color: var(--highlight-color);
+    border: 1px solid var(--line-color);
+    border-radius: 3px;
+    padding: 0.5em 1em 0;
+    margin-bottom: 0.5em;
+    & pre {
+      padding: 0;
+      width: auto;
+    }
+  }
+  & > *:first-child {
+    border: none;
+    /* this isn't optimal, but it's an existence proof.  PrinceXML doesn't
+       support flexbox yet.
+    */
+    display: table;
+    margin: 0 auto;
+  }
 }
 
 /* lists */
@@ -441,26 +447,25 @@ dl {
     --indent: 5ch;
     & > dt {
       min-width: calc(var(--indent) - 2ch);
+      float: none;
     }
-  }
-  &.olPercent > dt {
-    float: none;
   }
 
   dl > dd > & {
     margin-top: 0.5em;
     margin-bottom: 0;
   }
-}
-dl:not(.dlNewline) > dt {
-  float: left;
-  margin-right: 2ch;
-  min-width: 8ch;
-}
-dl > dd {
-  margin-bottom: .8em;
-  margin-left: var(--indent) !important; /* stupid element overrides */
-  min-height: 2ex;
+
+  &:not(.dlNewline) > dt {
+    float: left;
+    margin-right: 2ch;
+    min-width: 8ch;
+  }
+  & > dd {
+    margin-bottom: .8em;
+    margin-left: var(--indent) !important; /* stupid element overrides */
+    min-height: 2ex;
+  }
 }
 :is(dl.compact, .dlCompact) > dd {
   margin-bottom: 0;
@@ -476,20 +481,22 @@ dl > dd {
 }
 
 /* links */
-a, a[href].selfRef:hover {
+a {
   text-decoration: none;
+  &[href] {
+    color: var(--link-color);
+    &:hover { text-decoration: underline; }
+    &.selfRef {
+      color: var(--text-color);
+      &:hover {
+        text-decoration: none;
+        background-color: var(--highlight-color);
+      }
+    }
+  }
 }
-a[href] {
-  color: var(--link-color);
-}
-a[href].selfRef, .iref + a[href].internal {
+.iref + a[href].internal {
   color: var(--text-color);
-}
-a[href]:hover {
-  text-decoration: underline;
-}
-a[href].selfRef:hover {
-  background-color: var(--highlight-color);
 }
 a.xref:is(.cite, .auto), :is(#status-of-memo, #copyright) a {
   white-space: nowrap;
@@ -525,9 +532,9 @@ img {
 figure {
   margin: 0.5em 0;
   padding: 0;
-}
-figure blockquote {
-  margin: 0.8em 0.4em 0.4em;
+  & blockquote {
+    margin: 0.8em 0.4em 0.4em;
+  }
 }
 figcaption, caption {
   font-style: italic;
@@ -537,17 +544,19 @@ figcaption, caption {
 }
 @media screen {
   /* Auto-collapse boilerplate. */
-  :is(#status-of-memo, #copyright) p {
-    margin: -2px 0;
-    max-height: 0;
-    transition: max-height 2s ease, margin 0.5s ease 0.5s;
-    overflow: hidden;
-  }
-  :is(#status-of-memo, #copyright):hover p,
-  :is(#status-of-memo, #copyright) h2:target ~ p {
-    margin: 0.5em 0;
-    max-height: 500px;
-    overflow: auto;
+  :is(#status-of-memo, #copyright) {
+    & p {
+      margin: -2px 0;
+      max-height: 0;
+      transition: max-height 2s ease, margin 0.5s ease 0.5s;
+      overflow: hidden;
+    }
+    &:hover p,
+    & h2:target ~ p {
+      margin: 0.5em 0;
+      max-height: 500px;
+      overflow: auto;
+    }
   }
   pre, svg {
     display: inline-block;
@@ -597,25 +606,17 @@ table {
   max-width: 100%;
   margin: 0 0 1em;
   border-collapse: collapse;
-}
-table.right {
-  margin-left: auto;
-}
-table.center {
-  margin-left: auto;
-  margin-right: auto;
-}
-table.left {
-  margin-right: auto;
-}
-table .text-left {
-  text-align: left;
-}
-table .text-center {
-  text-align: center;
-}
-table .text-right {
-  text-align: right;
+  &.right { margin-left: auto; }
+  &.center { margin-left: auto; margin-right: auto; }
+  &.left { margin-right: auto; }
+  & .text-left { text-align: left; }
+  & .text-center { text-align: center; }
+  & .text-right { text-align: right; }
+  & caption {
+    margin: 0;
+    padding: 3px 0 3px 1em;
+  }
+  & p { margin: 0; }
 }
 
 thead, tbody {
@@ -635,13 +636,6 @@ th {
 :is(tr:nth-child(2n+1), thead+tbody > tr:nth-child(2n)) > td {
   background-color: var(--highlight-color);
 }
-table caption {
-  margin: 0;
-  padding: 3px 0 3px 1em;
-}
-table p {
-  margin: 0;
-}
 
 /* pilcrow */
 a.pilcrow {
@@ -652,18 +646,16 @@ a.pilcrow {
     color: var(--pilcrow-weak);
     &:hover { text-decoration: none; }
   }
-}
-@media not print {
-  :hover > a.pilcrow, a.pilcrow:focus {
-    opacity: 1;
+  @media not print {
+    :hover > &, &:focus {
+      opacity: 1;
+    }
+    &[href]:hover {
+      color: var(--pilcrow-strong);
+      background-color: transparent;
+    }
   }
-  a.pilcrow[href]:hover {
-    color: var(--pilcrow-strong);
-    background-color: transparent;
-  }
-}
-@media print {
-  a.pilcrow {
+  @media print {
     display: none;
   }
 }
@@ -722,9 +714,9 @@ sub, sup {
   font-size: 0.9em;
   font-style: italic;
   margin-top: 2em;
-}
-.docInfo .prepared {
-  float: right;
+  & .prepared {
+    float: right;
+  }
 }
 
 /* table of contents */
@@ -814,23 +806,27 @@ hr.addr {
   max-width: calc(100% - 16px);
 }
 @media (min-width: 500px) {
-  #authors-addresses > section {
-    column-count: 2;
-    column-gap: 20px;
-  }
-  #authors-addresses > section > h2 {
-    column-span: all;
-  }
-  /* hack for break-inside: avoid-column */
-  #authors-addresses address {
-    display: inline-block;
-    break-inside: avoid-column;
+  #authors-addresses {
+    & > section {
+      column-count: 2;
+      column-gap: 20px;
+    }
+    & > section > h2 {
+      column-span: all;
+    }
+    /* hack for break-inside: avoid-column */
+    & address {
+      display: inline-block;
+      break-inside: avoid-column;
+    }
   }
 }
 
 /* Comments */
-.rfcEditorRemove p:first-of-type {
-  font-style: italic;
+.rfcEditorRemove {
+  & p:first-of-type {
+    font-style: italic;
+  }
 }
 .cref {
   background-color: rgba(249, 232, 105, 0.3);
@@ -841,19 +837,21 @@ hr.addr {
 }
 
 @media screen {
-  #toc nav {
-    font-family: var(--font-title);
-    font-weight: 360;
-    & > ul { margin-bottom: 2em; }
-    & ul {
-      margin: 0 0 0 4px;
-      & :is(p, li) {
-        margin: 2px 0;
+  #toc {
+    & nav {
+      font-family: var(--font-title);
+      font-weight: 360;
+      & > ul { margin-bottom: 2em; }
+      & ul {
+        margin: 0 0 0 4px;
+        & :is(p, li) {
+          margin: 2px 0;
+        }
       }
     }
-  }
-  #toc a.toplink {
-    float: right;
+    & a.toplink {
+      float: right;
+    }
   }
 }
 @media not screen {
@@ -874,54 +872,54 @@ hr.addr {
     margin: 0;
     border-bottom: 1px solid #ccc;
     opacity: 0.6;
-  }
-  #toc h2 {
-    margin: 0;
-    padding: 2px 0 2px 6px;
-    padding-right: 1em;
-    font-size: 18px;
-    line-height: 24px;
-    min-width: 190px;
-    text-align: right;
-    background-color: #444;
-    color: white;
-    cursor: pointer;
-    &::before { /* css hamburger */
-      float: right;
-      position: relative;
-      width: 1em;
-      height: 1px;
-      left: -164px;
-      margin: 8px 0 0 0;
-      background: white none repeat scroll 0 0;
-      box-shadow: 0 4px 0 0 white, 0 8px 0 0 white;
-      content: "";
+    & h2 {
+      margin: 0;
+      padding: 2px 0 2px 6px;
+      padding-right: 1em;
+      font-size: 18px;
+      line-height: 24px;
+      min-width: 190px;
+      text-align: right;
+      background-color: #444;
+      color: white;
+      cursor: pointer;
+      &::before { /* css hamburger */
+        float: right;
+        position: relative;
+        width: 1em;
+        height: 1px;
+        left: -164px;
+        margin: 8px 0 0 0;
+        background: white none repeat scroll 0 0;
+        box-shadow: 0 4px 0 0 white, 0 8px 0 0 white;
+        content: "";
+      }
     }
-  }
-  #toc nav {
-    display: none;
-    background-color: var(--background-color);
-    padding: 0.5em 1em 1em;
-    overflow: auto;
-    overscroll-behavior: contain;
-    height: calc(100vh - 48px);
-    border-left: 1px solid #ddd;
-  }
-  #toc.active {
-    opacity: 1;
-    & nav { display: block; }
-  }
-  /* Make the collapsed ToC header render white on gray also when it's a link */
-  #toc h2 a,
-  #toc h2 a:is(:link, :focus, :hover),
-  #toc a.toplink,
-  #toc a.toplink:hover {
-    color: white;
-    background-color: #444;
-    text-decoration: none;
-  }
-  #toc a.toplink {
-    margin: 2px 0.5em 0;
+    & nav {
+      display: none;
+      background-color: var(--background-color);
+      padding: 0.5em 1em 1em;
+      overflow: auto;
+      overscroll-behavior: contain;
+      height: calc(100vh - 48px);
+      border-left: 1px solid #ddd;
+    }
+    &.active {
+      opacity: 1;
+      & nav { display: block; }
+    }
+    /* Make the collapsed ToC header render white on gray also when it's a link */
+    & h2 a,
+    & h2 a:is(:link, :focus, :hover),
+    & a.toplink,
+    & a.toplink:hover {
+      color: white;
+      background-color: #444;
+      text-decoration: none;
+    }
+    & a.toplink {
+      margin: 2px 0.5em 0;
+    }
   }
 }
 
@@ -940,26 +938,26 @@ hr.addr {
     margin: 0;
     padding: 0;
     z-index: 1;
-  }
-  #toc h2 {
-    margin: 0;
-    padding: 0.25em 1em 1em 0;
-  }
-  #toc nav {
-    display: block;
-    height: calc(90vh - 84px);
-    bottom: 0;
-    padding: 0.5em 0 2em;
-    overflow: auto;
-    overscroll-behavior: contain;
-    scrollbar-width: thin;
+    & h2 {
+      margin: 0;
+      padding: 0.25em 1em 1em 0;
+    }
+    & nav {
+      display: block;
+      height: calc(90vh - 84px);
+      bottom: 0;
+      padding: 0.5em 0 2em;
+      overflow: auto;
+      overscroll-behavior: contain;
+      scrollbar-width: thin;
+    }
+    & a.toplink {
+      margin: 8px 0.5em 0;
+    }
   }
   img { /* future proofing */
     max-width: 100%;
     height: auto;
-  }
-  #toc a.toplink {
-    margin: 8px 0.5em 0;
   }
 }
 
@@ -975,12 +973,13 @@ hr.addr {
   #n-copyright-notice {
     border-bottom: none;
   }
-  #toc, #n-introduction {
-    page-break-before: always;
-  }
   #toc {
+    page-break-before: always;
     border-top: none;
     padding-top: 0;
+  }
+  #n-introduction {
+    page-break-before: always;
   }
   figure, pre, .vcard {
     page-break-inside: avoid;
@@ -1042,17 +1041,19 @@ hr.addr {
 }
 
 /* SVG Trick: a prefix match works because only black and white are allowed */
-svg :is([stroke="black"], [stroke^="#000"]) {
-  stroke: var(--text-color);
-}
-svg :is([stroke="white"], [stroke^="#fff"]) {
-  stroke: var(--background-color);
-}
-svg :is([fill="black"], [fill^="#000"], :not([fill])) {
-  fill: var(--text-color);
-}
-svg :is([fill="white"], [fill^="#fff"]) {
-  fill: var(--background-color);
+svg {
+  & :is([stroke="black"], [stroke^="#000"]) {
+    stroke: var(--text-color);
+  }
+  & :is([stroke="white"], [stroke^="#fff"]) {
+    stroke: var(--background-color);
+  }
+  & :is([fill="black"], [fill^="#000"], :not([fill])) {
+    fill: var(--text-color);
+  }
+  & :is([fill="white"], [fill^="#fff"]) {
+    fill: var(--background-color);
+  }
 }
 </style>
 
@@ -1062,11 +1063,11 @@ svg :is([fill="white"], [fill^="#fff"]) {
 <thead><tr>
 <td class="left">Internet-Draft</td>
 <td class="center">Extended Key Update for TLS</td>
-<td class="right">March 2026</td>
+<td class="right">June 2026</td>
 </tr></thead>
 <tfoot><tr>
 <td class="left">Tschofenig, et al.</td>
-<td class="center">Expires 28 September 2026</td>
+<td class="center">Expires 31 December 2026</td>
 <td class="right">[Page]</td>
 </tr></tfoot>
 </table>
@@ -1082,12 +1083,12 @@ svg :is([fill="white"], [fill^="#fff"]) {
 <a href="https://www.rfc-editor.org/rfc/rfc9261" class="eref">9261</a>, <a href="https://www.rfc-editor.org/rfc/rfc8446" class="eref">8446</a> (if approved)</dd>
 <dt class="label-published">Published:</dt>
 <dd class="published">
-<time datetime="2026-03-27" class="published">27 March 2026</time>
+<time datetime="2026-06-29" class="published">29 June 2026</time>
     </dd>
 <dt class="label-intended-status">Intended Status:</dt>
 <dd class="intended-status">Standards Track</dd>
 <dt class="label-expires">Expires:</dt>
-<dd class="expires"><time datetime="2026-09-28">28 September 2026</time></dd>
+<dd class="expires"><time datetime="2026-12-31">31 December 2026</time></dd>
 <dt class="label-authors">Authors:</dt>
 <dd class="authors">
 <div class="author">
@@ -1118,18 +1119,20 @@ svg :is([fill="white"], [fill^="#fff"]) {
       <h2 id="abstract"><a href="#abstract" class="selfRef">Abstract</a></h2>
 <p id="section-abstract-1">TLS 1.3 ensures forward secrecy by performing an ephemeral Diffie-Hellman key exchange
 during the initial handshake, protecting past communications even if a party's
-long-term keys (typically a private key with a corresponding certificate) are later compromised. While the built-in KeyUpdate mechanism allows
-application traffic keys to be refreshed during a session, it does not incorporate
-fresh entropy from a new key exchange and therefore does not provide post-compromise security.
-This limitation can pose a security risk in long-lived sessions, such as
-those found in industrial IoT or telecommunications environments.<a href="#section-abstract-1" class="pilcrow">¶</a></p>
-<p id="section-abstract-2">To address this, this specification defines an extended key update mechanism that
-performs a fresh Diffie-Hellman exchange within an active session, thereby
-ensuring post-compromise security. By forcing attackers
-to exfiltrate new key material repeatedly, this approach mitigates the risks
-associated with static key compromise. Regular renewal of session keys helps
+long-term keys (typically a private key with a corresponding certificate) are later
+compromised.<a href="#section-abstract-1" class="pilcrow">¶</a></p>
+<p id="section-abstract-2">While the built-in KeyUpdate mechanism allows application traffic keys to be refreshed
+during a session, it does not incorporate fresh entropy from a new key exchange and
+therefore does not provide post-compromise security. This limitation can pose a security
+risk in long-lived sessions, such as those found in industrial IoT or telecommunications
+environments.<a href="#section-abstract-2" class="pilcrow">¶</a></p>
+<p id="section-abstract-3">To address this, this specification defines an extended key update mechanism that
+performs a fresh execution of the key exchange negotiated during the initial handshake
+within an active session, thereby ensuring post-compromise security.<a href="#section-abstract-3" class="pilcrow">¶</a></p>
+<p id="section-abstract-4">By forcing attackers to exfiltrate new key material repeatedly, this approach mitigates
+the risks associated with static key compromise. Regular renewal of session keys helps
 contain the impact of such compromises. The extension is applicable to both TLS 1.3
-and DTLS 1.3.<a href="#section-abstract-2" class="pilcrow">¶</a></p>
+and DTLS 1.3.<a href="#section-abstract-4" class="pilcrow">¶</a></p>
 </section>
 <section class="note rfcEditorRemove" id="section-note.1">
       <h2 id="name-discussion-venues">
@@ -1161,7 +1164,7 @@ and DTLS 1.3.<a href="#section-abstract-2" class="pilcrow">¶</a></p>
         time. It is inappropriate to use Internet-Drafts as reference
         material or to cite them other than as "work in progress."<a href="#section-boilerplate.1-3" class="pilcrow">¶</a></p>
 <p id="section-boilerplate.1-4">
-        This Internet-Draft will expire on 28 September 2026.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
+        This Internet-Draft will expire on 31 December 2026.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="copyright">
@@ -1369,11 +1372,11 @@ and DTLS 1.3.<a href="#section-abstract-2" class="pilcrow">¶</a></p>
       </h2>
 <p id="section-1-1">The Transport Layer Security (TLS) 1.3 protocol provides forward secrecy by using
 fresh ephemeral key exchange during the initial handshake. In the base protocol,
-this key exchange is performed with (EC)DHE. By registering new NamedGroup codepoints, TLS specifications also define
-hybrid and post-quantum key exchange mechanisms for the same purpose. This ensures
-that encrypted communication remains confidential even if an attacker later obtains
-a party's long-term private key, protecting against passive adversaries who record
-encrypted traffic for later decryption.<a href="#section-1-1" class="pilcrow">¶</a></p>
+this key exchange is performed with (EC)DHE. By registering new NamedGroup codepoints,
+TLS specifications also define hybrid and post-quantum key exchange mechanisms for
+the same purpose. This ensures that encrypted communication remains confidential even
+if an attacker later obtains a party's long-term private key, protecting against passive
+adversaries who record encrypted traffic for later decryption.<a href="#section-1-1" class="pilcrow">¶</a></p>
 <p id="section-1-2">TLS 1.3 also includes a KeyUpdate mechanism that allows traffic keys to be refreshed
 during an established session. However, this mechanism does not provide
 post-compromise security, as it applies only a key derivation function to the
@@ -1960,23 +1963,21 @@ generation of application_traffic_secret is motivated by the desire
 to include<a href="#section-7-2" class="pilcrow">¶</a></p>
 <ul class="normal">
 <li class="normal" id="section-7-3.1">
-          <p id="section-7-3.1.1">a secret derived from the (EC)DHE exchange (or from a PQ/T hybrid or
-post-quantum KEM exchange),<a href="#section-7-3.1.1" class="pilcrow">¶</a></p>
+          <p id="section-7-3.1.1">a secret derived from the negotiated key exchange, whether (EC)DHE, post-quantum KEM, or a PQ/T hybrid mechanism,<a href="#section-7-3.1.1" class="pilcrow">¶</a></p>
 </li>
         <li class="normal" id="section-7-3.2">
           <p id="section-7-3.2.1">a secret that allows the new key exchange to be cryptographically
 bound to the previously established secret,<a href="#section-7-3.2.1" class="pilcrow">¶</a></p>
 </li>
         <li class="normal" id="section-7-3.3">
-          <p id="section-7-3.3.1">a transcript hash that is updated after each Extended Key Update exchange
-by hashing together the previous transcript hash value with the current
-ExtendedKeyUpdate(key_update_request) and ExtendedKeyUpdate(key_update_response)
-messages, which contain the key shares, thereby binding the encapsulated shared
-secret ciphertext to the IKM in the case of PQ/T hybrid or
-post-quantum-only key exchange and
-cryptographically binding the newly derived secrets to the prior handshake
-transcript and all preceding EKU exchanges, as well as to the current EKU
-exchange, and<a href="#section-7-3.3.1" class="pilcrow">¶</a></p>
+          <p id="section-7-3.3.1">a transcript hash that is updated after each Extended Key Update exchange by
+hashing the previous transcript hash together with the current
+ExtendedKeyUpdate(key_update_request) and
+ExtendedKeyUpdate(key_update_response) messages. This binds any
+encapsulation ciphertext and public key used in PQ/T hybrid or post-quantum key exchanges
+to the IKM and cryptographically binds the newly derived secrets to the
+original handshake transcript, all prior EKU exchanges, the current EKU
+exchange, and the corresponding KEM public key and encapsulation ciphertext, and<a href="#section-7-3.3.1" class="pilcrow">¶</a></p>
 </li>
         <li class="normal" id="section-7-3.4">
           <p id="section-7-3.4.1">new label strings to distinguish it from the key derivation used in
@@ -2008,8 +2009,8 @@ client Finished message.<a href="#section-7-6" class="pilcrow">¶</a></p>
              v
        Derive-Secret(., "derived", "")
              |
-             v
- (EC)DHE -&gt; HKDF-Extract = main_secret_N+1
+Shared       v
+Secret -&gt; HKDF-Extract = main_secret_N+1
              |
              +-----&gt; Derive-Secret(., "c ap traffic",
              |                     transcript_hash_N+1)
@@ -2036,68 +2037,73 @@ client Finished message.<a href="#section-7-6" class="pilcrow">¶</a></p>
 <span><a href="https://datatracker.ietf.org/doc/html/draft-ietf-tls-rfc8446bis-14#section-7.1" class="relref">Section 7.1</a> of [<a href="#TLS" class="cite xref">TLS</a>]</span>). Since the main_secret
 is discarded during the key derivation procedure, a derived value is
 stored. This stored value then serves as the input salt to the first
-key update procedure that incorporates the ephemeral (EC)DHE-
-established value as input keying material (IKM) to produce
-main_secret_N+1. The derived value from this new main secret
-serves as input salt to the subsequent key update procedure, which
-also incorporates a fresh ephemeral (EC)DHE value as IKM. This
-process is repeated for each additional key update procedure.<a href="#section-7-9" class="pilcrow">¶</a></p>
-<p id="section-7-10">The traffic keys are re-derived from
+key update procedure that incorporates the shared secret as input
+keying material (IKM) to produce main_secret_N+1. The derived value
+from this new main secret serves as input salt to the subsequent key
+update procedure, which also incorporates a fresh shared secret as
+IKM. This process is repeated for each additional key update procedure.<a href="#section-7-9" class="pilcrow">¶</a></p>
+<p id="section-7-10">The shared secret is determined by the negotiated key exchange mechanism.
+In the base protocol, this mechanism is (EC)DHE (see <span><a href="https://datatracker.ietf.org/doc/html/draft-ietf-tls-rfc8446bis-14#section-7.4" class="relref">Section 7.4</a> of [<a href="#TLS" class="cite xref">TLS</a>]</span>). Post-quantum and hybrid key exchange mechanisms derive the
+shared secret as specified by their respective definitions. See also
+<a href="#pqc-cons" class="auto internal xref">Section 8</a>.<a href="#section-7-10" class="pilcrow">¶</a></p>
+<p id="section-7-11">The traffic keys are re-derived from
 client_application_traffic_secret_N+1 and
 server_application_traffic_secret_N+1, as described in
-<span><a href="https://datatracker.ietf.org/doc/html/draft-ietf-tls-rfc8446bis-14#section-7.3" class="relref">Section 7.3</a> of [<a href="#TLS" class="cite xref">TLS</a>]</span>.<a href="#section-7-10" class="pilcrow">¶</a></p>
-<p id="section-7-11">Once client_/server_application_traffic_secret_N+1 and its associated
+<span><a href="https://datatracker.ietf.org/doc/html/draft-ietf-tls-rfc8446bis-14#section-7.3" class="relref">Section 7.3</a> of [<a href="#TLS" class="cite xref">TLS</a>]</span>.<a href="#section-7-11" class="pilcrow">¶</a></p>
+<p id="section-7-12">Once client_/server_application_traffic_secret_N+1 and its associated
 traffic keys have been computed, implementations <span class="bcp14">SHOULD</span> delete
 client_/server_application_traffic_secret_N and its associated
 traffic keys as soon as possible. Note: The
 client_/server_application_traffic_secret_N and its associated
 traffic keys can only be deleted by the responder after receiving the
-<code>ExtendedKeyUpdate(key_update_finish)</code> message.<a href="#section-7-11" class="pilcrow">¶</a></p>
-<p id="section-7-12">Once client_/server_application_traffic_secret_N+1 and the corresponding traffic
+<code>ExtendedKeyUpdate(key_update_finish)</code> message.<a href="#section-7-12" class="pilcrow">¶</a></p>
+<p id="section-7-13">Once client_/server_application_traffic_secret_N+1 and the corresponding traffic
 keys are in use, all subsequent records, including alerts and post-handshake
-messages <span class="bcp14">MUST</span> be protected using those keys.<a href="#section-7-12" class="pilcrow">¶</a></p>
-<p id="section-7-13">When using this extension, it is important to consider its interaction with
+messages <span class="bcp14">MUST</span> be protected using those keys.<a href="#section-7-13" class="pilcrow">¶</a></p>
+<p id="section-7-14">When using this extension, it is important to consider its interaction with
 PSK-based resumption using PSKs established via the NewSessionTicket mechanism
-defined in <span>[<a href="#TLS" class="cite xref">TLS</a>]</span>.<a href="#section-7-13" class="pilcrow">¶</a></p>
-<p id="section-7-14">EKU provides post-compromise recovery for the TLS connection in which it is performed.
+defined in <span>[<a href="#TLS" class="cite xref">TLS</a>]</span>.<a href="#section-7-14" class="pilcrow">¶</a></p>
+<p id="section-7-15">EKU provides post-compromise recovery for the TLS connection in which it is performed.
 The recovery guarantees depend on the assumed compromise model. In typical deployment
 environments, PSKs established via the NewSessionTicket mechanism are generated and
 reside in memory within the rich operating system. Although such PSKs may subsequently
 be stored in secure storage, they are exposed during this initial processing window,
 and compromise of endpoint memory during this period is sufficient to reveal them.
 Consequently, later protection using secure storage does not prevent their prior
-compromise. These PSKs are sufficient to establish new authenticated TLS connections. Even if an implementation invalidates previously issued PSKs upon completion of the
+compromise. These PSKs are sufficient to establish new authenticated TLS connections.
+Even if an implementation invalidates previously issued PSKs upon completion of the
 EKU exchange, an attacker that has already obtained such a PSK may initiate and
 complete a resumed session prior to that invalidation. In such environments, EKU does
-not prevent the use of previously issued PSKs.<a href="#section-7-14" class="pilcrow">¶</a></p>
-<p id="section-7-15">Accordingly, endpoints that enable EKU <span class="bcp14">MUST</span> disable resumption using PSKs established
-via the NewSessionTicket mechanism.<a href="#section-7-15" class="pilcrow">¶</a></p>
+not prevent the use of previously issued PSKs.<a href="#section-7-15" class="pilcrow">¶</a></p>
+<p id="section-7-16">Accordingly, endpoints that enable EKU <span class="bcp14">MUST</span> disable resumption using PSKs established
+via the NewSessionTicket mechanism.<a href="#section-7-16" class="pilcrow">¶</a></p>
 </section>
 </div>
-<div id="post-quantum-cryptography-considerations">
+<div id="pqc-cons">
 <section id="section-8">
       <h2 id="name-post-quantum-cryptography-c">
 <a href="#section-8" class="section-number selfRef">8. </a><a href="#name-post-quantum-cryptography-c" class="section-name selfRef">Post-Quantum Cryptography Considerations</a>
       </h2>
-<p id="section-8-1">Hybrid key exchange refers to the simultaneous use of multiple key
-exchange algorithms, with the resulting shared secret derived by
-combining the outputs of each. The goal of this approach is to maintain
-security even if all but one of the component algorithms are later found
-to be vulnerable.<a href="#section-8-1" class="pilcrow">¶</a></p>
-<p id="section-8-2">The transition to post-quantum cryptography has motivated the adoption of
-hybrid key exchanges in TLS, as described in
-<span>[<a href="#TLS-HYBRID" class="cite xref">TLS-HYBRID</a>]</span>. Specific hybrid groups
-have been registered in <span>[<a href="#TLS-ECDHE-MLKEM" class="cite xref">TLS-ECDHE-MLKEM</a>]</span>.
-When hybrid key exchange is used, the <code>key_exchange</code> field of each
-<code>KeyShareEntry</code> in the initial handshake is formed by concatenating
-the <code>key_exchange</code> fields of the constituent algorithms. This same
-approach is reused during the Extended Key Update, when new key
-shares are exchanged.<a href="#section-8-2" class="pilcrow">¶</a></p>
-<p id="section-8-3"><span>[<a href="#TLS-MLKEM" class="cite xref">TLS-MLKEM</a>]</span> registers the lattice-based
-ML-KEM algorithm and its variants, such as ML-KEM-512, ML-KEM-768 and
-ML-KEM-1024. The KEM encapsulation key or KEM ciphertext is represented
-as a 'KeyShareEntry' field. This same approach is reused during the
-Extended Key Update, when new key shares are exchanged.<a href="#section-8-3" class="pilcrow">¶</a></p>
+<p id="section-8-1">The shared secret used by the Extended Key Update mechanism is derived according
+to the negotiated key exchange method. As a result, this specification supports
+the same classes of key establishment mechanisms as TLS itself, including traditional
+Diffie-Hellman-based key exchanges, post-quantum key encapsulation mechanisms (KEMs),
+and hybrid combinations thereof.<a href="#section-8-1" class="pilcrow">¶</a></p>
+<p id="section-8-2">In the base TLS protocol, the shared secret is typically established using (EC)DHE
+(see <span><a href="https://datatracker.ietf.org/doc/html/draft-ietf-tls-rfc8446bis-14#section-7.4" class="relref">Section 7.4</a> of [<a href="#TLS" class="cite xref">TLS</a>]</span>). Recent extensions have introduced support for post-quantum
+and hybrid key establishment mechanisms to facilitate the transition to post-quantum
+cryptography. The rationale for this transition and the associated terminology are
+discussed in <span>[<a href="#RFC9958" class="cite xref">RFC9958</a>]</span> and <span>[<a href="#RFC9794" class="cite xref">RFC9794</a>]</span>, respectively.<a href="#section-8-2" class="pilcrow">¶</a></p>
+<p id="section-8-3">For hybrid mechanisms such as SecP256r1MLKEM768, defined in <span>[<a href="#I-D.ietf-tls-ecdhe-mlkem" class="cite xref">I-D.ietf-tls-ecdhe-mlkem</a>]</span>,
+the shared secret is derived by combining the outputs of the constituent algorithms;
+specifically, it is the concatenation of the ECDHE and ML-KEM shared secrets. For
+ML-KEM-only key exchange, as defined in <span>[<a href="#I-D.ietf-tls-mlkem" class="cite xref">I-D.ietf-tls-mlkem</a>]</span>, the ML-KEM shared
+secret is provided directly to the TLS key schedule in place of the (EC)DHE shared
+secret.<a href="#section-8-3" class="pilcrow">¶</a></p>
+<p id="section-8-4">The Extended Key Update protocol reuses the key exchange representation defined by the
+negotiated mechanism. Consequently, the exchange of fresh key shares during an Extended
+Key Update follows the same encoding and shared-secret derivation rules as the
+corresponding TLS handshake.<a href="#section-8-4" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="sslkeylogfile-update">
@@ -2301,7 +2307,7 @@ secret for validation.<a href="#section-11.2-3" class="pilcrow">¶</a></p>
         <h3 id="name-interaction-of-extended-key">
 <a href="#section-11.3" class="section-number selfRef">11.3. </a><a href="#name-interaction-of-extended-key" class="section-name selfRef">Interaction of Extended Key Update and Post-Handshake Authentication</a>
         </h3>
-<p id="section-11.3-1">EKU and post-handshake authentication may both occur during the lifetime
+<p id="section-11.3-1">EKU and Post-Handshake Authentication may both occur during the lifetime
 of a (D)TLS connection.  Post-Handshake Certificate-Based Client
 Authentication (PHA) is bound to the handshake transcript and computes
 its <code>Finished</code> message as specified in Section 4.4 of <span>[<a href="#TLS" class="cite xref">TLS</a>]</span>, using a key
@@ -2329,7 +2335,7 @@ has not yet completed, neither endpoint <span class="bcp14">MUST</span> initiate
               <p id="section-11.3.1-3.3.1">In a cross-flight condition, if a (D)TLS client sends an EKU request and,
 before receiving a response, receives a <code>CertificateRequest</code> from the
 (D)TLS server, the endpoints <span class="bcp14">MUST</span> defer completion of the EKU exchange
-and proceed with the post-handshake authentication exchange. The endpoints
+and proceed with the Post-Handshake Authentication exchange. The endpoints
 <span class="bcp14">MUST NOT</span> transition to new application traffic secrets until the
 authentication exchange has completed.<a href="#section-11.3.1-3.3.1" class="pilcrow">¶</a></p>
 </li>
@@ -2366,33 +2372,43 @@ exchanges.<a href="#section-11.3.2-2" class="pilcrow">¶</a></p>
         <h3 id="name-scope-of-key-compromise">
 <a href="#section-12.1" class="section-number selfRef">12.1. </a><a href="#name-scope-of-key-compromise" class="section-name selfRef">Scope of Key Compromise</a>
         </h3>
-<p id="section-12.1-1">Extended Key Update assumes a transient compromise of the current application
-traffic keys, not a persistent attacker with ongoing access to key material.
-The procedure itself does not rely on long-term private keys; those are assumed
-to remain secure, as they are typically stored in a hardware security module.
-In contrast, application traffic
-keys are stored within the rich operating system, where short-term exposure due
-to memory disclosure or transient compromise may occur. Post-compromise security
-can be re-established, provided the compromise is no longer active when an
-Extended Key Update is performed.<a href="#section-12.1-1" class="pilcrow">¶</a></p>
-<p id="section-12.1-2">Extended Key Update can restore confidentiality only if the attacker no longer
+<p id="section-12.1-1">Extended Key Update (EKU) assumes a transient compromise of the current application
+traffic keys, rather than a persistent attacker with ongoing access to key material.
+The EKU procedure does not rely on long-term private keys, which may be stored in a
+secure element (e.g., a Hardware Security Module (HSM)) or within the rich OS.
+Moreover, in security‑critical scenarios, these long‑term private keys are typically stored separately from the primary secret or the traffic keys.<a href="#section-12.1-1" class="pilcrow">¶</a></p>
+<p id="section-12.1-2">Two threat scenarios are relevant:<a href="#section-12.1-2" class="pilcrow">¶</a></p>
+<ol start="1" type="1" class="normal type-1" id="section-12.1-3">
+<li id="section-12.1-3.1">
+            <p id="section-12.1-3.1.1">The long-term private key remains secure, while application traffic keys in the
+rich operating system are temporarily exposed. EKU addresses this case for the current
+TLS connection.<a href="#section-12.1-3.1.1" class="pilcrow">¶</a></p>
+</li>
+          <li id="section-12.1-3.2">
+            <p id="section-12.1-3.2.1">If the long-term private key in the rich OS is compromised, EKU can still protect
+the current TLS connection by updating the main secret and traffic keys. However, all
+future TLS connections are at risk, as the attacker can impersonate the endpoint using
+the stolen private key.<a href="#section-12.1-3.2.1" class="pilcrow">¶</a></p>
+</li>
+        </ol>
+<p id="section-12.1-4">Extended Key Update can restore confidentiality only if the attacker no longer
 has access to either peer. If an adversary retains access to current application traffic
-keys and can act as a man-in-the-middle during the Extended Key Update, then the
-update cannot restore security unless <a href="#exported" class="auto internal xref">Section 11</a> is used.<a href="#section-12.1-2" class="pilcrow">¶</a></p>
-<p id="section-12.1-3">If one of the mechanisms defined in <a href="#exported" class="auto internal xref">Section 11</a> is not used, the attacker can
+keys and can act as an active attacker during the Extended Key Update, then the
+update cannot restore security unless <a href="#exported" class="auto internal xref">Section 11</a> is used.<a href="#section-12.1-4" class="pilcrow">¶</a></p>
+<p id="section-12.1-5">If one of the mechanisms defined in <a href="#exported" class="auto internal xref">Section 11</a> is not used, the attacker can
 impersonate each endpoint, substitute EKU messages, and maintain control
-of the communication. When Post-handshake Certificate-Based Client Authentication
+of the communication. When Post-Handshake Certificate-Based Client Authentication
 or the modified Exported Authenticator mechanism is used, the authentication messages
 are bound to the keys established after the EKU. Any modification or substitution of
-EKU messages therefore becomes detectable, preventing this attack.<a href="#section-12.1-3" class="pilcrow">¶</a></p>
-<p id="section-12.1-4">If a compromise occurs before the handshake completes, the ephemeral key exchange,
+EKU messages therefore becomes detectable, preventing this attack.<a href="#section-12.1-5" class="pilcrow">¶</a></p>
+<p id="section-12.1-6">If a compromise occurs before the handshake completes, the ephemeral key exchange,
 client_handshake_traffic_secret, server_handshake_traffic_secret, and the initial
 client_/server_application_traffic_secret could be exposed. In that case, only the
 initial handshake messages and the application data encrypted under the initial
 client_/server_application_traffic_secret can be decrypted until the Extended Key
 Update procedure completes. The Extended Key Update procedure derives fresh
 application_traffic_secrets from a new ephemeral key exchange, ensuring that all
-subsequent application data remains confidential.<a href="#section-12.1-4" class="pilcrow">¶</a></p>
+subsequent application data remains confidential.<a href="#section-12.1-6" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="post-compromise-security">
@@ -2401,13 +2417,9 @@ subsequent application data remains confidential.<a href="#section-12.1-4" class
 <a href="#section-12.2" class="section-number selfRef">12.2. </a><a href="#name-post-compromise-security" class="section-name selfRef">Post-Compromise Security</a>
         </h3>
 <p id="section-12.2-1">Extended Key Update provides post-compromise security for long-lived TLS sessions.
-To ensure post-compromise security guarantees:<a href="#section-12.2-1" class="pilcrow">¶</a></p>
-<ul class="normal">
-<li class="normal" id="section-12.2-2.1">
-            <p id="section-12.2-2.1.1">Each update <span class="bcp14">MUST</span> use freshly generated ephemeral key-exchange material. Implementations <span class="bcp14">MUST NOT</span> reuse
-ephemeral key-exchange material across updates or across TLS sessions.<a href="#section-12.2-2.1.1" class="pilcrow">¶</a></p>
-</li>
-        </ul>
+To ensure post-compromise security guarantees each update <span class="bcp14">MUST</span> use freshly generated
+ephemeral key exchange material. Implementations <span class="bcp14">MUST NOT</span> reuse ephemeral key
+exchange material across updates or across TLS sessions.<a href="#section-12.2-1" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="denial-of-service-dos">
@@ -2464,7 +2476,7 @@ extension registry <span>[<a href="#TLS-Ext-Registry" class="cite xref">TLS-Ext-
             <p id="section-13.1-2.4.1">Recommended: Y<a href="#section-13.1-2.4.1" class="pilcrow">¶</a></p>
 </li>
           <li class="normal" id="section-13.1-2.5">
-            <p id="section-13.1-2.5.1">Reference: [This document]<a href="#section-13.1-2.5.1" class="pilcrow">¶</a></p>
+            <p id="section-13.1-2.5.1">Reference: This document<a href="#section-13.1-2.5.1" class="pilcrow">¶</a></p>
 </li>
         </ul>
 </section>
@@ -2487,7 +2499,7 @@ registry <span>[<a href="#TLS-Param-Registry" class="cite xref">TLS-Param-Regist
             <p id="section-13.2-2.3.1">DTLS-OK: Y<a href="#section-13.2-2.3.1" class="pilcrow">¶</a></p>
 </li>
           <li class="normal" id="section-13.2-2.4">
-            <p id="section-13.2-2.4.1">Reference: [This document]<a href="#section-13.2-2.4.1" class="pilcrow">¶</a></p>
+            <p id="section-13.2-2.4.1">Reference: This document<a href="#section-13.2-2.4.1" class="pilcrow">¶</a></p>
 </li>
         </ul>
 </section>
@@ -2658,6 +2670,14 @@ extension registry <span>[<a href="#TLS-Ext-Registry" class="cite xref">TLS-Ext-
         <dd>
 <span class="refAuthor">Barnes, R.</span>, <span class="refAuthor">Schneier, B.</span>, <span class="refAuthor">Jennings, C.</span>, <span class="refAuthor">Hardie, T.</span>, <span class="refAuthor">Trammell, B.</span>, <span class="refAuthor">Huitema, C.</span>, and <span class="refAuthor">D. Borkmann</span>, <span class="refTitle">"Confidentiality in the Face of Pervasive Surveillance: A Threat Model and Problem Statement"</span>, <span class="seriesInfo">RFC 7624</span>, <span class="seriesInfo">DOI 10.17487/RFC7624</span>, <time datetime="2015-08" class="refDate">August 2015</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc7624">https://www.rfc-editor.org/rfc/rfc7624</a>&gt;</span>. </dd>
 <dd class="break"></dd>
+<dt id="I-D.ietf-tls-ecdhe-mlkem">[I-D.ietf-tls-ecdhe-mlkem]</dt>
+        <dd>
+<span class="refAuthor">Kwiatkowski, K.</span>, <span class="refAuthor">Kampanakis, P.</span>, <span class="refAuthor">Westerbaan, B.</span>, and <span class="refAuthor">D. Stebila</span>, <span class="refTitle">"Post-quantum hybrid ECDHE-MLKEM Key Agreement for TLSv1.3"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-ietf-tls-ecdhe-mlkem-05</span>, <time datetime="2026-05-26" class="refDate">26 May 2026</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-ietf-tls-ecdhe-mlkem-05">https://datatracker.ietf.org/doc/html/draft-ietf-tls-ecdhe-mlkem-05</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="I-D.ietf-tls-mlkem">[I-D.ietf-tls-mlkem]</dt>
+        <dd>
+<span class="refAuthor">Connolly, D.</span>, <span class="refTitle">"ML-KEM Post-Quantum Key Agreement for TLS 1.3"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-ietf-tls-mlkem-08</span>, <time datetime="2026-06-24" class="refDate">24 June 2026</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-ietf-tls-mlkem-08">https://datatracker.ietf.org/doc/html/draft-ietf-tls-mlkem-08</a>&gt;</span>. </dd>
+<dd class="break"></dd>
 <dt id="RFC8126">[RFC8126]</dt>
         <dd>
 <span class="refAuthor">Cotton, M.</span>, <span class="refAuthor">Leiba, B.</span>, and <span class="refAuthor">T. Narten</span>, <span class="refTitle">"Guidelines for Writing an IANA Considerations Section in RFCs"</span>, <span class="seriesInfo">BCP 26</span>, <span class="seriesInfo">RFC 8126</span>, <span class="seriesInfo">DOI 10.17487/RFC8126</span>, <time datetime="2017-06" class="refDate">June 2017</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc8126">https://www.rfc-editor.org/rfc/rfc8126</a>&gt;</span>. </dd>
@@ -2670,25 +2690,17 @@ extension registry <span>[<a href="#TLS-Ext-Registry" class="cite xref">TLS-Ext-
         <dd>
 <span class="refAuthor">Driscoll, F.</span>, <span class="refAuthor">Parsons, M.</span>, and <span class="refAuthor">B. Hale</span>, <span class="refTitle">"Terminology for Post-Quantum Traditional Hybrid Schemes"</span>, <span class="seriesInfo">RFC 9794</span>, <span class="seriesInfo">DOI 10.17487/RFC9794</span>, <time datetime="2025-06" class="refDate">June 2025</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc9794">https://www.rfc-editor.org/rfc/rfc9794</a>&gt;</span>. </dd>
 <dd class="break"></dd>
-<dt id="TLS-ECDHE-MLKEM">[TLS-ECDHE-MLKEM]</dt>
+<dt id="RFC9958">[RFC9958]</dt>
         <dd>
-<span class="refAuthor">Kwiatkowski, K.</span>, <span class="refAuthor">Kampanakis, P.</span>, <span class="refAuthor">Westerbaan, B.</span>, and <span class="refAuthor">D. Stebila</span>, <span class="refTitle">"Post-quantum hybrid ECDHE-MLKEM Key Agreement for TLSv1.3"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-ietf-tls-ecdhe-mlkem-04</span>, <time datetime="2026-02-08" class="refDate">8 February 2026</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-ietf-tls-ecdhe-mlkem-04">https://datatracker.ietf.org/doc/html/draft-ietf-tls-ecdhe-mlkem-04</a>&gt;</span>. </dd>
+<span class="refAuthor">Banerjee, A.</span>, <span class="refAuthor">Reddy.K, T.</span>, <span class="refAuthor">Schoinianakis, D.</span>, <span class="refAuthor">Hollebeek, T.</span>, and <span class="refAuthor">M. Ounsworth</span>, <span class="refTitle">"Post-Quantum Cryptography for Engineers"</span>, <span class="seriesInfo">RFC 9958</span>, <span class="seriesInfo">DOI 10.17487/RFC9958</span>, <time datetime="2026-06" class="refDate">June 2026</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc9958">https://www.rfc-editor.org/rfc/rfc9958</a>&gt;</span>. </dd>
 <dd class="break"></dd>
 <dt id="TLS-Ext-Registry">[TLS-Ext-Registry]</dt>
         <dd>
 <span class="refAuthor">IANA</span>, <span class="refTitle">"Transport Layer Security (TLS) Extensions"</span>, <time datetime="2023-11" class="refDate">November 2023</time>, <span>&lt;<a href="https://www.iana.org/assignments/tls-extensiontype-values">https://www.iana.org/assignments/tls-extensiontype-values</a>&gt;</span>. </dd>
 <dd class="break"></dd>
-<dt id="TLS-HYBRID">[TLS-HYBRID]</dt>
-        <dd>
-<span class="refAuthor">Stebila, D.</span>, <span class="refAuthor">Fluhrer, S.</span>, and <span class="refAuthor">S. Gueron</span>, <span class="refTitle">"Hybrid key exchange in TLS 1.3"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-ietf-tls-hybrid-design-16</span>, <time datetime="2025-09-07" class="refDate">7 September 2025</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-ietf-tls-hybrid-design-16">https://datatracker.ietf.org/doc/html/draft-ietf-tls-hybrid-design-16</a>&gt;</span>. </dd>
-<dd class="break"></dd>
 <dt id="TLS-KEYLOGFILE">[TLS-KEYLOGFILE]</dt>
         <dd>
 <span class="refAuthor">Thomson, M.</span>, <span class="refAuthor">Rosomakho, Y.</span>, and <span class="refAuthor">H. Tschofenig</span>, <span class="refTitle">"The SSLKEYLOGFILE Format for TLS"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-ietf-tls-keylogfile-05</span>, <time datetime="2025-06-09" class="refDate">9 June 2025</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-ietf-tls-keylogfile-05">https://datatracker.ietf.org/doc/html/draft-ietf-tls-keylogfile-05</a>&gt;</span>. </dd>
-<dd class="break"></dd>
-<dt id="TLS-MLKEM">[TLS-MLKEM]</dt>
-        <dd>
-<span class="refAuthor">Connolly, D.</span>, <span class="refTitle">"ML-KEM Post-Quantum Key Agreement for TLS 1.3"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-ietf-tls-mlkem-07</span>, <time datetime="2026-02-12" class="refDate">12 February 2026</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-ietf-tls-mlkem-07">https://datatracker.ietf.org/doc/html/draft-ietf-tls-mlkem-07</a>&gt;</span>. </dd>
 <dd class="break"></dd>
 <dt id="TLS-Param-Registry">[TLS-Param-Registry]</dt>
         <dd>
@@ -2710,46 +2722,17 @@ extension registry <span>[<a href="#TLS-Ext-Registry" class="cite xref">TLS-Ext-
       </h2>
 <p id="appendix-A-1">We would like to thank the members of the "TSVWG DTLS for SCTP
 Requirements Design Team" for their discussion. The members, in
-no particular order, were:<a href="#appendix-A-1" class="pilcrow">¶</a></p>
-<ul class="normal">
-<li class="normal" id="appendix-A-2.1">
-          <p id="appendix-A-2.1.1">Marcelo Ricardo Leitner<a href="#appendix-A-2.1.1" class="pilcrow">¶</a></p>
-</li>
-        <li class="normal" id="appendix-A-2.2">
-          <p id="appendix-A-2.2.1">Zaheduzzaman Sarker<a href="#appendix-A-2.2.1" class="pilcrow">¶</a></p>
-</li>
-        <li class="normal" id="appendix-A-2.3">
-          <p id="appendix-A-2.3.1">Magnus Westerlund<a href="#appendix-A-2.3.1" class="pilcrow">¶</a></p>
-</li>
-        <li class="normal" id="appendix-A-2.4">
-          <p id="appendix-A-2.4.1">John Mattsson<a href="#appendix-A-2.4.1" class="pilcrow">¶</a></p>
-</li>
-        <li class="normal" id="appendix-A-2.5">
-          <p id="appendix-A-2.5.1">Claudio Porfiri<a href="#appendix-A-2.5.1" class="pilcrow">¶</a></p>
-</li>
-        <li class="normal" id="appendix-A-2.6">
-          <p id="appendix-A-2.6.1">Xin Long<a href="#appendix-A-2.6.1" class="pilcrow">¶</a></p>
-</li>
-        <li class="normal" id="appendix-A-2.7">
-          <p id="appendix-A-2.7.1">Michael Tüxen<a href="#appendix-A-2.7.1" class="pilcrow">¶</a></p>
-</li>
-        <li class="normal" id="appendix-A-2.8">
-          <p id="appendix-A-2.8.1">Hannes Tschofenig<a href="#appendix-A-2.8.1" class="pilcrow">¶</a></p>
-</li>
-        <li class="normal" id="appendix-A-2.9">
-          <p id="appendix-A-2.9.1">K Tirumaleswar Reddy<a href="#appendix-A-2.9.1" class="pilcrow">¶</a></p>
-</li>
-        <li class="normal" id="appendix-A-2.10">
-          <p id="appendix-A-2.10.1">Bertrand Rault<a href="#appendix-A-2.10.1" class="pilcrow">¶</a></p>
-</li>
-      </ul>
-<p id="appendix-A-3">Additionally, we would like to thank the chairs of the
+no particular order, were: Marcelo Ricardo Leitner, Xin Long,
+John Mattsson, Claudio Porfiri, Bertrand Rault, K Tirumaleswar Reddy,
+Zaheduzzaman Sarker, Hannes Tschofenig, Michael Tüxen, and
+Magnus Westerlund.<a href="#appendix-A-1" class="pilcrow">¶</a></p>
+<p id="appendix-A-2">Additionally, we would like to thank the chairs of the
 Transport and Services Working Group (tsvwg) Gorry Fairhurst and
-Marten Seemann as well as the responsible area director Martin Duke.<a href="#appendix-A-3" class="pilcrow">¶</a></p>
-<p id="appendix-A-4">Finally, we would like to thank Martin Thomson, Ilari Liusvaara,
-Benjamin Kaduk, Scott Fluhrer, Dennis Jackson, David Benjamin,
-Matthijs van Duin, Rifaat Shekh-Yusef, Joe Birr-Pixton, Eric Rescorla,
-and Thom Wiggers for their review comments.<a href="#appendix-A-4" class="pilcrow">¶</a></p>
+Marten Seemann as well as the responsible area director Martin Duke.<a href="#appendix-A-2" class="pilcrow">¶</a></p>
+<p id="appendix-A-3">Finally, we would like to thank David Benjamin, Joe Birr-Pixton,
+Matthijs van Duin, Scott Fluhrer, Dennis Jackson, Benjamin Kaduk,
+Ilari Liusvaara, Eric Rescorla, Rifaat Shekh-Yusef, Martin Thomson,
+Mathy Vanhoef, and Thom Wiggers for their review comments.<a href="#appendix-A-3" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="state-machines">
@@ -3112,15 +3095,14 @@ refer to the send and receive key variables defined in <a href="#term" class="au
           </ul>
 <div id="appendix-B.2.2-7">
             <div class="alignLeft art-svg artwork" id="appendix-B.2.2-7.1">
-<svg xmlns="http://www.w3.org/2000/svg" version="1.1" height="832" width="560" viewBox="0 0 560 832" class="diagram" text-anchor="middle" font-family="monospace" font-size="13px" stroke-linecap="round">
+<svg xmlns="http://www.w3.org/2000/svg" version="1.1" height="832" width="536" viewBox="0 0 536 832" class="diagram" text-anchor="middle" font-family="monospace" font-size="13px" stroke-linecap="round">
                 <path d="M 8,32 L 8,80" fill="none" stroke="black"></path>
                 <path d="M 8,160 L 8,192" fill="none" stroke="black"></path>
                 <path d="M 8,512 L 8,576" fill="none" stroke="black"></path>
                 <path d="M 8,640 L 8,672" fill="none" stroke="black"></path>
                 <path d="M 8,784 L 8,816" fill="none" stroke="black"></path>
                 <path d="M 16,200 L 16,432" fill="none" stroke="black"></path>
-                <path d="M 56,200 L 56,320" fill="none" stroke="black"></path>
-                <path d="M 56,352 L 56,400" fill="none" stroke="black"></path>
+                <path d="M 56,200 L 56,400" fill="none" stroke="black"></path>
                 <path d="M 56,680 L 56,720" fill="none" stroke="black"></path>
                 <path d="M 88,464 L 88,504" fill="none" stroke="black"></path>
                 <path d="M 96,200 L 96,368" fill="none" stroke="black"></path>
@@ -3200,10 +3182,9 @@ refer to the send and receive key variables defined in <a href="#term" class="au
                   <text x="420" y="324">updating</text>
                   <text x="468" y="324">:=</text>
                   <text x="492" y="324">0;</text>
-                  <text x="136" y="340">|</text>
-                  <text x="440" y="340">act</text>
-                  <text x="468" y="340">as</text>
-                  <text x="520" y="340">RESPONDER</text>
+                  <text x="400" y="340">act</text>
+                  <text x="428" y="340">as</text>
+                  <text x="480" y="340">RESPONDER</text>
                   <text x="136" y="372">APP</text>
                   <text x="172" y="372">send</text>
                   <text x="232" y="372">(anytime)</text>
@@ -3450,7 +3431,7 @@ during the Extended Key Update.<a href="#appendix-C.1-1" class="pilcrow">¶</a><
         <h3 id="name-detecting-divergent-key-sta">
 <a href="#appendix-C.4" class="section-number selfRef">C.4. </a><a href="#name-detecting-divergent-key-sta" class="section-name selfRef">Detecting Divergent Key State</a>
         </h3>
-<p id="appendix-C.4-1">As described in <a href="#exported" class="auto internal xref">Section 11</a>, both Post-handshake Certificate-Based Client Authentication and Exported Authenticators can be used after an Extended Key Update to confirm that both endpoints derived the same
+<p id="appendix-C.4-1">As described in <a href="#exported" class="auto internal xref">Section 11</a>, both Post-Handshake Certificate-Based Client Authentication and Exported Authenticators can be used after an Extended Key Update to confirm that both endpoints derived the same
 traffic keys. Because the authentication messages produced by these mechanisms depend on values
 derived from the updated traffic keys, any divergence in those traffic keys causes validation to fail,
 revealing interference by an active attacker.<a href="#appendix-C.4-1" class="pilcrow">¶</a></p>
