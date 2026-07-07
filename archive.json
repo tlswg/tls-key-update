@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2026-06-30T03:58:00.401063+00:00",
+  "timestamp": "2026-07-07T03:44:30.920613+00:00",
   "repo": "tlswg/tls-key-update",
   "labels": [
     {
@@ -1445,15 +1445,15 @@
       "id": "I_kwDOMJPqLM8AAAABCbbxSQ",
       "title": "Abstract: clarify that EKU is not limited to Diffie-Hellman",
       "url": "https://github.com/tlswg/tls-key-update/issues/111",
-      "state": "OPEN",
+      "state": "CLOSED",
       "author": "vanhoefm",
       "authorAssociation": "NONE",
       "assignees": [],
       "labels": [],
       "body": "The abstract currently says that EKU \u201cperforms a fresh Diffie-Hellman exchange within an active session\u201d. This may give the impression that the mechanism is limited to classical (EC)DHE.\n\nBased on my quick diagonal reading of the document, it seems that a fresh hybrid or pure post-quantum exchange would also be performed if the initial handshake used a hybrid or pure PQ exchange, respectively. If I understand this correctly, it would be good to reword the abstract more generally, or to clarify that EKU uses the key exchange mechanism negotiated in the handshake.\n\n(And thanks for the work on this!)",
       "createdAt": "2026-05-16T00:55:40Z",
-      "updatedAt": "2026-06-25T11:13:52Z",
-      "closedAt": null,
+      "updatedAt": "2026-07-06T06:13:48Z",
+      "closedAt": "2026-07-06T06:13:48Z",
       "comments": [
         {
           "author": "hannestschofenig",
@@ -1461,6 +1461,13 @@
           "body": "Thanks for your review, Mathy! You are completely correct in your understanding of what the document is trying to accomplish.\n\nRe-reading the draft I agree with you that we have had a stronger bias in wording towards traditional cryptography. I have created a few PRs to improve the description.",
           "createdAt": "2026-06-25T11:13:52Z",
           "updatedAt": "2026-06-25T11:13:52Z"
+        },
+        {
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "body": "Fixed in the latest version of the draft. ",
+          "createdAt": "2026-07-06T06:13:48Z",
+          "updatedAt": "2026-07-06T06:13:48Z"
         }
       ]
     },
