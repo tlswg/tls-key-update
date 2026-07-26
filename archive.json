@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2026-07-07T03:44:30.920613+00:00",
+  "timestamp": "2026-07-26T03:19:22.079041+00:00",
   "repo": "tlswg/tls-key-update",
   "labels": [
     {
@@ -1506,6 +1506,33 @@
           "body": "I would keep it as is. EKU abbreviation is only used internally in the spec.",
           "createdAt": "2026-06-28T21:09:06Z",
           "updatedAt": "2026-06-28T21:09:06Z"
+        }
+      ]
+    },
+    {
+      "number": 119,
+      "id": "I_kwDOMJPqLM8AAAABJ24abg",
+      "title": "Interworking with Authentication",
+      "url": "https://github.com/tlswg/tls-key-update/issues/119",
+      "state": "OPEN",
+      "author": "hannestschofenig",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [
+        "hannestschofenig",
+        "tireddy2"
+      ],
+      "labels": [],
+      "body": "TLS offers post handshake authentication and exported authenticators. At IETF 126 the request was raised to also write about the interworking between EKU and authentication since this is a likely use case.",
+      "createdAt": "2026-07-23T07:26:41Z",
+      "updatedAt": "2026-07-23T07:41:29Z",
+      "closedAt": null,
+      "comments": [
+        {
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "body": "It is already discussed in the draft https://www.ietf.org/archive/id/draft-ietf-tls-extended-key-update-13.html#section-11.1, what is missing ? ",
+          "createdAt": "2026-07-23T07:41:29Z",
+          "updatedAt": "2026-07-23T07:41:29Z"
         }
       ]
     }
