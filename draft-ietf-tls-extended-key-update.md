@@ -31,15 +31,15 @@ author:
       email: hannes.tschofenig@gmx.net
       org: Siemens
  -
-      ins: M. Tüxen
-      name: Michael Tüxen
-      email: tuexen@fh-muenster.de
-      org: Münster Univ. of Applied Sciences
- -
       ins: T. Reddy
       name: Tirumaleswar Reddy
       email: kondtir@gmail.com
       org: Nokia
+ -
+      ins: M. Tüxen
+      name: Michael Tüxen
+      email: tuexen@fh-muenster.de
+      org: Münster Univ. of Applied Sciences
  -
       ins: S. Fries
       name: Steffen Fries
@@ -98,7 +98,10 @@ environments.
 
 To address this, this specification defines an extended key update mechanism that
 performs a fresh execution of the key exchange negotiated during the initial handshake
-within an active session, thereby ensuring post-compromise security.
+within an active session, thereby providing post-compromise security. Interference by
+a person-in-the-middle attacker during the exchange is detectable by the server when
+post-handshake authentication is used, and by both peers when exported authenticators
+are used.
 
 By forcing attackers to exfiltrate new key material repeatedly, this approach mitigates
 the risks associated with static key compromise. Regular renewal of session keys helps
@@ -894,12 +897,14 @@ secret, as described in Section 3.3.2 of {{!RFC3711}}.
 
 EKU provides fresh traffic secrets, but EKU alone does not authenticate that both endpoints
 derived the same updated keys. An attacker that temporarily compromises an endpoint
-may later act as an active MitM capable of interfering with the EKU exchange.
+may later act as an person-in-the-middle attacker capable of interfering with the EKU exchange.
 Such an attacker can cause the peers to transition to divergent traffic secrets without detection,
 but cannot compromise the endpoint to derive secrets after the new epoch is established.
-To confirm that both peers transitioned to the same new key state, TLS 1.3 provides two
-mechanisms: Post-Handshake Certificate-Based Client Authentication and
-Exported Authenticators {{!RFC9261}}.
+TLS 1.3 provides two mechanisms that can detect such divergence, each with a different scope.
+Post-Handshake Certificate-Based Client Authentication authenticates the client to the server,
+and therefore allows only the server to detect divergence. Exported Authenticators {{!RFC9261}}
+authenticate the endpoint that produces the authenticator, so detection at both endpoints
+requires an authenticator in each direction.
 
 ## Post-Handshake Certificate-Based Client Authentication
 
@@ -908,8 +913,11 @@ performed after an Extended Key Update (EKU) is complete, the Handshake Context 
 the transcript hash is updated. It consists of transcript_hash_N+1 concatenated
 with the CertificateRequest message. The Finished message is computed using a
 MAC key derived from the Base Key of the new epoch (client_application_traffic_secret_N+1).
-This confirms that both peers are operating with the same updated traffic keys
-and completes an authenticated transition after the EKU.
+Because the CertificateVerify message is signed with the private key corresponding to the
+client's end-entity certificate over this Handshake Context, the server can detect divergent
+key state. Post-Handshake Authentication does not reauthenticate the server, so the client gains
+no equivalent assurance. A client that requires such assurance can request an Exported
+Authenticator from the server.
 
 ## Exported Authenticators
 
@@ -923,10 +931,10 @@ the exporter secret for a specific epoch.
 The Handshake Context and Finished MAC Key used in both the CertificateVerify message
 (Section 5.2.2 of {{!RFC9261}}) and the Finished message (Section 5.2.3 of {{!RFC9261}})
 are derived from the exporter secret associated with the current epoch.
-If a MitM interferes with the EKU exchange and causes the peers to derive different traffic
-and exporter secrets, their Handshake Contexts and Finished MAC Keys will differ.
-As a result, validation procedures specified in Section 5.2.4 of {{!RFC9261}} will fail, thereby
-detecting the divergence of key state between peers.
+If a person-in-the-middle attacker interferes with the EKU exchange, the peers derive
+different exporter secrets. Validation as specified in Section 5.2.4 of {{!RFC9261}}
+then fails at the endpoint that receives the authenticator, since the CertificateVerify
+message is signed with a private key the attacker does not hold.
 
 A new optional API SHOULD be defined to permit applications to request or verify
 Exported Authenticators for a specific exporter epoch. As discussed in Section 7
@@ -991,11 +999,15 @@ This section discusses additional security and operational aspects introduced by
 
 ## Scope of Key Compromise {#scope}
 
-Extended Key Update (EKU) assumes a transient compromise of the current application
-traffic keys, rather than a persistent attacker with ongoing access to key material.
+Extended Key Update (EKU) assumes a transient compromise of an endpoint, in
+which the attacker obtains the keying material held by that endpoint for the connection,
+including the current application traffic secrets and the values retained for deriving
+subsequent secrets, but not the long-term private key. It does not address a persistent
+attacker on the device with ongoing access to key material.
 The EKU procedure does not rely on long-term private keys, which may be stored in a
 secure element (e.g., a Hardware Security Module (HSM)) or within the rich OS.
-Moreover, in security‑critical scenarios, these long‑term private keys are typically stored separately from the primary secret or the traffic keys.
+Moreover, in security‑critical scenarios, these long‑term private keys are typically
+stored separately from the primary secret or the traffic keys.
 
 Two threat scenarios are relevant:
 
@@ -1010,15 +1022,16 @@ the stolen private key.
 
 Extended Key Update can restore confidentiality only if the attacker no longer
 has access to either peer. If an adversary retains access to current application traffic
-keys and can act as an active attacker during the Extended Key Update, then the
-update cannot restore security unless {{exported}} is used.
+keys and can act as an person-in-the-middle attacker during the Extended Key Update, then the
+update cannot restore security. The interference is detectable as described in {{exported}}.
 
 If one of the mechanisms defined in {{exported}} is not used, the attacker can
 impersonate each endpoint, substitute EKU messages, and maintain control
-of the communication. When Post-Handshake Certificate-Based Client Authentication
-or the modified Exported Authenticator mechanism is used, the authentication messages
-are bound to the keys established after the EKU. Any modification or substitution of
-EKU messages therefore becomes detectable, preventing this attack.
+of the communication. When Post-Handshake Certificate-Based Client
+Authentication or the modified Exported Authenticator mechanism is used, the
+authentication messages include a CertificateVerify message signed with a private key
+the attacker does not hold. Any modification or substitution of EKU messages therefore
+becomes detectable.
 
 If a compromise occurs before the handshake completes, the ephemeral key exchange,
 client_handshake_traffic_secret, server_handshake_traffic_secret, and the initial
@@ -1026,8 +1039,7 @@ client_/server_application_traffic_secret could be exposed. In that case, only t
 initial handshake messages and the application data encrypted under the initial
 client_/server_application_traffic_secret can be decrypted until the Extended Key
 Update procedure completes. The Extended Key Update procedure derives fresh
-application_traffic_secrets from a new ephemeral key exchange, ensuring that all
-subsequent application data remains confidential.
+application_traffic_secrets from a new ephemeral key exchange.
 
 ## Post-Compromise Security
 
@@ -1399,10 +1411,7 @@ A complete security analysis of the EKU is outside the scope of this document. T
 
 ## Post-Compromise Security (PCS)
 
-Extended Key Update supports post-compromise security under the assumptions described in {{scope}}. If an attacker temporarily compromises an endpoint and obtains the traffic keys in use before an Extended Key Update takes place, but the compromise does not persist after the EKU completes, the attacker cannot derive the new keying material established by EKU. This property follows from the use of fresh ephemeral key exchange material during each Extended Key Update, which produces new traffic keys that are independent of the previous ones. This
-property provides only best-effort post-compromise security, as it assumes the attacker is not acting as a MiTM
-during the Extended Key Update.
-
+Extended Key Update supports post-compromise security under the assumptions described in {{scope}}. If an attacker temporarily compromises an endpoint and obtains the traffic keys in use before an Extended Key Update takes place, but the compromise does not persist after the EKU completes, the attacker cannot derive the new keying material established by EKU. This property follows from the use of fresh ephemeral key exchange material during each Extended Key Update, which produces new traffic keys that are independent of the previous ones.
 As a result, confidentiality of application data encrypted after the Extended Key Update is preserved even if the earlier traffic keys were exposed.
 
 ## Key Freshness and Cryptographic Independence
@@ -1419,7 +1428,12 @@ Once Extended Key Update has been negotiated for a session, peers rely exclusive
 
 ## Detecting Divergent Key State
 
-As described in {{exported}}, both Post-Handshake Certificate-Based Client Authentication and Exported Authenticators can be used after an Extended Key Update to confirm that both endpoints derived the same
-traffic keys. Because the authentication messages produced by these mechanisms depend on values
-derived from the updated traffic keys, any divergence in those traffic keys causes validation to fail,
-revealing interference by an active attacker.
+As described in {{exported}}, Post-Handshake Certificate-Based Client
+Authentication and Exported Authenticators can be used after an Extended Key Update to
+detect that the endpoints derived different keys. Detection relies on the
+CertificateVerify message, which is signed with a private key the attacker
+does not hold, so validation fails and the interference is revealed. This assurance is
+directional. Post-Handshake Authentication authenticates the client, so only the server
+detects the divergence. An Exported Authenticator authenticates the endpoint that
+produces it, so the peer validating it detects the divergence; assurance in both
+directions requires an authenticator from each endpoint.
