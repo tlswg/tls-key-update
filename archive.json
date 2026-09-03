@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2026-07-26T03:19:22.079041+00:00",
+  "timestamp": "2026-09-03T03:39:11.294969+00:00",
   "repo": "tlswg/tls-key-update",
   "labels": [
     {
@@ -1535,6 +1535,22 @@
           "updatedAt": "2026-07-23T07:41:29Z"
         }
       ]
+    },
+    {
+      "number": 120,
+      "id": "I_kwDOMJPqLM8AAAABPKC9XA",
+      "title": "Threat model ambiguity and possibly incorrect Post-Compromise Security claim after Post-Handshake Authentication",
+      "url": "https://github.com/tlswg/tls-key-update/issues/120",
+      "state": "OPEN",
+      "author": "nikstuckenbrock",
+      "authorAssociation": "NONE",
+      "assignees": [],
+      "labels": [],
+      "body": "While formally analysing the Extended Key Update (EKU) using Tamarin, we discovered a counterexample to the claim that Post-Compromise Security (PCS) holds after EKU from the client\u2019s perspective. Upon investigation, this connects to a possible ambiguity in the threat model. We give recommendations on how to adapt the claims to remove ambiguity and improve accuracy.\n\nThe ambiguity lies in two statements, which seem to be incompatible. Section 12.1 \"Scope of Key Compromise\" says:\n> EKU assumes a transient compromise of the current application traffic keys.\n\nSection 11 \"Use of Post-Handshake Authentication and Exported Authenticators with Extended Key Update\" says:\n> An attacker that temporarily compromises an endpoint may later act as an active MitM capable of interfering with the EKU exchange.\nWe think these two statements support two different interpretations, with different consequences for the rest of the draft.\n\n## Interpretation 1: compromise is limited to the application traffic key(s)\n\nSection 12.1 describes that \"EKU assumes a transient compromise of the current application traffic keys\".\nIn this interpretation, \"transient compromise\" means that the attacker only learns the current `ClientApplicationTrafficKey`/`ServerApplicationTrafficKey` and nothing else.\nIf this is the interpretation you intended, we think that Section 11 is redundant. Section 11 assumes an active MitM attack, but that is impossible in this interpretation. As the key schedule in Figure 7 of the draft shows, the updated main secret is derived from the old main secret. Therefore, an adversary who only knows traffic secrets can never successfully complete an EKU with one of the parties.\nWe don't think this is the interpretation you intend, but it's the literal reading of the 12.1 sentence.\n\n## Interpretation 2: compromise extends to everything but the long-term key(s)\n\nWe suspect the draft\u2019s intended threat model is broader. Compromise gives an adversary access to everything (MainSecret, Transcript-Hash, ...) on the endpoint except the long-term key (the certificate/private key used for authentication).\nIn this interpretation, Post-Compromise Security (PCS) cannot be achieved in exactly the way Section 11 describes. An attacker with full (but transient) access to an endpoint can intercept an EKU exchange and stop the session from healing.\n\n### Section 11's PCS claim for Post-Handshake  Authentication only applies to the server\n\nAssuming interpretation 2, we discovered that the security considerations in Section 11 seem to be inaccurate. We think that the draft claims to provide PCS in a scenario where it actually doesn\u2019t. Concretely, Section 11 says: \u201cTo confirm that both peers transitioned to the same new key state, TLS 1.3 provides two mechanisms: [...].\u201d This suggests that both peers can establish PCS against an active adversary when using Post-Handshake Authentication (PHA).\nPHA, however, only authenticates the client to the server. If an attacker acts as a MitM, they can initiate and complete PHA with the client, who would believe they re-authenticated the legitimate server, according to Section 11. Thus, PHA can only defend the server against an active MitM. Providing PCS also for the client would require some form of server authentication, e.g. by extending the PHA or by having the EKU include a signature over the new epoch's key material made with the server's long-term private key.\n\n## Suggested Changes\n\nWe suggest changing Sections 11 and 12.1 to address these issues. First, we suggest tightening Section 12.1\u2019s wording so that the draft\u2019s threat model is unambiguous. Second, we suggest either (a) making the claim more precise and state that PHA only defends the server against an active MitM, not the client (as shown by the counterexample that Tamarin finds), or (b) changing the EKU design so that PHA (or the EKU without PHA) also reauthenticates the server to client.\n",
+      "createdAt": "2026-09-01T13:00:36Z",
+      "updatedAt": "2026-09-01T13:00:36Z",
+      "closedAt": null,
+      "comments": []
     }
   ],
   "pulls": [
@@ -10598,6 +10614,32 @@
       "mergeCommit": {
         "oid": "2d79fe01a285f051e8b043b1d4da0d5a12fcb74e"
       },
+      "comments": [],
+      "reviews": []
+    },
+    {
+      "number": 121,
+      "id": "PR_kwDOMJPqLM8AAAABB4w5Iw",
+      "title": "Address comments from Formal Analysis",
+      "url": "https://github.com/tlswg/tls-key-update/pull/121",
+      "state": "OPEN",
+      "author": "tireddy2",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [],
+      "body": "",
+      "createdAt": "2026-09-02T11:20:23Z",
+      "updatedAt": "2026-09-02T11:20:44Z",
+      "baseRepository": "tlswg/tls-key-update",
+      "baseRefName": "main",
+      "baseRefOid": "d117edede93cbbe2d5417c900a8190f2fc825421",
+      "headRepository": "tlswg/tls-key-update",
+      "headRefName": "tireddy2-patch-15",
+      "headRefOid": "f7461f6d51cd65f9fc758f64ba12ecc21c860847",
+      "closedAt": null,
+      "mergedAt": null,
+      "mergedBy": null,
+      "mergeCommit": null,
       "comments": [],
       "reviews": []
     }
