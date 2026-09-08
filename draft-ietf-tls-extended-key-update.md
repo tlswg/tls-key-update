@@ -742,7 +742,7 @@ complete a resumed session prior to that invalidation. In such environments, EKU
 not prevent the use of previously issued PSKs.
 
 Accordingly, endpoints that enable EKU MUST disable resumption using PSKs established
-via the NewSessionTicket mechanism. `resumption_main_secret_N` is not
+via the NewSessionTicket mechanism. `resumption_main_secret_N+1` is not
 derived for this reason in {{key-hierarchy}}.
 
 # Post-Quantum Cryptography Considerations {#pqc-cons}
