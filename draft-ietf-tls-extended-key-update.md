@@ -4,7 +4,7 @@ title: Extended Key Update for Transport Layer Security (TLS) 1.3
 abbrev: Extended Key Update for TLS
 docname: draft-ietf-tls-extended-key-update-latest
 category: std
-updates: 9261, 8446
+updates: 9261, 9846
 
 ipr: trust200902
 submissiontype: IETF
@@ -158,7 +158,7 @@ standard key update, this mechanism allows peers to inject fresh key exchange
 input from the negotiated mechanism into an active session. By periodically
 rerunning the negotiated key exchange, this extension enables the derivation of
 new traffic keys that are independent of main secrets from prior epochs. As noted in
-{{Appendix F of !TLS=I-D.ietf-tls-rfc8446bis}},
+{{Appendix F of !TLS=RFC9846}},
 this approach mitigates the risk of static key exfiltration and shifts the attacker
 burden toward dynamic key exfiltration.
 
@@ -688,10 +688,6 @@ Secret -> HKDF-Extract = main_secret_N+1
              +-----> Derive-Secret(., "exp master",
              |                     transcript_hash_N+1)
              |                = exporter_secret_N+1
-             |
-             +-----> Derive-Secret(., "res master",
-             |                     transcript_hash_N+1)
-                              = resumption_main_secret_N+1
 ~~~
 {: #key-hierarchy title="Key Derivation Hierarchy."}
 
@@ -746,7 +742,8 @@ complete a resumed session prior to that invalidation. In such environments, EKU
 not prevent the use of previously issued PSKs.
 
 Accordingly, endpoints that enable EKU MUST disable resumption using PSKs established
-via the NewSessionTicket mechanism.
+via the NewSessionTicket mechanism. `resumption_main_secret_N` is not
+derived for this reason in {{key-hierarchy}}.
 
 # Post-Quantum Cryptography Considerations {#pqc-cons}
 
@@ -772,7 +769,9 @@ secret.
 The Extended Key Update protocol reuses the key exchange representation defined by the
 negotiated mechanism. Consequently, the exchange of fresh key shares during an Extended
 Key Update follows the same encoding and shared-secret derivation rules as the
-corresponding TLS handshake.
+corresponding TLS handshake. For KEMs, the initiator generates the encapsulation key
+and the responder performs encapsulation against it, regardless of which peer acted
+as the TLS client or server during the initial handshake.
 
 # SSLKEYLOGFILE Update
 
@@ -851,12 +850,11 @@ authentication related values such as nonces, as described in {{!RFC9729}}.
 
 Once the Extended Key Update mechanism is complete, such protocols would
 need to use the newly derived exporter secret to generate Exported Keying Material
-(EKM) to protect packets. The "sk" derived in the {{key_update}} will be
-used as the "Secret" in the exporter function, defined in
-{{Section 7.5 of TLS}}, to generate EKM, ensuring that
-the exported keying material is aligned with the updated security context.
-The newly derived exporter secret is cryptographically independent of
-previous exporter secrets.
+(EKM) to protect packets. The exporter_secret_N+1 derived in
+{{key_update}} will be used as the "Secret" in the exporter function, defined in
+{{Section 7.5 of TLS}}, to generate EKM, ensuring that the exported keying material
+is aligned with the updated security context. The newly derived exporter secret
+is cryptographically independent of previous exporter secrets.
 
 When a new exporter secret becomes active following a successful Extended
 Key Update, the TLS or DTLS implementation would have to provide an
@@ -1099,7 +1097,7 @@ The initial contents of this registry are as follows.
 | 2 | key_update_finish | Y | This document |
 | 3-255 | Unassigned | | |
 
-New assignments in the "TLS ExtendedKeyUpdate Types" registry will be administered by
+New assignments in the "TLS ExtendedKeyUpdate Message Subtypes" registry will be administered by
 IANA through Specification Required procedure {{?RFC8126}}.  The role of the
 designated expert is described in {{Section 17 of ?RFC8447}}.  The designated expert
 {{RFC8126}} ensures that the specification is publicly available.  It is sufficient to
