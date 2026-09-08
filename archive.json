@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2026-09-06T03:41:40.388515+00:00",
+  "timestamp": "2026-09-08T03:46:02.715433+00:00",
   "repo": "tlswg/tls-key-update",
   "labels": [
     {
@@ -10622,25 +10622,35 @@
       "id": "PR_kwDOMJPqLM8AAAABB4w5Iw",
       "title": "Address comments from Formal Analysis",
       "url": "https://github.com/tlswg/tls-key-update/pull/121",
-      "state": "OPEN",
+      "state": "MERGED",
       "author": "tireddy2",
       "authorAssociation": "COLLABORATOR",
       "assignees": [],
       "labels": [],
       "body": "",
       "createdAt": "2026-09-02T11:20:23Z",
-      "updatedAt": "2026-09-04T07:27:19Z",
+      "updatedAt": "2026-09-07T13:32:58Z",
       "baseRepository": "tlswg/tls-key-update",
       "baseRefName": "main",
       "baseRefOid": "d117edede93cbbe2d5417c900a8190f2fc825421",
       "headRepository": "tlswg/tls-key-update",
       "headRefName": "tireddy2-patch-15",
       "headRefOid": "464d8d6cfdc115b1e6d0e9d3bcb3778166eb5b50",
-      "closedAt": null,
-      "mergedAt": null,
-      "mergedBy": null,
-      "mergeCommit": null,
-      "comments": [],
+      "closedAt": "2026-09-07T13:32:57Z",
+      "mergedAt": "2026-09-07T13:32:57Z",
+      "mergedBy": "tireddy2",
+      "mergeCommit": {
+        "oid": "5c793fd9563cc0611cfb3894a9c4c70a43c3dcfb"
+      },
+      "comments": [
+        {
+          "author": "hannestschofenig",
+          "authorAssociation": "COLLABORATOR",
+          "body": "I am fine with the changes. ",
+          "createdAt": "2026-09-06T17:14:14Z",
+          "updatedAt": "2026-09-06T17:14:14Z"
+        }
+      ],
       "reviews": []
     }
   ]
