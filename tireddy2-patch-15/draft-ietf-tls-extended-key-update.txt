@@ -811,7 +811,8 @@ Table of Contents
 
    Accordingly, endpoints that enable EKU MUST disable resumption using
    PSKs established via the NewSessionTicket mechanism.
-   resumption_main_secret_N is not derived for this reason in Figure 7.
+   resumption_main_secret_N+1 is not derived for this reason in
+   Figure 7.
 
 8.  Post-Quantum Cryptography Considerations
 

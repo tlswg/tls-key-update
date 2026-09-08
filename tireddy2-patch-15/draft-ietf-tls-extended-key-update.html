@@ -2075,7 +2075,7 @@ EKU exchange, an attacker that has already obtained such a PSK may initiate and
 complete a resumed session prior to that invalidation. In such environments, EKU does
 not prevent the use of previously issued PSKs.<a href="#section-7-15" class="pilcrow">¶</a></p>
 <p id="section-7-16">Accordingly, endpoints that enable EKU <span class="bcp14">MUST</span> disable resumption using PSKs established
-via the NewSessionTicket mechanism. <code>resumption_main_secret_N</code> is not
+via the NewSessionTicket mechanism. <code>resumption_main_secret_N+1</code> is not
 derived for this reason in <a href="#key-hierarchy" class="auto internal xref">Figure 7</a>.<a href="#section-7-16" class="pilcrow">¶</a></p>
 </section>
 </div>
