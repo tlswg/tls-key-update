@@ -1080,7 +1080,7 @@ svg {
 <dd class="internet-draft">draft-ietf-tls-extended-key-update-latest</dd>
 <dt class="label-updates">Updates:</dt>
 <dd class="updates">
-<a href="https://www.rfc-editor.org/rfc/rfc9261" class="eref">9261</a>, <a href="https://www.rfc-editor.org/rfc/rfc9846" class="eref">9846</a> (if approved)</dd>
+<a href="https://www.rfc-editor.org/rfc/rfc9261" class="eref">9261</a>, <a href="https://www.rfc-editor.org/rfc/rfc8446" class="eref">8446</a> (if approved)</dd>
 <dt class="label-published">Published:</dt>
 <dd class="published">
 <time datetime="2026-09-08" class="published">8 September 2026</time>
@@ -1415,7 +1415,7 @@ standard key update, this mechanism allows peers to inject fresh key exchange
 input from the negotiated mechanism into an active session. By periodically
 rerunning the negotiated key exchange, this extension enables the derivation of
 new traffic keys that are independent of main secrets from prior epochs. As noted in
-<span><a href="https://rfc-editor.org/rfc/rfc9846#appendix-F" class="relref">Appendix F</a> of [<a href="#TLS" class="cite xref">TLS</a>]</span>,
+<span><a href="https://datatracker.ietf.org/doc/html/draft-ietf-tls-rfc8446bis-14#appendix-F" class="relref">Appendix F</a> of [<a href="#TLS" class="cite xref">TLS</a>]</span>,
 this approach mitigates the risk of static key exfiltration and shifts the attacker
 burden toward dynamic key exfiltration.<a href="#section-1-5" class="pilcrow">¶</a></p>
 <p id="section-1-6">The proposed extension is applicable to both TLS 1.3 <span>[<a href="#TLS" class="cite xref">TLS</a>]</span> and DTLS 1.3  <span>[<a href="#DTLS" class="cite xref">DTLS</a>]</span>. For clarity,
@@ -1602,7 +1602,7 @@ struct {
         <li class="normal" id="section-4-15.2">
           <p id="section-4-15.2.1"><code>key_share</code>: key share information. The contents of this field is
 determined by the specified group and its corresponding definition
-(see <span><a href="https://rfc-editor.org/rfc/rfc9846#section-4.2.8" class="relref">Section 4.2.8</a> of [<a href="#TLS" class="cite xref">TLS</a>]</span>).<a href="#section-4-15.2.1" class="pilcrow">¶</a></p>
+(see <span><a href="https://datatracker.ietf.org/doc/html/draft-ietf-tls-rfc8446bis-14#section-4.2.8" class="relref">Section 4.2.8</a> of [<a href="#TLS" class="cite xref">TLS</a>]</span>).<a href="#section-4-15.2.1" class="pilcrow">¶</a></p>
 </li>
       </ul>
 </section>
@@ -2026,6 +2026,10 @@ Secret -&gt; HKDF-Extract = main_secret_N+1
              +-----&gt; Derive-Secret(., "exp master",
              |                     transcript_hash_N+1)
              |                = exporter_secret_N+1
+             |
+             +-----&gt; Derive-Secret(., "res master",
+             |                     transcript_hash_N+1)
+                              = resumption_main_secret_N+1
 </pre>
 </div>
 <figcaption><a href="#figure-7" class="selfRef">Figure 7</a>:
@@ -2033,7 +2037,7 @@ Secret -&gt; HKDF-Extract = main_secret_N+1
         </figcaption></figure>
 </div>
 <p id="section-7-9">During the initial handshake, the Main Secret is generated (see
-<span><a href="https://rfc-editor.org/rfc/rfc9846#section-7.1" class="relref">Section 7.1</a> of [<a href="#TLS" class="cite xref">TLS</a>]</span>). Since the main_secret
+<span><a href="https://datatracker.ietf.org/doc/html/draft-ietf-tls-rfc8446bis-14#section-7.1" class="relref">Section 7.1</a> of [<a href="#TLS" class="cite xref">TLS</a>]</span>). Since the main_secret
 is discarded during the key derivation procedure, a derived value is
 stored. This stored value then serves as the input salt to the first
 key update procedure that incorporates the shared secret as input
@@ -2042,13 +2046,13 @@ from this new main secret serves as input salt to the subsequent key
 update procedure, which also incorporates a fresh shared secret as
 IKM. This process is repeated for each additional key update procedure.<a href="#section-7-9" class="pilcrow">¶</a></p>
 <p id="section-7-10">The shared secret is determined by the negotiated key exchange mechanism.
-In the base protocol, this mechanism is (EC)DHE (see <span><a href="https://rfc-editor.org/rfc/rfc9846#section-7.4" class="relref">Section 7.4</a> of [<a href="#TLS" class="cite xref">TLS</a>]</span>). Post-quantum and hybrid key exchange mechanisms derive the
+In the base protocol, this mechanism is (EC)DHE (see <span><a href="https://datatracker.ietf.org/doc/html/draft-ietf-tls-rfc8446bis-14#section-7.4" class="relref">Section 7.4</a> of [<a href="#TLS" class="cite xref">TLS</a>]</span>). Post-quantum and hybrid key exchange mechanisms derive the
 shared secret as specified by their respective definitions. See also
 <a href="#pqc-cons" class="auto internal xref">Section 8</a>.<a href="#section-7-10" class="pilcrow">¶</a></p>
 <p id="section-7-11">The traffic keys are re-derived from
 client_application_traffic_secret_N+1 and
 server_application_traffic_secret_N+1, as described in
-<span><a href="https://rfc-editor.org/rfc/rfc9846#section-7.3" class="relref">Section 7.3</a> of [<a href="#TLS" class="cite xref">TLS</a>]</span>.<a href="#section-7-11" class="pilcrow">¶</a></p>
+<span><a href="https://datatracker.ietf.org/doc/html/draft-ietf-tls-rfc8446bis-14#section-7.3" class="relref">Section 7.3</a> of [<a href="#TLS" class="cite xref">TLS</a>]</span>.<a href="#section-7-11" class="pilcrow">¶</a></p>
 <p id="section-7-12">Once client_/server_application_traffic_secret_N+1 and its associated
 traffic keys have been computed, implementations <span class="bcp14">SHOULD</span> delete
 client_/server_application_traffic_secret_N and its associated
@@ -2075,8 +2079,7 @@ EKU exchange, an attacker that has already obtained such a PSK may initiate and
 complete a resumed session prior to that invalidation. In such environments, EKU does
 not prevent the use of previously issued PSKs.<a href="#section-7-15" class="pilcrow">¶</a></p>
 <p id="section-7-16">Accordingly, endpoints that enable EKU <span class="bcp14">MUST</span> disable resumption using PSKs established
-via the NewSessionTicket mechanism. <code>resumption_main_secret_N</code> is not
-derived for this reason in <a href="#key-hierarchy" class="auto internal xref">Figure 7</a>.<a href="#section-7-16" class="pilcrow">¶</a></p>
+via the NewSessionTicket mechanism.<a href="#section-7-16" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="pqc-cons">
@@ -2090,7 +2093,7 @@ the same classes of key establishment mechanisms as TLS itself, including tradit
 Diffie-Hellman-based key exchanges, post-quantum key encapsulation mechanisms (KEMs),
 and hybrid combinations thereof.<a href="#section-8-1" class="pilcrow">¶</a></p>
 <p id="section-8-2">In the base TLS protocol, the shared secret is typically established using (EC)DHE
-(see <span><a href="https://rfc-editor.org/rfc/rfc9846#section-7.4" class="relref">Section 7.4</a> of [<a href="#TLS" class="cite xref">TLS</a>]</span>). Recent extensions have introduced support for post-quantum
+(see <span><a href="https://datatracker.ietf.org/doc/html/draft-ietf-tls-rfc8446bis-14#section-7.4" class="relref">Section 7.4</a> of [<a href="#TLS" class="cite xref">TLS</a>]</span>). Recent extensions have introduced support for post-quantum
 and hybrid key establishment mechanisms to facilitate the transition to post-quantum
 cryptography. The rationale for this transition and the associated terminology are
 discussed in <span>[<a href="#RFC9958" class="cite xref">RFC9958</a>]</span> and <span>[<a href="#RFC9794" class="cite xref">RFC9794</a>]</span>, respectively.<a href="#section-8-2" class="pilcrow">¶</a></p>
@@ -2103,9 +2106,7 @@ secret.<a href="#section-8-3" class="pilcrow">¶</a></p>
 <p id="section-8-4">The Extended Key Update protocol reuses the key exchange representation defined by the
 negotiated mechanism. Consequently, the exchange of fresh key shares during an Extended
 Key Update follows the same encoding and shared-secret derivation rules as the
-corresponding TLS handshake. For KEMs, the initiator generates the encapsulation key
-and the responder performs encapsulation against it, regardless of which peer acted
-as the TLS client or server during the initial handshake.<a href="#section-8-4" class="pilcrow">¶</a></p>
+corresponding TLS handshake.<a href="#section-8-4" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="sslkeylogfile-update">
@@ -2180,7 +2181,7 @@ Transcript-Hash(ClientHello..server Finished))
 </div>
 <p id="section-10.1-7">Applications that require post-compromise security <span class="bcp14">MUST</span> use the exporter
 interface defined in this document. This exporter interface is independent of
-the TLS exporter defined in <span><a href="https://rfc-editor.org/rfc/rfc9846#section-7.5" class="relref">Section 7.5</a> of [<a href="#TLS" class="cite xref">TLS</a>]</span>, which continues to use a
+the TLS exporter defined in <span><a href="https://datatracker.ietf.org/doc/html/draft-ietf-tls-rfc8446bis-14#section-7.5" class="relref">Section 7.5</a> of [<a href="#TLS" class="cite xref">TLS</a>]</span>, which continues to use a
 static <code>exporter_secret</code> for the lifetime of the connection for compatiblity with "legacy" applications.<a href="#section-10.1-7" class="pilcrow">¶</a></p>
 </section>
 </div>
@@ -2192,15 +2193,16 @@ static <code>exporter_secret</code> for the lifetime of the connection for compa
 <p id="section-10.2-1">Protocols such as DTLS-SRTP and DTLS-over-SCTP rely on TLS or DTLS for
 key establishment, but reuse portions of the derived keying material for
 their own specific purposes. These protocols use the TLS exporter defined
-in <span><a href="https://rfc-editor.org/rfc/rfc9846#section-7.5" class="relref">Section 7.5</a> of [<a href="#TLS" class="cite xref">TLS</a>]</span>. Exporters are also used for deriving
+in <span><a href="https://datatracker.ietf.org/doc/html/draft-ietf-tls-rfc8446bis-14#section-7.5" class="relref">Section 7.5</a> of [<a href="#TLS" class="cite xref">TLS</a>]</span>. Exporters are also used for deriving
 authentication related values such as nonces, as described in <span>[<a href="#RFC9729" class="cite xref">RFC9729</a>]</span>.<a href="#section-10.2-1" class="pilcrow">¶</a></p>
 <p id="section-10.2-2">Once the Extended Key Update mechanism is complete, such protocols would
 need to use the newly derived exporter secret to generate Exported Keying Material
-(EKM) to protect packets. The exporter_secret_N+1 derived in
-<a href="#key_update" class="auto internal xref">Section 7</a> will be used as the "Secret" in the exporter function, defined in
-<span><a href="https://rfc-editor.org/rfc/rfc9846#section-7.5" class="relref">Section 7.5</a> of [<a href="#TLS" class="cite xref">TLS</a>]</span>, to generate EKM, ensuring that the exported keying material
-is aligned with the updated security context. The newly derived exporter secret
-is cryptographically independent of previous exporter secrets.<a href="#section-10.2-2" class="pilcrow">¶</a></p>
+(EKM) to protect packets. The "sk" derived in the <a href="#key_update" class="auto internal xref">Section 7</a> will be
+used as the "Secret" in the exporter function, defined in
+<span><a href="https://datatracker.ietf.org/doc/html/draft-ietf-tls-rfc8446bis-14#section-7.5" class="relref">Section 7.5</a> of [<a href="#TLS" class="cite xref">TLS</a>]</span>, to generate EKM, ensuring that
+the exported keying material is aligned with the updated security context.
+The newly derived exporter secret is cryptographically independent of
+previous exporter secrets.<a href="#section-10.2-2" class="pilcrow">¶</a></p>
 <p id="section-10.2-3">When a new exporter secret becomes active following a successful Extended
 Key Update, the TLS or DTLS implementation would have to provide an
 asynchronous notification to the application indicating that:<a href="#section-10.2-3" class="pilcrow">¶</a></p>
@@ -2560,7 +2562,7 @@ The initial contents of this registry are as follows.<a href="#section-13.3-1" c
             </tr>
           </tbody>
         </table>
-<p id="section-13.3-3">New assignments in the "TLS ExtendedKeyUpdate Message Subtypes" registry will be administered by
+<p id="section-13.3-3">New assignments in the "TLS ExtendedKeyUpdate Types" registry will be administered by
 IANA through Specification Required procedure <span>[<a href="#RFC8126" class="cite xref">RFC8126</a>]</span>.  The role of the
 designated expert is described in <span><a href="https://rfc-editor.org/rfc/rfc8447#section-17" class="relref">Section 17</a> of [<a href="#RFC8447" class="cite xref">RFC8447</a>]</span>.  The designated expert
 <span>[<a href="#RFC8126" class="cite xref">RFC8126</a>]</span> ensures that the specification is publicly available.  It is sufficient to
@@ -2653,7 +2655,7 @@ extension registry <span>[<a href="#TLS-Ext-Registry" class="cite xref">TLS-Ext-
 <dd class="break"></dd>
 <dt id="TLS">[TLS]</dt>
         <dd>
-<span class="refAuthor">Rescorla, E.</span>, <span class="refTitle">"The Transport Layer Security (TLS) Protocol Version 1.3"</span>, <span class="seriesInfo">RFC 9846</span>, <span class="seriesInfo">DOI 10.17487/RFC9846</span>, <time datetime="2026-07" class="refDate">July 2026</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc9846">https://www.rfc-editor.org/rfc/rfc9846</a>&gt;</span>. </dd>
+<span class="refAuthor">Rescorla, E.</span>, <span class="refTitle">"The Transport Layer Security (TLS) Protocol Version 1.3"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-ietf-tls-rfc8446bis-14</span>, <time datetime="2025-09-13" class="refDate">13 September 2025</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-ietf-tls-rfc8446bis-14">https://datatracker.ietf.org/doc/html/draft-ietf-tls-rfc8446bis-14</a>&gt;</span>. </dd>
 <dd class="break"></dd>
 <dt id="TLS-FLAGS">[TLS-FLAGS]</dt>
       <dd>
