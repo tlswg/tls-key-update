@@ -157,7 +157,8 @@ PQ/T hybrid key exchange, or post-quantum KEM exchange. Unlike the
 standard key update, this mechanism allows peers to inject fresh key exchange
 input from the negotiated mechanism into an active session. By periodically
 rerunning the negotiated key exchange, this extension enables the derivation of
-new traffic keys that are independent of main secrets from prior epochs. As noted in
+new traffic keys that compromise of prior traffic keys does not help
+derive. As noted in
 {{Appendix F of !TLS=RFC9846}},
 this approach mitigates the risk of static key exfiltration and shifts the attacker
 burden toward dynamic key exfiltration.
@@ -372,7 +373,8 @@ encrypted with the old key, before accepting any messages encrypted with the new
 If TLS peers independently initiate the extended key update and the
 requests cross in flight, the `ExtendedKeyUpdate(key_update_request)` with the
 lower lexicographic order of the `key_exchange` value in
-`KeyShareEntry` MUST be ignored. This prevents each
+`KeyShareEntry` MUST be ignored. It MUST NOT be included in the
+transcript hash. This prevents each
 side from advancing keys by two generations. If the tie-break comparison yields
 equality (an event that should be impossible for genuine
 asymmetric key pairs), the endpoint MUST treat this as a protocol violation,
@@ -666,6 +668,9 @@ transcript_hash_0 denotes the transcript hash of the initial TLS handshake,
 covering all messages from the ClientHello up to and including the
 client Finished message.
 
+`main_secret_N` denotes the Main Secret (see {{Section 7.1 of TLS}})
+associated with generation N.
+
 {{key-hierarchy}} shows the key derivation hierarchy.
 
 ~~~
@@ -777,7 +782,7 @@ as the TLS client or server during the initial handshake.
 
 As a successful extended key update exchange invalidates previous secrets,
 SSLKEYLOGFILE {{?TLS-KEYLOGFILE=I-D.ietf-tls-keylogfile}} needs to be populated with new
-entries. As a result, two additional secret labels are utilized in the
+entries. As a result, three additional secret labels are utilized in the
 SSLKEYLOGFILE:
 
 1. `CLIENT_TRAFFIC_SECRET_N+1`: identifies the
@@ -853,8 +858,8 @@ need to use the newly derived exporter secret to generate Exported Keying Materi
 (EKM) to protect packets. The exporter_secret_N+1 derived in
 {{key_update}} will be used as the "Secret" in the exporter function, defined in
 {{Section 7.5 of TLS}}, to generate EKM, ensuring that the exported keying material
-is aligned with the updated security context. The newly derived exporter secret
-is cryptographically independent of previous exporter secrets.
+is aligned with the updated security context. Compromise of a previous exporter secret does not help derive the newly
+derived exporter secret.
 
 When a new exporter secret becomes active following a successful Extended
 Key Update, the TLS or DTLS implementation would have to provide an
@@ -876,7 +881,7 @@ the Extended Key Update exchange and switched to the new traffic keys.
   after Step 9 in {{DTLSC}}.
 
 The corresponding EKM is obtained by the application through the TLS/DTLS exporter
-interface using its chosen label and context values as defined in {{Section 4 of !RFC5705}}.
+interface using its chosen label and context values as defined in {{Section 7.5 of TLS}}.
 
 To prevent desynchronization, the application will have to retain both the
 previous and the newly derived exporter secrets for a short period. For TLS,
@@ -895,7 +900,7 @@ secret, as described in Section 3.3.2 of {{!RFC3711}}.
 
 EKU provides fresh traffic secrets, but EKU alone does not authenticate that both endpoints
 derived the same updated keys. An attacker that temporarily compromises an endpoint
-may later act as an person-in-the-middle attacker capable of interfering with the EKU exchange.
+may later act as a person-in-the-middle attacker capable of interfering with the EKU exchange.
 Such an attacker can cause the peers to transition to divergent traffic secrets without detection,
 but cannot compromise the endpoint to derive secrets after the new epoch is established.
 TLS 1.3 provides two mechanisms that can detect such divergence, each with a different scope.
@@ -1020,7 +1025,7 @@ the stolen private key.
 
 Extended Key Update can restore confidentiality only if the attacker no longer
 has access to either peer. If an adversary retains access to current application traffic
-keys and can act as an person-in-the-middle attacker during the Extended Key Update, then the
+keys and can act as a person-in-the-middle attacker during the Extended Key Update, then the
 update cannot restore security. The interference is detectable as described in {{exported}}.
 
 If one of the mechanisms defined in {{exported}} is not used, the attacker can
@@ -1041,7 +1046,8 @@ application_traffic_secrets from a new ephemeral key exchange.
 
 ## Post-Compromise Security
 
-Extended Key Update provides post-compromise security for long-lived TLS sessions.
+Under the compromise model described in this document, Extended Key Update
+provides post-compromise security for long-lived TLS sessions.
 To ensure post-compromise security guarantees each update MUST use freshly generated
 ephemeral key exchange material. Implementations MUST NOT reuse ephemeral key
 exchange material across updates or across TLS sessions.
@@ -1409,13 +1415,14 @@ A complete security analysis of the EKU is outside the scope of this document. T
 
 ## Post-Compromise Security (PCS)
 
-Extended Key Update supports post-compromise security under the assumptions described in {{scope}}. If an attacker temporarily compromises an endpoint and obtains the traffic keys in use before an Extended Key Update takes place, but the compromise does not persist during and after the EKU completes, the attacker cannot derive the new keying material established by EKU. This property follows from the use of fresh ephemeral key exchange material during each Extended Key Update, which produces new traffic keys that are independent of the previous ones. As a result, confidentiality of application data encrypted after the Extended Key Update is preserved even if the earlier traffic keys were exposed.
+Extended Key Update supports post-compromise security under the assumptions described in {{scope}}. If an attacker temporarily compromises an endpoint and obtains the traffic keys in use before an Extended Key Update takes place, but the compromise does not persist during and after the EKU completes, the attacker cannot derive the new keying material established by EKU. This property follows from the use of fresh ephemeral key exchange material during each Extended Key Update, which produces new traffic keys that compromise of prior traffic keys
+does not help derive. As a result, confidentiality of application data encrypted after the Extended Key Update is preserved even if the earlier traffic keys were exposed.
 
 ## Key Freshness and Cryptographic Independence
 
 Each Extended Key Update derives new traffic keys from ephemeral key exchange material. This ensures strong separation between successive traffic keys:
 
-* The new traffic keys established by an Extended Key Update are independent of the previous traffic keys.
+* Compromise of prior traffic keys does not help derive the new traffic keys established by an Extended Key Update.
 * Compromise of one of traffic keys does not allow recovery of any earlier or later traffic keys.
 * Application data protected under one of the traffic keys cannot be decrypted using keys from another.
 
