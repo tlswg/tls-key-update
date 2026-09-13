@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2026-09-10T03:50:13.883209+00:00",
+  "timestamp": "2026-09-13T03:57:54.724817+00:00",
   "repo": "tlswg/tls-key-update",
   "labels": [
     {
@@ -10717,6 +10717,32 @@
           ]
         }
       ]
+    },
+    {
+      "number": 123,
+      "id": "PR_kwDOMJPqLM8AAAABDG7mow",
+      "title": "Fix nits identified during review",
+      "url": "https://github.com/tlswg/tls-key-update/pull/123",
+      "state": "OPEN",
+      "author": "tireddy2",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [],
+      "body": "",
+      "createdAt": "2026-09-11T07:25:27Z",
+      "updatedAt": "2026-09-11T07:25:35Z",
+      "baseRepository": "tlswg/tls-key-update",
+      "baseRefName": "main",
+      "baseRefOid": "3dc306774706c1ad2c944304d9ad1d744a52121c",
+      "headRepository": "tlswg/tls-key-update",
+      "headRefName": "tireddy2-patch-17",
+      "headRefOid": "5732f448c2fa693ce1ec7a67e048a15791ee5495",
+      "closedAt": null,
+      "mergedAt": null,
+      "mergedBy": null,
+      "mergeCommit": null,
+      "comments": [],
+      "reviews": []
     }
   ]
 }
