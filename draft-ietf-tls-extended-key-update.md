@@ -1422,7 +1422,7 @@ does not help derive. As a result, confidentiality of application data encrypted
 
 Each Extended Key Update derives new traffic keys from ephemeral key exchange material. This ensures strong separation between successive traffic keys:
 
-* Compromise of prior traffic keys does not help derive the new traffic keys established by an Extended Key Update.
+* Compromise of prior traffic keys does not suffice to derive the new traffic keys established by an Extended Key Update.
 * Compromise of one of traffic keys does not allow recovery of any earlier or later traffic keys.
 * Application data protected under one of the traffic keys cannot be decrypted using keys from another.
 
