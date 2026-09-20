@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2026-09-17T04:08:37.153447+00:00",
+  "timestamp": "2026-09-20T04:07:35.172531+00:00",
   "repo": "tlswg/tls-key-update",
   "labels": [
     {
@@ -10730,7 +10730,7 @@
       "labels": [],
       "body": "",
       "createdAt": "2026-09-11T07:25:27Z",
-      "updatedAt": "2026-09-15T12:44:22Z",
+      "updatedAt": "2026-09-17T14:08:21Z",
       "baseRepository": "tlswg/tls-key-update",
       "baseRefName": "main",
       "baseRefOid": "3dc306774706c1ad2c944304d9ad1d744a52121c",
@@ -10775,6 +10775,32 @@
           "createdAt": "2026-09-15T12:44:21Z",
           "updatedAt": "2026-09-15T12:44:21Z",
           "comments": []
+        },
+        {
+          "id": "PRR_kwDOMJPqLM8AAAABOCJpUQ",
+          "commit": {
+            "abbreviatedOid": "e944534"
+          },
+          "author": "felixlinker",
+          "authorAssociation": "NONE",
+          "state": "APPROVED",
+          "body": "Just some editorial feedback, and one hint on potentially more precise language!\n\nI would also probably change some wording on the attacker model, but I think it's better to do this in a full pass over the document.",
+          "createdAt": "2026-09-17T14:04:14Z",
+          "updatedAt": "2026-09-17T14:08:20Z",
+          "comments": [
+            {
+              "originalPosition": 6,
+              "body": "I think this sentence got a bit mangled up during editing.",
+              "createdAt": "2026-09-17T14:04:14Z",
+              "updatedAt": "2026-09-17T14:08:21Z"
+            },
+            {
+              "originalPosition": 46,
+              "body": "I don't know much about exporter secrets, but there was other language where we changed \"does not help to derive\" to \"does not suffice to derive.\" Just flagging that the \"does not suffice to\" wording might be more accurate here as well. I would only use \"does not help\" if the old exporter secret cannot be used in any way to compute the new exporter secret.",
+              "createdAt": "2026-09-17T14:06:08Z",
+              "updatedAt": "2026-09-17T14:08:21Z"
+            }
+          ]
         }
       ]
     }
