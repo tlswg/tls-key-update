@@ -31,23 +31,23 @@ the risks associated with static key compromise. Regular renewal of session keys
 contain the impact of such compromises. The extension is applicable to both TLS 1.3
 and DTLS 1.3. 
     " name="description">
-<meta content="xml2rfc 3.34.0" name="generator">
+<meta content="xml2rfc 3.34.1" name="generator">
 <meta content="Internet-Draft" name="keyword">
 <meta content="draft-ietf-tls-extended-key-update-latest" name="ietf.draft">
 <!-- Generator version information:
-  xml2rfc 3.34.0
+  xml2rfc 3.34.1
     Python 3.14.7
-    ConfigArgParse 1.7.5
+    ConfigArgParse 1.7.7
     google-i18n-address 3.1.1
     intervaltree 3.2.1
     Jinja2 3.1.6
     lxml 6.1.1
     natsort 8.4.0
-    platformdirs 4.11.7
+    platformdirs 4.11.10
     pycountry 24.6.1
     PyYAML 6.0.3
     requests 2.33.1
-    wcwidth 0.8.3
+    wcwidth 0.8.4
 -->
 <link href="draft-ietf-tls-extended-key-update.xml" rel="alternate" type="application/rfc+xml">
 <link href="#copyright" rel="license">
@@ -1067,7 +1067,7 @@ svg {
 </tr></thead>
 <tfoot><tr>
 <td class="left">Tschofenig, et al.</td>
-<td class="center">Expires 12 March 2027</td>
+<td class="center">Expires 25 March 2027</td>
 <td class="right">[Page]</td>
 </tr></tfoot>
 </table>
@@ -1083,12 +1083,12 @@ svg {
 <a href="https://www.rfc-editor.org/rfc/rfc9261" class="eref">9261</a>, <a href="https://www.rfc-editor.org/rfc/rfc9846" class="eref">9846</a> (if approved)</dd>
 <dt class="label-published">Published:</dt>
 <dd class="published">
-<time datetime="2026-09-08" class="published">8 September 2026</time>
+<time datetime="2026-09-21" class="published">21 September 2026</time>
     </dd>
 <dt class="label-intended-status">Intended Status:</dt>
 <dd class="intended-status">Standards Track</dd>
 <dt class="label-expires">Expires:</dt>
-<dd class="expires"><time datetime="2027-03-12">12 March 2027</time></dd>
+<dd class="expires"><time datetime="2027-03-25">25 March 2027</time></dd>
 <dt class="label-authors">Authors:</dt>
 <dd class="authors">
 <div class="author">
@@ -1167,7 +1167,7 @@ and DTLS 1.3.<a href="#section-abstract-4" class="pilcrow">¶</a></p>
         time. It is inappropriate to use Internet-Drafts as reference
         material or to cite them other than as "work in progress."<a href="#section-boilerplate.1-3" class="pilcrow">¶</a></p>
 <p id="section-boilerplate.1-4">
-        This Internet-Draft will expire on 12 March 2027.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
+        This Internet-Draft will expire on 25 March 2027.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="copyright">
@@ -1414,7 +1414,8 @@ PQ/T hybrid key exchange, or post-quantum KEM exchange. Unlike the
 standard key update, this mechanism allows peers to inject fresh key exchange
 input from the negotiated mechanism into an active session. By periodically
 rerunning the negotiated key exchange, this extension enables the derivation of
-new traffic keys that are independent of main secrets from prior epochs. As noted in
+new traffic keys. Compromise of prior traffic keys does not suffice to
+derive the new traffic keys. As noted in
 <span><a href="https://rfc-editor.org/rfc/rfc9846#appendix-F" class="relref">Appendix F</a> of [<a href="#TLS" class="cite xref">TLS</a>]</span>,
 this approach mitigates the risk of static key exfiltration and shifts the attacker
 burden toward dynamic key exfiltration.<a href="#section-1-5" class="pilcrow">¶</a></p>
@@ -1655,7 +1656,8 @@ encrypted with the old key, before accepting any messages encrypted with the new
 <p id="section-5-4">If TLS peers independently initiate the extended key update and the
 requests cross in flight, the <code>ExtendedKeyUpdate(key_update_request)</code> with the
 lower lexicographic order of the <code>key_exchange</code> value in
-<code>KeyShareEntry</code> <span class="bcp14">MUST</span> be ignored. This prevents each
+<code>KeyShareEntry</code> <span class="bcp14">MUST</span> be ignored. It <span class="bcp14">MUST NOT</span> be included in the
+transcript hash. This prevents each
 side from advancing keys by two generations. If the tie-break comparison yields
 equality (an event that should be impossible for genuine
 asymmetric key pairs), the endpoint <span class="bcp14">MUST</span> treat this as a protocol violation,
@@ -2002,10 +2004,12 @@ No prior transcript hash values need to be retained for future EKU exchanges.
 transcript_hash_0 denotes the transcript hash of the initial TLS handshake,
 covering all messages from the ClientHello up to and including the
 client Finished message.<a href="#section-7-6" class="pilcrow">¶</a></p>
-<p id="section-7-7"><a href="#key-hierarchy" class="auto internal xref">Figure 7</a> shows the key derivation hierarchy.<a href="#section-7-7" class="pilcrow">¶</a></p>
+<p id="section-7-7"><code>main_secret_N</code> denotes the Main Secret (see <span><a href="https://rfc-editor.org/rfc/rfc9846#section-7.1" class="relref">Section 7.1</a> of [<a href="#TLS" class="cite xref">TLS</a>]</span>)
+associated with generation N.<a href="#section-7-7" class="pilcrow">¶</a></p>
+<p id="section-7-8"><a href="#key-hierarchy" class="auto internal xref">Figure 7</a> shows the key derivation hierarchy.<a href="#section-7-8" class="pilcrow">¶</a></p>
 <span id="name-key-derivation-hierarchy"></span><div id="key-hierarchy">
 <figure id="figure-7">
-        <div class="alignLeft art-text artwork" id="section-7-8.1">
+        <div class="alignLeft art-text artwork" id="section-7-9.1">
 <pre>
        main_secret_N
              |
@@ -2032,7 +2036,7 @@ Secret -&gt; HKDF-Extract = main_secret_N+1
 <a href="#name-key-derivation-hierarchy" class="selfRef">Key Derivation Hierarchy.</a>
         </figcaption></figure>
 </div>
-<p id="section-7-9">During the initial handshake, the Main Secret is generated (see
+<p id="section-7-10">During the initial handshake, the Main Secret is generated (see
 <span><a href="https://rfc-editor.org/rfc/rfc9846#section-7.1" class="relref">Section 7.1</a> of [<a href="#TLS" class="cite xref">TLS</a>]</span>). Since the main_secret
 is discarded during the key derivation procedure, a derived value is
 stored. This stored value then serves as the input salt to the first
@@ -2040,29 +2044,29 @@ key update procedure that incorporates the shared secret as input
 keying material (IKM) to produce main_secret_N+1. The derived value
 from this new main secret serves as input salt to the subsequent key
 update procedure, which also incorporates a fresh shared secret as
-IKM. This process is repeated for each additional key update procedure.<a href="#section-7-9" class="pilcrow">¶</a></p>
-<p id="section-7-10">The shared secret is determined by the negotiated key exchange mechanism.
+IKM. This process is repeated for each additional key update procedure.<a href="#section-7-10" class="pilcrow">¶</a></p>
+<p id="section-7-11">The shared secret is determined by the negotiated key exchange mechanism.
 In the base protocol, this mechanism is (EC)DHE (see <span><a href="https://rfc-editor.org/rfc/rfc9846#section-7.4" class="relref">Section 7.4</a> of [<a href="#TLS" class="cite xref">TLS</a>]</span>). Post-quantum and hybrid key exchange mechanisms derive the
 shared secret as specified by their respective definitions. See also
-<a href="#pqc-cons" class="auto internal xref">Section 8</a>.<a href="#section-7-10" class="pilcrow">¶</a></p>
-<p id="section-7-11">The traffic keys are re-derived from
+<a href="#pqc-cons" class="auto internal xref">Section 8</a>.<a href="#section-7-11" class="pilcrow">¶</a></p>
+<p id="section-7-12">The traffic keys are re-derived from
 client_application_traffic_secret_N+1 and
 server_application_traffic_secret_N+1, as described in
-<span><a href="https://rfc-editor.org/rfc/rfc9846#section-7.3" class="relref">Section 7.3</a> of [<a href="#TLS" class="cite xref">TLS</a>]</span>.<a href="#section-7-11" class="pilcrow">¶</a></p>
-<p id="section-7-12">Once client_/server_application_traffic_secret_N+1 and its associated
+<span><a href="https://rfc-editor.org/rfc/rfc9846#section-7.3" class="relref">Section 7.3</a> of [<a href="#TLS" class="cite xref">TLS</a>]</span>.<a href="#section-7-12" class="pilcrow">¶</a></p>
+<p id="section-7-13">Once client_/server_application_traffic_secret_N+1 and its associated
 traffic keys have been computed, implementations <span class="bcp14">SHOULD</span> delete
 client_/server_application_traffic_secret_N and its associated
 traffic keys as soon as possible. Note: The
 client_/server_application_traffic_secret_N and its associated
 traffic keys can only be deleted by the responder after receiving the
-<code>ExtendedKeyUpdate(key_update_finish)</code> message.<a href="#section-7-12" class="pilcrow">¶</a></p>
-<p id="section-7-13">Once client_/server_application_traffic_secret_N+1 and the corresponding traffic
+<code>ExtendedKeyUpdate(key_update_finish)</code> message.<a href="#section-7-13" class="pilcrow">¶</a></p>
+<p id="section-7-14">Once client_/server_application_traffic_secret_N+1 and the corresponding traffic
 keys are in use, all subsequent records, including alerts and post-handshake
-messages <span class="bcp14">MUST</span> be protected using those keys.<a href="#section-7-13" class="pilcrow">¶</a></p>
-<p id="section-7-14">When using this extension, it is important to consider its interaction with
+messages <span class="bcp14">MUST</span> be protected using those keys.<a href="#section-7-14" class="pilcrow">¶</a></p>
+<p id="section-7-15">When using this extension, it is important to consider its interaction with
 PSK-based resumption using PSKs established via the NewSessionTicket mechanism
-defined in <span>[<a href="#TLS" class="cite xref">TLS</a>]</span>.<a href="#section-7-14" class="pilcrow">¶</a></p>
-<p id="section-7-15">EKU provides post-compromise recovery for the TLS connection in which it is performed.
+defined in <span>[<a href="#TLS" class="cite xref">TLS</a>]</span>.<a href="#section-7-15" class="pilcrow">¶</a></p>
+<p id="section-7-16">EKU provides post-compromise recovery for the TLS connection in which it is performed.
 The recovery guarantees depend on the assumed compromise model. In typical deployment
 environments, PSKs established via the NewSessionTicket mechanism are generated and
 reside in memory within the rich operating system. Although such PSKs may subsequently
@@ -2073,10 +2077,10 @@ compromise. These PSKs are sufficient to establish new authenticated TLS connect
 Even if an implementation invalidates previously issued PSKs upon completion of the
 EKU exchange, an attacker that has already obtained such a PSK may initiate and
 complete a resumed session prior to that invalidation. In such environments, EKU does
-not prevent the use of previously issued PSKs.<a href="#section-7-15" class="pilcrow">¶</a></p>
-<p id="section-7-16">Accordingly, endpoints that enable EKU <span class="bcp14">MUST</span> disable resumption using PSKs established
+not prevent the use of previously issued PSKs.<a href="#section-7-16" class="pilcrow">¶</a></p>
+<p id="section-7-17">Accordingly, endpoints that enable EKU <span class="bcp14">MUST</span> disable resumption using PSKs established
 via the NewSessionTicket mechanism. <code>resumption_main_secret_N+1</code> is not
-derived for this reason in <a href="#key-hierarchy" class="auto internal xref">Figure 7</a>.<a href="#section-7-16" class="pilcrow">¶</a></p>
+derived for this reason in <a href="#key-hierarchy" class="auto internal xref">Figure 7</a>.<a href="#section-7-17" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="pqc-cons">
@@ -2115,7 +2119,7 @@ as the TLS client or server during the initial handshake.<a href="#section-8-4" 
       </h2>
 <p id="section-9-1">As a successful extended key update exchange invalidates previous secrets,
 SSLKEYLOGFILE <span>[<a href="#TLS-KEYLOGFILE" class="cite xref">TLS-KEYLOGFILE</a>]</span> needs to be populated with new
-entries. As a result, two additional secret labels are utilized in the
+entries. As a result, three additional secret labels are utilized in the
 SSLKEYLOGFILE:<a href="#section-9-1" class="pilcrow">¶</a></p>
 <ol start="1" type="1" class="normal type-1" id="section-9-2">
 <li id="section-9-2.1">
@@ -2199,8 +2203,8 @@ need to use the newly derived exporter secret to generate Exported Keying Materi
 (EKM) to protect packets. The exporter_secret_N+1 derived in
 <a href="#key_update" class="auto internal xref">Section 7</a> will be used as the "Secret" in the exporter function, defined in
 <span><a href="https://rfc-editor.org/rfc/rfc9846#section-7.5" class="relref">Section 7.5</a> of [<a href="#TLS" class="cite xref">TLS</a>]</span>, to generate EKM, ensuring that the exported keying material
-is aligned with the updated security context. The newly derived exporter secret
-is cryptographically independent of previous exporter secrets.<a href="#section-10.2-2" class="pilcrow">¶</a></p>
+is aligned with the updated security context. Compromise of a previous exporter secret does not suffice to derive
+exporter_secret_N+1.<a href="#section-10.2-2" class="pilcrow">¶</a></p>
 <p id="section-10.2-3">When a new exporter secret becomes active following a successful Extended
 Key Update, the TLS or DTLS implementation would have to provide an
 asynchronous notification to the application indicating that:<a href="#section-10.2-3" class="pilcrow">¶</a></p>
@@ -2227,7 +2231,7 @@ after Step 9 in <a href="#DTLSC" class="auto internal xref">Section 6</a>.<a hre
 </li>
         </ul>
 <p id="section-10.2-7">The corresponding EKM is obtained by the application through the TLS/DTLS exporter
-interface using its chosen label and context values as defined in <span><a href="https://rfc-editor.org/rfc/rfc5705#section-4" class="relref">Section 4</a> of [<a href="#RFC5705" class="cite xref">RFC5705</a>]</span>.<a href="#section-10.2-7" class="pilcrow">¶</a></p>
+interface using its chosen label and context values as defined in <span><a href="https://rfc-editor.org/rfc/rfc9846#section-7.5" class="relref">Section 7.5</a> of [<a href="#TLS" class="cite xref">TLS</a>]</span>.<a href="#section-10.2-7" class="pilcrow">¶</a></p>
 <p id="section-10.2-8">To prevent desynchronization, the application will have to retain both the
 previous and the newly derived exporter secrets for a short period. For TLS,
 the previous exporter secret would be discarded once data derived from the
@@ -2250,7 +2254,7 @@ secret, as described in Section 3.3.2 of <span>[<a href="#RFC3711" class="cite x
       </h2>
 <p id="section-11-1">EKU provides fresh traffic secrets, but EKU alone does not authenticate that both endpoints
 derived the same updated keys. An attacker that temporarily compromises an endpoint
-may later act as an person-in-the-middle attacker capable of interfering with the EKU exchange.
+may later act as a person-in-the-middle attacker capable of interfering with the EKU exchange.
 Such an attacker can cause the peers to transition to divergent traffic secrets without detection,
 but cannot compromise the endpoint to derive secrets after the new epoch is established.
 TLS 1.3 provides two mechanisms that can detect such divergence, each with a different scope.
@@ -2403,7 +2407,7 @@ the stolen private key.<a href="#section-12.1-3.2.1" class="pilcrow">¶</a></p>
         </ol>
 <p id="section-12.1-4">Extended Key Update can restore confidentiality only if the attacker no longer
 has access to either peer. If an adversary retains access to current application traffic
-keys and can act as an person-in-the-middle attacker during the Extended Key Update, then the
+keys and can act as a person-in-the-middle attacker during the Extended Key Update, then the
 update cannot restore security. The interference is detectable as described in <a href="#exported" class="auto internal xref">Section 11</a>.<a href="#section-12.1-4" class="pilcrow">¶</a></p>
 <p id="section-12.1-5">If one of the mechanisms defined in <a href="#exported" class="auto internal xref">Section 11</a> is not used, the attacker can
 impersonate each endpoint, substitute EKU messages, and maintain control
@@ -2426,7 +2430,8 @@ application_traffic_secrets from a new ephemeral key exchange.<a href="#section-
         <h3 id="name-post-compromise-security">
 <a href="#section-12.2" class="section-number selfRef">12.2. </a><a href="#name-post-compromise-security" class="section-name selfRef">Post-Compromise Security</a>
         </h3>
-<p id="section-12.2-1">Extended Key Update provides post-compromise security for long-lived TLS sessions.
+<p id="section-12.2-1">Under the compromise model described in this document, Extended Key Update
+provides post-compromise security for long-lived TLS sessions.
 To ensure post-compromise security guarantees each update <span class="bcp14">MUST</span> use freshly generated
 ephemeral key exchange material. Implementations <span class="bcp14">MUST NOT</span> reuse ephemeral key
 exchange material across updates or across TLS sessions.<a href="#section-12.2-1" class="pilcrow">¶</a></p>
@@ -2635,10 +2640,6 @@ extension registry <span>[<a href="#TLS-Ext-Registry" class="cite xref">TLS-Ext-
         <dd>
 <span class="refAuthor">Baugher, M.</span>, <span class="refAuthor">McGrew, D.</span>, <span class="refAuthor">Naslund, M.</span>, <span class="refAuthor">Carrara, E.</span>, and <span class="refAuthor">K. Norrman</span>, <span class="refTitle">"The Secure Real-time Transport Protocol (SRTP)"</span>, <span class="seriesInfo">RFC 3711</span>, <span class="seriesInfo">DOI 10.17487/RFC3711</span>, <time datetime="2004-03" class="refDate">March 2004</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc3711">https://www.rfc-editor.org/rfc/rfc3711</a>&gt;</span>. </dd>
 <dd class="break"></dd>
-<dt id="RFC5705">[RFC5705]</dt>
-        <dd>
-<span class="refAuthor">Rescorla, E.</span>, <span class="refTitle">"Keying Material Exporters for Transport Layer Security (TLS)"</span>, <span class="seriesInfo">RFC 5705</span>, <span class="seriesInfo">DOI 10.17487/RFC5705</span>, <time datetime="2010-03" class="refDate">March 2010</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc5705">https://www.rfc-editor.org/rfc/rfc5705</a>&gt;</span>. </dd>
-<dd class="break"></dd>
 <dt id="RFC8174">[RFC8174]</dt>
         <dd>
 <span class="refAuthor">Leiba, B.</span>, <span class="refTitle">"Ambiguity of Uppercase vs Lowercase in RFC 2119 Key Words"</span>, <span class="seriesInfo">BCP 14</span>, <span class="seriesInfo">RFC 8174</span>, <span class="seriesInfo">DOI 10.17487/RFC8174</span>, <time datetime="2017-05" class="refDate">May 2017</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc8174">https://www.rfc-editor.org/rfc/rfc8174</a>&gt;</span>. </dd>
@@ -2657,7 +2658,7 @@ extension registry <span>[<a href="#TLS-Ext-Registry" class="cite xref">TLS-Ext-
 <dd class="break"></dd>
 <dt id="TLS-FLAGS">[TLS-FLAGS]</dt>
       <dd>
-<span class="refAuthor">Nir, Y.</span>, <span class="refTitle">"A Flags Extension for TLS 1.3"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-ietf-tls-tlsflags-17</span>, <time datetime="2026-03-17" class="refDate">17 March 2026</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-ietf-tls-tlsflags-17">https://datatracker.ietf.org/doc/html/draft-ietf-tls-tlsflags-17</a>&gt;</span>. </dd>
+<span class="refAuthor">Nir, Y.</span>, <span class="refTitle">"A Flags Extension for TLS 1.3"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-ietf-tls-tlsflags-18</span>, <time datetime="2026-09-10" class="refDate">10 September 2026</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-ietf-tls-tlsflags-18">https://datatracker.ietf.org/doc/html/draft-ietf-tls-tlsflags-18</a>&gt;</span>. </dd>
 <dd class="break"></dd>
 </dl>
 </section>
@@ -2686,7 +2687,7 @@ extension registry <span>[<a href="#TLS-Ext-Registry" class="cite xref">TLS-Ext-
 <dd class="break"></dd>
 <dt id="I-D.ietf-tls-mlkem">[I-D.ietf-tls-mlkem]</dt>
         <dd>
-<span class="refAuthor">Connolly, D.</span>, <span class="refTitle">"ML-KEM Post-Quantum Key Agreement for TLS 1.3"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-ietf-tls-mlkem-10</span>, <time datetime="2026-09-02" class="refDate">2 September 2026</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-ietf-tls-mlkem-10">https://datatracker.ietf.org/doc/html/draft-ietf-tls-mlkem-10</a>&gt;</span>. </dd>
+<span class="refAuthor">Connolly, D.</span>, <span class="refTitle">"ML-KEM Post-Quantum Key Agreement for TLS 1.3"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-ietf-tls-mlkem-11</span>, <time datetime="2026-09-16" class="refDate">16 September 2026</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-ietf-tls-mlkem-11">https://datatracker.ietf.org/doc/html/draft-ietf-tls-mlkem-11</a>&gt;</span>. </dd>
 <dd class="break"></dd>
 <dt id="RFC8126">[RFC8126]</dt>
         <dd>
@@ -3403,7 +3404,7 @@ refer to the send and receive key variables defined in <a href="#term" class="au
         <h3 id="name-post-compromise-security-pc">
 <a href="#appendix-C.1" class="section-number selfRef">C.1. </a><a href="#name-post-compromise-security-pc" class="section-name selfRef">Post-Compromise Security (PCS)</a>
         </h3>
-<p id="appendix-C.1-1">Extended Key Update supports post-compromise security under the assumptions described in <a href="#scope" class="auto internal xref">Section 12.1</a>. If an attacker temporarily compromises an endpoint and obtains the traffic keys in use before an Extended Key Update takes place, but the compromise does not persist during and after the EKU completes, the attacker cannot derive the new keying material established by EKU. This property follows from the use of fresh ephemeral key exchange material during each Extended Key Update, which produces new traffic keys that are independent of the previous ones. As a result, confidentiality of application data encrypted after the Extended Key Update is preserved even if the earlier traffic keys were exposed.<a href="#appendix-C.1-1" class="pilcrow">¶</a></p>
+<p id="appendix-C.1-1">Extended Key Update supports post-compromise security under the assumptions described in <a href="#scope" class="auto internal xref">Section 12.1</a>. If an attacker temporarily compromises an endpoint and obtains the traffic keys in use before an Extended Key Update takes place, but the compromise does not persist during and after the EKU completes, the attacker cannot derive the new keying material established by EKU. This property follows from the use of fresh ephemeral key exchange material during each Extended Key Update. Compromise of prior traffic keys does not suffice to derive the new traffic keys. As a result, confidentiality of application data encrypted after the Extended Key Update is preserved even if the earlier traffic keys were exposed.<a href="#appendix-C.1-1" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="key-freshness-and-cryptographic-independence">
@@ -3414,7 +3415,7 @@ refer to the send and receive key variables defined in <a href="#term" class="au
 <p id="appendix-C.2-1">Each Extended Key Update derives new traffic keys from ephemeral key exchange material. This ensures strong separation between successive traffic keys:<a href="#appendix-C.2-1" class="pilcrow">¶</a></p>
 <ul class="normal">
 <li class="normal" id="appendix-C.2-2.1">
-            <p id="appendix-C.2-2.1.1">The new traffic keys established by an Extended Key Update are independent of the previous traffic keys.<a href="#appendix-C.2-2.1.1" class="pilcrow">¶</a></p>
+            <p id="appendix-C.2-2.1.1">Compromise of prior traffic keys does not suffice to derive the new traffic keys established by an Extended Key Update.<a href="#appendix-C.2-2.1.1" class="pilcrow">¶</a></p>
 </li>
           <li class="normal" id="appendix-C.2-2.2">
             <p id="appendix-C.2-2.2.1">Compromise of one of traffic keys does not allow recovery of any earlier or later traffic keys.<a href="#appendix-C.2-2.2.1" class="pilcrow">¶</a></p>

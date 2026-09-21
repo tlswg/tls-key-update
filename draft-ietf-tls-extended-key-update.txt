@@ -6,13 +6,13 @@ Transport Layer Security                                   H. Tschofenig
 Internet-Draft                                                   Siemens
 Updates: 9261, 9846 (if approved)                               T. Reddy
 Intended status: Standards Track                                   Nokia
-Expires: 12 March 2027                                          M. Tüxen
+Expires: 25 March 2027                                          M. Tüxen
                                        Münster Univ. of Applied Sciences
                                                                 S. Fries
                                                                  Siemens
                                                             Y. Rosomakho
                                                                  Zscaler
-                                                        8 September 2026
+                                                       21 September 2026
 
 
        Extended Key Update for Transport Layer Security (TLS) 1.3
@@ -72,7 +72,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 12 March 2027.
+   This Internet-Draft will expire on 25 March 2027.
 
 Copyright Notice
 
@@ -196,10 +196,10 @@ Table of Contents
    peers to inject fresh key exchange input from the negotiated
    mechanism into an active session.  By periodically rerunning the
    negotiated key exchange, this extension enables the derivation of new
-   traffic keys that are independent of main secrets from prior epochs.
-   As noted in Appendix F of [TLS], this approach mitigates the risk of
-   static key exfiltration and shifts the attacker burden toward dynamic
-   key exfiltration.
+   traffic keys.  Compromise of prior traffic keys does not suffice to
+   derive the new traffic keys.  As noted in Appendix F of [TLS], this
+   approach mitigates the risk of static key exfiltration and shifts the
+   attacker burden toward dynamic key exfiltration.
 
    The proposed extension is applicable to both TLS 1.3 [TLS] and DTLS
    1.3 [DTLS].  For clarity, the term "TLS" is used throughout this
@@ -423,12 +423,12 @@ Table of Contents
    If TLS peers independently initiate the extended key update and the
    requests cross in flight, the ExtendedKeyUpdate(key_update_request)
    with the lower lexicographic order of the key_exchange value in
-   KeyShareEntry MUST be ignored.  This prevents each side from
-   advancing keys by two generations.  If the tie-break comparison
-   yields equality (an event that should be impossible for genuine
-   asymmetric key pairs), the endpoint MUST treat this as a protocol
-   violation, send an "unexpected_message" alert, and close the
-   connection.
+   KeyShareEntry MUST be ignored.  It MUST NOT be included in the
+   transcript hash.  This prevents each side from advancing keys by two
+   generations.  If the tie-break comparison yields equality (an event
+   that should be impossible for genuine asymmetric key pairs), the
+   endpoint MUST treat this as a protocol violation, send an
+   "unexpected_message" alert, and close the connection.
 
    The handshake framing uses a single HandshakeType for this message
    (see Figure 2).
@@ -731,6 +731,9 @@ Table of Contents
    of the initial TLS handshake, covering all messages from the
    ClientHello up to and including the client Finished message.
 
+   main_secret_N denotes the Main Secret (see Section 7.1 of [TLS])
+   associated with generation N.
+
    Figure 7 shows the key derivation hierarchy.
 
           main_secret_N
@@ -851,8 +854,8 @@ Table of Contents
 
    As a successful extended key update exchange invalidates previous
    secrets, SSLKEYLOGFILE [TLS-KEYLOGFILE] needs to be populated with
-   new entries.  As a result, two additional secret labels are utilized
-   in the SSLKEYLOGFILE:
+   new entries.  As a result, three additional secret labels are
+   utilized in the SSLKEYLOGFILE:
 
    1.  CLIENT_TRAFFIC_SECRET_N+1: identifies the
        client_application_traffic_secret_N+1 in the key schedule
@@ -935,8 +938,8 @@ Table of Contents
    exporter_secret_N+1 derived in Section 7 will be used as the "Secret"
    in the exporter function, defined in Section 7.5 of [TLS], to
    generate EKM, ensuring that the exported keying material is aligned
-   with the updated security context.  The newly derived exporter secret
-   is cryptographically independent of previous exporter secrets.
+   with the updated security context.  Compromise of a previous exporter
+   secret does not suffice to derive exporter_secret_N+1.
 
    When a new exporter secret becomes active following a successful
    Extended Key Update, the TLS or DTLS implementation would have to
@@ -964,7 +967,7 @@ Table of Contents
 
    The corresponding EKM is obtained by the application through the TLS/
    DTLS exporter interface using its chosen label and context values as
-   defined in Section 4 of [RFC5705].
+   defined in Section 7.5 of [TLS].
 
    To prevent desynchronization, the application will have to retain
    both the previous and the newly derived exporter secrets for a short
@@ -985,7 +988,7 @@ Table of Contents
 
    EKU provides fresh traffic secrets, but EKU alone does not
    authenticate that both endpoints derived the same updated keys.  An
-   attacker that temporarily compromises an endpoint may later act as an
+   attacker that temporarily compromises an endpoint may later act as a
    person-in-the-middle attacker capable of interfering with the EKU
    exchange.  Such an attacker can cause the peers to transition to
    divergent traffic secrets without detection, but cannot compromise
@@ -1136,7 +1139,7 @@ Table of Contents
 
    Extended Key Update can restore confidentiality only if the attacker
    no longer has access to either peer.  If an adversary retains access
-   to current application traffic keys and can act as an person-in-the-
+   to current application traffic keys and can act as a person-in-the-
    middle attacker during the Extended Key Update, then the update
    cannot restore security.  The interference is detectable as described
    in Section 11.
@@ -1162,11 +1165,12 @@ Table of Contents
 
 12.2.  Post-Compromise Security
 
-   Extended Key Update provides post-compromise security for long-lived
-   TLS sessions.  To ensure post-compromise security guarantees each
-   update MUST use freshly generated ephemeral key exchange material.
-   Implementations MUST NOT reuse ephemeral key exchange material across
-   updates or across TLS sessions.
+   Under the compromise model described in this document, Extended Key
+   Update provides post-compromise security for long-lived TLS sessions.
+   To ensure post-compromise security guarantees each update MUST use
+   freshly generated ephemeral key exchange material.  Implementations
+   MUST NOT reuse ephemeral key exchange material across updates or
+   across TLS sessions.
 
 12.3.  Denial-of-Service (DoS)
 
@@ -1309,10 +1313,6 @@ Table of Contents
               RFC 3711, DOI 10.17487/RFC3711, March 2004,
               <https://www.rfc-editor.org/rfc/rfc3711>.
 
-   [RFC5705]  Rescorla, E., "Keying Material Exporters for Transport
-              Layer Security (TLS)", RFC 5705, DOI 10.17487/RFC5705,
-              March 2010, <https://www.rfc-editor.org/rfc/rfc5705>.
-
    [RFC8174]  Leiba, B., "Ambiguity of Uppercase vs Lowercase in RFC
               2119 Key Words", BCP 14, RFC 8174, DOI 10.17487/RFC8174,
               May 2017, <https://www.rfc-editor.org/rfc/rfc8174>.
@@ -1332,9 +1332,9 @@ Table of Contents
 
    [TLS-FLAGS]
               Nir, Y., "A Flags Extension for TLS 1.3", Work in
-              Progress, Internet-Draft, draft-ietf-tls-tlsflags-17, 17
-              March 2026, <https://datatracker.ietf.org/doc/html/draft-
-              ietf-tls-tlsflags-17>.
+              Progress, Internet-Draft, draft-ietf-tls-tlsflags-18, 10
+              September 2026, <https://datatracker.ietf.org/doc/html/
+              draft-ietf-tls-tlsflags-18>.
 
 14.2.  Informative References
 
@@ -1365,9 +1365,9 @@ Table of Contents
    [I-D.ietf-tls-mlkem]
               Connolly, D., "ML-KEM Post-Quantum Key Agreement for TLS
               1.3", Work in Progress, Internet-Draft, draft-ietf-tls-
-              mlkem-10, 2 September 2026,
+              mlkem-11, 16 September 2026,
               <https://datatracker.ietf.org/doc/html/draft-ietf-tls-
-              mlkem-10>.
+              mlkem-11>.
 
    [RFC8126]  Cotton, M., Leiba, B., and T. Narten, "Guidelines for
               Writing an IANA Considerations Section in RFCs", BCP 26,
@@ -1779,10 +1779,10 @@ C.1.  Post-Compromise Security (PCS)
    during and after the EKU completes, the attacker cannot derive the
    new keying material established by EKU.  This property follows from
    the use of fresh ephemeral key exchange material during each Extended
-   Key Update, which produces new traffic keys that are independent of
-   the previous ones.  As a result, confidentiality of application data
-   encrypted after the Extended Key Update is preserved even if the
-   earlier traffic keys were exposed.
+   Key Update.  Compromise of prior traffic keys does not suffice to
+   derive the new traffic keys.  As a result, confidentiality of
+   application data encrypted after the Extended Key Update is preserved
+   even if the earlier traffic keys were exposed.
 
 C.2.  Key Freshness and Cryptographic Independence
 
@@ -1790,8 +1790,8 @@ C.2.  Key Freshness and Cryptographic Independence
    exchange material.  This ensures strong separation between successive
    traffic keys:
 
-   *  The new traffic keys established by an Extended Key Update are
-      independent of the previous traffic keys.
+   *  Compromise of prior traffic keys does not suffice to derive the
+      new traffic keys established by an Extended Key Update.
 
    *  Compromise of one of traffic keys does not allow recovery of any
       earlier or later traffic keys.
