@@ -31,23 +31,23 @@ the risks associated with static key compromise. Regular renewal of session keys
 contain the impact of such compromises. The extension is applicable to both TLS 1.3
 and DTLS 1.3. 
     " name="description">
-<meta content="xml2rfc 3.34.0" name="generator">
+<meta content="xml2rfc 3.34.1" name="generator">
 <meta content="Internet-Draft" name="keyword">
 <meta content="draft-ietf-tls-extended-key-update-latest" name="ietf.draft">
 <!-- Generator version information:
-  xml2rfc 3.34.0
+  xml2rfc 3.34.1
     Python 3.14.7
-    ConfigArgParse 1.7.5
+    ConfigArgParse 1.7.7
     google-i18n-address 3.1.1
     intervaltree 3.2.1
     Jinja2 3.1.6
     lxml 6.1.1
     natsort 8.4.0
-    platformdirs 4.11.7
+    platformdirs 4.11.10
     pycountry 24.6.1
     PyYAML 6.0.3
     requests 2.33.1
-    wcwidth 0.8.3
+    wcwidth 0.8.4
 -->
 <link href="draft-ietf-tls-extended-key-update.xml" rel="alternate" type="application/rfc+xml">
 <link href="#copyright" rel="license">
@@ -1067,7 +1067,7 @@ svg {
 </tr></thead>
 <tfoot><tr>
 <td class="left">Tschofenig, et al.</td>
-<td class="center">Expires 19 March 2027</td>
+<td class="center">Expires 25 March 2027</td>
 <td class="right">[Page]</td>
 </tr></tfoot>
 </table>
@@ -1083,12 +1083,12 @@ svg {
 <a href="https://www.rfc-editor.org/rfc/rfc9261" class="eref">9261</a>, <a href="https://www.rfc-editor.org/rfc/rfc9846" class="eref">9846</a> (if approved)</dd>
 <dt class="label-published">Published:</dt>
 <dd class="published">
-<time datetime="2026-09-15" class="published">15 September 2026</time>
+<time datetime="2026-09-21" class="published">21 September 2026</time>
     </dd>
 <dt class="label-intended-status">Intended Status:</dt>
 <dd class="intended-status">Standards Track</dd>
 <dt class="label-expires">Expires:</dt>
-<dd class="expires"><time datetime="2027-03-19">19 March 2027</time></dd>
+<dd class="expires"><time datetime="2027-03-25">25 March 2027</time></dd>
 <dt class="label-authors">Authors:</dt>
 <dd class="authors">
 <div class="author">
@@ -1167,7 +1167,7 @@ and DTLS 1.3.<a href="#section-abstract-4" class="pilcrow">¶</a></p>
         time. It is inappropriate to use Internet-Drafts as reference
         material or to cite them other than as "work in progress."<a href="#section-boilerplate.1-3" class="pilcrow">¶</a></p>
 <p id="section-boilerplate.1-4">
-        This Internet-Draft will expire on 19 March 2027.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
+        This Internet-Draft will expire on 25 March 2027.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="copyright">
@@ -1414,8 +1414,8 @@ PQ/T hybrid key exchange, or post-quantum KEM exchange. Unlike the
 standard key update, this mechanism allows peers to inject fresh key exchange
 input from the negotiated mechanism into an active session. By periodically
 rerunning the negotiated key exchange, this extension enables the derivation of
-new traffic keys that compromise of prior traffic keys does not help
-derive. As noted in
+new traffic keys. Compromise of prior traffic keys does not suffice to
+derive the new traffic keys. As noted in
 <span><a href="https://rfc-editor.org/rfc/rfc9846#appendix-F" class="relref">Appendix F</a> of [<a href="#TLS" class="cite xref">TLS</a>]</span>,
 this approach mitigates the risk of static key exfiltration and shifts the attacker
 burden toward dynamic key exfiltration.<a href="#section-1-5" class="pilcrow">¶</a></p>
@@ -2203,8 +2203,8 @@ need to use the newly derived exporter secret to generate Exported Keying Materi
 (EKM) to protect packets. The exporter_secret_N+1 derived in
 <a href="#key_update" class="auto internal xref">Section 7</a> will be used as the "Secret" in the exporter function, defined in
 <span><a href="https://rfc-editor.org/rfc/rfc9846#section-7.5" class="relref">Section 7.5</a> of [<a href="#TLS" class="cite xref">TLS</a>]</span>, to generate EKM, ensuring that the exported keying material
-is aligned with the updated security context. Compromise of a previous exporter secret does not help derive the newly
-derived exporter secret.<a href="#section-10.2-2" class="pilcrow">¶</a></p>
+is aligned with the updated security context. Compromise of a previous exporter secret does not suffice to derive
+exporter_secret_N+1.<a href="#section-10.2-2" class="pilcrow">¶</a></p>
 <p id="section-10.2-3">When a new exporter secret becomes active following a successful Extended
 Key Update, the TLS or DTLS implementation would have to provide an
 asynchronous notification to the application indicating that:<a href="#section-10.2-3" class="pilcrow">¶</a></p>
@@ -2687,7 +2687,7 @@ extension registry <span>[<a href="#TLS-Ext-Registry" class="cite xref">TLS-Ext-
 <dd class="break"></dd>
 <dt id="I-D.ietf-tls-mlkem">[I-D.ietf-tls-mlkem]</dt>
         <dd>
-<span class="refAuthor">Connolly, D.</span>, <span class="refTitle">"ML-KEM Post-Quantum Key Agreement for TLS 1.3"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-ietf-tls-mlkem-10</span>, <time datetime="2026-09-02" class="refDate">2 September 2026</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-ietf-tls-mlkem-10">https://datatracker.ietf.org/doc/html/draft-ietf-tls-mlkem-10</a>&gt;</span>. </dd>
+<span class="refAuthor">Connolly, D.</span>, <span class="refTitle">"ML-KEM Post-Quantum Key Agreement for TLS 1.3"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-ietf-tls-mlkem-11</span>, <time datetime="2026-09-16" class="refDate">16 September 2026</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-ietf-tls-mlkem-11">https://datatracker.ietf.org/doc/html/draft-ietf-tls-mlkem-11</a>&gt;</span>. </dd>
 <dd class="break"></dd>
 <dt id="RFC8126">[RFC8126]</dt>
         <dd>
@@ -3404,8 +3404,7 @@ refer to the send and receive key variables defined in <a href="#term" class="au
         <h3 id="name-post-compromise-security-pc">
 <a href="#appendix-C.1" class="section-number selfRef">C.1. </a><a href="#name-post-compromise-security-pc" class="section-name selfRef">Post-Compromise Security (PCS)</a>
         </h3>
-<p id="appendix-C.1-1">Extended Key Update supports post-compromise security under the assumptions described in <a href="#scope" class="auto internal xref">Section 12.1</a>. If an attacker temporarily compromises an endpoint and obtains the traffic keys in use before an Extended Key Update takes place, but the compromise does not persist during and after the EKU completes, the attacker cannot derive the new keying material established by EKU. This property follows from the use of fresh ephemeral key exchange material during each Extended Key Update, which produces new traffic keys that compromise of prior traffic keys
-does not help derive. As a result, confidentiality of application data encrypted after the Extended Key Update is preserved even if the earlier traffic keys were exposed.<a href="#appendix-C.1-1" class="pilcrow">¶</a></p>
+<p id="appendix-C.1-1">Extended Key Update supports post-compromise security under the assumptions described in <a href="#scope" class="auto internal xref">Section 12.1</a>. If an attacker temporarily compromises an endpoint and obtains the traffic keys in use before an Extended Key Update takes place, but the compromise does not persist during and after the EKU completes, the attacker cannot derive the new keying material established by EKU. This property follows from the use of fresh ephemeral key exchange material during each Extended Key Update. Compromise of prior traffic keys does not suffice to derive the new traffic keys. As a result, confidentiality of application data encrypted after the Extended Key Update is preserved even if the earlier traffic keys were exposed.<a href="#appendix-C.1-1" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="key-freshness-and-cryptographic-independence">
