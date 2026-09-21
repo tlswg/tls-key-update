@@ -157,8 +157,8 @@ PQ/T hybrid key exchange, or post-quantum KEM exchange. Unlike the
 standard key update, this mechanism allows peers to inject fresh key exchange
 input from the negotiated mechanism into an active session. By periodically
 rerunning the negotiated key exchange, this extension enables the derivation of
-new traffic keys that compromise of prior traffic keys does not help
-derive. As noted in
+new traffic keys. Compromise of prior traffic keys does not suffice to
+derive the new traffic keys. As noted in
 {{Appendix F of !TLS=RFC9846}},
 this approach mitigates the risk of static key exfiltration and shifts the attacker
 burden toward dynamic key exfiltration.
@@ -858,8 +858,8 @@ need to use the newly derived exporter secret to generate Exported Keying Materi
 (EKM) to protect packets. The exporter_secret_N+1 derived in
 {{key_update}} will be used as the "Secret" in the exporter function, defined in
 {{Section 7.5 of TLS}}, to generate EKM, ensuring that the exported keying material
-is aligned with the updated security context. Compromise of a previous exporter secret does not help derive the newly
-derived exporter secret.
+is aligned with the updated security context. Compromise of a previous exporter secret does not suffice to derive
+exporter_secret_N+1.
 
 When a new exporter secret becomes active following a successful Extended
 Key Update, the TLS or DTLS implementation would have to provide an
@@ -1415,8 +1415,7 @@ A complete security analysis of the EKU is outside the scope of this document. T
 
 ## Post-Compromise Security (PCS)
 
-Extended Key Update supports post-compromise security under the assumptions described in {{scope}}. If an attacker temporarily compromises an endpoint and obtains the traffic keys in use before an Extended Key Update takes place, but the compromise does not persist during and after the EKU completes, the attacker cannot derive the new keying material established by EKU. This property follows from the use of fresh ephemeral key exchange material during each Extended Key Update, which produces new traffic keys that compromise of prior traffic keys
-does not help derive. As a result, confidentiality of application data encrypted after the Extended Key Update is preserved even if the earlier traffic keys were exposed.
+Extended Key Update supports post-compromise security under the assumptions described in {{scope}}. If an attacker temporarily compromises an endpoint and obtains the traffic keys in use before an Extended Key Update takes place, but the compromise does not persist during and after the EKU completes, the attacker cannot derive the new keying material established by EKU. This property follows from the use of fresh ephemeral key exchange material during each Extended Key Update. Compromise of prior traffic keys does not suffice to derive the new traffic keys. As a result, confidentiality of application data encrypted after the Extended Key Update is preserved even if the earlier traffic keys were exposed.
 
 ## Key Freshness and Cryptographic Independence
 
