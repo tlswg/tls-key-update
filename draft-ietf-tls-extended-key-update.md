@@ -193,6 +193,11 @@ client_application_traffic_secret_N and server_application_traffic_secret_N,
 as defined in (D)TLS 1.3 {{TLS}}, and are replaced with new ones
 after each successful Extended Key Update.
 
+Generation N refers to client_/server_application_traffic_secret_N,
+exporter_secret_N, and transcript_hash_N. Generation 0 is established by
+the initial handshake, and each Extended Key Update establishes the next
+generation, following {{Section 7.2 of TLS}}.
+
 # Negotiating the Extended Key Update
 
 Client and servers use the TLS flags extension
@@ -345,9 +350,9 @@ initiator MUST NOT initiate another key update.
 
 1. Upon receipt, the responder sends its own `KeyShareEntry` in a
 `ExtendedKeyUpdate(key_update_response)` message. After receiving an
-ExtendedKeyUpdate(key_update_request), the responder MUST NOT send an
-ExtendedKeyUpdate(key_update_request) until the extended key update
-completes. The responder MAY defer sending a response if system load or resource
+`ExtendedKeyUpdate(key_update_request)`, the responder MUST NOT send an
+`ExtendedKeyUpdate(key_update_request)` until it has received
+`ExtendedKeyUpdate(key_update_finish)`. The responder MAY defer sending a response if system load or resource
 constraints prevent immediate processing. In such cases, the response MUST
 be sent once sufficient resources become available.
 
@@ -477,9 +482,9 @@ The exchange has the following steps:
 
 1. Upon receipt, the responder sends its own `KeyShareEntry` in a
    `ExtendedKeyUpdate(key_update_response)` message. After receiving an
-   ExtendedKeyUpdate(key_update_request), the responder MUST NOT send an
-   ExtendedKeyUpdate(key_update_request) until the extended key update
-   completes. The responder MAY defer
+   `ExtendedKeyUpdate(key_update_request)`, the responder MUST NOT send an
+   `ExtendedKeyUpdate(key_update_request)` until it has received
+   `ExtendedKeyUpdate(key_update_finish)`. The responder MAY defer
    sending a response if system load or resource constraints prevent immediate processing.
    In such cases, the responder MUST acknowledge receipt of the key_update_request with an ACK and, once
    sufficient resources become available, retransmit the key_update_response until it is acknowledged by the
@@ -661,8 +666,8 @@ The transcript_hash_N denotes the transcript hash value associated with
 generation N. transcript_hash_0 is Transcript-Hash(ClientHello..client
 Finished) of the initial handshake. During each Extended Key Update
 exchange, transcript_hash_N+1 is computed over the concatenation of
-transcript_hash_N, the ExtendedKeyUpdate(key_update_request) handshake
-message, and the ExtendedKeyUpdate(key_update_response) handshake message,
+transcript_hash_N, the `ExtendedKeyUpdate(key_update_request)` handshake
+message, and the `ExtendedKeyUpdate(key_update_response)` handshake message,
 with handshake messages encoded as specified in {{Section 4.1 of TLS}}
 for TLS and {{Section 5.2 of DTLS}} for DTLS:
 
