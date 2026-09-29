@@ -193,6 +193,11 @@ client_application_traffic_secret_N and server_application_traffic_secret_N,
 as defined in (D)TLS 1.3 {{TLS}}, and are replaced with new ones
 after each successful Extended Key Update.
 
+Generation N refers to client_/server_application_traffic_secret_N,
+exporter_secret_N, and transcript_hash_N. Generation 0 is established by
+the initial handshake, and each Extended Key Update establishes the next
+generation, following {{Section 7.2 of TLS}}.
+
 # Negotiating the Extended Key Update
 
 Client and servers use the TLS flags extension
@@ -344,9 +349,10 @@ executed with DTLS 1.3 differ slightly.
 initiator MUST NOT initiate another key update.
 
 1. Upon receipt, the responder sends its own `KeyShareEntry` in a
-`ExtendedKeyUpdate(key_update_response)` message. While an extended
-key update is in progress, the responder MUST NOT initiate another
-key update. The responder MAY defer sending a response if system load or resource
+`ExtendedKeyUpdate(key_update_response)` message. After receiving an
+`ExtendedKeyUpdate(key_update_request)`, the responder MUST NOT send an
+`ExtendedKeyUpdate(key_update_request)` until it has received
+`ExtendedKeyUpdate(key_update_finish)`. The responder MAY defer sending a response if system load or resource
 constraints prevent immediate processing. In such cases, the response MUST
 be sent once sufficient resources become available.
 
@@ -475,8 +481,10 @@ The exchange has the following steps:
    corresponding `ExtendedKeyUpdate(key_update_response)` or an ACK.
 
 1. Upon receipt, the responder sends its own `KeyShareEntry` in a
-   `ExtendedKeyUpdate(key_update_response)` message. While an extended key update
-   is in progress, the responder MUST NOT initiate further key updates. The responder MAY defer
+   `ExtendedKeyUpdate(key_update_response)` message. After receiving an
+   `ExtendedKeyUpdate(key_update_request)`, the responder MUST NOT send an
+   `ExtendedKeyUpdate(key_update_request)` until it has received
+   `ExtendedKeyUpdate(key_update_finish)`. The responder MAY defer
    sending a response if system load or resource constraints prevent immediate processing.
    In such cases, the responder MUST acknowledge receipt of the key_update_request with an ACK and, once
    sufficient resources become available, retransmit the key_update_response until it is acknowledged by the
@@ -500,6 +508,9 @@ The exchange has the following steps:
     value. If this ACK is not received, the initiator re-transmits its
     `ExtendedKeyUpdate(key_update_finish)` until ACK is received. The key update is
     complete once this ACK is processed by the initiator.
+
+If DTLS peers independently initiate the extended key update and the
+requests cross in flight, they are resolved as specified in {{TLSC}}.
 
 The handshake framing uses a single `HandshakeType` for this message
 (see {{fig-dtls-handshake}}).
@@ -652,8 +663,13 @@ exchange, and the corresponding KEM public key and encapsulation ciphertext, and
 TLS 1.3.
 
 The transcript_hash_N denotes the transcript hash value associated with
-generation N. During each Extended Key Update exchange, the transcript
-hash value for the next generation is computed as follows:
+generation N. transcript_hash_0 is Transcript-Hash(ClientHello..client
+Finished) of the initial handshake. During each Extended Key Update
+exchange, transcript_hash_N+1 is computed over the concatenation of
+transcript_hash_N, the `ExtendedKeyUpdate(key_update_request)` handshake
+message, and the `ExtendedKeyUpdate(key_update_response)` handshake message,
+with handshake messages encoded as specified in {{Section 4.1 of TLS}}
+for TLS and {{Section 5.2 of DTLS}} for DTLS:
 
 ~~~
 
@@ -664,9 +680,6 @@ hash value for the next generation is computed as follows:
 
 Once transcript_hash_N+1 has been computed, transcript_hash_N can be deleted.
 No prior transcript hash values need to be retained for future EKU exchanges.
-transcript_hash_0 denotes the transcript hash of the initial TLS handshake,
-covering all messages from the ClientHello up to and including the
-client Finished message.
 
 `main_secret_N` denotes the Main Secret (see {{Section 7.1 of TLS}})
 associated with generation N.
@@ -865,23 +878,30 @@ When a new exporter secret becomes active following a successful Extended
 Key Update, the TLS or DTLS implementation would have to provide an
 asynchronous notification to the application indicating that:
 
-* A new epoch has become active, and the (D)TLS implementation can
-  include the corresponding epoch identifier. Applications receiving an
-  epoch identifier can use it to request keying material for that
-  specific epoch through an epoch-aware exporter interface.
-  In TLS, this identifier represents a local logical counter that may differ between peers.
+* A new generation has become active, and the (D)TLS implementation
+  MUST include the corresponding generation N, where exporter_secret_N
+  is the exporter secret of that generation. Generation 0 corresponds
+  to exporter_secret_0, and each successful Extended Key Update
+  increments N by one, so both peers associate the same generation
+  with the same exporter secret. Applications use the generation to
+  request keying material through a generation-aware exporter
+  interface, so a subsequent Extended Key Update does not change the
+  result.
 
-Applications are notified that a new epoch is active only after both peers have completed
-the Extended Key Update exchange and switched to the new traffic keys.
+Applications are notified that a new generation is active only after the endpoint
+has completed the Extended Key Update exchange and switched to the new traffic keys.
 
 * In TLS, the initiator triggers notification after Step 5 in {{TLSC}},
-  and the responder triggers notification after Step 4 in {{TLSC}}.
+  and the responder triggers notification after Step 6 in {{TLSC}}.
 * In DTLS, the initiator triggers notification to the application
   after Step 7 in {{DTLSC}}, and the responder triggers notification
-  after Step 9 in {{DTLSC}}.
+  after Step 6 in {{DTLSC}}.
 
-The corresponding EKM is obtained by the application through the TLS/DTLS exporter
-interface using its chosen label and context values as defined in {{Section 7.5 of TLS}}.
+The corresponding EKM is obtained by the application through the generation-aware
+exporter interface using the generation and its chosen label and context
+values as defined in {{Section 7.5 of TLS}}. The application conveys the
+generation it used to the peer, for example with the protected data, so that
+the peer derives the same EKM.
 
 To prevent desynchronization, the application will have to retain both the
 previous and the newly derived exporter secrets for a short period. For TLS,
@@ -902,7 +922,7 @@ EKU provides fresh traffic secrets, but EKU alone does not authenticate that bot
 derived the same updated keys. An attacker that temporarily compromises an endpoint
 may later act as a person-in-the-middle attacker capable of interfering with the EKU exchange.
 Such an attacker can cause the peers to transition to divergent traffic secrets without detection,
-but cannot compromise the endpoint to derive secrets after the new epoch is established.
+but cannot compromise the endpoint to derive secrets after the new generation is established.
 TLS 1.3 provides two mechanisms that can detect such divergence, each with a different scope.
 Post-Handshake Certificate-Based Client Authentication authenticates the client to the server,
 and therefore allows only the server to detect divergence. Exported Authenticators {{!RFC9261}}
@@ -915,7 +935,7 @@ When Post-Handshake Certificate-Based Client Authentication (Section 4.6.2 of {{
 performed after an Extended Key Update (EKU) is complete, the Handshake Context used for
 the transcript hash is updated. It consists of transcript_hash_N+1 concatenated
 with the CertificateRequest message. The Finished message is computed using a
-MAC key derived from the Base Key of the new epoch (client_application_traffic_secret_N+1).
+MAC key derived from the Base Key of the new generation (client_application_traffic_secret_N+1).
 Because the CertificateVerify message is signed with the private key corresponding to the
 client's end-entity certificate over this Handshake Context, the server can detect divergent
 key state. Post-Handshake Authentication does not reauthenticate the server, so the client gains
@@ -926,29 +946,29 @@ Authenticator from the server.
 
 This document updates Section 5.1 of {{!RFC9261}} to specify that, after an
 Extended Key Update has completed, the Handshake Context and Finished MAC Key used for
-Exported Authenticators MUST be derived from the exporter secret associated with the current epoch.
-Implementations that support the epoch-aware Exported Authenticators interface MUST provide a means
-for applications to request the generation or validation of Exported Authenticators using
-the exporter secret for a specific epoch.
+Exported Authenticators MUST be derived from the exporter secret of the current generation.
+Implementations that support the generation-aware Exported Authenticators interface MUST provide a means
+for applications to request the creation or validation of Exported Authenticators using
+the exporter secret of a specific generation.
 
 The Handshake Context and Finished MAC Key used in both the CertificateVerify message
 (Section 5.2.2 of {{!RFC9261}}) and the Finished message (Section 5.2.3 of {{!RFC9261}})
-are derived from the exporter secret associated with the current epoch.
+are derived from the exporter secret of the current generation.
 If a person-in-the-middle attacker interferes with the EKU exchange, the peers derive
 different exporter secrets. Validation as specified in Section 5.2.4 of {{!RFC9261}}
 then fails at the endpoint that receives the authenticator, since the CertificateVerify
 message is signed with a private key the attacker does not hold.
 
 A new optional API SHOULD be defined to permit applications to request or verify
-Exported Authenticators for a specific exporter epoch. As discussed in Section 7
+Exported Authenticators for a specific generation. As discussed in Section 7
 of {{!RFC9261}}, this can, as an exception, be implemented at the application
-layer when the epoch-aware TLS exporter is available. The APIs defined in {{!RFC9261}}
+layer when the generation-aware TLS exporter is available. The APIs defined in {{!RFC9261}}
 remain unchanged, so existing applications continue to operate without
-modification. The epoch-aware API accepts an epoch identifier; when present,
+modification. The generation-aware API accepts a generation; when present,
 the (D)TLS implementation MUST derive the Handshake Context and Finished MAC Key
-from the exporter secret associated with that epoch. When Exported Authenticators
-are generated using the epoch-aware Exported Authenticators interface, the
-epoch identifier used for their derivation can be conveyed in the
+from the exporter secret of that generation. When Exported Authenticators
+are generated using the generation-aware Exported Authenticators interface, the
+generation used for their derivation can be conveyed in the
 certificate_request_context field, allowing the peer, particularly in
 DTLS where records may be reordered, to determine the correct exporter
 secret for validation.
@@ -987,9 +1007,9 @@ In DTLS, deferred EKU request is acknowledged as specified in {{DTLSC}}.
 
 ### Exported Authenticators
 
-Because the exporter interface defined in this document is epoch-aware,
+Because the exporter interface defined in this document is generation-aware,
 the exporter secret used for an Exported Authenticator exchange is
-explicitly determined by the epoch selected by the application.
+explicitly determined by the generation selected by the application.
 
 As a result, cross-flight exchanges of EKU and `AuthenticatorRequest`
 messages do not introduce cryptographic ambiguity. Therefore, no
