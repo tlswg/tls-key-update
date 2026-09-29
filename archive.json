@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2026-09-22T04:01:55.163328+00:00",
+  "timestamp": "2026-09-29T04:58:52.659760+00:00",
   "repo": "tlswg/tls-key-update",
   "labels": [
     {
@@ -1476,15 +1476,15 @@
       "id": "I_kwDOMJPqLM8AAAABGq1t3A",
       "title": "Naming: EKU is not a good abbreviation",
       "url": "https://github.com/tlswg/tls-key-update/issues/113",
-      "state": "OPEN",
+      "state": "CLOSED",
       "author": "hannestschofenig",
       "authorAssociation": "COLLABORATOR",
       "assignees": [],
       "labels": [],
       "body": "We have been using the term Extended Key Update or EKU to describe the functionality of this document.\n\nIn a recent discussion I noticed that this was a poor naming. EKU is also known for \"Extended Key Usage\" in the security field.\n\nI was wondering whether we should try to find a better name. Suggestions?\n",
       "createdAt": "2026-06-25T09:33:40Z",
-      "updatedAt": "2026-06-28T21:09:06Z",
-      "closedAt": null,
+      "updatedAt": "2026-09-27T14:40:47Z",
+      "closedAt": "2026-09-27T14:40:47Z",
       "comments": [
         {
           "author": "hannestschofenig",
@@ -1514,7 +1514,7 @@
       "id": "I_kwDOMJPqLM8AAAABJ24abg",
       "title": "Interworking with Authentication",
       "url": "https://github.com/tlswg/tls-key-update/issues/119",
-      "state": "OPEN",
+      "state": "CLOSED",
       "author": "hannestschofenig",
       "authorAssociation": "COLLABORATOR",
       "assignees": [
@@ -1524,8 +1524,8 @@
       "labels": [],
       "body": "TLS offers post handshake authentication and exported authenticators. At IETF 126 the request was raised to also write about the interworking between EKU and authentication since this is a likely use case.",
       "createdAt": "2026-07-23T07:26:41Z",
-      "updatedAt": "2026-07-23T07:41:29Z",
-      "closedAt": null,
+      "updatedAt": "2026-09-27T14:40:31Z",
+      "closedAt": "2026-09-27T14:40:31Z",
       "comments": [
         {
           "author": "tireddy2",
@@ -1559,6 +1559,134 @@
           "updatedAt": "2026-09-08T08:05:17Z"
         }
       ]
+    },
+    {
+      "number": 124,
+      "id": "I_kwDOMJPqLM8AAAABTeg-Ew",
+      "title": "Clarify exporter epoch, transcript hash, and crossed EKU requests",
+      "url": "https://github.com/tlswg/tls-key-update/issues/124",
+      "state": "OPEN",
+      "author": "tireddy2",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [],
+      "body": "Martin Thomson's review and Ilari Liusvaara's follow-up identified the following:\n\n1. Exporter epoch synchronization (\u00a710.2)\n\nThe epoch identifier is described as a local counter that may differ between peers. An application receiving a notification may call the exporter after a further EKU and get EKM for a different epoch. The responder step references are also wrong: TLS cites Step 4, and DTLS cites Step 9, which does not exist.\n\n2. Transcript hash (\u00a77)\n\nThe initial value is defined only after the formula, the concatenation appears only in pseudocode, and the DTLS message \nencoding is not stated.\n\n3. Crossed EKU requests (\u00a75, \u00a76)\n\nThe text does not say that an endpoint that has received a key_update_request MUST NOT send one. The crossed-request rule \nis not stated for DTLS.",
+      "createdAt": "2026-09-27T10:50:34Z",
+      "updatedAt": "2026-09-27T10:50:34Z",
+      "closedAt": null,
+      "comments": []
+    },
+    {
+      "number": 125,
+      "id": "I_kwDOMJPqLM8AAAABTejWSA",
+      "title": "Editorial",
+      "url": "https://github.com/tlswg/tls-key-update/issues/125",
+      "state": "OPEN",
+      "author": "tireddy2",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [],
+      "body": "Editorial fixes\n\na) PQC section. \u00a78 adds little beyond what TLS already specifies.\nb) \"Rich operating system\" is used without context.\nc) IKM is not expanded on first use.\nd) Section title. \"TLS 1.3 Considerations\" describes the procedure, not considerations.",
+      "createdAt": "2026-09-27T10:57:00Z",
+      "updatedAt": "2026-09-27T10:57:00Z",
+      "closedAt": null,
+      "comments": []
+    },
+    {
+      "number": 126,
+      "id": "I_kwDOMJPqLM8AAAABTfwDYA",
+      "title": "Legacy exporter and initial exporter secret",
+      "url": "https://github.com/tlswg/tls-key-update/issues/126",
+      "state": "OPEN",
+      "author": "tireddy2",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [],
+      "body": "Problem\n\nOrder of introduction. \u00a710.1 uses the term \"initial exporter secret\" before introducing it, as though it were an established TLS concept.\nDifferent derivations. exporter_secret_0 uses the label \"exporter eku\" over ClientHello..server Finished, while exporter_secret_N+1 uses \"exp master\" over transcript_hash_N+1. The draft does not explain the difference.\nLegacy exporter. It stays available and static, so applications such as DTLS-SRTP can keep using secrets that EKU never refreshes, which conflicts with the design goal.\n\nDiscussion\n\nMartin. The initial exporter secret exists only because the legacy exporter secret is retained for the connection's lifetime. He proposes destroying the exporter secret at the first EKU and disabling the legacy exporter, which removes the special derivation and gives exported values post-compromise security.\nIlari. Disabling the legacy exporter breaks the existing exporter interface. A TLS library could then not enable EKU without application support.\nMartin, in reply. Breaking the legacy exporter is preferable, since otherwise applications keep using stale secrets in a way that is inconsistent with the design.\n\nOpen question: Should the legacy exporter remain available when EKU is negotiated ?",
+      "createdAt": "2026-09-27T14:12:34Z",
+      "updatedAt": "2026-09-27T14:12:34Z",
+      "closedAt": null,
+      "comments": []
+    },
+    {
+      "number": 127,
+      "id": "I_kwDOMJPqLM8AAAABTf0kBg",
+      "title": "DTLS initiator switches send keys only on ACK",
+      "url": "https://github.com/tlswg/tls-key-update/issues/127",
+      "state": "OPEN",
+      "author": "tireddy2",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [],
+      "body": "Problem\n\nStale keys. The initiator waits for the ACK before switching its send keys, although it knows the responder holds the new keys once the response arrives.\nPHA ambiguity. When the client initiates EKU, the server completes on receipt of key_update_finish, sends the ACK, and may send a CertificateRequest immediately afterwards. If the ACK is lost, the client receives the CertificateRequest while its EKU is still in progress and it is still sending under the old epoch. The draft does not define which epoch the client uses for its PHA response (see the sequence below).\nUnexplained difference. The draft does not explain the one real difference between TLS and DTLS: the responder waits for key_update_finish before switching its send keys.\n\nDiscussion\n\nMartin. The initiator can switch its send keys on receipt of the response. The ACK is needed only to stop retransmission, not to drive the key transition. The finish message informs the responder that the initiator has the new keys.\nIlari. The finish message ensures sequential consistency of the handshake protocol, which PHA relies on to latch the epoch of the CertificateRequest.\nMartin, in reply. Every DTLS record carries an epoch, so the only problem is a PHA sent after key_update_finish but before the ACK.",
+      "createdAt": "2026-09-27T14:22:58Z",
+      "updatedAt": "2026-09-27T14:23:24Z",
+      "closedAt": null,
+      "comments": []
+    },
+    {
+      "number": 128,
+      "id": "I_kwDOMJPqLM8AAAABTf1xqw",
+      "title": "Resumption prohibition is buried in section 7",
+      "url": "https://github.com/tlswg/tls-key-update/issues/128",
+      "state": "OPEN",
+      "author": "tireddy2",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [],
+      "body": "Problem\n\nPlacement. Disabling resumption is a headline property of EKU, but it appears in \u00a77 paragraph 13, a section about key derivation, and the introduction does not mention it.",
+      "createdAt": "2026-09-27T14:25:32Z",
+      "updatedAt": "2026-09-27T14:25:32Z",
+      "closedAt": null,
+      "comments": []
+    },
+    {
+      "number": 129,
+      "id": "I_kwDOMJPqLM8AAAABTf2drQ",
+      "title": "No deployment guidance",
+      "url": "https://github.com/tlswg/tls-key-update/issues/129",
+      "state": "OPEN",
+      "author": "tireddy2",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [],
+      "body": "Missing section. The draft does not describe how EKU affects existing uses of TLS: which features are affected (resumption, exporters, post-handshake authentication, Exported Authenticators) and what applications must change.",
+      "createdAt": "2026-09-27T14:27:03Z",
+      "updatedAt": "2026-09-27T14:27:03Z",
+      "closedAt": null,
+      "comments": []
+    },
+    {
+      "number": 130,
+      "id": "I_kwDOMJPqLM8AAAABTf5z1Q",
+      "title": "PHA binding to the updated transcript lacks rationale",
+      "url": "https://github.com/tlswg/tls-key-update/issues/130",
+      "state": "OPEN",
+      "author": "tireddy2",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [],
+      "body": "Problem\n\nRationale. \u00a711.1 binds post-handshake authentication to the updated transcript, but does not say why or what property this provides.\nEpoch agreement. The draft does not state how peers agree on the epoch used for post-handshake authentication.\n\nDiscussion\n\nMartin. Binding to the updated transcript adds a dependency on subsequent key exchanges and complicates post-handshake authentication. It needs strong justification.\nIlari. The binding detects a post-handshake MITM that uses leaked keys. No explicit epoch signal is needed: the epoch is latched from the CertificateRequest, which has a unique epoch because handshake messages are sequentially consistent.\nMartin, in reply. That might work, but it should be written down.",
+      "createdAt": "2026-09-27T14:34:52Z",
+      "updatedAt": "2026-09-27T14:34:52Z",
+      "closedAt": null,
+      "comments": []
+    },
+    {
+      "number": 131,
+      "id": "I_kwDOMJPqLM8AAAABTf7mjw",
+      "title": "Redundant NamedGroup in KeyShareEntry",
+      "url": "https://github.com/tlswg/tls-key-update/issues/131",
+      "state": "OPEN",
+      "author": "tireddy2",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [],
+      "body": "Problem\n\nRedundant field. key_update_request and key_update_response carry a KeyShareEntry, whose NamedGroup must equal the group negotiated in the initial handshake. The field carries no information and exists only to be checked.",
+      "createdAt": "2026-09-27T14:39:02Z",
+      "updatedAt": "2026-09-27T14:39:02Z",
+      "closedAt": null,
+      "comments": []
     }
   ],
   "pulls": [
@@ -10841,6 +10969,73 @@
               "body": "Good point, fixed. ",
               "createdAt": "2026-09-21T08:07:26Z",
               "updatedAt": "2026-09-21T08:07:26Z"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "number": 132,
+      "id": "PR_kwDOMJPqLM8AAAABFeodTQ",
+      "title": "Address issue#124",
+      "url": "https://github.com/tlswg/tls-key-update/pull/132",
+      "state": "OPEN",
+      "author": "tireddy2",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [],
+      "body": "https://github.com/tlswg/tls-key-update/issues/124",
+      "createdAt": "2026-09-28T10:51:29Z",
+      "updatedAt": "2026-09-28T14:47:04Z",
+      "baseRepository": "tlswg/tls-key-update",
+      "baseRefName": "main",
+      "baseRefOid": "40a7d75f198c5d8a60ff33e09172eed9096e6b05",
+      "headRepository": "tlswg/tls-key-update",
+      "headRefName": "tireddy2-patch-18",
+      "headRefOid": "f4cb3234ca79985a8a0bd261f8a41b388f30f8f7",
+      "closedAt": null,
+      "mergedAt": null,
+      "mergedBy": null,
+      "mergeCommit": null,
+      "comments": [
+        {
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "body": "@martinthomson please review the changes. \r\n",
+          "createdAt": "2026-09-28T10:54:48Z",
+          "updatedAt": "2026-09-28T10:54:48Z"
+        }
+      ],
+      "reviews": [
+        {
+          "id": "PRR_kwDOMJPqLM8AAAABPk58KQ",
+          "commit": {
+            "abbreviatedOid": "f4cb323"
+          },
+          "author": "martinthomson",
+          "authorAssociation": "NONE",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2026-09-28T14:40:16Z",
+          "updatedAt": "2026-09-28T14:47:04Z",
+          "comments": [
+            {
+              "originalPosition": 8,
+              "body": "missing backticks on these?",
+              "createdAt": "2026-09-28T14:40:16Z",
+              "updatedAt": "2026-09-28T14:47:04Z"
+            },
+            {
+              "originalPosition": 10,
+              "body": "what does it mean for an EKU to complete?  Does that require that the finished is sent and received (i.e., the initiator has received an ACK) or is it enough to have sent it?",
+              "createdAt": "2026-09-28T14:41:33Z",
+              "updatedAt": "2026-09-28T14:47:04Z"
+            },
+            {
+              "originalPosition": 43,
+              "body": "This concept of \"generation\" needs to be properly introduced.  It's novel and it is confusingly similar to the notion of an epoch (the two advance in step, but start at different offsets).\n\nMore to the point, I'm not sure that you need a new concept here.  It seems likely that the interface to applications will need to expose an identifier, for which a distinct value is needed, but I see no reason not to use the DTLS concept of epoch and use that in TLS.  That means starting at 3, which is a bit annoying to explain (0 - NULL cipher for Hello messages, 1 -early data, 2 - handshake, 3 - first application data epoch).",
+              "createdAt": "2026-09-28T14:46:40Z",
+              "updatedAt": "2026-09-28T14:47:04Z"
             }
           ]
         }
