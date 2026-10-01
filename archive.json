@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2026-09-29T04:58:52.659760+00:00",
+  "timestamp": "2026-10-01T04:57:40.304823+00:00",
   "repo": "tlswg/tls-key-update",
   "labels": [
     {
@@ -10986,13 +10986,13 @@
       "labels": [],
       "body": "https://github.com/tlswg/tls-key-update/issues/124",
       "createdAt": "2026-09-28T10:51:29Z",
-      "updatedAt": "2026-09-28T14:47:04Z",
+      "updatedAt": "2026-09-29T07:47:25Z",
       "baseRepository": "tlswg/tls-key-update",
       "baseRefName": "main",
       "baseRefOid": "40a7d75f198c5d8a60ff33e09172eed9096e6b05",
       "headRepository": "tlswg/tls-key-update",
       "headRefName": "tireddy2-patch-18",
-      "headRefOid": "f4cb3234ca79985a8a0bd261f8a41b388f30f8f7",
+      "headRefOid": "61f4a466ab66930a580f1a9ff09ae6a0f69eedd5",
       "closedAt": null,
       "mergedAt": null,
       "mergedBy": null,
@@ -11036,6 +11036,66 @@
               "body": "This concept of \"generation\" needs to be properly introduced.  It's novel and it is confusingly similar to the notion of an epoch (the two advance in step, but start at different offsets).\n\nMore to the point, I'm not sure that you need a new concept here.  It seems likely that the interface to applications will need to expose an identifier, for which a distinct value is needed, but I see no reason not to use the DTLS concept of epoch and use that in TLS.  That means starting at 3, which is a bit annoying to explain (0 - NULL cipher for Hello messages, 1 -early data, 2 - handshake, 3 - first application data epoch).",
               "createdAt": "2026-09-28T14:46:40Z",
               "updatedAt": "2026-09-28T14:47:04Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM8AAAABPtetMQ",
+          "commit": {
+            "abbreviatedOid": "f4cb323"
+          },
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2026-09-29T07:45:41Z",
+          "updatedAt": "2026-09-29T07:45:41Z",
+          "comments": [
+            {
+              "originalPosition": 8,
+              "body": "Thanks, Fixed. ",
+              "createdAt": "2026-09-29T07:45:41Z",
+              "updatedAt": "2026-09-29T07:45:41Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM8AAAABPtfVng",
+          "commit": {
+            "abbreviatedOid": "f4cb323"
+          },
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2026-09-29T07:46:47Z",
+          "updatedAt": "2026-09-29T07:46:47Z",
+          "comments": [
+            {
+              "originalPosition": 43,
+              "body": "Introduced Generation in the Terminology section. Generation is the N already used in TLS (application_traffic_secret_N), without an N+3 mapping.",
+              "createdAt": "2026-09-29T07:46:47Z",
+              "updatedAt": "2026-09-29T07:46:47Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM8AAAABPtfpKg",
+          "commit": {
+            "abbreviatedOid": "f4cb323"
+          },
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2026-09-29T07:47:20Z",
+          "updatedAt": "2026-09-29T07:47:20Z",
+          "comments": [
+            {
+              "originalPosition": 10,
+              "body": "This requirement applies only to the responder, so the text now says \"until it has received ExtendedKeyUpdate(key_update_finish)\". The initiator case, where the question is whether sending the finish is enough in DTLS or the ACK is required, is tracked in a separate issue.",
+              "createdAt": "2026-09-29T07:47:20Z",
+              "updatedAt": "2026-09-29T07:47:21Z"
             }
           ]
         }
