@@ -334,7 +334,7 @@ Fields:
 determined by the specified group and its corresponding definition
 (see {{Section 4.2.8 of TLS}}).
 
-# TLS 1.3 Considerations {#TLSC}
+# TLS 1.3 Extended Key Update Procedure {#TLSC}
 
 The following steps are taken by a TLS 1.3 implementation; the steps
 executed with DTLS 1.3 differ slightly.
@@ -450,7 +450,7 @@ Auth | {CertificateVerify}
 ~~~
 {: #fig-key-update2 title="Extended Key Update Example."}
 
-#  DTLS 1.3 Considerations {#DTLSC}
+#  DTLS 1.3 Extended Key Update Procedure {#DTLSC}
 
 Unlike TLS 1.3, DTLS 1.3 implementations must take into account that handshake
 messages are not transmitted over a reliable transport protocol.
@@ -645,7 +645,7 @@ hashing the previous transcript hash together with the current
 ExtendedKeyUpdate(key_update_request) and
 ExtendedKeyUpdate(key_update_response) messages. This binds any
 encapsulation ciphertext and public key used in PQ/T hybrid or post-quantum key exchanges
-to the IKM and cryptographically binds the newly derived secrets to the
+to the input keying material (IKM) and cryptographically binds the newly derived secrets to the
 original handshake transcript, all prior EKU exchanges, the current EKU
 exchange, and the corresponding KEM public key and encapsulation ciphertext, and
 * new label strings to distinguish it from the key derivation used in
@@ -700,8 +700,8 @@ During the initial handshake, the Main Secret is generated (see
 {{Section 7.1 of TLS}}). Since the main_secret
 is discarded during the key derivation procedure, a derived value is
 stored. This stored value then serves as the input salt to the first
-key update procedure that incorporates the shared secret as input
-keying material (IKM) to produce main_secret_N+1. The derived value
+key update procedure that incorporates the shared secret as
+IKM to produce main_secret_N+1. The derived value
 from this new main secret serves as input salt to the subsequent key
 update procedure, which also incorporates a fresh shared secret as
 IKM. This process is repeated for each additional key update procedure.
@@ -729,14 +729,12 @@ Once client_/server_application_traffic_secret_N+1 and the corresponding traffic
 keys are in use, all subsequent records, including alerts and post-handshake
 messages MUST be protected using those keys.
 
-When using this extension, it is important to consider its interaction with
-PSK-based resumption using PSKs established via the NewSessionTicket mechanism
-defined in {{TLS}}.
+# Resumption {#resumption}
 
 EKU provides post-compromise recovery for the TLS connection in which it is performed.
 The recovery guarantees depend on the assumed compromise model. In typical deployment
 environments, PSKs established via the NewSessionTicket mechanism are generated and
-reside in memory within the rich operating system. Although such PSKs may subsequently
+reside in endpoint memory. Although such PSKs may subsequently
 be stored in secure storage, they are exposed during this initial processing window,
 and compromise of endpoint memory during this period is sufficient to reveal them.
 Consequently, later protection using secure storage does not prevent their prior
@@ -806,7 +804,7 @@ Note that each successful Extended Key Update invalidates all previous
 SSLKEYLOGFILE secrets including past iterations of `CLIENT_TRAFFIC_SECRET_`,
 `SERVER_TRAFFIC_SECRET_` and `EXPORTER_SECRET_`.
 
-# Exporter
+# Exporter {#exporter}
 
 ## Post-Compromise Security for the Initial Exporter Secret
 
@@ -914,7 +912,8 @@ requires an authenticator in each direction.
 When Post-Handshake Certificate-Based Client Authentication (Section 4.6.2 of {{TLS}}) is
 performed after an Extended Key Update (EKU) is complete, the Handshake Context used for
 the transcript hash is updated. It consists of transcript_hash_N+1 concatenated
-with the CertificateRequest message. The Finished message is computed using a
+with the CertificateRequest message. Both endpoints use the Handshake Context in effect
+when the CertificateRequest is sent. The Finished message is computed using a
 MAC key derived from the Base Key of the new epoch (client_application_traffic_secret_N+1).
 Because the CertificateVerify message is signed with the private key corresponding to the
 client's end-entity certificate over this Handshake Context, the server can detect divergent
@@ -996,6 +995,30 @@ messages do not introduce cryptographic ambiguity. Therefore, no
 serialization requirement is imposed between EKU and Exported Authenticator
 exchanges.
 
+# Deployment Considerations {#deployment}
+
+Extended Key Update is enabled by explicit configuration, either by an
+operator for all applications on a device or by an application that
+needs it. The configuration includes a policy for when to initiate an
+Extended Key Update, for example at a fixed interval or after a certain
+amount of data has been exchanged. When enabled by an operator, the
+application may not be aware of Extended Key Update. Enabling it has
+the following effects:
+
+* Resumption using PSKs established via the NewSessionTicket mechanism is
+  disabled ({{resumption}}).
+
+* Applications that use exported keying material and require post-compromise
+  security use the exporter interface defined in {{exporter}}.
+
+* Post-Handshake Certificate-Based Client Authentication and Exported
+  Authenticators performed after an Extended Key Update are bound to the
+  updated keys ({{exported}}).
+
+Implementations can warn when the exporter defined in
+{{Section 7.5 of TLS}} is used on a connection where Extended Key
+Update was negotiated.
+
 #  Security Considerations
 
 This section discusses additional security and operational aspects introduced by the Extended Key Update mechanism. All security considerations of TLS 1.3 {{TLS}} and DTLS 1.3 {{!DTLS=RFC9147}} continue to apply.
@@ -1008,17 +1031,17 @@ including the current application traffic secrets and the values retained for de
 subsequent secrets, but not the long-term private key. It does not address a persistent
 attacker on the device with ongoing access to key material.
 The EKU procedure does not rely on long-term private keys, which may be stored in a
-secure element (e.g., a Hardware Security Module (HSM)) or within the rich OS.
+secure element (e.g., a Hardware Security Module (HSM)) or in endpoint memory.
 Moreover, in security‑critical scenarios, these long‑term private keys are typically
 stored separately from the primary secret or the traffic keys.
 
 Two threat scenarios are relevant:
 
-1. The long-term private key remains secure, while application traffic keys in the
-rich operating system are temporarily exposed. EKU addresses this case for the current
+1. The long-term private key remains secure, while application traffic keys in
+endpoint memory are temporarily exposed. EKU addresses this case for the current
 TLS connection.
 
-2. If the long-term private key in the rich OS is compromised, EKU can still protect
+2. If the long-term private key in endpoint memory is compromised, EKU can still protect
 the current TLS connection by updating the main secret and traffic keys. However, all
 future TLS connections are at risk, as the attacker can impersonate the endpoint using
 the stolen private key.
