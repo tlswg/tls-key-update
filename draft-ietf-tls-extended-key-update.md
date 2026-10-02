@@ -815,23 +815,23 @@ exporter_secret is static for the lifetime of the connection and is not updated 
 
 A core design goal of this specification is not met if the exporter_secret does not change.
 Therefore, this document defines an exporter interface that derives a fresh exporter secret
-whenever new application traffic keys are updated through the EKU.
+whenever new application traffic keys are updated through the EKU. Prior to the first
+Extended Key Update, this interface uses an initial exporter secret, denoted
+exporter_secret_0.
 
-If the initial exporter secret for this new interface were identical to exporter_secret,
-then compromising exporter_secret at any point during the lifetime of the connection
-would enable an attacker to recompute all exporter outputs derived from it.
-This would break post-compromise security for exported keying material.
+If exporter_secret_0 were identical to exporter_secret, which is retained
+for the lifetime of the connection, a later compromise of exporter_secret
+would reveal all keying material exported under exporter_secret_0, even
+after exporter_secret_0 is discarded.
 
-Therefore, the initial exporter secret used by the exporter interface defined in
-this document, i.e., the exporter output available prior to the first Extended
-Key Update, MUST be distinct from the exporter_secret. This separation
+Therefore, exporter_secret_0 MUST be distinct from the exporter_secret. This separation
 ensures that compromise of the TLS exporter interface does not compromise outputs
 derived from the exporter interface defined in this document.
 
-Prior to the first Extended Key Update, the exporter interface provides an
-initial exporter secret, denoted exporter_secret_0. This secret is derived
-from the TLS main secret and the handshake transcript, but is cryptographically
-independent of the TLS exporter_secret. It is computed as follows:
+exporter_secret_0 is derived from the Main Secret and the handshake transcript. It uses
+the label "exporter eku" rather than "exp master", because "exp master" with the Main
+Secret yields the TLS exporter_secret. exporter_secret_N+1 uses "exp master" with
+main_secret_N+1 (see {{key-hierarchy}}). exporter_secret_0 is computed as follows:
 
 ~~~~
 exporter_secret_0 =
