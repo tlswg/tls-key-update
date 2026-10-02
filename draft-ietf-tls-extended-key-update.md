@@ -453,7 +453,10 @@ Auth | {CertificateVerify}
 #  DTLS 1.3 Considerations {#DTLSC}
 
 Unlike TLS 1.3, DTLS 1.3 implementations must take into account that handshake
-messages are not transmitted over a reliable transport protocol.
+messages are not transmitted over a reliable transport protocol. As a result,
+the DTLS procedure differs from TLS in one respect: the responder updates its
+send keys only after receiving `ExtendedKeyUpdate(key_update_finish)`, which
+confirms that the initiator has derived the new keys.
 
 EKU messages MUST be transmitted reliably, like other DTLS handshake messages.
 If necessary, EKU messages MAY be fragmented as described in {{Section 5.5 of DTLS}}.
@@ -463,7 +466,8 @@ material, receivers MUST retain the pre-update keying material until receipt
 and successful decryption of a message using the new keys.
 
 Due to packet loss and/or reordering, DTLS 1.3 peers MAY receive records from an
-earlier epoch. If the necessary keys are available, implementations SHOULD attempt
+earlier epoch, and the responder MAY receive records from the new epoch before
+`ExtendedKeyUpdate(key_update_finish)`. If the necessary keys are available, implementations SHOULD attempt
 to process such records; however, they MAY choose to discard them.
 
 The exchange has the following steps:
@@ -488,7 +492,8 @@ The exchange has the following steps:
    update its receive keys and epoch value. The initiator MUST NOT defer derivation of the secrets.
 
 1. The initiator transmits an `ExtendedKeyUpdate(key_update_finish)` message. This message is subject to DTLS
-   retransmission until acknowledged.
+   retransmission until acknowledged. After sending `ExtendedKeyUpdate(key_update_finish)`,
+   the initiator MUST update its send key and epoch value.
 
 1. The responder MUST acknowledge the received message by sending an ACK message.
 
@@ -496,9 +501,8 @@ The exchange has the following steps:
    the responder MUST update its send key and epoch value. With the receipt of
    that message, the responder MUST also update its receive keys.
 
-1.  On receipt of the ACK message, the initiator updates its send key and epoch
-    value. If this ACK is not received, the initiator re-transmits its
-    `ExtendedKeyUpdate(key_update_finish)` until ACK is received. The key update is
+1.  If the ACK is not received, the initiator re-transmits its
+    `ExtendedKeyUpdate(key_update_finish)` until the ACK is received. The key update is
     complete once this ACK is processed by the initiator.
 
 The handshake framing uses a single `HandshakeType` for this message
@@ -587,14 +591,15 @@ Client                            Server
 
 [EKU(key_update_finish)]   -------->
 # Sender's Fin is tagged with OLD tx (3).
+# Step 4: initiator bumps SEND epoch after Fin-out:
+[C: tx=4, rx=4]                   [S: tx=3, rx=3]
 
-# Epoch switch point:
 # Step 6: responder bumps BOTH tx and rx on Fin-in:
-[C: tx=3, rx=4]                   [S: tx=4, rx=4]
+[C: tx=4, rx=4]                   [S: tx=4, rx=4]
 
                            <-------- [ACK] (tag=new)
 
-# Step 7: initiator bumps SEND epoch on ACK-in:
+# Step 7: ACK stops retransmission of Fin.
 [C: tx=4, rx=4]                   [S: tx=4, rx=4]
 
 [Application Data]         -------->
@@ -617,8 +622,8 @@ the message transmission.
 | <------------ APP  | 3/3 -> 3/3     | 3/3 -> 3/3   |
 | req -------------> | 3/3 -> 3/3     | 3/3 -> 3/3   |
 | <------------ resp | 3/3 -> 3/4     | 3/3 -> 3/3   | <- step 3
-| Fin  ------------> | 3/4 -> 3/4     | 3/3 -> 4/4   | <- step 6
-| <------------- ACK | 3/4 -> 4/4     | 4/4 -> 4/4   | <- step 7
+| Fin  ------------> | 3/4 -> 4/4     | 3/3 -> 4/4   | <- steps 4, 6
+| <------------- ACK | 4/4 -> 4/4     | 4/4 -> 4/4   | <- step 7
 | APP -------------> | 4/4 -> 4/4     | 4/4 -> 4/4   |
 | <------------- APP | 4/4 -> 4/4     | 4/4 -> 4/4   |
 +--------------------+----------------+--------------+
@@ -1286,11 +1291,11 @@ Crossed requests. If both peers independently initiate the extended key update a
 
 The initiator starts in the START state with matching epochs (rx := E; tx := E). It sends a Req and enters WAIT_RESP (updating := 1). While waiting, APP data may be sent at any time (tagged with the current tx) and received according to the APP acceptance rule below.
 
-Once the responder returns Resp with a tag matching the current rx, the initiator derives new key material. It then sends Fin still tagged with the old tx. The initiator activates retention mode: the old epoch is remembered, the receive epoch is incremented, and application data is accepted under both epochs for a transition period. Initiator moves to WAIT_ACK.
+Once the responder returns Resp with a tag matching the current rx, the initiator derives new key material. The initiator activates retention mode: the old epoch is remembered, the receive epoch is incremented, and application data is accepted under both epochs for a transition period. It then sends Fin still tagged with the old tx and updates its transmit epoch (tx := rx). Initiator moves to WAIT_ACK.
 
 If a peer key_update_request arrives while in WAIT_RESP (crossed updates), apply the crossed-request rule above. If the peer's key_exchange is higher, abandon the local update (updating := 0) and continue as responder: send key_update_response, derive new secrets, then proceed with the responder flow. If lower, ignore the peer's request; if equal, abort with "unexpected_message".
 
-Upon receiving the responder's ACK matching the updated epoch, the initiator completes the transition by synchronizing transmit and receive epochs (tx := rx), disabling retention, and clearing the update flag. The state machine returns to FINISHED, ready for subsequent updates.
+Upon receiving the responder's ACK matching the updated epoch, the initiator stops retransmitting Fin, disables retention, and clears the update flag. The state machine returns to FINISHED, ready for subsequent updates.
 
 Throughout the process:
 
@@ -1336,6 +1341,7 @@ Throughout the process:
 +---------------------+
           |
 (2) send Fin [tag=old tx]
+    tx=rx
           v
 +------------------------------+
 | WAIT_ACK (updating = 1)      |
@@ -1344,7 +1350,7 @@ Throughout the process:
       |  APP send/recv allowed
       |
 (3) recv ACK [e==rx]
-    tx=rx; retain_old=0; updating := 0
+    retain_old=0; updating := 0
       v
 +------------------------------------------+
 | FINISHED                                 |
