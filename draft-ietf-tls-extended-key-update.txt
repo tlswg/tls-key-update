@@ -94,37 +94,39 @@ Table of Contents
    2.  Terminology and Requirements Language
    3.  Negotiating the Extended Key Update
    4.  Extended Key Update Messages
-   5.  TLS 1.3 Considerations
+   5.  TLS 1.3 Extended Key Update Procedure
      5.1.  TLS 1.3 Extended Key Update Example
-   6.  DTLS 1.3 Considerations
+   6.  DTLS 1.3 Extended Key Update Procedure
      6.1.  DTLS 1.3 Extended Key Update Example
    7.  Updating Traffic Keys
-   8.  Post-Quantum Cryptography Considerations
-   9.  SSLKEYLOGFILE Update
-   10. Exporter
-     10.1.  Post-Compromise Security for the Initial Exporter Secret
-     10.2.  Exporter Usage After Extended Key Update
-   11. Use of Post-Handshake Authentication and Exported
+   8.  Resumption
+   9.  Post-Quantum Cryptography Considerations
+   10. SSLKEYLOGFILE Update
+   11. Exporter
+     11.1.  Post-Compromise Security for the Initial Exporter Secret
+     11.2.  Exporter Usage After Extended Key Update
+   12. Use of Post-Handshake Authentication and Exported
            Authenticators with Extended Key Update
-     11.1.  Post-Handshake Certificate-Based Client Authentication
-     11.2.  Exported Authenticators
-     11.3.  Interaction of Extended Key Update and Post-Handshake
+     12.1.  Post-Handshake Certificate-Based Client Authentication
+     12.2.  Exported Authenticators
+     12.3.  Interaction of Extended Key Update and Post-Handshake
             Authentication
-       11.3.1.  Post-Handshake Certificate-Based Client Authentication
-       11.3.2.  Exported Authenticators
-   12. Security Considerations
-     12.1.  Scope of Key Compromise
-     12.2.  Post-Compromise Security
-     12.3.  Denial-of-Service (DoS)
-     12.4.  Operational Guidance
-   13. IANA Considerations
-     13.1.  TLS Flags
-     13.2.  TLS HandshakeType
-     13.3.  ExtendedKeyUpdate Message Subtypes Registry
-     13.4.  SSLKEYLOGFILE labels
-   14. References
-     14.1.  Normative References
-     14.2.  Informative References
+       12.3.1.  Post-Handshake Certificate-Based Client Authentication
+       12.3.2.  Exported Authenticators
+   13. Deployment Considerations
+   14. Security Considerations
+     14.1.  Scope of Key Compromise
+     14.2.  Post-Compromise Security
+     14.3.  Denial-of-Service (DoS)
+     14.4.  Operational Guidance
+   15. IANA Considerations
+     15.1.  TLS Flags
+     15.2.  TLS HandshakeType
+     15.3.  ExtendedKeyUpdate Message Subtypes Registry
+     15.4.  SSLKEYLOGFILE labels
+   16. References
+     16.1.  Normative References
+     16.2.  Informative References
    Appendix A.  Acknowledgments
    Appendix B.  State Machines
      B.1.  TLS 1.3 State Machines
@@ -280,7 +282,7 @@ Table of Contents
    *  key_update_finish (2)
 
    New ExtendedKeyUpdate message subtypes are assigned by IANA as
-   described in Section 13.3.
+   described in Section 15.3.
 
    A TLS peer which receives a ExtendedKeyUpdate with an unexpected
    message subtype MUST abort the connection with an
@@ -384,7 +386,7 @@ Table of Contents
       determined by the specified group and its corresponding definition
       (see Section 4.2.8 of [TLS]).
 
-5.  TLS 1.3 Considerations
+5.  TLS 1.3 Extended Key Update Procedure
 
    The following steps are taken by a TLS 1.3 implementation; the steps
    executed with DTLS 1.3 differ slightly.
@@ -504,7 +506,7 @@ Table of Contents
 
                  Figure 3: Extended Key Update Example.
 
-6.  DTLS 1.3 Considerations
+6.  DTLS 1.3 Extended Key Update Procedure
 
    Unlike TLS 1.3, DTLS 1.3 implementations must take into account that
    handshake messages are not transmitted over a reliable transport
@@ -720,10 +722,11 @@ Table of Contents
       current ExtendedKeyUpdate(key_update_request) and
       ExtendedKeyUpdate(key_update_response) messages.  This binds any
       encapsulation ciphertext and public key used in PQ/T hybrid or
-      post-quantum key exchanges to the IKM and cryptographically binds
-      the newly derived secrets to the original handshake transcript,
-      all prior EKU exchanges, the current EKU exchange, and the
-      corresponding KEM public key and encapsulation ciphertext, and
+      post-quantum key exchanges to the input keying material (IKM) and
+      cryptographically binds the newly derived secrets to the original
+      handshake transcript, all prior EKU exchanges, the current EKU
+      exchange, and the corresponding KEM public key and encapsulation
+      ciphertext, and
 
    *  new label strings to distinguish it from the key derivation used
       in TLS 1.3.
@@ -777,17 +780,17 @@ Table of Contents
    Section 7.1 of [TLS]).  Since the main_secret is discarded during the
    key derivation procedure, a derived value is stored.  This stored
    value then serves as the input salt to the first key update procedure
-   that incorporates the shared secret as input keying material (IKM) to
-   produce main_secret_N+1.  The derived value from this new main secret
-   serves as input salt to the subsequent key update procedure, which
-   also incorporates a fresh shared secret as IKM.  This process is
-   repeated for each additional key update procedure.
+   that incorporates the shared secret as IKM to produce
+   main_secret_N+1.  The derived value from this new main secret serves
+   as input salt to the subsequent key update procedure, which also
+   incorporates a fresh shared secret as IKM.  This process is repeated
+   for each additional key update procedure.
 
    The shared secret is determined by the negotiated key exchange
    mechanism.  In the base protocol, this mechanism is (EC)DHE (see
    Section 7.4 of [TLS]).  Post-quantum and hybrid key exchange
    mechanisms derive the shared secret as specified by their respective
-   definitions.  See also Section 8.
+   definitions.  See also Section 9.
 
    The traffic keys are re-derived from
    client_application_traffic_secret_N+1 and
@@ -807,32 +810,30 @@ Table of Contents
    including alerts and post-handshake messages MUST be protected using
    those keys.
 
-   When using this extension, it is important to consider its
-   interaction with PSK-based resumption using PSKs established via the
-   NewSessionTicket mechanism defined in [TLS].
+8.  Resumption
 
    EKU provides post-compromise recovery for the TLS connection in which
    it is performed.  The recovery guarantees depend on the assumed
    compromise model.  In typical deployment environments, PSKs
    established via the NewSessionTicket mechanism are generated and
-   reside in memory within the rich operating system.  Although such
-   PSKs may subsequently be stored in secure storage, they are exposed
-   during this initial processing window, and compromise of endpoint
-   memory during this period is sufficient to reveal them.
-   Consequently, later protection using secure storage does not prevent
-   their prior compromise.  These PSKs are sufficient to establish new
-   authenticated TLS connections.  Even if an implementation invalidates
-   previously issued PSKs upon completion of the EKU exchange, an
-   attacker that has already obtained such a PSK may initiate and
-   complete a resumed session prior to that invalidation.  In such
-   environments, EKU does not prevent the use of previously issued PSKs.
+   reside in endpoint memory.  Although such PSKs may subsequently be
+   stored in secure storage, they are exposed during this initial
+   processing window, and compromise of endpoint memory during this
+   period is sufficient to reveal them.  Consequently, later protection
+   using secure storage does not prevent their prior compromise.  These
+   PSKs are sufficient to establish new authenticated TLS connections.
+   Even if an implementation invalidates previously issued PSKs upon
+   completion of the EKU exchange, an attacker that has already obtained
+   such a PSK may initiate and complete a resumed session prior to that
+   invalidation.  In such environments, EKU does not prevent the use of
+   previously issued PSKs.
 
    Accordingly, endpoints that enable EKU MUST disable resumption using
    PSKs established via the NewSessionTicket mechanism.
    resumption_main_secret_N+1 is not derived for this reason in
    Figure 7.
 
-8.  Post-Quantum Cryptography Considerations
+9.  Post-Quantum Cryptography Considerations
 
    The shared secret used by the Extended Key Update mechanism is
    derived according to the negotiated key exchange method.  As a
@@ -865,7 +866,7 @@ Table of Contents
    it, regardless of which peer acted as the TLS client or server during
    the initial handshake.
 
-9.  SSLKEYLOGFILE Update
+10.  SSLKEYLOGFILE Update
 
    As a successful extended key update exchange invalidates previous
    secrets, SSLKEYLOGFILE [TLS-KEYLOGFILE] needs to be populated with
@@ -894,9 +895,9 @@ Table of Contents
    previous SSLKEYLOGFILE secrets including past iterations of
    CLIENT_TRAFFIC_SECRET_, SERVER_TRAFFIC_SECRET_ and EXPORTER_SECRET_.
 
-10.  Exporter
+11.  Exporter
 
-10.1.  Post-Compromise Security for the Initial Exporter Secret
+11.1.  Post-Compromise Security for the Initial Exporter Secret
 
    The TLS 1.3 Key Schedule, see Figure 5 of [TLS], derives the
    exporter_secret from the main secret.  This exporter_secret is static
@@ -938,7 +939,7 @@ Table of Contents
    which continues to use a static exporter_secret for the lifetime of
    the connection for compatiblity with "legacy" applications.
 
-10.2.  Exporter Usage After Extended Key Update
+11.2.  Exporter Usage After Extended Key Update
 
    Protocols such as DTLS-SRTP and DTLS-over-SCTP rely on TLS or DTLS
    for key establishment, but reuse portions of the derived keying
@@ -1004,7 +1005,7 @@ Table of Contents
    protected with keys derived from that secret, as described in
    Section 3.3.2 of [RFC3711].
 
-11.  Use of Post-Handshake Authentication and Exported Authenticators
+12.  Use of Post-Handshake Authentication and Exported Authenticators
      with Extended Key Update
 
    EKU provides fresh traffic secrets, but EKU alone does not
@@ -1022,15 +1023,16 @@ Table of Contents
    authenticator, so detection at both endpoints requires an
    authenticator in each direction.
 
-11.1.  Post-Handshake Certificate-Based Client Authentication
+12.1.  Post-Handshake Certificate-Based Client Authentication
 
    When Post-Handshake Certificate-Based Client Authentication
    (Section 4.6.2 of [TLS]) is performed after an Extended Key Update
    (EKU) is complete, the Handshake Context used for the transcript hash
    is updated.  It consists of transcript_hash_N+1 concatenated with the
-   CertificateRequest message.  The Finished message is computed using a
-   MAC key derived from the Base Key of the new generation
-   (client_application_traffic_secret_N+1).  Because the
+   CertificateRequest message.  Both endpoints use the Handshake Context
+   in effect when the CertificateRequest is sent.  The Finished message
+   is computed using a MAC key derived from the Base Key of the new
+   generation (client_application_traffic_secret_N+1).  Because the
    CertificateVerify message is signed with the private key
    corresponding to the client's end-entity certificate over this
    Handshake Context, the server can detect divergent key state.  Post-
@@ -1038,7 +1040,7 @@ Table of Contents
    client gains no equivalent assurance.  A client that requires such
    assurance can request an Exported Authenticator from the server.
 
-11.2.  Exported Authenticators
+12.2.  Exported Authenticators
 
    This document updates Section 5.1 of [RFC9261] to specify that, after
    an Extended Key Update has completed, the Handshake Context and
@@ -1074,7 +1076,7 @@ Table of Contents
    allowing the peer, particularly in DTLS where records may be
    reordered, to determine the correct exporter secret for validation.
 
-11.3.  Interaction of Extended Key Update and Post-Handshake
+12.3.  Interaction of Extended Key Update and Post-Handshake
        Authentication
 
    EKU and Post-Handshake Authentication may both occur during the
@@ -1086,7 +1088,7 @@ Table of Contents
    specific ordering constraints are required to preserve cryptographic
    consistency.
 
-11.3.1.  Post-Handshake Certificate-Based Client Authentication
+12.3.1.  Post-Handshake Certificate-Based Client Authentication
 
    An endpoint MUST NOT complete an EKU exchange in a manner that
    transitions to new application traffic secrets while a PHA exchange
@@ -1112,7 +1114,7 @@ Table of Contents
    In DTLS, deferred EKU request is acknowledged as specified in
    Section 6.
 
-11.3.2.  Exported Authenticators
+12.3.2.  Exported Authenticators
 
    Because the exporter interface defined in this document is
    generation-aware, the exporter secret used for an Exported
@@ -1124,14 +1126,39 @@ Table of Contents
    serialization requirement is imposed between EKU and Exported
    Authenticator exchanges.
 
-12.  Security Considerations
+13.  Deployment Considerations
+
+   Extended Key Update is enabled by explicit configuration, either by
+   an operator for all applications on a device or by an application
+   that needs it.  The configuration includes a policy for when to
+   initiate an Extended Key Update, for example at a fixed interval or
+   after a certain amount of data has been exchanged.  When enabled by
+   an operator, the application may not be aware of Extended Key Update.
+   Enabling it has the following effects:
+
+   *  Resumption using PSKs established via the NewSessionTicket
+      mechanism is disabled (Section 8).
+
+   *  Applications that use exported keying material and require post-
+      compromise security use the exporter interface defined in
+      Section 11.
+
+   *  Post-Handshake Certificate-Based Client Authentication and
+      Exported Authenticators performed after an Extended Key Update are
+      bound to the updated keys (Section 12).
+
+   Implementations can warn when the exporter defined in Section 7.5 of
+   [TLS] is used on a connection where Extended Key Update was
+   negotiated.
+
+14.  Security Considerations
 
    This section discusses additional security and operational aspects
    introduced by the Extended Key Update mechanism.  All security
    considerations of TLS 1.3 [TLS] and DTLS 1.3 [DTLS] continue to
    apply.
 
-12.1.  Scope of Key Compromise
+14.1.  Scope of Key Compromise
 
    Extended Key Update (EKU) assumes a transient compromise of an
    endpoint, in which the attacker obtains the keying material held by
@@ -1141,30 +1168,30 @@ Table of Contents
    persistent attacker on the device with ongoing access to key
    material.  The EKU procedure does not rely on long-term private keys,
    which may be stored in a secure element (e.g., a Hardware Security
-   Module (HSM)) or within the rich OS.  Moreover, in security-critical
+   Module (HSM)) or in endpoint memory.  Moreover, in security-critical
    scenarios, these long-term private keys are typically stored
    separately from the primary secret or the traffic keys.
 
    Two threat scenarios are relevant:
 
    1.  The long-term private key remains secure, while application
-       traffic keys in the rich operating system are temporarily
-       exposed.  EKU addresses this case for the current TLS connection.
+       traffic keys in endpoint memory are temporarily exposed.  EKU
+       addresses this case for the current TLS connection.
 
-   2.  If the long-term private key in the rich OS is compromised, EKU
-       can still protect the current TLS connection by updating the main
-       secret and traffic keys.  However, all future TLS connections are
-       at risk, as the attacker can impersonate the endpoint using the
-       stolen private key.
+   2.  If the long-term private key in endpoint memory is compromised,
+       EKU can still protect the current TLS connection by updating the
+       main secret and traffic keys.  However, all future TLS
+       connections are at risk, as the attacker can impersonate the
+       endpoint using the stolen private key.
 
    Extended Key Update can restore confidentiality only if the attacker
    no longer has access to either peer.  If an adversary retains access
    to current application traffic keys and can act as a person-in-the-
    middle attacker during the Extended Key Update, then the update
    cannot restore security.  The interference is detectable as described
-   in Section 11.
+   in Section 12.
 
-   If one of the mechanisms defined in Section 11 is not used, the
+   If one of the mechanisms defined in Section 12 is not used, the
    attacker can impersonate each endpoint, substitute EKU messages, and
    maintain control of the communication.  When Post-Handshake
    Certificate-Based Client Authentication or the modified Exported
@@ -1183,7 +1210,7 @@ Table of Contents
    The Extended Key Update procedure derives fresh
    application_traffic_secrets from a new ephemeral key exchange.
 
-12.2.  Post-Compromise Security
+14.2.  Post-Compromise Security
 
    Under the compromise model described in this document, Extended Key
    Update provides post-compromise security for long-lived TLS sessions.
@@ -1192,7 +1219,7 @@ Table of Contents
    MUST NOT reuse ephemeral key exchange material across updates or
    across TLS sessions.
 
-12.3.  Denial-of-Service (DoS)
+14.3.  Denial-of-Service (DoS)
 
    The Extended Key Update mechanism increases computational and state-
    management overhead.  A malicious peer could attempt to exhaust CPU
@@ -1209,7 +1236,7 @@ Table of Contents
       violation, send an "unexpected_message" alert, and terminate the
       connection.
 
-12.4.  Operational Guidance
+14.4.  Operational Guidance
 
    Deployments SHOULD evaluate Extended Key Update performance under
    load and fault conditions, such as high-frequency or concurrent
@@ -1217,9 +1244,9 @@ Table of Contents
    balance post-compromise security benefits against potential DoS
    exposure.
 
-13.  IANA Considerations
+15.  IANA Considerations
 
-13.1.  TLS Flags
+15.1.  TLS Flags
 
    IANA is requested to add the following entry to the "TLS Flags"
    extension registry [TLS-Ext-Registry]:
@@ -1234,7 +1261,7 @@ Table of Contents
 
    *  Reference: This document
 
-13.2.  TLS HandshakeType
+15.2.  TLS HandshakeType
 
    IANA is requested to add the following entry to the "TLS
    HandshakeType" registry [TLS-Param-Registry]:
@@ -1247,7 +1274,7 @@ Table of Contents
 
    *  Reference: This document
 
-13.3.  ExtendedKeyUpdate Message Subtypes Registry
+15.3.  ExtendedKeyUpdate Message Subtypes Registry
 
    IANA is requested to create a new registry "TLS ExtendedKeyUpdate
    Message Subtypes", within the existing "Transport Layer Security
@@ -1280,7 +1307,7 @@ Table of Contents
    depth reviews, but their approval should not be taken as an
    endorsement of the ExtendedKeyUpdate Message Subtype.
 
-13.4.  SSLKEYLOGFILE labels
+15.4.  SSLKEYLOGFILE labels
 
    IANA is requested to add the following entries to the "TLS
    SSLKEYLOGFILE Labels" extension registry [TLS-Ext-Registry]:
@@ -1314,9 +1341,9 @@ Table of Contents
 
                                  Table 2
 
-14.  References
+16.  References
 
-14.1.  Normative References
+16.1.  Normative References
 
    [DTLS]     Rescorla, E., Tschofenig, H., and N. Modadugu, "The
               Datagram Transport Layer Security (DTLS) Protocol Version
@@ -1356,7 +1383,7 @@ Table of Contents
               September 2026, <https://datatracker.ietf.org/doc/html/
               draft-ietf-tls-tlsflags-18>.
 
-14.2.  Informative References
+16.2.  Informative References
 
    [ANSSI]    ANSSI, "Recommendations for securing networks with IPsec,
               Technical Report", August 2015,
@@ -1793,7 +1820,7 @@ Appendix C.  Overview of Security Goals
 C.1.  Post-Compromise Security (PCS)
 
    Extended Key Update supports post-compromise security under the
-   assumptions described in Section 12.1.  If an attacker temporarily
+   assumptions described in Section 14.1.  If an attacker temporarily
    compromises an endpoint and obtains the traffic keys in use before an
    Extended Key Update takes place, but the compromise does not persist
    during and after the EKU completes, the attacker cannot derive the
@@ -1828,7 +1855,7 @@ C.3.  Elimination of Standard KeyUpdate
 
 C.4.  Detecting Divergent Key State
 
-   As described in Section 11, Post-Handshake Certificate-Based Client
+   As described in Section 12, Post-Handshake Certificate-Based Client
    Authentication and Exported Authenticators can be used after an
    Extended Key Update to detect that the endpoints derived different
    keys.  Detection relies on the CertificateVerify message, which is
