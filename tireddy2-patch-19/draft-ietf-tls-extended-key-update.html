@@ -36,18 +36,18 @@ and DTLS 1.3.
 <meta content="draft-ietf-tls-extended-key-update-latest" name="ietf.draft">
 <!-- Generator version information:
   xml2rfc 3.34.1
-    Python 3.14.7
-    ConfigArgParse 1.7.7
+    Python 3.14.8
+    ConfigArgParse 1.8.0
     google-i18n-address 3.1.1
     intervaltree 3.2.1
     Jinja2 3.1.6
     lxml 6.1.1
     natsort 8.4.0
-    platformdirs 4.11.10
+    platformdirs 4.12.2
     pycountry 24.6.1
     PyYAML 6.0.3
     requests 2.33.1
-    wcwidth 0.8.4
+    wcwidth 0.9.1
 -->
 <link href="draft-ietf-tls-extended-key-update.xml" rel="alternate" type="application/rfc+xml">
 <link href="#copyright" rel="license">
@@ -1067,7 +1067,7 @@ svg {
 </tr></thead>
 <tfoot><tr>
 <td class="left">Tschofenig, et al.</td>
-<td class="center">Expires 4 April 2027</td>
+<td class="center">Expires 17 April 2027</td>
 <td class="right">[Page]</td>
 </tr></tfoot>
 </table>
@@ -1083,12 +1083,12 @@ svg {
 <a href="https://www.rfc-editor.org/rfc/rfc9261" class="eref">9261</a>, <a href="https://www.rfc-editor.org/rfc/rfc9846" class="eref">9846</a> (if approved)</dd>
 <dt class="label-published">Published:</dt>
 <dd class="published">
-<time datetime="2026-10-01" class="published">1 October 2026</time>
+<time datetime="2026-10-14" class="published">14 October 2026</time>
     </dd>
 <dt class="label-intended-status">Intended Status:</dt>
 <dd class="intended-status">Standards Track</dd>
 <dt class="label-expires">Expires:</dt>
-<dd class="expires"><time datetime="2027-04-04">4 April 2027</time></dd>
+<dd class="expires"><time datetime="2027-04-17">17 April 2027</time></dd>
 <dt class="label-authors">Authors:</dt>
 <dd class="authors">
 <div class="author">
@@ -1167,7 +1167,7 @@ and DTLS 1.3.<a href="#section-abstract-4" class="pilcrow">¶</a></p>
         time. It is inappropriate to use Internet-Drafts as reference
         material or to cite them other than as "work in progress."<a href="#section-boilerplate.1-3" class="pilcrow">¶</a></p>
 <p id="section-boilerplate.1-4">
-        This Internet-Draft will expire on 4 April 2027.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
+        This Internet-Draft will expire on 17 April 2027.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="copyright">
@@ -1456,6 +1456,10 @@ refers to the [receiver]_write_key. These keys are derived from the active
 client_application_traffic_secret_N and server_application_traffic_secret_N,
 as defined in (D)TLS 1.3 <span>[<a href="#TLS" class="cite xref">TLS</a>]</span>, and are replaced with new ones
 after each successful Extended Key Update.<a href="#section-2-6" class="pilcrow">¶</a></p>
+<p id="section-2-7">Generation N refers to client_/server_application_traffic_secret_N,
+exporter_secret_N, and transcript_hash_N. Generation 0 is established by
+the initial handshake, and each Extended Key Update establishes the next
+generation, following <span><a href="https://rfc-editor.org/rfc/rfc9846#section-7.2" class="relref">Section 7.2</a> of [<a href="#TLS" class="cite xref">TLS</a>]</span>.<a href="#section-2-7" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="negotiating-the-extended-key-update">
@@ -1629,9 +1633,10 @@ initiator <span class="bcp14">MUST NOT</span> initiate another key update.<a hre
 </li>
         <li id="section-5-2.2">
           <p id="section-5-2.2.1">Upon receipt, the responder sends its own <code>KeyShareEntry</code> in a
-<code>ExtendedKeyUpdate(key_update_response)</code> message. While an extended
-key update is in progress, the responder <span class="bcp14">MUST NOT</span> initiate another
-key update. The responder <span class="bcp14">MAY</span> defer sending a response if system load or resource
+<code>ExtendedKeyUpdate(key_update_response)</code> message. After receiving an
+<code>ExtendedKeyUpdate(key_update_request)</code>, the responder <span class="bcp14">MUST NOT</span> send an
+<code>ExtendedKeyUpdate(key_update_request)</code> until it has received
+<code>ExtendedKeyUpdate(key_update_finish)</code>. The responder <span class="bcp14">MAY</span> defer sending a response if system load or resource
 constraints prevent immediate processing. In such cases, the response <span class="bcp14">MUST</span>
 be sent once sufficient resources become available.<a href="#section-5-2.2.1" class="pilcrow">¶</a></p>
 </li>
@@ -1782,8 +1787,10 @@ corresponding <code>ExtendedKeyUpdate(key_update_response)</code> or an ACK.<a h
 </li>
         <li id="section-6-5.2">
           <p id="section-6-5.2.1">Upon receipt, the responder sends its own <code>KeyShareEntry</code> in a
-<code>ExtendedKeyUpdate(key_update_response)</code> message. While an extended key update
-is in progress, the responder <span class="bcp14">MUST NOT</span> initiate further key updates. The responder <span class="bcp14">MAY</span> defer
+<code>ExtendedKeyUpdate(key_update_response)</code> message. After receiving an
+<code>ExtendedKeyUpdate(key_update_request)</code>, the responder <span class="bcp14">MUST NOT</span> send an
+<code>ExtendedKeyUpdate(key_update_request)</code> until it has received
+<code>ExtendedKeyUpdate(key_update_finish)</code>. The responder <span class="bcp14">MAY</span> defer
 sending a response if system load or resource constraints prevent immediate processing.
 In such cases, the responder <span class="bcp14">MUST</span> acknowledge receipt of the key_update_request with an ACK and, once
 sufficient resources become available, retransmit the key_update_response until it is acknowledged by the
@@ -1814,11 +1821,13 @@ value. If this ACK is not received, the initiator re-transmits its
 complete once this ACK is processed by the initiator.<a href="#section-6-5.7.1" class="pilcrow">¶</a></p>
 </li>
       </ol>
-<p id="section-6-6">The handshake framing uses a single <code>HandshakeType</code> for this message
-(see <a href="#fig-dtls-handshake" class="auto internal xref">Figure 4</a>).<a href="#section-6-6" class="pilcrow">¶</a></p>
+<p id="section-6-6">If DTLS peers independently initiate the extended key update and the
+requests cross in flight, they are resolved as specified in <a href="#TLSC" class="auto internal xref">Section 5</a>.<a href="#section-6-6" class="pilcrow">¶</a></p>
+<p id="section-6-7">The handshake framing uses a single <code>HandshakeType</code> for this message
+(see <a href="#fig-dtls-handshake" class="auto internal xref">Figure 4</a>).<a href="#section-6-7" class="pilcrow">¶</a></p>
 <span id="name-dtls-13-handshake-structure"></span><div id="fig-dtls-handshake">
 <figure id="figure-4">
-        <div class="alignLeft art-text artwork" id="section-6-7.1">
+        <div class="alignLeft art-text artwork" id="section-6-8.1">
 <pre>
        enum {
            client_hello(1),
@@ -1996,8 +2005,13 @@ TLS 1.3.<a href="#section-7-3.4.1" class="pilcrow">¶</a></p>
 </li>
       </ul>
 <p id="section-7-4">The transcript_hash_N denotes the transcript hash value associated with
-generation N. During each Extended Key Update exchange, the transcript
-hash value for the next generation is computed as follows:<a href="#section-7-4" class="pilcrow">¶</a></p>
+generation N. transcript_hash_0 is Transcript-Hash(ClientHello..client
+Finished) of the initial handshake. During each Extended Key Update
+exchange, transcript_hash_N+1 is computed over the concatenation of
+transcript_hash_N, the <code>ExtendedKeyUpdate(key_update_request)</code> handshake
+message, and the <code>ExtendedKeyUpdate(key_update_response)</code> handshake message,
+with handshake messages encoded as specified in <span><a href="https://rfc-editor.org/rfc/rfc9846#section-4.1" class="relref">Section 4.1</a> of [<a href="#TLS" class="cite xref">TLS</a>]</span>
+for TLS and <span><a href="https://rfc-editor.org/rfc/rfc9147#section-5.2" class="relref">Section 5.2</a> of [<a href="#DTLS" class="cite xref">DTLS</a>]</span> for DTLS:<a href="#section-7-4" class="pilcrow">¶</a></p>
 <div class="alignLeft art-text artwork" id="section-7-5">
 <pre>
  transcript_hash_N+1 = Transcript-Hash(transcript_hash_N ||
@@ -2006,10 +2020,7 @@ hash value for the next generation is computed as follows:<a href="#section-7-4"
 </pre><a href="#section-7-5" class="pilcrow">¶</a>
 </div>
 <p id="section-7-6">Once transcript_hash_N+1 has been computed, transcript_hash_N can be deleted.
-No prior transcript hash values need to be retained for future EKU exchanges.
-transcript_hash_0 denotes the transcript hash of the initial TLS handshake,
-covering all messages from the ClientHello up to and including the
-client Finished message.<a href="#section-7-6" class="pilcrow">¶</a></p>
+No prior transcript hash values need to be retained for future EKU exchanges.<a href="#section-7-6" class="pilcrow">¶</a></p>
 <p id="section-7-7"><code>main_secret_N</code> denotes the Main Secret (see <span><a href="https://rfc-editor.org/rfc/rfc9846#section-7.1" class="relref">Section 7.1</a> of [<a href="#TLS" class="cite xref">TLS</a>]</span>)
 associated with generation N.<a href="#section-7-7" class="pilcrow">¶</a></p>
 <p id="section-7-8"><a href="#key-hierarchy" class="auto internal xref">Figure 7</a> shows the key derivation hierarchy.<a href="#section-7-8" class="pilcrow">¶</a></p>
@@ -2220,28 +2231,35 @@ Key Update, the TLS or DTLS implementation would have to provide an
 asynchronous notification to the application indicating that:<a href="#section-11.2-3" class="pilcrow">¶</a></p>
 <ul class="normal">
 <li class="normal" id="section-11.2-4.1">
-            <p id="section-11.2-4.1.1">A new epoch has become active, and the (D)TLS implementation can
-include the corresponding epoch identifier. Applications receiving an
-epoch identifier can use it to request keying material for that
-specific epoch through an epoch-aware exporter interface.
-In TLS, this identifier represents a local logical counter that may differ between peers.<a href="#section-11.2-4.1.1" class="pilcrow">¶</a></p>
+            <p id="section-11.2-4.1.1">A new generation has become active, and the (D)TLS implementation
+<span class="bcp14">MUST</span> include the corresponding generation N, where exporter_secret_N
+is the exporter secret of that generation. Generation 0 corresponds
+to exporter_secret_0, and each successful Extended Key Update
+increments N by one, so both peers associate the same generation
+with the same exporter secret. Applications use the generation to
+request keying material through a generation-aware exporter
+interface, so a subsequent Extended Key Update does not change the
+result.<a href="#section-11.2-4.1.1" class="pilcrow">¶</a></p>
 </li>
         </ul>
-<p id="section-11.2-5">Applications are notified that a new epoch is active only after both peers have completed
-the Extended Key Update exchange and switched to the new traffic keys.<a href="#section-11.2-5" class="pilcrow">¶</a></p>
+<p id="section-11.2-5">Applications are notified that a new generation is active only after the endpoint
+has completed the Extended Key Update exchange and switched to the new traffic keys.<a href="#section-11.2-5" class="pilcrow">¶</a></p>
 <ul class="normal">
 <li class="normal" id="section-11.2-6.1">
             <p id="section-11.2-6.1.1">In TLS, the initiator triggers notification after Step 5 in <a href="#TLSC" class="auto internal xref">Section 5</a>,
-and the responder triggers notification after Step 4 in <a href="#TLSC" class="auto internal xref">Section 5</a>.<a href="#section-11.2-6.1.1" class="pilcrow">¶</a></p>
+and the responder triggers notification after Step 6 in <a href="#TLSC" class="auto internal xref">Section 5</a>.<a href="#section-11.2-6.1.1" class="pilcrow">¶</a></p>
 </li>
           <li class="normal" id="section-11.2-6.2">
             <p id="section-11.2-6.2.1">In DTLS, the initiator triggers notification to the application
 after Step 7 in <a href="#DTLSC" class="auto internal xref">Section 6</a>, and the responder triggers notification
-after Step 9 in <a href="#DTLSC" class="auto internal xref">Section 6</a>.<a href="#section-11.2-6.2.1" class="pilcrow">¶</a></p>
+after Step 6 in <a href="#DTLSC" class="auto internal xref">Section 6</a>.<a href="#section-11.2-6.2.1" class="pilcrow">¶</a></p>
 </li>
         </ul>
-<p id="section-11.2-7">The corresponding EKM is obtained by the application through the TLS/DTLS exporter
-interface using its chosen label and context values as defined in <span><a href="https://rfc-editor.org/rfc/rfc9846#section-7.5" class="relref">Section 7.5</a> of [<a href="#TLS" class="cite xref">TLS</a>]</span>.<a href="#section-11.2-7" class="pilcrow">¶</a></p>
+<p id="section-11.2-7">The corresponding EKM is obtained by the application through the generation-aware
+exporter interface using the generation and its chosen label and context
+values as defined in <span><a href="https://rfc-editor.org/rfc/rfc9846#section-7.5" class="relref">Section 7.5</a> of [<a href="#TLS" class="cite xref">TLS</a>]</span>. The application conveys the
+generation it used to the peer, for example with the protected data, so that
+the peer derives the same EKM.<a href="#section-11.2-7" class="pilcrow">¶</a></p>
 <p id="section-11.2-8">To prevent desynchronization, the application will have to retain both the
 previous and the newly derived exporter secrets for a short period. For TLS,
 the previous exporter secret would be discarded once data derived from the
@@ -2266,7 +2284,7 @@ secret, as described in Section 3.3.2 of <span>[<a href="#RFC3711" class="cite x
 derived the same updated keys. An attacker that temporarily compromises an endpoint
 may later act as a person-in-the-middle attacker capable of interfering with the EKU exchange.
 Such an attacker can cause the peers to transition to divergent traffic secrets without detection,
-but cannot compromise the endpoint to derive secrets after the new epoch is established.
+but cannot compromise the endpoint to derive secrets after the new generation is established.
 TLS 1.3 provides two mechanisms that can detect such divergence, each with a different scope.
 Post-Handshake Certificate-Based Client Authentication authenticates the client to the server,
 and therefore allows only the server to detect divergence. Exported Authenticators <span>[<a href="#RFC9261" class="cite xref">RFC9261</a>]</span>
@@ -2282,7 +2300,7 @@ performed after an Extended Key Update (EKU) is complete, the Handshake Context 
 the transcript hash is updated. It consists of transcript_hash_N+1 concatenated
 with the CertificateRequest message. Both endpoints use the Handshake Context in effect
 when the CertificateRequest is sent. The Finished message is computed using a
-MAC key derived from the Base Key of the new epoch (client_application_traffic_secret_N+1).
+MAC key derived from the Base Key of the new generation (client_application_traffic_secret_N+1).
 Because the CertificateVerify message is signed with the private key corresponding to the
 client's end-entity certificate over this Handshake Context, the server can detect divergent
 key state. Post-Handshake Authentication does not reauthenticate the server, so the client gains
@@ -2297,27 +2315,27 @@ Authenticator from the server.<a href="#section-12.1-1" class="pilcrow">¶</a></
         </h3>
 <p id="section-12.2-1">This document updates Section 5.1 of <span>[<a href="#RFC9261" class="cite xref">RFC9261</a>]</span> to specify that, after an
 Extended Key Update has completed, the Handshake Context and Finished MAC Key used for
-Exported Authenticators <span class="bcp14">MUST</span> be derived from the exporter secret associated with the current epoch.
-Implementations that support the epoch-aware Exported Authenticators interface <span class="bcp14">MUST</span> provide a means
-for applications to request the generation or validation of Exported Authenticators using
-the exporter secret for a specific epoch.<a href="#section-12.2-1" class="pilcrow">¶</a></p>
+Exported Authenticators <span class="bcp14">MUST</span> be derived from the exporter secret of the current generation.
+Implementations that support the generation-aware Exported Authenticators interface <span class="bcp14">MUST</span> provide a means
+for applications to request the creation or validation of Exported Authenticators using
+the exporter secret of a specific generation.<a href="#section-12.2-1" class="pilcrow">¶</a></p>
 <p id="section-12.2-2">The Handshake Context and Finished MAC Key used in both the CertificateVerify message
 (Section 5.2.2 of <span>[<a href="#RFC9261" class="cite xref">RFC9261</a>]</span>) and the Finished message (Section 5.2.3 of <span>[<a href="#RFC9261" class="cite xref">RFC9261</a>]</span>)
-are derived from the exporter secret associated with the current epoch.
+are derived from the exporter secret of the current generation.
 If a person-in-the-middle attacker interferes with the EKU exchange, the peers derive
 different exporter secrets. Validation as specified in Section 5.2.4 of <span>[<a href="#RFC9261" class="cite xref">RFC9261</a>]</span>
 then fails at the endpoint that receives the authenticator, since the CertificateVerify
 message is signed with a private key the attacker does not hold.<a href="#section-12.2-2" class="pilcrow">¶</a></p>
 <p id="section-12.2-3">A new optional API <span class="bcp14">SHOULD</span> be defined to permit applications to request or verify
-Exported Authenticators for a specific exporter epoch. As discussed in Section 7
+Exported Authenticators for a specific generation. As discussed in Section 7
 of <span>[<a href="#RFC9261" class="cite xref">RFC9261</a>]</span>, this can, as an exception, be implemented at the application
-layer when the epoch-aware TLS exporter is available. The APIs defined in <span>[<a href="#RFC9261" class="cite xref">RFC9261</a>]</span>
+layer when the generation-aware TLS exporter is available. The APIs defined in <span>[<a href="#RFC9261" class="cite xref">RFC9261</a>]</span>
 remain unchanged, so existing applications continue to operate without
-modification. The epoch-aware API accepts an epoch identifier; when present,
+modification. The generation-aware API accepts a generation; when present,
 the (D)TLS implementation <span class="bcp14">MUST</span> derive the Handshake Context and Finished MAC Key
-from the exporter secret associated with that epoch. When Exported Authenticators
-are generated using the epoch-aware Exported Authenticators interface, the
-epoch identifier used for their derivation can be conveyed in the
+from the exporter secret of that generation. When Exported Authenticators
+are generated using the generation-aware Exported Authenticators interface, the
+generation used for their derivation can be conveyed in the
 certificate_request_context field, allowing the peer, particularly in
 DTLS where records may be reordered, to determine the correct exporter
 secret for validation.<a href="#section-12.2-3" class="pilcrow">¶</a></p>
@@ -2369,9 +2387,9 @@ authentication exchange has completed.<a href="#section-12.3.1-3.3.1" class="pil
           <h4 id="name-exported-authenticators-2">
 <a href="#section-12.3.2" class="section-number selfRef">12.3.2. </a><a href="#name-exported-authenticators-2" class="section-name selfRef">Exported Authenticators</a>
           </h4>
-<p id="section-12.3.2-1">Because the exporter interface defined in this document is epoch-aware,
+<p id="section-12.3.2-1">Because the exporter interface defined in this document is generation-aware,
 the exporter secret used for an Exported Authenticator exchange is
-explicitly determined by the epoch selected by the application.<a href="#section-12.3.2-1" class="pilcrow">¶</a></p>
+explicitly determined by the generation selected by the application.<a href="#section-12.3.2-1" class="pilcrow">¶</a></p>
 <p id="section-12.3.2-2">As a result, cross-flight exchanges of EKU and <code>AuthenticatorRequest</code>
 messages do not introduce cryptographic ambiguity. Therefore, no
 serialization requirement is imposed between EKU and Exported Authenticator
