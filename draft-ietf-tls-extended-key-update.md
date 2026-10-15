@@ -100,8 +100,8 @@ To address this, this specification defines an extended key update mechanism tha
 performs a fresh execution of the key exchange negotiated during the initial handshake
 within an active session, thereby providing post-compromise security. Interference by
 a person-in-the-middle attacker during the exchange is detectable by the server when
-post-handshake authentication is used, and by both peers when exported authenticators
-are used.
+post-handshake authentication is used, and by each peer that validates an exported authenticators
+from the other when used.
 
 By forcing attackers to exfiltrate new key material repeatedly, this approach mitigates
 the risks associated with static key compromise. Regular renewal of session keys helps
@@ -1019,8 +1019,8 @@ rich operating system are temporarily exposed. EKU addresses this case for the c
 TLS connection.
 
 2. If the long-term private key in the rich OS is compromised, EKU can still protect
-the current TLS connection by updating the main secret and traffic keys. However, all
-future TLS connections are at risk, as the attacker can impersonate the endpoint using
+the current TLS connection against a passive attacker by updating the main secret and traffic keys. However, all
+future TLS connections are at risk, as an active attacker can impersonate the endpoint using
 the stolen private key.
 
 Extended Key Update can restore confidentiality only if the attacker no longer
@@ -1034,7 +1034,8 @@ of the communication. When Post-Handshake Certificate-Based Client
 Authentication or the modified Exported Authenticator mechanism is used, the
 authentication messages include a CertificateVerify message signed with a private key
 the attacker does not hold. Any modification or substitution of EKU messages therefore
-becomes detectable.
+becomes detectable by the receiving endpoint. With Post-Handshake Certificate-Based
+Client Authentication, this is only the server.
 
 If a compromise occurs before the handshake completes, the ephemeral key exchange,
 client_handshake_traffic_secret, server_handshake_traffic_secret, and the initial
