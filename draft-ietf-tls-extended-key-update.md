@@ -216,7 +216,7 @@ If the client and server agree to use the extended key update mechanism,
 the standard key update MUST NOT be used. In this case, the extended key
 update fully replaces the standard key update functionality.
 
-Implementations that receive a classic `KeyUpdate` message after
+Implementations that receive a standard `KeyUpdate` message after
 successfully negotiating the Extended Key Update functionality MUST
 terminate the connection with an `"unexpected_message"` alert.
 
@@ -1217,7 +1217,7 @@ This section describes the initiator and responder state machines.
 Notes:
 
 - Fin message is sent under old keys.
-- If a classic KeyUpdate arrives (EKU negotiated), ABORT "unexpected_message".
+- If a standard KeyUpdate arrives (EKU negotiated), ABORT "unexpected_message".
 - Crossed-requests: ignore the request with LOWER lexicographic key_exchange; if equal, abort.
 
 ### Responder State Machine
@@ -1260,7 +1260,7 @@ Notes:
 Notes:
 
 - Responder may defer Resp under load (no status reply), then must send it once resources are free.
-- If a classic KeyUpdate arrives (EKU negotiated), ABORT "unexpected_message".
+- If a standard KeyUpdate arrives (EKU negotiated), ABORT "unexpected_message".
 
 ## DTLS 1.3 State Machines
 
