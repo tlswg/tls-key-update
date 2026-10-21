@@ -100,8 +100,8 @@ To address this, this specification defines an extended key update mechanism tha
 performs a fresh execution of the key exchange negotiated during the initial handshake
 within an active session, thereby providing post-compromise security. Interference by
 a person-in-the-middle attacker during the exchange is detectable by the server when
-post-handshake authentication is used, and by each peer that validates an exported authenticators
-from the other when used.
+post-handshake authentication is used, and by each endpoint that validates an exported authenticators
+of their peer.
 
 By forcing attackers to exfiltrate new key material repeatedly, this approach mitigates
 the risks associated with static key compromise. Regular renewal of session keys helps
