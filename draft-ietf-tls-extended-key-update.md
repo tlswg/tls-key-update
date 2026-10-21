@@ -1037,8 +1037,8 @@ The security guarantees of the Extended Key Update depend on the time of comprom
    traffic keys and exporter secrets established by that Extended Key
    Update.
 
-2. The adversary uses keying material obtained during the compromise to act
-   as a person-in-the-middle attacker during an Extended Key Update: Security
+2. If the adversary uses keying material obtained during the compromise to act
+   as a person-in-the-middle attacker during an Extended Key Update, then security
    cannot be restored, but the interference may be detected using the
    mechanisms described in {{exported}}, provided the adversary has not
    obtained the long-term private key used for authentication (see also
