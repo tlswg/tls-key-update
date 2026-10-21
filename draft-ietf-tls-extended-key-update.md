@@ -1030,7 +1030,7 @@ The following assumption is made:
   ephemeral key exchange material generated after the compromise has ended
   is not available to the adversary (see {{pcs}}).
 
-What Extended Key Update protects depends on when the compromise happens:
+The security guarantees of the Extended Key Update depend on the time of compromise:
 
 1. Compromise ends before an Extended Key Update starts, and the adversary
    does not interfere with the exchange: The adversary cannot derive the
