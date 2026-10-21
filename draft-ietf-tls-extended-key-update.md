@@ -1018,10 +1018,11 @@ Two threat scenarios are relevant:
 rich operating system are temporarily exposed. EKU addresses this case for the current
 TLS connection.
 
-2. If the long-term private key in the rich OS is compromised, EKU can still protect
-the current TLS connection against a passive attacker by updating the main secret and traffic keys. However, all
-future TLS connections are at risk, as an active attacker can impersonate the endpoint using
-the stolen private key.
+2. The long-term private key in the rich OS is compromised. Against a passive
+attacker, EKU still protects the current TLS connection by updating the main secret
+and traffic keys, and future TLS connections remain protected by their (EC)DHE key
+exchange. An active attacker, in contrast, can use the stolen private key to
+impersonate the endpoint in future TLS connections.
 
 Extended Key Update can restore confidentiality only if the attacker no longer
 has access to either peer. If an adversary retains access to current application traffic
