@@ -92,7 +92,7 @@ compromised.
 
 While the built-in KeyUpdate mechanism allows application traffic keys to be refreshed
 during a session, it does not incorporate fresh entropy from a new key exchange and
-does not provide post-compromise security. This limitation can pose a security
+therefore does not provide post-compromise security. This limitation can pose a security
 risk in long-lived sessions, such as those found in industrial IoT or telecommunications
 environments.
 
