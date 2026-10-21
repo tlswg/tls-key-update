@@ -1032,8 +1032,8 @@ The following assumption is made:
 
 The security guarantees of the Extended Key Update depend on the time of compromise:
 
-1. Compromise ends before an Extended Key Update starts, and the adversary
-   does not interfere with the exchange: The adversary cannot derive the
+1. If compromise ends before an Extended Key Update starts, and the adversary
+   does not interfere with the exchange, then the adversary cannot derive the
    traffic keys and exporter secrets established by that Extended Key
    Update.
 
