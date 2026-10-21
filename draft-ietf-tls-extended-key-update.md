@@ -1005,7 +1005,7 @@ This section discusses additional security and operational aspects introduced by
 
 This sections summarizes individual parts of the draft mentioning the threat model and references them.
 
-The adversary has the following capabilities:
+We assume that the adversary has the following capabilities:
 
 * Network attacker: The adversary has full control over the network
   between the endpoints. They can read, modify, inject, drop, delay, and
