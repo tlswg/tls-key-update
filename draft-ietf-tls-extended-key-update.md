@@ -1009,7 +1009,7 @@ We assume that the adversary has the following capabilities:
 
 * Network attacker: The adversary has full control over the network
   between the endpoints. They can read, modify, inject, drop, delay, and
-  reorder messages, including EKU messages. This is the same network
+  reorder messages, including EKU messages. This is the same
   attacker model assumed by TLS 1.3 (see {{Appendix F of TLS}}).
 
 * Transient endpoint compromise: For a limited period of time, the adversary
