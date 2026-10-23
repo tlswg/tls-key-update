@@ -1003,8 +1003,6 @@ This section discusses additional security and operational aspects introduced by
 
 ## Threat Model {#threat-model}
 
-This sections summarizes individual parts of the draft mentioning the threat model and references them.
-
 We assume that the adversary has the following capabilities:
 
 * Network attacker: The adversary has full control over the network
