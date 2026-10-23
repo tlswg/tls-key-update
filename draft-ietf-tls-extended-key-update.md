@@ -1015,11 +1015,9 @@ We assume that the adversary has the following capabilities:
   current application traffic secrets and keys, the exporter secrets, the
   value retained for deriving main_secret_N+1, transcript_hash_N, any ephemeral
   key exchange material in use, any PSKs established via the
-  NewSessionTicket mechanism, and the long-term private keys used for
-  authentication. Implications of a compromised long-term private key are
-  discussed in {{scope}}. After the compromise ends, the adversary retains
-  all keying material obtained but has no access to ephemeral key exchange
-  material generated afterwards (see {{pcs}}).
+  NewSessionTicket mechanism. After the compromise ends, the adversary
+  retains all keying material obtained but has no access to ephemeral key
+  exchange material generated afterwards (see {{pcs}}).
 
 The security guarantees of the Extended Key Update depend on the time of compromise:
 
@@ -1031,9 +1029,8 @@ The security guarantees of the Extended Key Update depend on the time of comprom
 2. If the adversary uses keying material obtained during the compromise to act
    as a person-in-the-middle attacker during an Extended Key Update, then security
    cannot be restored, but the interference may be detected using the
-   mechanisms described in {{exported}}, provided the adversary has not
-   obtained the long-term private key used for authentication (see also
-   {{scope}}).
+   mechanisms described in {{exported}}, which authenticate the update with
+   the long-term private key.
 
 As a corollary, PSKs established via the NewSessionTicket mechanism that are
 obtained during the compromise allow the adversary to establish new
@@ -1044,57 +1041,13 @@ protect. For this reason, resumption is disabled when EKU is enabled (see
 The following are out of scope:
 
 * An adversary with ongoing access to keying
-  material on an endpoint, also called persistent adversary (see {{scope}}).
+  material on an endpoint, also called persistent adversary.
 
-* Compromise of a long-term private key (see {{scope}}).
+* Compromise of a long-term private key. An adversary holding it can
+  impersonate the endpoint in future TLS connections and interfere with an
+  Extended Key Update without detection (see {{exported}}).
 
 * Resource exhaustion by a misbehaving peer, which is addressed in {{dos}}.
-
-## Scope of Key Compromise {#scope}
-
-This section discusses the consequences of the transient endpoint compromise
-capability defined in {{threat-model}}, in particular whether the long-term
-private key is among the keying material the adversary obtains. A persistent
-adversary on the device with ongoing access to keying material is out of scope.
-
-The EKU procedure does not rely on long-term private keys, which may be stored in a
-secure element (e.g., a Hardware Security Module (HSM)) or within the rich OS.
-Moreover, in security‑critical scenarios, these long‑term private keys are typically
-stored separately from the primary secret or the traffic keys. Depending on where the
-long-term private key is stored, two cases are distinguished:
-
-1. The long-term private key is stored outside the rich operating system and is not
-obtained by the adversary during the transient endpoint compromise. EKU restores the
-security of the current TLS connection, and future TLS connections are not affected.
-
-2. The long-term private key is stored within the rich operating system and is obtained
-by the adversary during the transient endpoint compromise. EKU can still protect the
-current TLS connection by updating the main secret and traffic keys. However, all
-future TLS connections are at risk, as the adversary can impersonate the endpoint using
-the stolen private key.
-
-In both cases, Extended Key Update can restore security only once the transient endpoint
-compromise has ended. If the adversary uses the keying material obtained during the
-compromise to act as a person-in-the-middle attacker during the Extended Key Update, then
-the update cannot restore security. In case 1, the interference may be detected as
-described in {{exported}}.
-
-If one of the mechanisms defined in {{exported}} is not used, the attacker can
-impersonate each endpoint, substitute EKU messages, and maintain control
-of the communication. When Post-Handshake Certificate-Based Client
-Authentication or the modified Exported Authenticator mechanism is used, the
-authentication messages include a CertificateVerify message signed with the long-term
-private key. In case 1 above, the adversary does not hold this key, and any modification
-or substitution of EKU messages therefore becomes detectable. In case 2, the adversary
-can produce valid CertificateVerify messages and this detection is not possible.
-
-If a compromise occurs before the handshake completes, the ephemeral key exchange,
-client_handshake_traffic_secret, server_handshake_traffic_secret, and the initial
-client_/server_application_traffic_secret could be exposed. In that case, only the
-initial handshake messages and the application data encrypted under the initial
-client_/server_application_traffic_secret can be decrypted until the Extended Key
-Update procedure completes. The Extended Key Update procedure derives fresh
-application_traffic_secrets from a new ephemeral key exchange.
 
 ## Post-Compromise Security {#pcs}
 
@@ -1103,6 +1056,14 @@ provides post-compromise security for long-lived TLS sessions.
 To ensure post-compromise security guarantees each update MUST use freshly generated
 ephemeral key exchange material. Implementations MUST NOT reuse ephemeral key
 exchange material across updates or across TLS sessions.
+
+If a compromise occurs before the handshake completes, the ephemeral key exchange,
+client_handshake_traffic_secret, server_handshake_traffic_secret, and the initial
+client_/server_application_traffic_secret could be exposed. In that case, only the
+initial handshake messages and the application data encrypted under the initial
+client_/server_application_traffic_secret can be decrypted until the Extended Key
+Update procedure completes. The Extended Key Update procedure derives fresh
+application_traffic_secrets from a new ephemeral key exchange.
 
 ## Denial-of-Service (DoS) {#dos}
 
@@ -1467,7 +1428,7 @@ A complete security analysis of the EKU is outside the scope of this document. T
 
 ## Post-Compromise Security (PCS)
 
-Extended Key Update supports post-compromise security under the assumptions described in {{threat-model}} and {{scope}}. If an attacker temporarily compromises an endpoint and obtains the traffic keys in use before an Extended Key Update takes place, but the compromise does not persist during and after the EKU completes, the attacker cannot derive the new keying material established by EKU. This property follows from the use of fresh ephemeral key exchange material during each Extended Key Update. Compromise of prior traffic keys does not suffice to derive the new traffic keys. As a result, confidentiality of application data encrypted after the Extended Key Update is preserved even if the earlier traffic keys were exposed.
+Extended Key Update supports post-compromise security under the assumptions described in {{threat-model}}. If an attacker temporarily compromises an endpoint and obtains the traffic keys in use before an Extended Key Update takes place, but the compromise does not persist during and after the EKU completes, the attacker cannot derive the new keying material established by EKU. This property follows from the use of fresh ephemeral key exchange material during each Extended Key Update. Compromise of prior traffic keys does not suffice to derive the new traffic keys. As a result, confidentiality of application data encrypted after the Extended Key Update is preserved even if the earlier traffic keys were exposed.
 
 ## Key Freshness and Cryptographic Independence
 
