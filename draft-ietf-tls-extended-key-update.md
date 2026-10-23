@@ -100,8 +100,8 @@ To address this, this specification defines an extended key update mechanism tha
 performs a fresh execution of the key exchange negotiated during the initial handshake
 within an active session, thereby providing post-compromise security. Interference by
 a person-in-the-middle attacker during the exchange is detectable by the server when
-post-handshake authentication is used, and by both peers when exported authenticators
-are used.
+post-handshake authentication is used, and by each endpoint that validates an exported authenticators
+of their peer.
 
 By forcing attackers to exfiltrate new key material repeatedly, this approach mitigates
 the risks associated with static key compromise. Regular renewal of session keys helps
@@ -216,7 +216,7 @@ If the client and server agree to use the extended key update mechanism,
 the standard key update MUST NOT be used. In this case, the extended key
 update fully replaces the standard key update functionality.
 
-Implementations that receive a classic `KeyUpdate` message after
+Implementations that receive a standard `KeyUpdate` message after
 successfully negotiating the Extended Key Update functionality MUST
 terminate the connection with an `"unexpected_message"` alert.
 
@@ -1018,23 +1018,23 @@ Two threat scenarios are relevant:
 rich operating system are temporarily exposed. EKU addresses this case for the current
 TLS connection.
 
-2. If the long-term private key in the rich OS is compromised, EKU can still protect
-the current TLS connection by updating the main secret and traffic keys. However, all
-future TLS connections are at risk, as the attacker can impersonate the endpoint using
-the stolen private key.
+2. The long-term private key in the rich OS is compromised. Against a passive
+attacker, EKU still protects the current TLS connection by updating the main secret
+and traffic keys, and future TLS connections remain protected by their (EC)DHE key
+exchange. An active attacker, in contrast, can use the stolen private key to
+impersonate the endpoint in future TLS connections.
 
 Extended Key Update can restore confidentiality only if the attacker no longer
-has access to either peer. If an adversary retains access to current application traffic
-keys and can act as a person-in-the-middle attacker during the Extended Key Update, then the
-update cannot restore security. The interference is detectable as described in {{exported}}.
-
-If one of the mechanisms defined in {{exported}} is not used, the attacker can
-impersonate each endpoint, substitute EKU messages, and maintain control
-of the communication. When Post-Handshake Certificate-Based Client
-Authentication or the modified Exported Authenticator mechanism is used, the
-authentication messages include a CertificateVerify message signed with a private key
-the attacker does not hold. Any modification or substitution of EKU messages therefore
-becomes detectable.
+has access to either endpoint. An active attacker that holds the current
+application traffic keys during the update can act as a person-in-the-middle,
+run a separate EKU exchange with each endpoint, and so keep control of the
+connection. EKU alone does not reveal this. The interference is detected only if,
+after the update, an endpoint authenticates to the other endpoint using
+Post-Handshake Certificate-Based Client Authentication or Exported Authenticators,
+as described in {{exported}}. In both mechanisms, the CertificateVerify message is
+signed with a private key the attacker does not hold (see {{threat-model}}), so the endpoint validating it
+detects the interference. With Post-Handshake Certificate-Based Client
+Authentication, this is only the server.
 
 If a compromise occurs before the handshake completes, the ephemeral key exchange,
 client_handshake_traffic_secret, server_handshake_traffic_secret, and the initial
@@ -1217,7 +1217,7 @@ This section describes the initiator and responder state machines.
 Notes:
 
 - Fin message is sent under old keys.
-- If a classic KeyUpdate arrives (EKU negotiated), ABORT "unexpected_message".
+- If a standard KeyUpdate arrives (EKU negotiated), ABORT "unexpected_message".
 - Crossed-requests: ignore the request with LOWER lexicographic key_exchange; if equal, abort.
 
 ### Responder State Machine
@@ -1260,7 +1260,7 @@ Notes:
 Notes:
 
 - Responder may defer Resp under load (no status reply), then must send it once resources are free.
-- If a classic KeyUpdate arrives (EKU negotiated), ABORT "unexpected_message".
+- If a standard KeyUpdate arrives (EKU negotiated), ABORT "unexpected_message".
 
 ## DTLS 1.3 State Machines
 
