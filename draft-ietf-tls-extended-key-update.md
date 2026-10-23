@@ -179,8 +179,8 @@ For terminology regarding traditional and PQ/T hybrid algorithms please
 see {{?RFC9794}}.
 
 In this document, we use the term post-compromise security, as defined in
-{{CCG16}}. We assume that an adversary may obtain
-access to the application traffic keys.
+{{CCG16}}. The threat model described in {{threat-model}} assumes that an
+adversary may obtain access to the application traffic keys.
 
 Unless otherwise specified, all references to traffic keys in this document
 refer to application traffic keys and because the Extended Key Update procedure
@@ -734,7 +734,7 @@ PSK-based resumption using PSKs established via the NewSessionTicket mechanism
 defined in {{TLS}}.
 
 EKU provides post-compromise recovery for the TLS connection in which it is performed.
-The recovery guarantees depend on the assumed compromise model. In typical deployment
+The recovery guarantees depend on the threat model (see {{threat-model}}). In typical deployment
 environments, PSKs established via the NewSessionTicket mechanism are generated and
 reside in memory within the rich operating system. Although such PSKs may subsequently
 be stored in secure storage, they are exposed during this initial processing window,
@@ -806,7 +806,7 @@ Note that each successful Extended Key Update invalidates all previous
 SSLKEYLOGFILE secrets including past iterations of `CLIENT_TRAFFIC_SECRET_`,
 `SERVER_TRAFFIC_SECRET_` and `EXPORTER_SECRET_`.
 
-# Exporter
+# Exporter {#exporter}
 
 ## Post-Compromise Security for the Initial Exporter Secret
 
@@ -900,7 +900,7 @@ secret, as described in Section 3.3.2 of {{!RFC3711}}.
 
 EKU provides fresh traffic secrets, but EKU alone does not authenticate that both endpoints
 derived the same updated keys. An attacker that temporarily compromises an endpoint
-may later act as a person-in-the-middle attacker capable of interfering with the EKU exchange.
+may later act as a person-in-the-middle attacker capable of interfering with the EKU exchange (see {{threat-model}}).
 Such an attacker can cause the peers to transition to divergent traffic secrets without detection,
 but cannot compromise the endpoint to derive secrets after the new epoch is established.
 TLS 1.3 provides two mechanisms that can detect such divergence, each with a different scope.
@@ -1000,41 +1000,62 @@ exchanges.
 
 This section discusses additional security and operational aspects introduced by the Extended Key Update mechanism. All security considerations of TLS 1.3 {{TLS}} and DTLS 1.3 {{!DTLS=RFC9147}} continue to apply.
 
-## Scope of Key Compromise {#scope}
+## Threat Model {#threat-model}
 
-Extended Key Update (EKU) assumes a transient compromise of an endpoint, in
-which the attacker obtains the keying material held by that endpoint for the connection,
-including the current application traffic secrets and the values retained for deriving
-subsequent secrets, but not the long-term private key. It does not address a persistent
-attacker on the device with ongoing access to key material.
-The EKU procedure does not rely on long-term private keys, which may be stored in a
-secure element (e.g., a Hardware Security Module (HSM)) or within the rich OS.
-Moreover, in security‑critical scenarios, these long‑term private keys are typically
-stored separately from the primary secret or the traffic keys.
+We assume that the adversary has the following capabilities:
 
-Two threat scenarios are relevant:
+* Network attacker: The adversary has full control over the network
+  between the endpoints. They can read, modify, inject, drop, delay, and
+  reorder messages, including EKU messages. This is the same
+  attacker model assumed by TLS 1.3 (see {{Appendix F of TLS}}).
 
-1. The long-term private key remains secure, while application traffic keys in the
-rich operating system are temporarily exposed. EKU addresses this case for the current
-TLS connection.
+* Transient endpoint compromise: For a limited period of time, the adversary
+  can read the memory of one or both endpoints. During this period it obtains
+  all keying material held by that endpoint for the connection, including the
+  current application traffic secrets and keys, the exporter secrets, the
+  value retained for deriving main_secret_N+1, transcript_hash_N, any ephemeral
+  key exchange material in use, any PSKs established via the
+  NewSessionTicket mechanism. After the compromise ends, the adversary
+  retains all keying material obtained but has no access to ephemeral key
+  exchange material generated afterwards (see {{pcs}}).
 
-2. The long-term private key in the rich OS is compromised. Against a passive
-attacker, EKU still protects the current TLS connection by updating the main secret
-and traffic keys, and future TLS connections remain protected by their (EC)DHE key
-exchange. An active attacker, in contrast, can use the stolen private key to
-impersonate the endpoint in future TLS connections.
+The security guarantees of the Extended Key Update depend on the time of compromise:
 
-Extended Key Update can restore confidentiality only if the attacker no longer
-has access to either endpoint. An active attacker that holds the current
-application traffic keys during the update can act as a person-in-the-middle,
-run a separate EKU exchange with each endpoint, and so keep control of the
-connection. EKU alone does not reveal this. The interference is detected only if,
-after the update, an endpoint authenticates to the other endpoint using
-Post-Handshake Certificate-Based Client Authentication or Exported Authenticators,
-as described in {{exported}}. In both mechanisms, the CertificateVerify message is
-signed with a private key the attacker does not hold (see {{threat-model}}), so the endpoint validating it
-detects the interference. With Post-Handshake Certificate-Based Client
-Authentication, this is only the server.
+1. If compromise ends before an Extended Key Update starts, and the adversary
+   does not interfere with the exchange, then the adversary cannot derive the
+   traffic keys and exporter secrets established by that Extended Key
+   Update.
+
+2. If the adversary uses keying material obtained during the compromise to act
+   as a person-in-the-middle attacker during an Extended Key Update, then security
+   cannot be restored, but the interference may be detected using the
+   mechanisms described in {{exported}}, which authenticate the update with
+   the long-term private key.
+
+As a corollary, PSKs established via the NewSessionTicket mechanism that are
+obtained during the compromise allow the adversary to establish new
+connections, which no Extended Key Update on the original connection can
+protect. For this reason, resumption is disabled when EKU is enabled (see
+{{key_update}}).
+
+The following are out of scope:
+
+* An adversary with ongoing access to keying
+  material on an endpoint, also called persistent adversary.
+
+* Compromise of a long-term private key. An adversary holding it can
+  impersonate the endpoint in future TLS connections and interfere with an
+  Extended Key Update without detection (see {{exported}}).
+
+* Resource exhaustion by a misbehaving peer, which is addressed in {{dos}}.
+
+## Post-Compromise Security {#pcs}
+
+Under the threat model described in {{threat-model}}, Extended Key Update
+provides post-compromise security for long-lived TLS sessions.
+To ensure post-compromise security guarantees each update MUST use freshly generated
+ephemeral key exchange material. Implementations MUST NOT reuse ephemeral key
+exchange material across updates or across TLS sessions.
 
 If a compromise occurs before the handshake completes, the ephemeral key exchange,
 client_handshake_traffic_secret, server_handshake_traffic_secret, and the initial
@@ -1044,15 +1065,7 @@ client_/server_application_traffic_secret can be decrypted until the Extended Ke
 Update procedure completes. The Extended Key Update procedure derives fresh
 application_traffic_secrets from a new ephemeral key exchange.
 
-## Post-Compromise Security
-
-Under the compromise model described in this document, Extended Key Update
-provides post-compromise security for long-lived TLS sessions.
-To ensure post-compromise security guarantees each update MUST use freshly generated
-ephemeral key exchange material. Implementations MUST NOT reuse ephemeral key
-exchange material across updates or across TLS sessions.
-
-## Denial-of-Service (DoS)
+## Denial-of-Service (DoS) {#dos}
 
 The Extended Key Update mechanism increases computational and state-management overhead. A malicious peer could attempt to exhaust CPU or memory resources by initiating excessive update requests.
 
@@ -1409,13 +1422,13 @@ APP acceptance rule (receiver): accept if e == rx or (retain_old && e == old_rx)
 ~~~
 
 
-# Overview of Security Goals
+# Overview of Security Goals {#security-goals}
 
 A complete security analysis of the EKU is outside the scope of this document. This appendix provides an informal description of the primary security goals that EKU is designed to achieve.
 
 ## Post-Compromise Security (PCS)
 
-Extended Key Update supports post-compromise security under the assumptions described in {{scope}}. If an attacker temporarily compromises an endpoint and obtains the traffic keys in use before an Extended Key Update takes place, but the compromise does not persist during and after the EKU completes, the attacker cannot derive the new keying material established by EKU. This property follows from the use of fresh ephemeral key exchange material during each Extended Key Update. Compromise of prior traffic keys does not suffice to derive the new traffic keys. As a result, confidentiality of application data encrypted after the Extended Key Update is preserved even if the earlier traffic keys were exposed.
+Extended Key Update supports post-compromise security under the assumptions described in {{threat-model}}. If an attacker temporarily compromises an endpoint and obtains the traffic keys in use before an Extended Key Update takes place, but the compromise does not persist during and after the EKU completes, the attacker cannot derive the new keying material established by EKU. This property follows from the use of fresh ephemeral key exchange material during each Extended Key Update. Compromise of prior traffic keys does not suffice to derive the new traffic keys. As a result, confidentiality of application data encrypted after the Extended Key Update is preserved even if the earlier traffic keys were exposed.
 
 ## Key Freshness and Cryptographic Independence
 
