@@ -179,9 +179,8 @@ For terminology regarding traditional and PQ/T hybrid algorithms please
 see {{?RFC9794}}.
 
 In this document, we use the term post-compromise security, as defined in
-{{CCG16}}. We assume that an adversary may obtain
-access to the application traffic keys. The threat model is described in
-{{threat-model}}.
+{{CCG16}}. The threat model described in {{threat-model}} assumes that an
+adversary may obtain access to the application traffic keys.
 
 Unless otherwise specified, all references to traffic keys in this document
 refer to application traffic keys and because the Extended Key Update procedure
