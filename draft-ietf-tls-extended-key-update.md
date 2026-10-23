@@ -1017,15 +1017,9 @@ We assume that the adversary has the following capabilities:
   key exchange material in use, any PSKs established via the
   NewSessionTicket mechanism, and the long-term private keys used for
   authentication. Implications of a compromised long-term private key are
-  discussed in {{scope}}.
-
-The following assumption is made:
-
-* The compromise ends at some point. After that, the adversary no longer has
-  access to the endpoint, but it keeps all keying material obtained during
-  the compromise and retains its network capabilities. Consequently,
-  ephemeral key exchange material generated after the compromise has ended
-  is not available to the adversary (see {{pcs}}).
+  discussed in {{scope}}. After the compromise ends, the adversary retains
+  all keying material obtained but has no access to ephemeral key exchange
+  material generated afterwards (see {{pcs}}).
 
 The security guarantees of the Extended Key Update depend on the time of compromise:
 
