@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2026-10-15T03:51:49.478875+00:00",
+  "timestamp": "2026-10-25T03:52:11.127520+00:00",
   "repo": "tlswg/tls-key-update",
   "labels": [
     {
@@ -11202,6 +11202,32 @@
           "updatedAt": "2026-10-14T07:20:49Z"
         }
       ],
+      "reviews": []
+    },
+    {
+      "number": 135,
+      "id": "PR_kwDOMJPqLM8AAAABKP6kLg",
+      "title": "Add Threat Model section and minor adjustments",
+      "url": "https://github.com/tlswg/tls-key-update/pull/135",
+      "state": "OPEN",
+      "author": "nikstuckenbrock",
+      "authorAssociation": "NONE",
+      "assignees": [],
+      "labels": [],
+      "body": "As discussed previously, here are the following adjustments/additions to the draft:\n\n- Addition of a Threat Model section, which is referenced throughout the draft\n- Removal of the \"Scope of Key Compromise\" section, now covered by the Threat Model\n- Minor adjustments to wording\n\nLet me know what you think!",
+      "createdAt": "2026-10-23T12:29:56Z",
+      "updatedAt": "2026-10-23T12:30:40Z",
+      "baseRepository": "tlswg/tls-key-update",
+      "baseRefName": "main",
+      "baseRefOid": "cd55e21b678eab34bad630b421dc3a193e0c0baa",
+      "headRepository": "nikstuckenbrock/tls-key-update",
+      "headRefName": "main",
+      "headRefOid": "7fae99c816a5a55ef3d16807a152c3faa851a94c",
+      "closedAt": null,
+      "mergedAt": null,
+      "mergedBy": null,
+      "mergeCommit": null,
+      "comments": [],
       "reviews": []
     }
   ]
