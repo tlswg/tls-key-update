@@ -1045,7 +1045,7 @@ This section discusses additional security and operational aspects introduced by
 
 ## Threat Model {#threat-model}
 
-We assume that the adversary has the following capabilities:
+The specification assumes that the adversary has the following capabilities:
 
 * Network attacker: The adversary has full control over the network
   between the endpoints. They can read, modify, inject, drop, delay, and
