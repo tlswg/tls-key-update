@@ -1485,7 +1485,7 @@ Each Extended Key Update derives new traffic keys from ephemeral key exchange ma
 
 Once Extended Key Update has been negotiated for a session, peers rely exclusively on EKU rather than the standard TLS 1.3 KeyUpdate mechanism. Relying solely on Extended Key Update helps maintain PCS properties throughout the lifetime of the TLS session.
 
-## Detecting Divergent Key State
+## Detecting Divergent Key State {#divergent-keys}
 
 As described in {{exported}}, Post-Handshake Certificate-Based Client
 Authentication and Exported Authenticators can be used after an Extended Key Update to
