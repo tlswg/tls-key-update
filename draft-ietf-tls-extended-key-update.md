@@ -1502,8 +1502,17 @@ As described in {{exported}}, Post-Handshake Certificate-Based Client
 Authentication and Exported Authenticators can be used after an Extended Key Update to
 detect that the endpoints derived different keys. Detection relies on the
 CertificateVerify message, which is signed with a private key the attacker
-does not hold, so validation fails and the interference is revealed. This assurance is
-directional. Post-Handshake Authentication authenticates the client, so only the server
-detects the divergence. An Exported Authenticator authenticates the endpoint that
-produces it, so the peer validating it detects the divergence; assurance in both
-directions requires an authenticator from each endpoint.
+does not hold, so validation fails and the interference is revealed. The two
+mechanisms differ in which endpoint detects the divergence and in what happens
+afterwards.
+
+Post-Handshake Authentication authenticates only the client, so only the server
+detects the divergence. A server whose validation of the CertificateVerify or
+Finished message fails terminates the connection with a "decrypt_error" alert
+(see {{Section 4.4.3 of TLS}} and {{Section 4.4.4 of TLS}}). The client is not
+guaranteed to receive this alert, since a person-in-the-middle attacker can drop it.
+
+An Exported Authenticator authenticates the endpoint that produces it, so only the
+peer validating it detects the divergence; detection at both endpoints requires an
+authenticator from each endpoint. The result of validation is returned to the
+application (see Section 7.4 of {{!RFC9261}}), which alone decides how to react.
