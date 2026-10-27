@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2026-10-25T03:52:11.127520+00:00",
+  "timestamp": "2026-10-27T04:17:21.294835+00:00",
   "repo": "tlswg/tls-key-update",
   "labels": [
     {
@@ -11216,7 +11216,7 @@
       "labels": [],
       "body": "As discussed previously, here are the following adjustments/additions to the draft:\n\n- Addition of a Threat Model section, which is referenced throughout the draft\n- Removal of the \"Scope of Key Compromise\" section, now covered by the Threat Model\n- Minor adjustments to wording\n\nLet me know what you think!",
       "createdAt": "2026-10-23T12:29:56Z",
-      "updatedAt": "2026-10-23T12:30:40Z",
+      "updatedAt": "2026-10-26T14:11:25Z",
       "baseRepository": "tlswg/tls-key-update",
       "baseRefName": "main",
       "baseRefOid": "cd55e21b678eab34bad630b421dc3a193e0c0baa",
@@ -11228,7 +11228,76 @@
       "mergedBy": null,
       "mergeCommit": null,
       "comments": [],
-      "reviews": []
+      "reviews": [
+        {
+          "id": "PRR_kwDOMJPqLM8AAAABUO-I-A",
+          "commit": {
+            "abbreviatedOid": "7fae99c"
+          },
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2026-10-26T13:38:56Z",
+          "updatedAt": "2026-10-26T14:11:24Z",
+          "comments": [
+            {
+              "originalPosition": 90,
+              "body": "```suggestion\nThe specification assumes that the adversary has the following capabilities:\n```",
+              "createdAt": "2026-10-26T13:38:57Z",
+              "updatedAt": "2026-10-26T14:11:24Z"
+            },
+            {
+              "originalPosition": 88,
+              "body": "Follow RFC 9846. Move the Threat Model to the appendix, next to Overview of Security Goals. The PCS guarantee is stated twice, in the Threat Model and in the PCS subsection of Security Goals, and the second copy omits the person-in-the-middle condition. Keep it in the Threat Model and have the PCS subsection reference it.",
+              "createdAt": "2026-10-26T13:51:10Z",
+              "updatedAt": "2026-10-26T14:11:24Z"
+            },
+            {
+              "originalPosition": 102,
+              "body": "The spec disables NewSessionTicket mechanism. Remove it, and end the list with \u201cand any ephemeral key exchange material in use\u201d.",
+              "createdAt": "2026-10-26T14:00:25Z",
+              "updatedAt": "2026-10-26T14:18:17Z"
+            },
+            {
+              "originalPosition": 6,
+              "body": "```suggestion\npost-handshake authentication is used, and by each endpoint that validates an Exported Authenticator\n```",
+              "createdAt": "2026-10-26T14:05:48Z",
+              "updatedAt": "2026-10-26T14:16:49Z"
+            },
+            {
+              "originalPosition": 7,
+              "body": "```suggestion\nfrom its peer.\n```",
+              "createdAt": "2026-10-26T14:06:04Z",
+              "updatedAt": "2026-10-26T14:11:24Z"
+            },
+            {
+              "originalPosition": 116,
+              "body": "```suggestion\n   cannot be restored, but the interference is detected if one of the \n```",
+              "createdAt": "2026-10-26T14:07:38Z",
+              "updatedAt": "2026-10-26T14:11:24Z"
+            },
+            {
+              "originalPosition": 117,
+              "body": "```suggestion\n   mechanisms described in {{exported}} is used. These mechanisms authenticate the update with\n```",
+              "createdAt": "2026-10-26T14:07:51Z",
+              "updatedAt": "2026-10-26T14:20:49Z"
+            },
+            {
+              "originalPosition": 93,
+              "body": "```suggestion\n  between the endpoints. It can read, modify, inject, drop, delay, and\n```",
+              "createdAt": "2026-10-26T14:08:19Z",
+              "updatedAt": "2026-10-26T14:11:24Z"
+            },
+            {
+              "originalPosition": 120,
+              "body": "Delete the corollary paragraph; the Resumption section already covers it.",
+              "createdAt": "2026-10-26T14:10:35Z",
+              "updatedAt": "2026-10-26T14:11:24Z"
+            }
+          ]
+        }
+      ]
     }
   ]
 }
