@@ -1046,54 +1046,17 @@ Update was negotiated.
 
 This section discusses additional security and operational aspects introduced by the Extended Key Update mechanism. All security considerations of TLS 1.3 {{TLS}} and DTLS 1.3 {{!DTLS=RFC9147}} continue to apply.
 
-## Threat Model {#threat-model}
+In addition, the following appendices cover security aspects of Extended Key Update:
 
-The specification assumes that the adversary has the following capabilities:
+* {{threat-model}} describes the capabilities assumed for the adversary,
+  what security guarantees Extended Key Update offers depending on when a compromised
+  endpoint recovers, and which threats this document does not address.
 
-* Network attacker: The adversary has full control over the network
-  between the endpoints. It can read, modify, inject, drop, delay, and
-  reorder messages, including EKU messages. This is the same
-  attacker model assumed by TLS 1.3 (see {{Appendix F of TLS}}).
-
-* Transient endpoint compromise: For a limited period of time, the adversary
-  can read the memory of one or both endpoints. During this period it obtains
-  all keying material held by that endpoint for the connection, including the
-  current application traffic secrets and keys, the exporter secrets, the
-  value retained for deriving main_secret_N+1, transcript_hash_N, any ephemeral
-  key exchange material in use, any PSKs established via the
-  NewSessionTicket mechanism. After the compromise ends, the adversary
-  retains all keying material obtained but has no access to ephemeral key
-  exchange material generated afterwards (see {{pcs}}).
-
-The security guarantees of the Extended Key Update depend on the time of compromise:
-
-1. If compromise ends before an Extended Key Update starts, and the adversary
-   does not interfere with the exchange, then the adversary cannot derive the
-   traffic keys and exporter secrets established by that Extended Key
-   Update.
-
-2. If the adversary uses keying material obtained during the compromise to act
-   as a person-in-the-middle attacker during an Extended Key Update, then security
-   cannot be restored, but the interference may be detected using the
-   mechanisms described in {{exported}}, which authenticate the update with
-   the long-term private key.
-
-As a corollary, PSKs established via the NewSessionTicket mechanism that are
-obtained during the compromise allow the adversary to establish new
-connections, which no Extended Key Update on the original connection can
-protect. For this reason, resumption is disabled when EKU is enabled (see
-{{key_update}}).
-
-The following are out of scope:
-
-* An adversary with ongoing access to keying
-  material on an endpoint, also called persistent adversary.
-
-* Compromise of a long-term private key. An adversary holding it can
-  impersonate the endpoint in future TLS connections and interfere with an
-  Extended Key Update without detection (see {{exported}}).
-
-* Resource exhaustion by a misbehaving peer, which is addressed in {{dos}}.
+* {{security-goals}} provides an informal overview of the security goals of
+  Extended Key Update. These include post-compromise security, key freshness and
+  cryptographic independence of successive traffic keys, the exclusive use
+  of Extended Key Update over the standard KeyUpdate, and the detection
+  of divergent key state.
 
 ## Post-Compromise Security {#pcs}
 
