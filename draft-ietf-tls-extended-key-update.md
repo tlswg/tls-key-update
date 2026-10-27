@@ -101,7 +101,7 @@ performs a fresh execution of the key exchange negotiated during the initial han
 within an active session, thereby providing post-compromise security. Interference by
 a person-in-the-middle attacker during the exchange is detectable by the server when
 post-handshake authentication is used, and by each endpoint that validates an exported authenticators
-of their peer.
+from its peer.
 
 By forcing attackers to exfiltrate new key material repeatedly, this approach mitigates
 the risks associated with static key compromise. Regular renewal of session keys helps
