@@ -1048,7 +1048,7 @@ This section discusses additional security and operational aspects introduced by
 The specification assumes that the adversary has the following capabilities:
 
 * Network attacker: The adversary has full control over the network
-  between the endpoints. They can read, modify, inject, drop, delay, and
+  between the endpoints. It can read, modify, inject, drop, delay, and
   reorder messages, including EKU messages. This is the same
   attacker model assumed by TLS 1.3 (see {{Appendix F of TLS}}).
 
