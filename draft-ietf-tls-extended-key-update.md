@@ -1431,6 +1431,51 @@ APP acceptance rule (receiver): accept if e == rx or (retain_old && e == old_rx)
 ~~~
 
 
+# Threat Model {#threat-model}
+
+The specification assumes that the adversary has the following capabilities:
+
+* Network attacker: The adversary has full control over the network
+  between the endpoints. It can read, modify, inject, drop, delay, and
+  reorder messages, including EKU messages. This is the same
+  attacker model assumed by TLS 1.3 (see {{Appendix F of TLS}}).
+
+* Transient endpoint compromise: For a limited period of time, the adversary
+  can read the memory of one or both endpoints. During this period it obtains
+  all keying material held by that endpoint for the connection, including the
+  current application traffic secrets and keys, the exporter secrets, the
+  value retained for deriving main_secret_N+1, transcript_hash_N, and any
+  ephemeral key exchange material in use. After the compromise ends, the adversary
+  retains all keying material obtained but has no access to ephemeral key
+  exchange material generated afterwards (see {{pcs}}).
+
+The security guarantees of the Extended Key Update depend on the time of compromise:
+
+1. If compromise ends before an Extended Key Update starts, and the adversary
+   does not interfere with the exchange, then the adversary cannot derive the
+   traffic keys and exporter secrets established by that Extended Key
+   Update.
+
+2. If the adversary uses keying material obtained during the compromise to act
+   as a person-in-the-middle attacker during an Extended Key Update, then security
+   cannot be restored, but the interference is detected if one of the
+   mechanisms described in {{exported}} is used. These mechanisms authenticate
+   the update with the long-term private key. With Post-Handshake
+   Certificate-Based Client Authentication, only the server detects the
+   interference. With Exported Authenticators, each endpoint that validates
+   an authenticator from its peer detects it (see {{divergent-keys}}).
+
+The following are out of scope:
+
+* An adversary with ongoing access to keying
+  material on an endpoint, also called persistent adversary.
+
+* Compromise of a long-term private key. An adversary holding it can
+  impersonate the endpoint in future TLS connections and interfere with an
+  Extended Key Update without detection (see {{exported}}).
+
+* Resource exhaustion by a misbehaving peer, which is addressed in {{dos}}.
+
 # Overview of Security Goals {#security-goals}
 
 A complete security analysis of the EKU is outside the scope of this document. This appendix provides an informal description of the primary security goals that EKU is designed to achieve.
