@@ -922,8 +922,8 @@ secret, as described in Section 3.3.2 of {{!RFC3711}}.
 EKU provides fresh traffic secrets, but EKU alone does not authenticate that both endpoints
 derived the same updated keys. An attacker that temporarily compromises an endpoint
 may later act as a person-in-the-middle attacker capable of interfering with the EKU exchange (see {{threat-model}}).
-Such an attacker can cause the peers to transition to divergent traffic secrets without detection,
-but cannot compromise the endpoint to derive secrets after the new generation is established.
+Such an attacker can cause the peers to transition to divergent traffic secrets, and EKU itself
+provides no mechanism to detect this (see {{divergent-keys}}).
 TLS 1.3 provides two mechanisms that can detect such divergence, each with a different scope.
 Post-Handshake Certificate-Based Client Authentication authenticates the client to the server,
 and therefore allows only the server to detect divergence. Exported Authenticators {{!RFC9261}}
@@ -940,7 +940,7 @@ when the CertificateRequest is sent. The Finished message is computed using a
 MAC key derived from the Base Key of the new generation (client_application_traffic_secret_N+1).
 Because the CertificateVerify message is signed with the private key corresponding to the
 client's end-entity certificate over this Handshake Context, the server can detect divergent
-key state. Post-Handshake Authentication does not reauthenticate the server, so the client gains
+key state (see {{divergent-keys}}). Post-Handshake Authentication does not reauthenticate the server, so the client gains
 no equivalent assurance. A client that requires such assurance can request an Exported
 Authenticator from the server.
 
