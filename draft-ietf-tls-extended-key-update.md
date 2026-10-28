@@ -1459,11 +1459,9 @@ The security guarantees of the Extended Key Update depend on the time of comprom
 2. If the adversary uses keying material obtained during the compromise to act
    as a person-in-the-middle attacker during an Extended Key Update, then security
    cannot be restored, but the interference is detected if one of the
-   mechanisms described in {{exported}} is used. These mechanisms authenticate
-   the update with the long-term private key. With Post-Handshake
-   Certificate-Based Client Authentication, only the server detects the
-   interference. With Exported Authenticators, each endpoint that validates
-   an authenticator from its peer detects it (see {{divergent-keys}}).
+   mechanisms described in {{exported}} is used. Which endpoint detects the
+   interference depends on the mechanism used, as described in
+   {{divergent-keys}}.
 
 The following are out of scope:
 
