@@ -1468,7 +1468,7 @@ The security guarantees of the Extended Key Update depend on the time of comprom
 The following are out of scope:
 
 * An adversary with ongoing access to keying
-  material on an endpoint, also called persistent adversary.
+  material on an endpoint, also called a persistent adversary.
 
 * Compromise of a long-term private key. An adversary holding it can
   impersonate the endpoint in future TLS connections and interfere with an
