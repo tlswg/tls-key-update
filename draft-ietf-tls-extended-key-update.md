@@ -1509,7 +1509,7 @@ afterwards.
 Post-Handshake Authentication authenticates only the client, so only the server
 detects the divergence. A server whose validation of the CertificateVerify or
 Finished message fails terminates the connection with a "decrypt_error" alert
-(see {{Section 4.4.3 of TLS}} and {{Section 4.4.4 of TLS}}). The client is not
+(see {{Section 4.5.2 of TLS}} and {{Section 4.5.3 of TLS}}). The client is not
 guaranteed to receive this alert, since a person-in-the-middle attacker can drop it.
 
 An Exported Authenticator authenticates the endpoint that produces it, so only the
