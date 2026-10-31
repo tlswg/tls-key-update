@@ -22,10 +22,7 @@ risk in long-lived sessions, such as those found in industrial IoT or telecommun
 environments. 
        To address this, this specification defines an extended key update mechanism that
 performs a fresh execution of the key exchange negotiated during the initial handshake
-within an active session, thereby providing post-compromise security. Interference by
-a person-in-the-middle attacker during the exchange is detectable by the server when
-post-handshake authentication is used, and by both peers when exported authenticators
-are used. 
+within an active session to support post-compromise security. 
        By forcing attackers to exfiltrate new key material repeatedly, this approach mitigates
 the risks associated with static key compromise. Regular renewal of session keys helps
 contain the impact of such compromises. The extension is applicable to both TLS 1.3
@@ -43,11 +40,11 @@ and DTLS 1.3.
     Jinja2 3.1.6
     lxml 6.1.1
     natsort 8.4.0
-    platformdirs 4.12.2
+    platformdirs 4.13.4
     pycountry 24.6.1
     PyYAML 6.0.3
     requests 2.33.1
-    wcwidth 0.9.1
+    wcwidth 0.9.2
 -->
 <link href="draft-ietf-tls-extended-key-update.xml" rel="alternate" type="application/rfc+xml">
 <link href="#copyright" rel="license">
@@ -1067,7 +1064,7 @@ svg {
 </tr></thead>
 <tfoot><tr>
 <td class="left">Tschofenig, et al.</td>
-<td class="center">Expires 17 April 2027</td>
+<td class="center">Expires 4 May 2027</td>
 <td class="right">[Page]</td>
 </tr></tfoot>
 </table>
@@ -1083,12 +1080,12 @@ svg {
 <a href="https://www.rfc-editor.org/rfc/rfc9261" class="eref">9261</a>, <a href="https://www.rfc-editor.org/rfc/rfc9846" class="eref">9846</a> (if approved)</dd>
 <dt class="label-published">Published:</dt>
 <dd class="published">
-<time datetime="2026-10-14" class="published">14 October 2026</time>
+<time datetime="2026-10-31" class="published">31 October 2026</time>
     </dd>
 <dt class="label-intended-status">Intended Status:</dt>
 <dd class="intended-status">Standards Track</dd>
 <dt class="label-expires">Expires:</dt>
-<dd class="expires"><time datetime="2027-04-17">17 April 2027</time></dd>
+<dd class="expires"><time datetime="2027-05-04">4 May 2027</time></dd>
 <dt class="label-authors">Authors:</dt>
 <dd class="authors">
 <div class="author">
@@ -1128,10 +1125,7 @@ risk in long-lived sessions, such as those found in industrial IoT or telecommun
 environments.<a href="#section-abstract-2" class="pilcrow">¶</a></p>
 <p id="section-abstract-3">To address this, this specification defines an extended key update mechanism that
 performs a fresh execution of the key exchange negotiated during the initial handshake
-within an active session, thereby providing post-compromise security. Interference by
-a person-in-the-middle attacker during the exchange is detectable by the server when
-post-handshake authentication is used, and by both peers when exported authenticators
-are used.<a href="#section-abstract-3" class="pilcrow">¶</a></p>
+within an active session to support post-compromise security.<a href="#section-abstract-3" class="pilcrow">¶</a></p>
 <p id="section-abstract-4">By forcing attackers to exfiltrate new key material repeatedly, this approach mitigates
 the risks associated with static key compromise. Regular renewal of session keys helps
 contain the impact of such compromises. The extension is applicable to both TLS 1.3
@@ -1167,7 +1161,7 @@ and DTLS 1.3.<a href="#section-abstract-4" class="pilcrow">¶</a></p>
         time. It is inappropriate to use Internet-Drafts as reference
         material or to cite them other than as "work in progress."<a href="#section-boilerplate.1-3" class="pilcrow">¶</a></p>
 <p id="section-boilerplate.1-4">
-        This Internet-Draft will expire on 17 April 2027.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
+        This Internet-Draft will expire on 4 May 2027.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="copyright">
@@ -1276,7 +1270,7 @@ and DTLS 1.3.<a href="#section-abstract-4" class="pilcrow">¶</a></p>
             <p id="section-toc.1-1.14.1"><a href="#section-14" class="auto internal xref">14</a>. <a href="#name-security-considerations" class="internal xref">Security Considerations</a></p>
 <ul class="compact toc ulBare ulEmpty">
 <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.14.2.1">
-                <p id="section-toc.1-1.14.2.1.1"><a href="#section-14.1" class="auto internal xref">14.1</a>.  <a href="#name-scope-of-key-compromise" class="internal xref">Scope of Key Compromise</a></p>
+                <p id="section-toc.1-1.14.2.1.1"><a href="#section-14.1" class="auto internal xref">14.1</a>.  <a href="#name-threat-model" class="internal xref">Threat Model</a></p>
 </li>
               <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.14.2.2">
                 <p id="section-toc.1-1.14.2.2.1"><a href="#section-14.2" class="auto internal xref">14.2</a>.  <a href="#name-post-compromise-security" class="internal xref">Post-Compromise Security</a></p>
@@ -1379,7 +1373,7 @@ and DTLS 1.3.<a href="#section-abstract-4" class="pilcrow">¶</a></p>
       <h2 id="name-introduction">
 <a href="#section-1" class="section-number selfRef">1. </a><a href="#name-introduction" class="section-name selfRef">Introduction</a>
       </h2>
-<p id="section-1-1">The Transport Layer Security (TLS) 1.3 protocol provides forward secrecy by using
+<p id="section-1-1">The Transport Layer Security (TLS) 1.3 protocol <span>[<a href="#TLS" class="cite xref">TLS</a>]</span> provides forward secrecy by using
 fresh ephemeral key exchange during the initial handshake. In the base protocol,
 this key exchange is performed with (EC)DHE. By registering new NamedGroup codepoints,
 TLS specifications also define hybrid and post-quantum key exchange mechanisms for
@@ -1389,7 +1383,7 @@ adversaries who record encrypted traffic for later decryption.<a href="#section-
 <p id="section-1-2">TLS 1.3 also includes a KeyUpdate mechanism that allows traffic keys to be refreshed
 during an established session. However, this mechanism does not provide
 post-compromise security, as it applies only a key derivation function to the
-previous application traffic key as input. While this design is generally sufficient
+previous application traffic secret as input. While this design is generally sufficient
 for short-lived connections, it may present security limitations in scenarios where
 sessions persist for extended periods, such as in industrial IoT or telecommunications
 systems, where continuous availability is critical and session renegotiation or resumption
@@ -1439,14 +1433,15 @@ otherwise specified.<a href="#section-1-6" class="pilcrow">¶</a></p>
 "<span class="bcp14">MAY</span>", and "<span class="bcp14">OPTIONAL</span>" in this document are to be interpreted as
 described in BCP 14 <span>[<a href="#RFC2119" class="cite xref">RFC2119</a>]</span> <span>[<a href="#RFC8174" class="cite xref">RFC8174</a>]</span> when, and only when, they
 appear in all capitals, as shown here.<a href="#section-2-1" class="pilcrow">¶</a></p>
-<p id="section-2-2">To distinguish the key update procedure defined in <span>[<a href="#TLS" class="cite xref">TLS</a>]</span>
-from the key update procedure specified in this document, we use the terms
-"standard key update" and "extended key update", respectively.<a href="#section-2-2" class="pilcrow">¶</a></p>
+<p id="section-2-2">In this document, "standard key update" refers to the KeyUpdate procedure
+defined in <span><a href="https://rfc-editor.org/rfc/rfc9846#section-4.7.3" class="relref">Section 4.7.3</a> of [<a href="#TLS" class="cite xref">TLS</a>]</span>, with traffic secret derivation as
+specified in <span><a href="https://rfc-editor.org/rfc/rfc9846#section-7.2" class="relref">Section 7.2</a> of [<a href="#TLS" class="cite xref">TLS</a>]</span>. "Extended key update" refers to the
+procedure specified in this document.<a href="#section-2-2" class="pilcrow">¶</a></p>
 <p id="section-2-3">For terminology regarding traditional and PQ/T hybrid algorithms please
 see <span>[<a href="#RFC9794" class="cite xref">RFC9794</a>]</span>.<a href="#section-2-3" class="pilcrow">¶</a></p>
 <p id="section-2-4">In this document, we use the term post-compromise security, as defined in
-<span>[<a href="#CCG16" class="cite xref">CCG16</a>]</span>. We assume that an adversary may obtain
-access to the application traffic keys.<a href="#section-2-4" class="pilcrow">¶</a></p>
+<span>[<a href="#CCG16" class="cite xref">CCG16</a>]</span>. The threat model in <a href="#threat-model" class="auto internal xref">Section 14.1</a> describes the assumed
+compromise of connection state and the conditions for recovery.<a href="#section-2-4" class="pilcrow">¶</a></p>
 <p id="section-2-5">Unless otherwise specified, all references to traffic keys in this document
 refer to application traffic keys and because the Extended Key Update procedure
 occurs after the handshake phase has completed, no handshake traffic keys
@@ -1489,7 +1484,7 @@ handshake.<a href="#section-3-3" class="pilcrow">¶</a></p>
 <p id="section-4-1">If the client and server agree to use the extended key update mechanism,
 the standard key update <span class="bcp14">MUST NOT</span> be used. In this case, the extended key
 update fully replaces the standard key update functionality.<a href="#section-4-1" class="pilcrow">¶</a></p>
-<p id="section-4-2">Implementations that receive a classic <code>KeyUpdate</code> message after
+<p id="section-4-2">Implementations that receive a standard <code>KeyUpdate</code> message after
 successfully negotiating the Extended Key Update functionality <span class="bcp14">MUST</span>
 terminate the connection with an <code>"unexpected_message"</code> alert.<a href="#section-4-2" class="pilcrow">¶</a></p>
 <p id="section-4-3">The extended key update messages are signaled in a new handshake message named
@@ -2088,7 +2083,7 @@ messages <span class="bcp14">MUST</span> be protected using those keys.<a href="
 <a href="#section-8" class="section-number selfRef">8. </a><a href="#name-resumption" class="section-name selfRef">Resumption</a>
       </h2>
 <p id="section-8-1">EKU provides post-compromise recovery for the TLS connection in which it is performed.
-The recovery guarantees depend on the assumed compromise model. In typical deployment
+The recovery guarantees depend on the threat model in <a href="#threat-model" class="auto internal xref">Section 14.1</a>. In typical deployment
 environments, PSKs established via the NewSessionTicket mechanism are generated and
 reside in endpoint memory. Although such PSKs may subsequently
 be stored in secure storage, they are exposed during this initial processing window,
@@ -2280,13 +2275,13 @@ secret, as described in Section 3.3.2 of <span>[<a href="#RFC3711" class="cite x
       <h2 id="name-use-of-post-handshake-authe">
 <a href="#section-12" class="section-number selfRef">12. </a><a href="#name-use-of-post-handshake-authe" class="section-name selfRef">Use of Post-Handshake Authentication and Exported Authenticators with Extended Key Update</a>
       </h2>
-<p id="section-12-1">EKU provides fresh traffic secrets, but EKU alone does not authenticate that both endpoints
-derived the same updated keys. An attacker that temporarily compromises an endpoint
-may later act as a person-in-the-middle attacker capable of interfering with the EKU exchange.
-Such an attacker can cause the peers to transition to divergent traffic secrets without detection,
-but cannot compromise the endpoint to derive secrets after the new generation is established.
+<p id="section-12-1">EKU provides fresh traffic secrets, but after compromise of the connection state
+described in <a href="#threat-model" class="auto internal xref">Section 14.1</a>, EKU alone does not authenticate the exchange.
+An attacker that retains this state, including the value used to derive
+main_secret_N+1, can act as a person-in-the-middle during the exchange,
+cause the peers to derive divergent traffic secrets, and learn the new keys.
 TLS 1.3 provides two mechanisms that can detect such divergence, each with a different scope.
-Post-Handshake Certificate-Based Client Authentication authenticates the client to the server,
+Post-Handshake Certificate-Based Client Authentication (<span><a href="https://rfc-editor.org/rfc/rfc9846#section-4.3.6" class="relref">Section 4.3.6</a> of [<a href="#TLS" class="cite xref">TLS</a>]</span>) only authenticates the client to the server,
 and therefore allows only the server to detect divergence. Exported Authenticators <span>[<a href="#RFC9261" class="cite xref">RFC9261</a>]</span>
 authenticate the endpoint that produces the authenticator, so detection at both endpoints
 requires an authenticator in each direction.<a href="#section-12-1" class="pilcrow">¶</a></p>
@@ -2295,7 +2290,7 @@ requires an authenticator in each direction.<a href="#section-12-1" class="pilcr
         <h3 id="name-post-handshake-certificate-">
 <a href="#section-12.1" class="section-number selfRef">12.1. </a><a href="#name-post-handshake-certificate-" class="section-name selfRef">Post-Handshake Certificate-Based Client Authentication</a>
         </h3>
-<p id="section-12.1-1">When Post-Handshake Certificate-Based Client Authentication (Section 4.6.2 of <span>[<a href="#TLS" class="cite xref">TLS</a>]</span>) is
+<p id="section-12.1-1">When Post-Handshake Certificate-Based Client Authentication (<span><a href="https://rfc-editor.org/rfc/rfc9846#section-4.7.2" class="relref">Section 4.7.2</a> of [<a href="#TLS" class="cite xref">TLS</a>]</span>) is
 performed after an Extended Key Update (EKU) is complete, the Handshake Context used for
 the transcript hash is updated. It consists of transcript_hash_N+1 concatenated
 with the CertificateRequest message. Both endpoints use the Handshake Context in effect
@@ -2303,7 +2298,7 @@ when the CertificateRequest is sent. The Finished message is computed using a
 MAC key derived from the Base Key of the new generation (client_application_traffic_secret_N+1).
 Because the CertificateVerify message is signed with the private key corresponding to the
 client's end-entity certificate over this Handshake Context, the server can detect divergent
-key state. Post-Handshake Authentication does not reauthenticate the server, so the client gains
+key state. Post-Handshake Certificate-Based Client Authentication does not reauthenticate the server, so the client gains
 no equivalent assurance. A client that requires such assurance can request an Exported
 Authenticator from the server.<a href="#section-12.1-1" class="pilcrow">¶</a></p>
 </section>
@@ -2349,7 +2344,7 @@ secret for validation.<a href="#section-12.2-3" class="pilcrow">¶</a></p>
 <p id="section-12.3-1">EKU and Post-Handshake Authentication may both occur during the lifetime
 of a (D)TLS connection.  Post-Handshake Certificate-Based Client
 Authentication (PHA) is bound to the handshake transcript and computes
-its <code>Finished</code> message as specified in Section 4.4 of <span>[<a href="#TLS" class="cite xref">TLS</a>]</span>, using a key
+its <code>Finished</code> message as specified in <span><a href="https://rfc-editor.org/rfc/rfc9846#section-4.5.3" class="relref">Section 4.5.3</a> of [<a href="#TLS" class="cite xref">TLS</a>]</span>, using a key
 derived from the application traffic secret that is active at the time
 the <code>CertificateRequest</code> is sent. Therefore, specific ordering constraints
 are required to preserve cryptographic consistency.<a href="#section-12.3-1" class="pilcrow">¶</a></p>
@@ -2438,52 +2433,61 @@ Update was negotiated.<a href="#section-13-3" class="pilcrow">¶</a></p>
 <a href="#section-14" class="section-number selfRef">14. </a><a href="#name-security-considerations" class="section-name selfRef">Security Considerations</a>
       </h2>
 <p id="section-14-1">This section discusses additional security and operational aspects introduced by the Extended Key Update mechanism. All security considerations of TLS 1.3 <span>[<a href="#TLS" class="cite xref">TLS</a>]</span> and DTLS 1.3 <span>[<a href="#DTLS" class="cite xref">DTLS</a>]</span> continue to apply.<a href="#section-14-1" class="pilcrow">¶</a></p>
-<div id="scope">
+<div id="threat-model">
 <section id="section-14.1">
-        <h3 id="name-scope-of-key-compromise">
-<a href="#section-14.1" class="section-number selfRef">14.1. </a><a href="#name-scope-of-key-compromise" class="section-name selfRef">Scope of Key Compromise</a>
+        <h3 id="name-threat-model">
+<a href="#section-14.1" class="section-number selfRef">14.1. </a><a href="#name-threat-model" class="section-name selfRef">Threat Model</a>
         </h3>
-<p id="section-14.1-1">Extended Key Update (EKU) assumes a transient compromise of an endpoint, in
-which the attacker obtains the keying material held by that endpoint for the connection,
-including the current application traffic secrets and the values retained for deriving
-subsequent secrets, but not the long-term private key. It does not address a persistent
-attacker on the device with ongoing access to key material.
-The EKU procedure does not rely on long-term private keys, which may be stored in a
-secure element (e.g., a Hardware Security Module (HSM)) or in endpoint memory.
-Moreover, in security‑critical scenarios, these long‑term private keys are typically
-stored separately from the primary secret or the traffic keys.<a href="#section-14.1-1" class="pilcrow">¶</a></p>
-<p id="section-14.1-2">Two threat scenarios are relevant:<a href="#section-14.1-2" class="pilcrow">¶</a></p>
-<ol start="1" type="1" class="normal type-1" id="section-14.1-3">
-<li id="section-14.1-3.1">
-            <p id="section-14.1-3.1.1">The long-term private key remains secure, while application traffic keys in
-endpoint memory are temporarily exposed. EKU addresses this case for the current
-TLS connection.<a href="#section-14.1-3.1.1" class="pilcrow">¶</a></p>
+<p id="section-14.1-1">The specification assumes that the adversary has the following capabilities:<a href="#section-14.1-1" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-14.1-2.1">
+            <p id="section-14.1-2.1.1">Network attacker: The adversary has full control over the network
+between the endpoints. It can read, modify, inject, drop, delay, and
+reorder messages, including EKU messages. This is the same
+attacker model assumed by TLS 1.3 (see <span><a href="https://rfc-editor.org/rfc/rfc9846#appendix-F" class="relref">Appendix F</a> of [<a href="#TLS" class="cite xref">TLS</a>]</span>).<a href="#section-14.1-2.1.1" class="pilcrow">¶</a></p>
 </li>
-          <li id="section-14.1-3.2">
-            <p id="section-14.1-3.2.1">If the long-term private key in endpoint memory is compromised, EKU can still protect
-the current TLS connection by updating the main secret and traffic keys. However, all
-future TLS connections are at risk, as the attacker can impersonate the endpoint using
-the stolen private key.<a href="#section-14.1-3.2.1" class="pilcrow">¶</a></p>
+          <li class="normal" id="section-14.1-2.2">
+            <p id="section-14.1-2.2.1">Transient endpoint compromise: For a limited period of time, the adversary
+can read the memory of one or both endpoints. During this period it obtains
+all keying material held by that endpoint for the connection, including the
+current application traffic secrets and keys, the exporter secrets, the
+value retained for deriving main_secret_N+1, transcript_hash_N, and any
+ephemeral key exchange material in use. After the compromise ends, the adversary
+retains all keying material obtained but has no access to ephemeral key
+exchange material generated afterwards.<a href="#section-14.1-2.2.1" class="pilcrow">¶</a></p>
+</li>
+        </ul>
+<p id="section-14.1-3">The security guarantees of Extended Key Update depend on the time of compromise
+and the adversary's subsequent actions:<a href="#section-14.1-3" class="pilcrow">¶</a></p>
+<ol start="1" type="1" class="normal type-1" id="section-14.1-4">
+<li id="section-14.1-4.1">
+            <p id="section-14.1-4.1.1">If compromise ends before an Extended Key Update starts, and the adversary
+does not interfere with the exchange, then the adversary cannot derive the
+traffic keys and exporter secrets established by that Extended Key Update.<a href="#section-14.1-4.1.1" class="pilcrow">¶</a></p>
+</li>
+          <li id="section-14.1-4.2">
+            <p id="section-14.1-4.2.1">If the adversary uses keying material obtained during the compromise to act
+as a person-in-the-middle attacker during an Extended Key Update, then security
+cannot be restored. Such interference is detected by the endpoint that
+validates the peer's authentication using a mechanism described in <a href="#exported" class="auto internal xref">Section 12</a>.<a href="#section-14.1-4.2.1" class="pilcrow">¶</a></p>
 </li>
         </ol>
-<p id="section-14.1-4">Extended Key Update can restore confidentiality only if the attacker no longer
-has access to either peer. If an adversary retains access to current application traffic
-keys and can act as a person-in-the-middle attacker during the Extended Key Update, then the
-update cannot restore security. The interference is detectable as described in <a href="#exported" class="auto internal xref">Section 12</a>.<a href="#section-14.1-4" class="pilcrow">¶</a></p>
-<p id="section-14.1-5">If one of the mechanisms defined in <a href="#exported" class="auto internal xref">Section 12</a> is not used, the attacker can
-impersonate each endpoint, substitute EKU messages, and maintain control
-of the communication. When Post-Handshake Certificate-Based Client
-Authentication or the modified Exported Authenticator mechanism is used, the
-authentication messages include a CertificateVerify message signed with a private key
-the attacker does not hold. Any modification or substitution of EKU messages therefore
-becomes detectable.<a href="#section-14.1-5" class="pilcrow">¶</a></p>
-<p id="section-14.1-6">If a compromise occurs before the handshake completes, the ephemeral key exchange,
+<p id="section-14.1-5">The following are out of scope:<a href="#section-14.1-5" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-14.1-6.1">
+            <p id="section-14.1-6.1.1">An adversary with ongoing access to keying material on an endpoint,
+also called a persistent adversary.<a href="#section-14.1-6.1.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-14.1-6.2">
+            <p id="section-14.1-6.2.1">Compromise of a long-term private key. An adversary holding it can
+impersonate that endpoint in future TLS connections. The detection guarantees
+in <a href="#exported" class="auto internal xref">Section 12</a> rely on the corresponding private key remaining secure.<a href="#section-14.1-6.2.1" class="pilcrow">¶</a></p>
+</li>
+        </ul>
+<p id="section-14.1-7">If a compromise occurs before the handshake completes, the ephemeral key exchange,
 client_handshake_traffic_secret, server_handshake_traffic_secret, and the initial
-client_/server_application_traffic_secret could be exposed. In that case, only the
-initial handshake messages and the application data encrypted under the initial
-client_/server_application_traffic_secret can be decrypted until the Extended Key
-Update procedure completes. The Extended Key Update procedure derives fresh
-application_traffic_secrets from a new ephemeral key exchange.<a href="#section-14.1-6" class="pilcrow">¶</a></p>
+client_/server_application_traffic_secret could be exposed. Recovery then depends
+on the conditions stated above.<a href="#section-14.1-7" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="post-compromise-security">
@@ -2491,7 +2495,7 @@ application_traffic_secrets from a new ephemeral key exchange.<a href="#section-
         <h3 id="name-post-compromise-security">
 <a href="#section-14.2" class="section-number selfRef">14.2. </a><a href="#name-post-compromise-security" class="section-name selfRef">Post-Compromise Security</a>
         </h3>
-<p id="section-14.2-1">Under the compromise model described in this document, Extended Key Update
+<p id="section-14.2-1">Under the threat model described in <a href="#threat-model" class="auto internal xref">Section 14.1</a>, Extended Key Update
 provides post-compromise security for long-lived TLS sessions.
 To ensure post-compromise security guarantees each update <span class="bcp14">MUST</span> use freshly generated
 ephemeral key exchange material. Implementations <span class="bcp14">MUST NOT</span> reuse ephemeral key
@@ -2804,7 +2808,8 @@ Marten Seemann as well as the responsible area director Martin Duke.<a href="#ap
 <p id="appendix-A-3">Finally, we would like to thank David Benjamin, Joe Birr-Pixton,
 Matthijs van Duin, Scott Fluhrer, Dennis Jackson, Benjamin Kaduk,
 Ilari Liusvaara, Eric Rescorla, Rifaat Shekh-Yusef, Martin Thomson,
-Mathy Vanhoef, and Thom Wiggers for their review comments.<a href="#appendix-A-3" class="pilcrow">¶</a></p>
+Nik Stuckenbrock, Mathy Vanhoef, and Thom Wiggers for their review comments
+and contributions.<a href="#appendix-A-3" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="state-machines">
@@ -2990,7 +2995,7 @@ refer to the send and receive key variables defined in <a href="#term" class="au
               <p id="appendix-B.1.1-3.1.1">Fin message is sent under old keys.<a href="#appendix-B.1.1-3.1.1" class="pilcrow">¶</a></p>
 </li>
             <li class="normal" id="appendix-B.1.1-3.2">
-              <p id="appendix-B.1.1-3.2.1">If a classic KeyUpdate arrives (EKU negotiated), ABORT "unexpected_message".<a href="#appendix-B.1.1-3.2.1" class="pilcrow">¶</a></p>
+              <p id="appendix-B.1.1-3.2.1">If a standard KeyUpdate arrives (EKU negotiated), ABORT "unexpected_message".<a href="#appendix-B.1.1-3.2.1" class="pilcrow">¶</a></p>
 </li>
             <li class="normal" id="appendix-B.1.1-3.3">
               <p id="appendix-B.1.1-3.3.1">Crossed-requests: ignore the request with LOWER lexicographic key_exchange; if equal, abort.<a href="#appendix-B.1.1-3.3.1" class="pilcrow">¶</a></p>
@@ -3093,7 +3098,7 @@ refer to the send and receive key variables defined in <a href="#term" class="au
               <p id="appendix-B.1.2-3.1.1">Responder may defer Resp under load (no status reply), then must send it once resources are free.<a href="#appendix-B.1.2-3.1.1" class="pilcrow">¶</a></p>
 </li>
             <li class="normal" id="appendix-B.1.2-3.2">
-              <p id="appendix-B.1.2-3.2.1">If a classic KeyUpdate arrives (EKU negotiated), ABORT "unexpected_message".<a href="#appendix-B.1.2-3.2.1" class="pilcrow">¶</a></p>
+              <p id="appendix-B.1.2-3.2.1">If a standard KeyUpdate arrives (EKU negotiated), ABORT "unexpected_message".<a href="#appendix-B.1.2-3.2.1" class="pilcrow">¶</a></p>
 </li>
           </ul>
 </section>
@@ -3465,7 +3470,10 @@ refer to the send and receive key variables defined in <a href="#term" class="au
         <h3 id="name-post-compromise-security-pc">
 <a href="#appendix-C.1" class="section-number selfRef">C.1. </a><a href="#name-post-compromise-security-pc" class="section-name selfRef">Post-Compromise Security (PCS)</a>
         </h3>
-<p id="appendix-C.1-1">Extended Key Update supports post-compromise security under the assumptions described in <a href="#scope" class="auto internal xref">Section 14.1</a>. If an attacker temporarily compromises an endpoint and obtains the traffic keys in use before an Extended Key Update takes place, but the compromise does not persist during and after the EKU completes, the attacker cannot derive the new keying material established by EKU. This property follows from the use of fresh ephemeral key exchange material during each Extended Key Update. Compromise of prior traffic keys does not suffice to derive the new traffic keys. As a result, confidentiality of application data encrypted after the Extended Key Update is preserved even if the earlier traffic keys were exposed.<a href="#appendix-C.1-1" class="pilcrow">¶</a></p>
+<p id="appendix-C.1-1">Extended Key Update provides post-compromise security under the conditions
+and with the guarantees stated in <a href="#threat-model" class="auto internal xref">Section 14.1</a>. This property follows
+from the use of fresh ephemeral key exchange material during each
+Extended Key Update.<a href="#appendix-C.1-1" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="key-freshness-and-cryptographic-independence">
@@ -3504,11 +3512,15 @@ refer to the send and receive key variables defined in <a href="#term" class="au
 Authentication and Exported Authenticators can be used after an Extended Key Update to
 detect that the endpoints derived different keys. Detection relies on the
 CertificateVerify message, which is signed with a private key the attacker
-does not hold, so validation fails and the interference is revealed. This assurance is
-directional. Post-Handshake Authentication authenticates the client, so only the server
-detects the divergence. An Exported Authenticator authenticates the endpoint that
-produces it, so the peer validating it detects the divergence; assurance in both
-directions requires an authenticator from each endpoint.<a href="#appendix-C.4-1" class="pilcrow">¶</a></p>
+does not hold, so validation fails and the interference is revealed.<a href="#appendix-C.4-1" class="pilcrow">¶</a></p>
+<p id="appendix-C.4-2">If validation of a Post-Handshake Certificate-Based Client Authentication
+CertificateVerify or Finished message fails, the server terminates the connection
+with a "decrypt_error" alert (see <span><a href="https://rfc-editor.org/rfc/rfc9846#section-4.5.2" class="relref">Section 4.5.2</a> of [<a href="#TLS" class="cite xref">TLS</a>]</span> and
+<span><a href="https://rfc-editor.org/rfc/rfc9846#section-4.5.3" class="relref">Section 4.5.3</a> of [<a href="#TLS" class="cite xref">TLS</a>]</span>). The client is not guaranteed to receive this alert,
+since a person-in-the-middle attacker can drop it.<a href="#appendix-C.4-2" class="pilcrow">¶</a></p>
+<p id="appendix-C.4-3">For Exported Authenticators, the validation result is returned to the application
+(see Section 7.4 of <span>[<a href="#RFC9261" class="cite xref">RFC9261</a>]</span>), which decides how to react. Detection at both
+endpoints requires an authenticator from each endpoint, as described in <a href="#exported" class="auto internal xref">Section 12</a>.<a href="#appendix-C.4-3" class="pilcrow">¶</a></p>
 </section>
 </div>
 </section>

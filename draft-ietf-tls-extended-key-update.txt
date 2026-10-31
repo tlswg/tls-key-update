@@ -6,13 +6,13 @@ Transport Layer Security                                   H. Tschofenig
 Internet-Draft                                                   Siemens
 Updates: 9261, 9846 (if approved)                               T. Reddy
 Intended status: Standards Track                                   Nokia
-Expires: 17 April 2027                                          M. Tüxen
+Expires: 4 May 2027                                             M. Tüxen
                                        Münster Univ. of Applied Sciences
                                                                 S. Fries
                                                                  Siemens
                                                             Y. Rosomakho
                                                                  Zscaler
-                                                         14 October 2026
+                                                         31 October 2026
 
 
        Extended Key Update for Transport Layer Security (TLS) 1.3
@@ -34,11 +34,8 @@ Abstract
 
    To address this, this specification defines an extended key update
    mechanism that performs a fresh execution of the key exchange
-   negotiated during the initial handshake within an active session,
-   thereby providing post-compromise security.  Interference by a
-   person-in-the-middle attacker during the exchange is detectable by
-   the server when post-handshake authentication is used, and by both
-   peers when exported authenticators are used.
+   negotiated during the initial handshake within an active session to
+   support post-compromise security.
 
    By forcing attackers to exfiltrate new key material repeatedly, this
    approach mitigates the risks associated with static key compromise.
@@ -72,7 +69,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 17 April 2027.
+   This Internet-Draft will expire on 4 May 2027.
 
 Copyright Notice
 
@@ -115,7 +112,7 @@ Table of Contents
        12.3.2.  Exported Authenticators
    13. Deployment Considerations
    14. Security Considerations
-     14.1.  Scope of Key Compromise
+     14.1.  Threat Model
      14.2.  Post-Compromise Security
      14.3.  Denial-of-Service (DoS)
      14.4.  Operational Guidance
@@ -145,11 +142,11 @@ Table of Contents
 
 1.  Introduction
 
-   The Transport Layer Security (TLS) 1.3 protocol provides forward
-   secrecy by using fresh ephemeral key exchange during the initial
-   handshake.  In the base protocol, this key exchange is performed with
-   (EC)DHE.  By registering new NamedGroup codepoints, TLS
-   specifications also define hybrid and post-quantum key exchange
+   The Transport Layer Security (TLS) 1.3 protocol [TLS] provides
+   forward secrecy by using fresh ephemeral key exchange during the
+   initial handshake.  In the base protocol, this key exchange is
+   performed with (EC)DHE.  By registering new NamedGroup codepoints,
+   TLS specifications also define hybrid and post-quantum key exchange
    mechanisms for the same purpose.  This ensures that encrypted
    communication remains confidential even if an attacker later obtains
    a party's long-term private key, protecting against passive
@@ -159,11 +156,12 @@ Table of Contents
    to be refreshed during an established session.  However, this
    mechanism does not provide post-compromise security, as it applies
    only a key derivation function to the previous application traffic
-   key as input.  While this design is generally sufficient for short-
-   lived connections, it may present security limitations in scenarios
-   where sessions persist for extended periods, such as in industrial
-   IoT or telecommunications systems, where continuous availability is
-   critical and session renegotiation or resumption is impractical.
+   secret as input.  While this design is generally sufficient for
+   short-lived connections, it may present security limitations in
+   scenarios where sessions persist for extended periods, such as in
+   industrial IoT or telecommunications systems, where continuous
+   availability is critical and session renegotiation or resumption is
+   impractical.
 
    Earlier versions of TLS supported session renegotiation, which
    allowed peers to negotiate fresh keying material, including
@@ -215,16 +213,18 @@ Table of Contents
    BCP 14 [RFC2119] [RFC8174] when, and only when, they appear in all
    capitals, as shown here.
 
-   To distinguish the key update procedure defined in [TLS] from the key
-   update procedure specified in this document, we use the terms
-   "standard key update" and "extended key update", respectively.
+   In this document, "standard key update" refers to the KeyUpdate
+   procedure defined in Section 4.7.3 of [TLS], with traffic secret
+   derivation as specified in Section 7.2 of [TLS].  "Extended key
+   update" refers to the procedure specified in this document.
 
    For terminology regarding traditional and PQ/T hybrid algorithms
    please see [RFC9794].
 
    In this document, we use the term post-compromise security, as
-   defined in [CCG16].  We assume that an adversary may obtain access to
-   the application traffic keys.
+   defined in [CCG16].  The threat model in Section 14.1 describes the
+   assumed compromise of connection state and the conditions for
+   recovery.
 
    Unless otherwise specified, all references to traffic keys in this
    document refer to application traffic keys and because the Extended
@@ -266,7 +266,7 @@ Table of Contents
    the extended key update fully replaces the standard key update
    functionality.
 
-   Implementations that receive a classic KeyUpdate message after
+   Implementations that receive a standard KeyUpdate message after
    successfully negotiating the Extended Key Update functionality MUST
    terminate the connection with an "unexpected_message" alert.
 
@@ -813,8 +813,8 @@ Table of Contents
 8.  Resumption
 
    EKU provides post-compromise recovery for the TLS connection in which
-   it is performed.  The recovery guarantees depend on the assumed
-   compromise model.  In typical deployment environments, PSKs
+   it is performed.  The recovery guarantees depend on the threat model
+   in Section 14.1.  In typical deployment environments, PSKs
    established via the NewSessionTicket mechanism are generated and
    reside in endpoint memory.  Although such PSKs may subsequently be
    stored in secure storage, they are exposed during this initial
@@ -1008,16 +1008,15 @@ Table of Contents
 12.  Use of Post-Handshake Authentication and Exported Authenticators
      with Extended Key Update
 
-   EKU provides fresh traffic secrets, but EKU alone does not
-   authenticate that both endpoints derived the same updated keys.  An
-   attacker that temporarily compromises an endpoint may later act as a
-   person-in-the-middle attacker capable of interfering with the EKU
-   exchange.  Such an attacker can cause the peers to transition to
-   divergent traffic secrets without detection, but cannot compromise
-   the endpoint to derive secrets after the new generation is
-   established.  TLS 1.3 provides two mechanisms that can detect such
-   divergence, each with a different scope.  Post-Handshake Certificate-
-   Based Client Authentication authenticates the client to the server,
+   EKU provides fresh traffic secrets, but after compromise of the
+   connection state described in Section 14.1, EKU alone does not
+   authenticate the exchange.  An attacker that retains this state,
+   including the value used to derive main_secret_N+1, can act as a
+   person-in-the-middle during the exchange, cause the peers to derive
+   divergent traffic secrets, and learn the new keys.  TLS 1.3 provides
+   two mechanisms that can detect such divergence, each with a different
+   scope.  Post-Handshake Certificate-Based Client Authentication
+   (Section 4.3.6 of [TLS]) only authenticates the client to the server,
    and therefore allows only the server to detect divergence.  Exported
    Authenticators [RFC9261] authenticate the endpoint that produces the
    authenticator, so detection at both endpoints requires an
@@ -1026,7 +1025,7 @@ Table of Contents
 12.1.  Post-Handshake Certificate-Based Client Authentication
 
    When Post-Handshake Certificate-Based Client Authentication
-   (Section 4.6.2 of [TLS]) is performed after an Extended Key Update
+   (Section 4.7.2 of [TLS]) is performed after an Extended Key Update
    (EKU) is complete, the Handshake Context used for the transcript hash
    is updated.  It consists of transcript_hash_N+1 concatenated with the
    CertificateRequest message.  Both endpoints use the Handshake Context
@@ -1036,9 +1035,10 @@ Table of Contents
    CertificateVerify message is signed with the private key
    corresponding to the client's end-entity certificate over this
    Handshake Context, the server can detect divergent key state.  Post-
-   Handshake Authentication does not reauthenticate the server, so the
-   client gains no equivalent assurance.  A client that requires such
-   assurance can request an Exported Authenticator from the server.
+   Handshake Certificate-Based Client Authentication does not
+   reauthenticate the server, so the client gains no equivalent
+   assurance.  A client that requires such assurance can request an
+   Exported Authenticator from the server.
 
 12.2.  Exported Authenticators
 
@@ -1082,7 +1082,7 @@ Table of Contents
    EKU and Post-Handshake Authentication may both occur during the
    lifetime of a (D)TLS connection.  Post-Handshake Certificate-Based
    Client Authentication (PHA) is bound to the handshake transcript and
-   computes its Finished message as specified in Section 4.4 of [TLS],
+   computes its Finished message as specified in Section 4.5.3 of [TLS],
    using a key derived from the application traffic secret that is
    active at the time the CertificateRequest is sent.  Therefore,
    specific ordering constraints are required to preserve cryptographic
@@ -1158,63 +1158,61 @@ Table of Contents
    considerations of TLS 1.3 [TLS] and DTLS 1.3 [DTLS] continue to
    apply.
 
-14.1.  Scope of Key Compromise
+14.1.  Threat Model
 
-   Extended Key Update (EKU) assumes a transient compromise of an
-   endpoint, in which the attacker obtains the keying material held by
-   that endpoint for the connection, including the current application
-   traffic secrets and the values retained for deriving subsequent
-   secrets, but not the long-term private key.  It does not address a
-   persistent attacker on the device with ongoing access to key
-   material.  The EKU procedure does not rely on long-term private keys,
-   which may be stored in a secure element (e.g., a Hardware Security
-   Module (HSM)) or in endpoint memory.  Moreover, in security-critical
-   scenarios, these long-term private keys are typically stored
-   separately from the primary secret or the traffic keys.
+   The specification assumes that the adversary has the following
+   capabilities:
 
-   Two threat scenarios are relevant:
+   *  Network attacker: The adversary has full control over the network
+      between the endpoints.  It can read, modify, inject, drop, delay,
+      and reorder messages, including EKU messages.  This is the same
+      attacker model assumed by TLS 1.3 (see Appendix F of [TLS]).
 
-   1.  The long-term private key remains secure, while application
-       traffic keys in endpoint memory are temporarily exposed.  EKU
-       addresses this case for the current TLS connection.
+   *  Transient endpoint compromise: For a limited period of time, the
+      adversary can read the memory of one or both endpoints.  During
+      this period it obtains all keying material held by that endpoint
+      for the connection, including the current application traffic
+      secrets and keys, the exporter secrets, the value retained for
+      deriving main_secret_N+1, transcript_hash_N, and any ephemeral key
+      exchange material in use.  After the compromise ends, the
+      adversary retains all keying material obtained but has no access
+      to ephemeral key exchange material generated afterwards.
 
-   2.  If the long-term private key in endpoint memory is compromised,
-       EKU can still protect the current TLS connection by updating the
-       main secret and traffic keys.  However, all future TLS
-       connections are at risk, as the attacker can impersonate the
-       endpoint using the stolen private key.
+   The security guarantees of Extended Key Update depend on the time of
+   compromise and the adversary's subsequent actions:
 
-   Extended Key Update can restore confidentiality only if the attacker
-   no longer has access to either peer.  If an adversary retains access
-   to current application traffic keys and can act as a person-in-the-
-   middle attacker during the Extended Key Update, then the update
-   cannot restore security.  The interference is detectable as described
-   in Section 12.
+   1.  If compromise ends before an Extended Key Update starts, and the
+       adversary does not interfere with the exchange, then the
+       adversary cannot derive the traffic keys and exporter secrets
+       established by that Extended Key Update.
 
-   If one of the mechanisms defined in Section 12 is not used, the
-   attacker can impersonate each endpoint, substitute EKU messages, and
-   maintain control of the communication.  When Post-Handshake
-   Certificate-Based Client Authentication or the modified Exported
-   Authenticator mechanism is used, the authentication messages include
-   a CertificateVerify message signed with a private key the attacker
-   does not hold.  Any modification or substitution of EKU messages
-   therefore becomes detectable.
+   2.  If the adversary uses keying material obtained during the
+       compromise to act as a person-in-the-middle attacker during an
+       Extended Key Update, then security cannot be restored.  Such
+       interference is detected by the endpoint that validates the
+       peer's authentication using a mechanism described in Section 12.
+
+   The following are out of scope:
+
+   *  An adversary with ongoing access to keying material on an
+      endpoint, also called a persistent adversary.
+
+   *  Compromise of a long-term private key.  An adversary holding it
+      can impersonate that endpoint in future TLS connections.  The
+      detection guarantees in Section 12 rely on the corresponding
+      private key remaining secure.
 
    If a compromise occurs before the handshake completes, the ephemeral
    key exchange, client_handshake_traffic_secret,
    server_handshake_traffic_secret, and the initial client_/
-   server_application_traffic_secret could be exposed.  In that case,
-   only the initial handshake messages and the application data
-   encrypted under the initial client_/server_application_traffic_secret
-   can be decrypted until the Extended Key Update procedure completes.
-   The Extended Key Update procedure derives fresh
-   application_traffic_secrets from a new ephemeral key exchange.
+   server_application_traffic_secret could be exposed.  Recovery then
+   depends on the conditions stated above.
 
 14.2.  Post-Compromise Security
 
-   Under the compromise model described in this document, Extended Key
-   Update provides post-compromise security for long-lived TLS sessions.
-   To ensure post-compromise security guarantees each update MUST use
+   Under the threat model described in Section 14.1, Extended Key Update
+   provides post-compromise security for long-lived TLS sessions.  To
+   ensure post-compromise security guarantees each update MUST use
    freshly generated ephemeral key exchange material.  Implementations
    MUST NOT reuse ephemeral key exchange material across updates or
    across TLS sessions.
@@ -1474,7 +1472,8 @@ Appendix A.  Acknowledgments
    Finally, we would like to thank David Benjamin, Joe Birr-Pixton,
    Matthijs van Duin, Scott Fluhrer, Dennis Jackson, Benjamin Kaduk,
    Ilari Liusvaara, Eric Rescorla, Rifaat Shekh-Yusef, Martin Thomson,
-   Mathy Vanhoef, and Thom Wiggers for their review comments.
+   Nik Stuckenbrock, Mathy Vanhoef, and Thom Wiggers for their review
+   comments and contributions.
 
 Appendix B.  State Machines
 
@@ -1559,7 +1558,7 @@ B.1.1.  Initiator State Machine
 
    *  Fin message is sent under old keys.
 
-   *  If a classic KeyUpdate arrives (EKU negotiated), ABORT
+   *  If a standard KeyUpdate arrives (EKU negotiated), ABORT
       "unexpected_message".
 
    *  Crossed-requests: ignore the request with LOWER lexicographic
@@ -1605,7 +1604,7 @@ B.1.2.  Responder State Machine
    *  Responder may defer Resp under load (no status reply), then must
       send it once resources are free.
 
-   *  If a classic KeyUpdate arrives (EKU negotiated), ABORT
+   *  If a standard KeyUpdate arrives (EKU negotiated), ABORT
       "unexpected_message".
 
 B.2.  DTLS 1.3 State Machines
@@ -1819,17 +1818,10 @@ Appendix C.  Overview of Security Goals
 
 C.1.  Post-Compromise Security (PCS)
 
-   Extended Key Update supports post-compromise security under the
-   assumptions described in Section 14.1.  If an attacker temporarily
-   compromises an endpoint and obtains the traffic keys in use before an
-   Extended Key Update takes place, but the compromise does not persist
-   during and after the EKU completes, the attacker cannot derive the
-   new keying material established by EKU.  This property follows from
-   the use of fresh ephemeral key exchange material during each Extended
-   Key Update.  Compromise of prior traffic keys does not suffice to
-   derive the new traffic keys.  As a result, confidentiality of
-   application data encrypted after the Extended Key Update is preserved
-   even if the earlier traffic keys were exposed.
+   Extended Key Update provides post-compromise security under the
+   conditions and with the guarantees stated in Section 14.1.  This
+   property follows from the use of fresh ephemeral key exchange
+   material during each Extended Key Update.
 
 C.2.  Key Freshness and Cryptographic Independence
 
@@ -1860,12 +1852,19 @@ C.4.  Detecting Divergent Key State
    Extended Key Update to detect that the endpoints derived different
    keys.  Detection relies on the CertificateVerify message, which is
    signed with a private key the attacker does not hold, so validation
-   fails and the interference is revealed.  This assurance is
-   directional.  Post-Handshake Authentication authenticates the client,
-   so only the server detects the divergence.  An Exported Authenticator
-   authenticates the endpoint that produces it, so the peer validating
-   it detects the divergence; assurance in both directions requires an
-   authenticator from each endpoint.
+   fails and the interference is revealed.
+
+   If validation of a Post-Handshake Certificate-Based Client
+   Authentication CertificateVerify or Finished message fails, the
+   server terminates the connection with a "decrypt_error" alert (see
+   Section 4.5.2 of [TLS] and Section 4.5.3 of [TLS]).  The client is
+   not guaranteed to receive this alert, since a person-in-the-middle
+   attacker can drop it.
+
+   For Exported Authenticators, the validation result is returned to the
+   application (see Section 7.4 of [RFC9261]), which decides how to
+   react.  Detection at both endpoints requires an authenticator from
+   each endpoint, as described in Section 12.
 
 Authors' Addresses
 
