@@ -525,6 +525,28 @@ In particular, a client acting as the EKU initiator can receive a
 `CertificateRequest` before the ACK. The handling of this case is specified
 in {{dtls-pha-wait-ack}}.
 
+Ignoring a `NewSessionTicket` as required in {{key_update}} suppresses
+its session-resumption effects only. The client MUST still apply the DTLS
+handshake sequencing and acknowledgment procedures to the message,
+including its fragments and retransmissions, as specified in
+{{Sections 5.2, 5.5, and 7 of DTLS}}. Ignoring the ticket MUST NOT prevent
+processing of subsequent handshake messages.
+
+If records carrying a `NewSessionTicket` arrive under the new receive
+epoch while the client is waiting for the ACK acknowledging
+`ExtendedKeyUpdate(key_update_finish)`, the client MUST defer acknowledgment
+of those records until it has processed that EKU ACK and updated its send
+keys and sending epoch in Step 7. This is a specific deferral of the ACK
+behavior described in {{Sections 7 and 7.1 of DTLS}}. The client MUST NOT
+acknowledge those records under the pre-update sending epoch or activate
+the new sending epoch early to acknowledge them. Receipt of the ticket
+MUST NOT be treated as an implicit acknowledgment of
+`ExtendedKeyUpdate(key_update_finish)`. Deferring the ticket's ACK MUST NOT
+suspend EKU retransmissions or prevent processing of the EKU ACK. Once
+Step 7 completes, the client acknowledges the ticket records according to
+the DTLS acknowledgment procedures without using or retaining the ticket
+for session resumption.
+
 The handshake framing uses a single `HandshakeType` for this message
 (see {{fig-dtls-handshake}}).
 
@@ -774,6 +796,19 @@ not prevent the use of previously issued PSKs.
 Accordingly, endpoints that enable EKU MUST disable resumption using PSKs established
 via the NewSessionTicket mechanism. `resumption_main_secret_N+1` is not
 derived for this reason in {{key-hierarchy}}.
+
+When this extension has been successfully negotiated, the server MUST NOT
+send `NewSessionTicket` messages on the connection. The client MUST silently
+ignore otherwise valid `NewSessionTicket` messages received on that connection
+and MUST NOT retain or use the tickets for session resumption. Receipt of
+such a message MUST NOT, by itself, cause the client to terminate the
+connection. Other applicable requirements for message validity and ordering
+remain in effect.
+
+For DTLS, ignoring a `NewSessionTicket` does not exempt it from handshake
+sequencing or acknowledgment. The client MUST follow the procedures in
+{{DTLSC}}, including deferring acknowledgment of new-epoch ticket records
+while awaiting the ACK for `ExtendedKeyUpdate(key_update_finish)`.
 
 # Post-Quantum Cryptography Considerations {#pqc-cons}
 
