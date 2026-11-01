@@ -457,13 +457,18 @@ Auth | {CertificateVerify}
 #  DTLS 1.3 Extended Key Update Procedure {#DTLSC}
 
 Unlike TLS 1.3, DTLS 1.3 implementations must take into account that handshake
-messages are not transmitted over a reliable transport protocol.
+messages are not transmitted over a reliable transport protocol. The responder
+updates its send keys only after receiving `ExtendedKeyUpdate(key_update_finish)`,
+which confirms that the initiator has derived the new keys. The initiator updates
+its send keys and sending epoch only after receiving an ACK that acknowledges
+`ExtendedKeyUpdate(key_update_finish)`. This ensures that a record sent by the
+initiator under the new keys also confirms receipt of that ACK, allowing the
+responder to stop retaining the old receive keys for EKU retransmissions.
 
 EKU messages MUST be transmitted reliably, like other DTLS handshake messages.
 If necessary, EKU messages MAY be fragmented as described in {{Section 5.5 of DTLS}}.
-Due to the possibility of an `ExtendedKeyUpdate` messages being
-lost and thereby preventing the sender of that message from updating its keying
-material, receivers MUST retain the pre-update keying material until receipt
+Due to the possibility of EKU messages or their acknowledgments being lost,
+receivers MUST retain the pre-update keying material until receipt
 and successful decryption of a message using the new keys.
 
 Due to packet loss and/or reordering, DTLS 1.3 peers MAY receive records from an
@@ -485,27 +490,155 @@ The exchange has the following steps:
    `ExtendedKeyUpdate(key_update_finish)`. The responder MAY defer
    sending a response if system load or resource constraints prevent immediate processing.
    In such cases, the responder MUST acknowledge receipt of the key_update_request with an ACK and, once
-   sufficient resources become available, retransmit the key_update_response until it is acknowledged by the
-   initiator. key_update_response and ACK message MAY be received out of order; a late ACK MUST be ignored and MUST NOT affect the extended key update state machine.
+   sufficient resources become available and the ordering requirements below
+   are satisfied, send the key_update_response and
+   retransmit it until acknowledged by the initiator. The responder MUST also
+   defer the response while earlier independent handshake transmissions remain
+   unacknowledged, as specified in {{dtls-handshake-ordering}}, and MUST
+   acknowledge the request while waiting. A late ACK for the request does not
+   change the EKU state after the corresponding response has been processed.
+   Other records covered by that ACK MUST still be handled according to the
+   DTLS acknowledgment procedures.
 
 1. On receipt of `ExtendedKeyUpdate(key_update_response)` the initiator derives a secret key based on the
    exchanged key shares. This message also serves as an implicit acknowledgment of the
    initiator's `ExtendedKeyUpdate(key_update_request)`, so no separate ACK is required. The initiator MUST
    update its receive keys and epoch value. The initiator MUST NOT defer derivation of the secrets.
 
-1. The initiator transmits an `ExtendedKeyUpdate(key_update_finish)` message. This message is subject to DTLS
-   retransmission until acknowledged.
+1. The initiator transmits an `ExtendedKeyUpdate(key_update_finish)` message
+   using its pre-update send keys and epoch. This message is subject to DTLS
+   retransmission until acknowledged. All retransmissions MUST use the same
+   epoch and keying material as the original transmission, as specified in
+   {{Section 4.2.1 of DTLS}}.
 
-1. The responder MUST acknowledge the received message by sending an ACK message.
+1. Upon receiving the initiator's `ExtendedKeyUpdate(key_update_finish)`,
+   the responder MUST update its send and receive keys and their epoch values.
+   This message implicitly acknowledges the corresponding
+   `ExtendedKeyUpdate(key_update_response)`.
 
-1. After the responder receives the initiator's `ExtendedKeyUpdate(key_update_finish)`,
-   the responder MUST update its send key and epoch value. With the receipt of
-   that message, the responder MUST also update its receive keys.
+1. The responder MUST acknowledge the received message by sending an ACK
+   protected with its updated send keys and epoch. While retaining the
+   pre-update receive keys, the responder MUST process and acknowledge
+   retransmissions of `ExtendedKeyUpdate(key_update_finish)`, including when
+   it has already initiated a subsequent PHA exchange.
 
-1.  On receipt of the ACK message, the initiator updates its send key and epoch
-    value. If this ACK is not received, the initiator re-transmits its
-    `ExtendedKeyUpdate(key_update_finish)` until ACK is received. The key update is
-    complete once this ACK is processed by the initiator.
+1. On receipt of an ACK protected with the responder's updated send keys that
+   acknowledges `ExtendedKeyUpdate(key_update_finish)`, the initiator MUST
+   update its send keys and sending epoch. Acknowledgment is determined from
+   the ACK's record numbers as specified in {{Section 7.2 of DTLS}}; the epoch
+   of the ACK alone is not sufficient. The initiator stops retransmitting
+   `ExtendedKeyUpdate(key_update_finish)` and the EKU exchange is locally
+   complete. Until this acknowledgment is received, the initiator MUST NOT
+   send any records using the new keys or sending epoch, including ACK
+   records, and MUST continue the DTLS retransmission procedure for
+   `ExtendedKeyUpdate(key_update_finish)`.
+
+The ordering and acknowledgment requirements in {{dtls-handshake-ordering}}
+and {{dtls-transition-acks}} apply throughout this exchange.
+
+## Handshake Ordering Across an EKU {#dtls-handshake-ordering}
+
+Before sending `ExtendedKeyUpdate(key_update_request)`, the initiator MUST
+wait until its earlier independent handshake transmissions have been
+acknowledged, explicitly or by the response defined for their respective
+exchange. The responder MUST satisfy the same requirement before sending
+`ExtendedKeyUpdate(key_update_response)`. If this delays the response, the
+responder acknowledges the request as specified in Step 2 of {{DTLSC}}.
+This requirement concerns acknowledgment of transmitted handshake messages,
+not completion of every operation they might request. In particular, an
+acknowledged `RequestConnectionId` need not already have been fulfilled by
+the delivery of new CIDs.
+
+A responder waiting for those earlier acknowledgments MUST also defer
+new independent handshake transmissions, subject to the PHA exception
+below. It continues retransmitting already outstanding messages.
+
+From sending its request until completing Step 7, the initiator MUST defer
+new independent handshake transmissions. From sending its response until
+receiving `ExtendedKeyUpdate(key_update_finish)` and updating its sending
+epoch, the responder MUST do likewise. The exception for completing a PHA
+exchange whose request crosses an EKU request is specified in
+{{pha-eku-ordering}}. Any handshake transmissions made for that exception
+MUST be acknowledged before the initiator sends EKU finish or the responder
+sends EKU response, respectively. Processing a crossed EKU request follows
+the EKU collision rules and is not blocked by these restrictions.
+
+`ExtendedKeyUpdate(key_update_finish)` is the initiator's last new
+handshake message in its pre-update sending epoch.
+`ExtendedKeyUpdate(key_update_response)` is the responder's last new
+handshake message in its pre-update sending epoch. An endpoint that receives
+a new handshake message in that epoch with a `message_seq` greater than
+the corresponding closing message MUST terminate the connection with an
+`unexpected_message` alert. Retransmissions and reordered earlier messages
+are distinguished using the DTLS handshake sequencing procedures and MUST
+NOT be treated as violations of this rule merely because they arrive later.
+EKU does not reset the handshake `message_seq` counter.
+
+These restrictions do not prohibit retransmissions, ACK records, or
+application data. Retransmissions MUST use the original epoch and keying
+material. An endpoint MUST continue processing ACKs and retransmissions
+needed to complete outstanding transmissions while waiting to send an EKU
+message. Explicit ACKs acknowledge only the records they identify; an ACK
+for an independent handshake message does not complete EKU unless it also
+acknowledges EKU finish as required by Step 7.
+
+## Acknowledgments During the Epoch Transition {#dtls-transition-acks}
+
+The new sending epoch at the initiator is not available for sending records
+until Step 7, even though the secrets have already been derived. The initiator
+can receive records under the new receive keys while waiting for this ACK.
+
+The initiator MUST defer explicit acknowledgment of handshake records
+received in the new epoch until it has processed the ACK for EKU finish and
+activated its new sending epoch. It MUST NOT acknowledge those records
+under the old sending epoch or activate the new sending epoch early to
+acknowledge them. This is a specific deferral of the ACK behavior described
+in {{Sections 7 and 7.1 of DTLS}}. Once Step 7 completes, outstanding
+acknowledgments are generated according to the DTLS procedures, including
+any applicable implicit acknowledgment by a responding flight. ACKs for EKU
+messages are sent after the handshake and are therefore protected, because
+{{Section 7 of DTLS}} requires the highest available sending epoch. An ACK
+record received in epoch 0 MUST NOT be treated as acknowledging an EKU
+message and MUST be silently discarded.
+
+Deferring acknowledgment does not necessarily defer message processing.
+Implementations MUST maintain the normal DTLS reassembly and handshake
+sequencing procedures. They MAY accept and sequence a message while
+buffering the operation it requests, provided they retain its contents and
+the context needed for subsequent processing. Operation-specific rules
+determine whether further processing must wait. For example, the client
+defers PHA processing of a new-epoch `CertificateRequest` as specified in
+{{dtls-pha-wait-ack}}. Application-layer operations, such as Exported
+Authenticators, instead follow the context-selection rules in
+{{post-handshake-context}} and do not generate DTLS handshake ACKs when
+carried in application data.
+
+Connection-ID processing is independent of the traffic-key transition.
+When a `NewConnectionId` with `cid_immediate` is processed, the new CID
+MUST be used as required by {{Section 9 of DTLS}}, including for subsequent
+EKU retransmissions that still use the old epoch and keys. Such records
+are newly protected with the appropriate header and record number. A CID
+change MUST NOT be treated as evidence that EKU finish has been acknowledged.
+CID lookup and retention of the old receive keys MUST allow the required
+EKU retransmissions to reach the appropriate connection state.
+
+Implementations MAY impose limits on buffering during the transition. If
+a message or fragment cannot be processed or retained, its record MAY be
+discarded without acknowledgment, allowing retransmission to recover it.
+Records whose handshake contents have been neither processed nor buffered
+MUST NOT be acknowledged. Reception during this transition alone MUST NOT
+be treated as an `unexpected_message` error; other message validity and
+ordering requirements remain in effect.
+
+Neither deferred processing nor deferred acknowledgments may suspend the
+EKU retransmission procedure or prevent processing of the ACK for EKU
+finish. The initiator MUST continue retransmitting finish under the old
+keys and epoch, and the responder MUST continue processing and acknowledging
+those retransmissions while retaining the old receive keys. Receipt of
+another new-epoch message MUST NOT be treated as an implicit acknowledgment
+of EKU finish.
+
+## Handshake Message Format
 
 If DTLS peers independently initiate the extended key update and the
 requests cross in flight, they are resolved as specified in {{TLSC}}.
@@ -596,14 +729,15 @@ Client                            Server
 
 [EKU(key_update_finish)]   -------->
 # Sender's Fin is tagged with OLD tx (3).
+# Initiator retains OLD tx until Fin is acknowledged.
+[C: tx=3, rx=4]                   [S: tx=3, rx=3]
 
-# Epoch switch point:
-# Step 6: responder bumps BOTH tx and rx on Fin-in:
+# Step 5: responder bumps BOTH tx and rx on Fin-in:
 [C: tx=3, rx=4]                   [S: tx=4, rx=4]
 
                            <-------- [ACK] (tag=new)
 
-# Step 7: initiator bumps SEND epoch on ACK-in:
+# Step 7: ACK of Fin stops retransmission and bumps SEND epoch.
 [C: tx=4, rx=4]                   [S: tx=4, rx=4]
 
 [Application Data]         -------->
@@ -626,7 +760,7 @@ the message transmission.
 | <------------ APP  | 3/3 -> 3/3     | 3/3 -> 3/3   |
 | req -------------> | 3/3 -> 3/3     | 3/3 -> 3/3   |
 | <------------ resp | 3/3 -> 3/4     | 3/3 -> 3/3   | <- step 3
-| Fin  ------------> | 3/4 -> 3/4     | 3/3 -> 4/4   | <- step 6
+| Fin  ------------> | 3/4 -> 3/4     | 3/3 -> 4/4   | <- step 5
 | <------------- ACK | 3/4 -> 4/4     | 4/4 -> 4/4   | <- step 7
 | APP -------------> | 4/4 -> 4/4     | 4/4 -> 4/4   |
 | <------------- APP | 4/4 -> 4/4     | 4/4 -> 4/4   |
@@ -759,6 +893,21 @@ Accordingly, endpoints that enable EKU MUST disable resumption using PSKs establ
 via the NewSessionTicket mechanism. `resumption_main_secret_N+1` is not
 derived for this reason in {{key-hierarchy}}.
 
+When this extension has been successfully negotiated, the server MUST NOT
+send `NewSessionTicket` messages on the connection. The client MUST silently
+ignore otherwise valid `NewSessionTicket` messages received on that connection
+and MUST NOT retain or use the tickets for session resumption. Receipt of
+such a message MUST NOT, by itself, cause the client to terminate the
+connection. Other applicable requirements for message validity and ordering
+remain in effect.
+
+For DTLS, ignoring a `NewSessionTicket` does not exempt it from handshake
+sequencing, reassembly, or acknowledgment, including for fragments and
+retransmissions. The client MUST follow {{dtls-transition-acks}}, including
+deferring acknowledgment of new-epoch ticket records while awaiting the
+ACK for `ExtendedKeyUpdate(key_update_finish)`. Ignoring a ticket MUST NOT
+prevent processing of subsequent handshake messages.
+
 # Post-Quantum Cryptography Considerations {#pqc-cons}
 
 The shared secret used by the Extended Key Update mechanism is derived according
@@ -824,23 +973,23 @@ exporter_secret is static for the lifetime of the connection and is not updated 
 
 A core design goal of this specification is not met if the exporter_secret does not change.
 Therefore, this document defines an exporter interface that derives a fresh exporter secret
-whenever new application traffic keys are updated through the EKU.
+whenever new application traffic keys are updated through the EKU. Prior to the first
+Extended Key Update, this interface uses an initial exporter secret, denoted
+exporter_secret_0.
 
-If the initial exporter secret for this new interface were identical to exporter_secret,
-then compromising exporter_secret at any point during the lifetime of the connection
-would enable an attacker to recompute all exporter outputs derived from it.
-This would break post-compromise security for exported keying material.
+If exporter_secret_0 were identical to exporter_secret, which is retained
+for the lifetime of the connection, a later compromise of exporter_secret
+would reveal all keying material exported under exporter_secret_0, even
+after exporter_secret_0 is discarded.
 
-Therefore, the initial exporter secret used by the exporter interface defined in
-this document, i.e., the exporter output available prior to the first Extended
-Key Update, MUST be distinct from the exporter_secret. This separation
+Therefore, exporter_secret_0 MUST be distinct from the exporter_secret. This separation
 ensures that compromise of the TLS exporter interface does not compromise outputs
 derived from the exporter interface defined in this document.
 
-Prior to the first Extended Key Update, the exporter interface provides an
-initial exporter secret, denoted exporter_secret_0. This secret is derived
-from the TLS main secret and the handshake transcript, but is cryptographically
-independent of the TLS exporter_secret. It is computed as follows:
+exporter_secret_0 is derived from the Main Secret and the handshake transcript. It uses
+the label "exporter eku" rather than "exp master", because "exp master" with the Main
+Secret yields the TLS exporter_secret. exporter_secret_N+1 uses "exp master" with
+main_secret_N+1 (see {{key-hierarchy}}). exporter_secret_0 is computed as follows:
 
 ~~~~
 exporter_secret_0 =
@@ -884,8 +1033,10 @@ asynchronous notification to the application indicating that:
   interface, so a subsequent Extended Key Update does not change the
   result.
 
-Applications are notified that a new generation is active only after the endpoint
-has completed the Extended Key Update exchange and switched to the new traffic keys.
+Applications are notified that a new exporter generation is active when
+EKU completes locally. This notification reports local availability. It
+does not establish that the peer has already completed EKU or that an
+earlier application operation has completed.
 
 * In TLS, the initiator triggers notification after Step 5 in {{TLSC}},
   and the responder triggers notification after Step 6 in {{TLSC}}.
@@ -899,20 +1050,29 @@ values as defined in {{Section 7.5 of TLS}}. The application conveys the
 generation it used to the peer, for example with the protected data, so that
 the peer derives the same EKM.
 
-To prevent desynchronization, the application will have to retain both the
-previous and the newly derived exporter secrets for a short period. For TLS,
-the previous exporter secret would be discarded once data derived from the
-new exporter has been successfully processed, and no records protected with
-the old exporter secret are expected to arrive. For DTLS, the previous exporter
-secret needs to be retained until the retention timer expires for the prior epoch,
-to allow for processing of packets that may arrive out of order.  The retention policy
-for exporter secrets is application-specific. For example, in DTLS-SRTP,
-the application might retain the previous exporter secret until its
-replay window no longer accepts packets protected with keys derived from that
-secret, as described in Section 3.3.2 of {{!RFC3711}}.
+The retention policy for exporter secrets and derived application contexts
+is application-specific and MUST satisfy {{post-handshake-context}}.
+An operation using an older exporter generation can remain outstanding
+after newer-generation data has been processed. Neither that event nor
+retirement of old DTLS record keys alone determines when the operation's
+exporter context may be discarded. Applications MUST bound retention and
+define how expired operations fail. For example, a DTLS-SRTP application
+might retain an older packet-protection context while its replay window
+still accepts packets protected with that context, as described in
+{{Section 3.3.2 of !RFC3711}}.
 
 
-# Use of Post-Handshake Authentication and Exported Authenticators with Extended Key Update {#exported}
+# Interaction with Post-Handshake Operations {#exported}
+
+EKU changes traffic secrets, exporter secrets, and the transcript context
+used by subsequent authentication. Operations that depend on that state
+need both consistent context selection and suitable ordering across the
+change. This section defines common requirements and illustrates them with
+Post-Handshake Certificate-Based Client Authentication (PHA), carried by
+the handshake protocol, and Exported Authenticators, carried by an
+application protocol. The additional DTLS transmission and acknowledgment
+rules are specified in {{dtls-handshake-ordering}} and
+{{dtls-transition-acks}}.
 
 EKU provides fresh traffic secrets, but after compromise of the connection state
 described in {{threat-model}}, EKU alone does not authenticate the exchange.
@@ -924,6 +1084,47 @@ Post-Handshake Certificate-Based Client Authentication ({{Section 4.3.6 of TLS}}
 and therefore allows only the server to detect divergence. Exported Authenticators {{!RFC9261}}
 authenticate the endpoint that produces the authenticator, so detection at both endpoints
 requires an authenticator in each direction.
+
+## Binding Operations to a Key Generation {#post-handshake-context}
+
+Post-handshake operations that use changing key material or transcript
+state MUST have an unambiguous association with the generation and context
+used to create and verify their authentication values. Advancing EKU MUST
+NOT silently change the context of an outstanding operation. Generation
+selection is separate from the epoch of the records carrying the operation:
+an authentication object can be created before an EKU and transmitted or
+verified after it.
+
+Here, a generation identifies the relevant secrets and transcript context
+of the initial connection or of a particular EKU exchange. Generation
+identifiers are scoped to their connection and MUST NOT be used to select
+a context belonging to another connection.
+
+This requirement can be satisfied by ordering the operation and EKU so
+that the context remains fixed, or by explicitly selecting a generation
+and retaining the corresponding context. PHA uses the ordering rules in
+{{pha-eku-ordering}} to keep its transcript and Finished key consistent.
+The epoch-aware Exported Authenticator interface in {{eku-ea}} instead
+selects an exporter generation for each operation, allowing the operation
+to overlap an EKU without changing that selection.
+
+The protocol using an explicitly selected generation MUST specify how
+both endpoints associate the operation with the same generation, how that
+association is authenticated, and which generations are acceptable for its
+purpose. A local epoch counter alone is not sufficient unless the protocol
+defines how the peer interprets it. A valid authentication value from an
+older generation MUST NOT be treated as proof of authentication under the
+updated context. Applications that use authentication to check the result
+of a particular EKU MUST require the generation resulting from that EKU.
+
+An implementation MUST either retain the keying material or derived
+context needed by an outstanding operation for its permitted lifetime, or
+explicitly fail that operation if the context becomes unavailable. It
+MUST NOT substitute a different generation. Applications MUST define
+bounded lifetimes for such operations. Selection, buffering, or expiration
+of an application operation MUST NOT prevent the underlying EKU exchange
+from progressing. These requirements do not require indefinite retention
+of old exporter secrets.
 
 ## Post-Handshake Certificate-Based Client Authentication
 
@@ -939,38 +1140,65 @@ key state. Post-Handshake Certificate-Based Client Authentication does not reaut
 no equivalent assurance. A client that requires such assurance can request an Exported
 Authenticator from the server.
 
-## Exported Authenticators
+## Exported Authenticators {#eku-ea}
 
-This document updates Section 5.1 of {{!RFC9261}} to specify that, after an
-Extended Key Update has completed, the Handshake Context and Finished MAC Key used for
-Exported Authenticators MUST be derived from the exporter secret of the current generation.
-Implementations that support the generation-aware Exported Authenticators interface MUST provide a means
-for applications to request the creation or validation of Exported Authenticators using
-the exporter secret of a specific generation.
+This document extends Section 5.1 of {{!RFC9261}} with an epoch-aware
+Exported Authenticator interface. For this interface, the Handshake Context
+and Finished MAC Key MUST be derived from `exporter_secret_G` for the
+explicitly selected exporter generation G. The same generation MUST be
+used for creation and validation of an authenticator, even if another EKU
+completes between those operations. The derivation labels and authenticator
+construction otherwise follow {{RFC9261}}.
 
-The Handshake Context and Finished MAC Key used in both the CertificateVerify message
-(Section 5.2.2 of {{!RFC9261}}) and the Finished message (Section 5.2.3 of {{!RFC9261}})
-are derived from the exporter secret of the current generation.
-If a person-in-the-middle attacker interferes with the EKU exchange, the peers derive
-different exporter secrets. Validation as specified in Section 5.2.4 of {{!RFC9261}}
-then fails at the endpoint that receives the authenticator, since the CertificateVerify
-message is signed with a private key the attacker does not hold.
+Implementations supporting this interface MUST allow the application to
+select the generation for both creation and validation. For a requested
+authenticator, the requesting application MUST select the generation when
+constructing the request, and the responding application MUST use that
+generation. For an unsolicited server authenticator, the generating
+application selects it. In both cases, the application protocol MUST
+unambiguously identify the generation to the verifier and bind it to the
+authenticated operation as required by {{post-handshake-context}}.
 
-A new optional API SHOULD be defined to permit applications to request or verify
-Exported Authenticators for a specific generation. As discussed in Section 7
-of {{!RFC9261}}, this can, as an exception, be implemented at the application
-layer when the generation-aware TLS exporter is available. The APIs defined in {{!RFC9261}}
-remain unchanged, so existing applications continue to operate without
-modification. The generation-aware API accepts a generation; when present,
-the (D)TLS implementation MUST derive the Handshake Context and Finished MAC Key
-from the exporter secret of that generation. When Exported Authenticators
-are generated using the generation-aware Exported Authenticators interface, the
-generation used for their derivation can be conveyed in the
-certificate_request_context field, allowing the peer, particularly in
-DTLS where records may be reordered, to determine the correct exporter
-secret for validation.
+The `certificate_request_context` can carry this identification as part of
+an application-defined encoding. That encoding MUST preserve the context's
+length limits, uniqueness requirements, and request-response association
+from {{RFC9261}}. It MUST identify the same exporter generation at both
+endpoints; a bare local counter that the peer cannot interpret is
+insufficient. This specification does not define a common wire encoding
+for application protocols.
 
-## Interaction of Extended Key Update and Post-Handshake Authentication
+If the selected generation is unknown, unavailable, expired, or disallowed
+by application policy, creation or validation MUST fail explicitly rather
+than use the current exporter or retry with a different generation. As an
+exception, if the generation is not yet locally available because EKU is
+still in progress, the implementation MAY defer the operation within its
+permitted lifetime instead of immediately failing it. Such deferral MUST
+NOT block processing of EKU messages or acknowledgments.
+These failures are application-operation failures and do not, by
+themselves, require termination of the (D)TLS connection.
+
+An application checking for key divergence after an EKU MUST select the
+generation resulting from that EKU. If interference has caused the peers
+to derive different exporter secrets for that generation, the authenticator
+cannot be successfully validated as specified in {{Section 5.2.4 of RFC9261}}.
+Accepting an older-generation authenticator would not establish agreement
+on the newly derived secrets.
+
+The existing interfaces in {{RFC9261}} retain their use of the static TLS
+exporter defined in {{Section 7.5 of TLS}}. They MUST NOT silently switch to
+the epoch-aware interface. As discussed in {{Section 7 of RFC9261}}, the
+epoch-aware interface can also be implemented at the application layer
+using the corresponding exporter interface.
+
+Authenticator requests and authenticators are carried by an application
+protocol, not as TLS or DTLS handshake messages. Carrying them in DTLS
+application data does not create a DTLS handshake acknowledgment obligation.
+Application-level delivery and acknowledgment requirements are defined by
+the application protocol. The record epoch carrying an authenticator MUST
+NOT, by itself, determine the exporter generation used to validate it.
+
+## Ordering of Authentication and Extended Key Update {#pha-eku-ordering}
+
 
 EKU and Post-Handshake Authentication may both occur during the lifetime
 of a (D)TLS connection.  Post-Handshake Certificate-Based Client
@@ -982,16 +1210,17 @@ are required to preserve cryptographic consistency.
 
 ### Post-Handshake Certificate-Based Client Authentication
 
-An endpoint MUST NOT complete an EKU exchange in a manner that
-transitions to new application traffic secrets while a PHA exchange
-is in progress.
+Except for the deferred processing of a new-epoch `CertificateRequest`
+specified in {{dtls-pha-wait-ack}}, an endpoint MUST NOT complete an EKU
+exchange in a manner that transitions to new application traffic secrets
+while a PHA exchange is in progress.
 
 The following constraints apply to both TLS 1.3 and DTLS 1.3:
 
-* An endpoint MUST NOT initiate PHA while an EKU exchange is in progress.
+* An endpoint MUST NOT initiate PHA while an EKU exchange is locally in progress.
 
-* If PHA has been initiated and the corresponding authentication exchange
-  has not yet completed, neither endpoint MUST initiate an EKU exchange.
+* An endpoint MUST NOT initiate an EKU exchange while a PHA exchange is
+  outstanding.
 
 * In a cross-flight condition, if a (D)TLS client sends an EKU request and,
   before receiving a response, receives a `CertificateRequest` from the
@@ -1002,16 +1231,89 @@ The following constraints apply to both TLS 1.3 and DTLS 1.3:
 
 In DTLS, deferred EKU request is acknowledged as specified in {{DTLSC}}.
 
+#### DTLS CertificateRequest Received Before the EKU ACK {#dtls-pha-wait-ack}
+
+When the DTLS client initiates EKU, the server can complete its part of the
+exchange by receiving `ExtendedKeyUpdate(key_update_finish)`, updating its
+keys, and sending the ACK. The server can then initiate PHA by sending a
+`CertificateRequest` under the new epoch. Loss or reordering of the ACK can
+cause this request to reach the client while the client is still waiting
+for acknowledgment of `ExtendedKeyUpdate(key_update_finish)`.
+
+Subject to the buffering limits in {{dtls-transition-acks}}, the client
+MUST buffer the successfully decrypted
+`CertificateRequest` and defer its PHA processing until the ACK acknowledging
+`ExtendedKeyUpdate(key_update_finish)` has been processed. This also applies
+to retransmissions and fragments of the `CertificateRequest`. Receipt of
+this request MUST NOT be treated as an `unexpected_message` error or as an
+implicit acknowledgment of `ExtendedKeyUpdate(key_update_finish)`.
+
+The general acknowledgment deferral in {{dtls-transition-acks}} applies
+to records carrying this `CertificateRequest`, including its fragments and
+retransmissions. Once EKU completes locally, the request is
+acknowledged explicitly or implicitly by the PHA response according to
+{{Sections 7 and 7.1 of DTLS}}.
+
+Buffering the request MUST NOT suspend EKU retransmissions or prevent
+processing of the EKU ACK. The client MUST continue retransmitting
+`ExtendedKeyUpdate(key_update_finish)` under the pre-update keys and epoch
+according to the DTLS retransmission procedure. The server MUST continue
+processing and acknowledging those retransmissions as specified in
+{{DTLSC}}, even while awaiting the PHA response.
+
+For the ordering constraints in this section, this deferred request does
+not prevent the client from completing the EKU exchange. Once the client
+has processed the ACK acknowledging `ExtendedKeyUpdate(key_update_finish)`,
+it MUST update its send keys and sending epoch before processing the
+buffered request. The client MUST use the resulting new epoch for its PHA
+response records. The PHA Handshake Context MUST use the transcript updated
+by this EKU, and the PHA `Finished` MAC key MUST be derived from the
+corresponding new `client_application_traffic_secret_N+1`, as described
+above. Neither endpoint may initiate another EKU until this PHA exchange
+has completed, as required by the preceding constraints.
+
+These rules apply to a new-epoch `CertificateRequest` received while the
+client awaits the EKU ACK. They do not change the preceding rule for a
+`CertificateRequest` from the pre-update epoch that crosses an EKU request
+before receipt of the EKU response.
+
+The following example shows recovery when the first EKU ACK is lost:
+
+~~~
+Client (EKU initiator)                  Server (EKU responder)
+
+         <---------------------------- EKU(response) [N]
+rx := N+1; tx remains N
+EKU(finish) [N] --------------------->
+                                       rx := N+1; tx := N+1
+         X---------------------------- ACK of EKU(finish) [N+1]
+                                       (ACK lost)
+         <---------------------------- CertificateRequest [N+1]
+Buffer request; defer PHA and its ACK
+EKU(finish) [N] --------------------->  (retransmission)
+         <---------------------------- ACK of EKU(finish) [N+1]
+tx := N+1; stop EKU retransmissions
+Process buffered CertificateRequest
+Certificate [N+1] ------------------->
+CertificateVerify* [N+1] ------------>
+Finished [N+1] ---------------------->
+         <---------------------------- ACK of PHA response [N+1]
+~~~
+{: #dtls-pha-after-ack title="DTLS PHA Deferred Until the EKU ACK Is Received."}
+
 ### Exported Authenticators
 
-Because the exporter interface defined in this document is generation-aware,
-the exporter secret used for an Exported Authenticator exchange is
-explicitly determined by the generation selected by the application.
+An Exported Authenticator operation using the epoch-aware interface may
+overlap EKU only with the fixed generation association and context handling
+specified in {{post-handshake-context}} and {{eku-ea}}. An epoch-aware API
+alone does not ensure that the peer selects the same generation. The
+application protocol's generation agreement is required as well.
 
-As a result, cross-flight exchanges of EKU and `AuthenticatorRequest`
-messages do not introduce cryptographic ambiguity. Therefore, no
-serialization requirement is imposed between EKU and Exported Authenticator
-exchanges.
+No additional serialization between EKU and such an operation is required
+when those conditions are satisfied. An operation bound to an older
+generation can complete after EKU, but does not authenticate the new
+generation. If the operation selects the new generation before it becomes
+available at the peer, its processing may need to wait while EKU proceeds.
 
 # Deployment Considerations {#deployment}
 
@@ -1307,6 +1609,12 @@ Notes:
 ## DTLS 1.3 State Machines
 
 This section describes the initiator and responder state machines.
+The diagrams show the EKU message exchange. Sending actions are additionally
+subject to {{dtls-handshake-ordering}}, including waiting for earlier
+independent handshake transmissions to be acknowledged and deferring new
+independent transmissions. Incoming messages and deferred operations follow
+{{dtls-transition-acks}} and {{post-handshake-context}}. Those requirements
+apply even where a diagram does not show a separate waiting state.
 
 ### Terms and Abbreviations
 
@@ -1326,13 +1634,30 @@ Crossed requests. If both peers independently initiate the extended key update a
 
 ### State Machine (Initiator)
 
-The initiator starts in the START state with matching epochs (rx := E; tx := E). It sends a Req and enters WAIT_RESP (updating := 1). While waiting, APP data may be sent at any time (tagged with the current tx) and received according to the APP acceptance rule below.
+The initiator starts in the START state with matching epochs (rx := E; tx := E).
+Once its earlier independent handshake transmissions have been acknowledged,
+it sends a Req and enters WAIT_RESP (updating := 1). New independent
+handshake transmissions are deferred until local completion, subject to
+the PHA cross-flight exception in {{pha-eku-ordering}}. While waiting, APP
+data may be sent at any time (tagged with the current tx) and received
+according to the APP acceptance rule below.
 
-Once the responder returns Resp with a tag matching the current rx, the initiator derives new key material. It then sends Fin still tagged with the old tx. The initiator activates retention mode: the old epoch is remembered, the receive epoch is incremented, and application data is accepted under both epochs for a transition period. Initiator moves to WAIT_ACK.
+Once the responder returns Resp with a tag matching the current rx, the initiator derives new key material. The initiator activates retention mode: the old epoch is remembered, the receive epoch is incremented, and application data is accepted under both epochs for a transition period. It then sends Fin still tagged with the old tx and enters WAIT_ACK without changing its transmit epoch.
 
 If a peer key_update_request arrives while in WAIT_RESP (crossed updates), apply the crossed-request rule above. If the peer's key_exchange is higher, abandon the local update (updating := 0) and continue as responder: send key_update_response, derive new secrets, then proceed with the responder flow. If lower, ignore the peer's request; if equal, abort with "unexpected_message".
 
-Upon receiving the responder's ACK matching the updated epoch, the initiator completes the transition by synchronizing transmit and receive epochs (tx := rx), disabling retention, and clearing the update flag. The state machine returns to FINISHED, ready for subsequent updates.
+Upon receiving the responder's ACK under the updated epoch that acknowledges Fin, the initiator updates its transmit epoch (tx := rx), stops retransmitting Fin, disables retention, and clears the update flag. Matching the ACK's epoch alone does not acknowledge Fin. The state machine returns to FINISHED.
+
+If the initiator is the DTLS client and receives a CertificateRequest under the
+new epoch in WAIT_ACK, it buffers the request and defers both PHA processing
+and acknowledgment of that request. Fin retransmissions under the old tx
+continue. After processing the ACK of Fin, the client processes the buffered
+request using the new epoch and the updated PHA context, as specified in
+{{dtls-pha-wait-ack}}. It does not initiate another EKU while that PHA is pending.
+
+Other new-epoch handshake records are acknowledged only after the ACK of
+Fin has been processed. Their processing follows {{dtls-transition-acks}};
+in particular, a CID change does not change tx or acknowledge Fin.
 
 Throughout the process:
 
@@ -1383,9 +1708,12 @@ Throughout the process:
 | WAIT_ACK (updating = 1)      |
 +------------------------------+
       |
-      |  APP send/recv allowed
+      |  APP send/recv allowed (send with old tx)
+      |  Client: buffer CertificateRequest [e==rx];
+      |          defer PHA and its ACK
+      |  Timeout: retransmit Fin [tag=old tx]
       |
-(3) recv ACK [e==rx]
+(3) recv ACK of Fin [e==rx]
     tx=rx; retain_old=0; updating := 0
       v
 +------------------------------------------+
@@ -1397,7 +1725,15 @@ Throughout the process:
 
 The responder starts in the START state with synchronized transmit and receive epochs (rx := E; tx := E) and no update in progress. Application data can be transmitted at any time using the sender's current transmit epoch. A receiver must accept application data if the epoch tag on the DTLS record equals the receiver's current receive epoch. If the receiver has retention active (retain_old == true), the receiver must also accept DTLS records whose epoch tag equals the remembered previous epoch.
 
-Upon receiving an `ExtendedKeyUpdate(key_update_request)` (Req), the responder transitions to RESPOND. The responder may defer sending `ExtendedKeyUpdate(key_update_response)` under load; in that case it must acknowledge the request with an ACK and retransmit the response until it is acknowledged by the initiator, as specified in DTLS considerations. When sent, `ExtendedKeyUpdate(key_update_response)` is tagged with the current tx.
+Upon receiving an `ExtendedKeyUpdate(key_update_request)` (Req), the responder
+transitions to RESPOND. It waits for acknowledgment of earlier independent
+handshake transmissions before sending `ExtendedKeyUpdate(key_update_response)`
+and may also defer the response under load. While deferring, it acknowledges
+the request. When sent, the response is tagged with the current tx and is
+retransmitted until acknowledged explicitly or implicitly by Fin. It is
+the last new handshake message in that sending epoch. New independent
+handshake transmissions wait until Fin is received and the sending epoch
+is updated, as specified in {{dtls-handshake-ordering}}.
 
 After an `ExtendedKeyUpdate(key_update_finish)` (Fin) is received with the correct epoch, the responder:
 
@@ -1405,6 +1741,11 @@ After an `ExtendedKeyUpdate(key_update_finish)` (Fin) is received with the corre
 1. increments both epochs (rx++, tx++),
 1. sends ACK tagged with the new tx (which now equals the new rx),
 1. clears updating and enters FINISHED.
+
+In FINISHED, while retaining the old receive keys, the responder accepts
+retransmissions of Fin under the old epoch and sends a new ACK under its
+current tx. This also applies when the responder is the DTLS server and has
+already sent a CertificateRequest for a subsequent PHA exchange.
 
 Retention at the responder ends automatically on the first APP received under the new rx (then retain_old := 0). APP traffic is otherwise permitted at any time; reordering is tolerated by the acceptance rule.
 
