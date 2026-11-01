@@ -30,7 +30,9 @@ Command line usage requires that you have the necessary software installed.  See
 
 ## SPIN Model Checks
 
-The `model/` directory contains three PROMELA/SPIN models:
+The `model/` directory contains three PROMELA/SPIN entry points. All three
+include the shared protocol model in
+[`model/eku_protocol.pml`](model/eku_protocol.pml):
 
 - `model/tls13_extended_key_update.pml`
   - TLS 1.3 EKU state machine (lower state-space, no DTLS ACK/retention path).
@@ -44,15 +46,28 @@ The `model/` directory contains three PROMELA/SPIN models:
   - DTLS EKU with crossed requests, loss/reordering, retry bounds, and liveness stress.
   - Primary checks: `no_unexpected`, `no_illegal_parameter`, `epoch_consistency`, `no_deadlock`.
 
-Detailed model/spec mapping and scope notes are documented in:
+The verification scripts have different roles:
 
-- `model/SPEC-MAPPING.md`
+- [`scripts/spin-check.sh`](scripts/spin-check.sh) is the command-line entry
+  point. It forwards its arguments to the Python runner.
+- [`scripts/spin_verify.py`](scripts/spin_verify.py) implements the verification
+  workflow: it snapshots the model sources, generates and compiles the verifier,
+  runs the selected properties, and checks the results. It also defines the
+  regression profiles and replays expected counterexamples.
 
-Running the model checks requires SPIN and a C compiler. On Debian/Ubuntu, they
+The Python runner checks SPIN's `errors:` summary and rejects incomplete searches
+or exhausted memory/depth limits; a zero process exit status alone is not treated
+as a successful verification. No external Python packages are required.
+
+Detailed model/spec mapping, assumptions, and recorded verification results are
+available in [model/SPEC-MAPPING.md](model/SPEC-MAPPING.md) and
+[model/VERIFICATION.md](model/VERIFICATION.md).
+
+Running the model checks requires Python 3, SPIN, and GCC. On Debian/Ubuntu, they
 can be installed with:
 
 ```sh
-sudo apt-get install spin gcc
+sudo apt-get install python3 spin gcc
 ```
 
 SPIN verification consists of three steps: generate `pan.c` from the Promela
@@ -61,7 +76,7 @@ performs these steps explicitly in a temporary directory:
 
 ```sh
 spin -a model.pml
-gcc -O2 -o pan pan.c
+gcc -O2 -DNOREDUCE -DMEMLIM=512 -DVECTORSZ=2048 -o pan pan.c
 ./pan -a -N property_name
 ```
 
@@ -71,6 +86,43 @@ To run verification in a separate `/tmp` working directory (to avoid generating
 ```sh
 ./scripts/spin-check.sh all
 ```
+
+`all` checks `protocol_safety` and `no_deadlock` for each entry point using
+the default model parameters. `no_deadlock` allows bounded-retry aborts;
+it does not establish successful completion of every authentication operation.
+
+To run the predefined regression suite, including PHA, EA, CID handling,
+fragmentation, reachability witnesses, and deliberately faulty variants, use:
+
+```sh
+./scripts/spin-check.sh regressions --output /tmp/eku-spin-results
+```
+
+Individual profiles can be selected, for example:
+
+```sh
+./scripts/spin-check.sh regressions --profile dtls-pha-loss
+```
+
+Some regression claims intentionally require a counterexample: they establish
+that a target sequence is reachable or that a faulty variant is detected.
+The runner checks that expectation and replays the resulting trail. Strict
+completion profiles use the explicit timeout assumptions documented in
+`model/SPEC-MAPPING.md`.
+
+The shell wrapper and the Python runner accept the same arguments. For example,
+`python3 scripts/spin_verify.py all` is equivalent to the first command above.
+Available options can be listed with:
+
+```sh
+python3 scripts/spin_verify.py --help
+```
+
+The runner prints its artifact directory and retains source snapshots, logs,
+trails, per-profile results, and a `summary.json` with source hashes and tool
+versions. Searches use exact full-state storage with partial-order reduction
+disabled by default. `--bitstate` explicitly selects approximate exploration
+for manual runs and is not allowed for the regression suite.
 
 For larger state spaces (especially crossed requests), pass additional
 `--define` values and `pan` options:
@@ -109,6 +161,8 @@ compile-time bounds directly with `spin -D...`:
 (cd "$work" && spin -DDROPS=0 -DREQ_RETRIES=1 -DFIN_RETRIES=1 -search -ltl no_unexpected "$repo/model/extended_key_update_crossed.pml")
 ```
 
-Optional paths can be enabled with `-DDEFER_RESP=1` for DTLS deferred
-responses and `-DINJECT_ERRORS=1` for negative-message injection. The negative
-input configuration is expected to violate the corresponding safety claim.
+Optional paths can be enabled with `-DDEFER_RESP=1` for acknowledging a DTLS
+request before sending the response. Negative-message injection uses
+`-DINJECT_ERRORS=1` for an invalid message, `2` for an invalid ACK epoch, or
+`3` for a wrong negotiated group. These configurations are expected to violate
+the corresponding safety claim.
