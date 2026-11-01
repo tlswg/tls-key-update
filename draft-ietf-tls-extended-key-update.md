@@ -595,10 +595,11 @@ under the old sending epoch or activate the new sending epoch early to
 acknowledge them. This is a specific deferral of the ACK behavior described
 in {{Sections 7 and 7.1 of DTLS}}. Once Step 7 completes, outstanding
 acknowledgments are generated according to the DTLS procedures, including
-any applicable implicit acknowledgment by a responding flight. An ACK
-whose record numbers reference an epoch higher than the epoch of the ACK
-record MUST be rejected by terminating the connection with an
-`illegal_parameter` alert.
+any applicable implicit acknowledgment by a responding flight. ACKs for EKU
+messages are sent after the handshake and are therefore protected, because
+{{Section 7 of DTLS}} requires the highest available sending epoch. An ACK
+record received in epoch 0 MUST NOT be treated as acknowledging an EKU
+message and MUST be silently discarded.
 
 Deferring acknowledgment does not necessarily defer message processing.
 Implementations MUST maintain the normal DTLS reassembly and handshake
