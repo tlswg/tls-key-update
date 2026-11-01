@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2026-10-29T04:58:20.449292+00:00",
+  "timestamp": "2026-11-01T05:06:55.147922+00:00",
   "repo": "tlswg/tls-key-update",
   "labels": [
     {
@@ -11209,25 +11209,35 @@
       "id": "PR_kwDOMJPqLM8AAAABKP6kLg",
       "title": "Add Threat Model section and minor adjustments",
       "url": "https://github.com/tlswg/tls-key-update/pull/135",
-      "state": "OPEN",
+      "state": "MERGED",
       "author": "nikstuckenbrock",
-      "authorAssociation": "NONE",
+      "authorAssociation": "CONTRIBUTOR",
       "assignees": [],
       "labels": [],
       "body": "As discussed previously, here are the following adjustments/additions to the draft:\n\n- Addition of a Threat Model section, which is referenced throughout the draft\n- Removal of the \"Scope of Key Compromise\" section, now covered by the Threat Model\n- Minor adjustments to wording\n\nLet me know what you think!",
       "createdAt": "2026-10-23T12:29:56Z",
-      "updatedAt": "2026-10-28T14:27:12Z",
+      "updatedAt": "2026-10-31T18:57:00Z",
       "baseRepository": "tlswg/tls-key-update",
       "baseRefName": "main",
       "baseRefOid": "cd55e21b678eab34bad630b421dc3a193e0c0baa",
       "headRepository": "nikstuckenbrock/tls-key-update",
       "headRefName": "main",
-      "headRefOid": "2ca3e962d4f2cc0a4b25413471d238062a545f2f",
-      "closedAt": null,
-      "mergedAt": null,
-      "mergedBy": null,
-      "mergeCommit": null,
-      "comments": [],
+      "headRefOid": "265ca16a11b9cccb46dd52ec13aacbceb6a52083",
+      "closedAt": "2026-10-31T18:56:59Z",
+      "mergedAt": "2026-10-31T18:56:59Z",
+      "mergedBy": "hannestschofenig",
+      "mergeCommit": {
+        "oid": "a5455f3709e4185f8c058b7c99c1235c6b49696f"
+      },
+      "comments": [
+        {
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "body": "Thanks for addressing all my comments. ",
+          "createdAt": "2026-10-30T12:13:08Z",
+          "updatedAt": "2026-10-30T12:13:08Z"
+        }
+      ],
       "reviews": [
         {
           "id": "PRR_kwDOMJPqLM8AAAABUO-I-A",
@@ -11326,6 +11336,66 @@
               "body": "Threat Model, guarantee 2: the last two sentences, on which endpoint detects the interference, repeat Detecting Divergent Key State. Suggest deleting them and keeping only the reference:\n\u201c...is detected if one of the mechanisms described in {{exported}} is used (see {{divergent-keys}}). These mechanisms authenticate the update with the long-term private key.",
               "createdAt": "2026-10-28T13:15:54Z",
               "updatedAt": "2026-10-28T13:15:59Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM8AAAABVSfPsA",
+          "commit": {
+            "abbreviatedOid": "2ca3e96"
+          },
+          "author": "hannestschofenig",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2026-10-31T15:50:34Z",
+          "updatedAt": "2026-10-31T15:50:34Z",
+          "comments": [
+            {
+              "originalPosition": 58,
+              "body": "```suggestion\nPost-Handshake Certificate-Based Client Authentication, see {{Section 4.3.6 of RFC9846}}, only authenticates the client to the server,\n```",
+              "createdAt": "2026-10-31T15:50:34Z",
+              "updatedAt": "2026-10-31T15:50:34Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM8AAAABVSfSEw",
+          "commit": {
+            "abbreviatedOid": "2ca3e96"
+          },
+          "author": "hannestschofenig",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2026-10-31T15:50:45Z",
+          "updatedAt": "2026-10-31T15:50:45Z",
+          "comments": [
+            {
+              "originalPosition": 65,
+              "body": "```suggestion\nkey state (see {{divergent-keys}}). Post-Handshake Certificate-Based Client Authentication does not reauthenticate the server, so the client gains\n```",
+              "createdAt": "2026-10-31T15:50:45Z",
+              "updatedAt": "2026-10-31T15:50:45Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM8AAAABVSf6vw",
+          "commit": {
+            "abbreviatedOid": "2ca3e96"
+          },
+          "author": "hannestschofenig",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2026-10-31T15:53:20Z",
+          "updatedAt": "2026-10-31T15:53:20Z",
+          "comments": [
+            {
+              "originalPosition": 1,
+              "body": "```suggestion\nThe Transport Layer Security (TLS) 1.3 protocol {{!TLS=RFC9846}} provides forward secrecy by using\n```",
+              "createdAt": "2026-10-31T15:53:20Z",
+              "updatedAt": "2026-10-31T15:53:20Z"
             }
           ]
         }
