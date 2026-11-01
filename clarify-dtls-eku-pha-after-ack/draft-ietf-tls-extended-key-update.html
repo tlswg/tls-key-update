@@ -1916,10 +1916,11 @@ under the old sending epoch or activate the new sending epoch early to
 acknowledge them. This is a specific deferral of the ACK behavior described
 in Sections <a href="https://rfc-editor.org/rfc/rfc9147#section-7" class="relref">7</a> and <a href="https://rfc-editor.org/rfc/rfc9147#section-7.1" class="relref">7.1</a> of <span>[<a href="#DTLS" class="cite xref">DTLS</a>]</span>. Once Step 7 completes, outstanding
 acknowledgments are generated according to the DTLS procedures, including
-any applicable implicit acknowledgment by a responding flight. An ACK
-whose record numbers reference an epoch higher than the epoch of the ACK
-record <span class="bcp14">MUST</span> be rejected by terminating the connection with an
-<code>illegal_parameter</code> alert.<a href="#section-6.2-2" class="pilcrow">¶</a></p>
+any applicable implicit acknowledgment by a responding flight. ACKs for EKU
+messages are sent after the handshake and are therefore protected, because
+<span><a href="https://rfc-editor.org/rfc/rfc9147#section-7" class="relref">Section 7</a> of [<a href="#DTLS" class="cite xref">DTLS</a>]</span> requires the highest available sending epoch. An ACK
+record received in epoch 0 <span class="bcp14">MUST NOT</span> be treated as acknowledging an EKU
+message and <span class="bcp14">MUST</span> be silently discarded.<a href="#section-6.2-2" class="pilcrow">¶</a></p>
 <p id="section-6.2-3">Deferring acknowledgment does not necessarily defer message processing.
 Implementations <span class="bcp14">MUST</span> maintain the normal DTLS reassembly and handshake
 sequencing procedures. They <span class="bcp14">MAY</span> accept and sequence a message while
