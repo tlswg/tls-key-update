@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2026-11-01T05:06:55.147922+00:00",
+  "timestamp": "2026-11-03T05:53:20.727422+00:00",
   "repo": "tlswg/tls-key-update",
   "labels": [
     {
@@ -11396,6 +11396,201 @@
               "body": "```suggestion\nThe Transport Layer Security (TLS) 1.3 protocol {{!TLS=RFC9846}} provides forward secrecy by using\n```",
               "createdAt": "2026-10-31T15:53:20Z",
               "updatedAt": "2026-10-31T15:53:20Z"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "number": 136,
+      "id": "PR_kwDOMJPqLM8AAAABMGptQA",
+      "title": "Clarify DTLS EKU ordering and post-handshake interactions",
+      "url": "https://github.com/tlswg/tls-key-update/pull/136",
+      "state": "OPEN",
+      "author": "hannestschofenig",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [],
+      "body": "This PR was created in response to the work done by Tiru in PR https://github.com/tlswg/tls-key-update/pull/134\n\nThe text aims to take the interaction with the post-handshake messages in a more generic manner into account than we did before.",
+      "createdAt": "2026-11-01T12:18:58Z",
+      "updatedAt": "2026-11-03T05:38:22Z",
+      "baseRepository": "tlswg/tls-key-update",
+      "baseRefName": "main",
+      "baseRefOid": "a5455f3709e4185f8c058b7c99c1235c6b49696f",
+      "headRepository": "tlswg/tls-key-update",
+      "headRefName": "clarify-dtls-eku-pha-after-ack",
+      "headRefOid": "65f231a2168b7e94538b24c736960cb7865ff184",
+      "closedAt": null,
+      "mergedAt": null,
+      "mergedBy": null,
+      "mergeCommit": null,
+      "comments": [],
+      "reviews": [
+        {
+          "id": "PRR_kwDOMJPqLM8AAAABVbCWog",
+          "commit": {
+            "abbreviatedOid": "65f231a"
+          },
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2026-11-02T05:57:06Z",
+          "updatedAt": "2026-11-02T07:20:56Z",
+          "comments": [
+            {
+              "originalPosition": 103,
+              "body": "I get the text but it is slightly confusing, how about ?\n\n****\nWhile waiting for its earlier handshake messages to be acknowledged before sending `ExtendedKeyUpdate(key_update_response)`, the responder MUST NOT send new handshake messages. It continues retransmitting its outstanding messages. \n****\n\nThe PHA exception is omitted because the responder only sends ACKs when completing a crossed PHA exchange.",
+              "createdAt": "2026-11-02T05:57:06Z",
+              "updatedAt": "2026-11-02T07:20:56Z"
+            },
+            {
+              "originalPosition": 78,
+              "body": "The responder switches its sending epoch only on receipt of Fin. Any record received from the responder under the new epoch therefore proves that Fin was received. Why is only an explicit ACK of Fin accepted?\n\nIf the ACK of Fin is lost, three cases arise while the initiator waits:\n\na) A new-epoch CertificateRequest. This is handled by buffering in {{dtls-pha-wait-ack}}.\nb) A new-epoch EKU request from the responder starting the next EKU. This case is not specified.\nc) An Exported Authenticator for the new generation in application data. It cannot be validated until the ACK arrives, although the initiator derived exporter_secret_N+1 at Step 3. This needs the deferral exception in {{eku-ea}}.\n\nIf any new-epoch record from the responder acknowledged Fin, all three cases would be handled by one rule. The following would no longer be needed:\n\nthe ACK deferral and the buffering paragraph in {{dtls-transition-acks}};\n{{dtls-pha-wait-ack}}; the deferral exception in {{eku-ea}}.\n\nThe same rule appears at lines 638, 1249 and 1649.",
+              "createdAt": "2026-11-02T06:28:54Z",
+              "updatedAt": "2026-11-02T07:20:56Z"
+            },
+            {
+              "originalPosition": 311,
+              "body": "I disagree with removing this text. Retained exporter secrets stay exposed to a later compromise, so the bounded retention and concrete TLS and DTLS discard points matter for PCS. Outstanding operations are an exception, not a reason to drop the rules. Suggest:\n\nI suggest to replace with following text:\n\nTo prevent desynchronization, the application will have to retain both the\nprevious and the newly derived exporter secrets for a short period. For TLS,\nthe previous exporter secret would be discarded once data derived from the\nnew exporter has been successfully processed, and no records protected with the old exporter secret are expected to arrive. For DTLS, the previous\nexporter secret needs to be retained until the retention timer expires for\nthe prior epoch, to allow for processing of packets that may arrive out of\norder. These rules do not apply to an exporter secret needed by an\noutstanding operation bound to that generation; such a secret is retained\nuntil the operation completes or expires. The retention policy for exporter\nsecrets is application-specific. For example, in DTLS-SRTP, the application\nmight retain the previous exporter secret until its replay window no longer\naccepts packets protected with keys derived from that secret, as described\nin {{Section 3.3.2 of !RFC3711}}.",
+              "createdAt": "2026-11-02T06:53:42Z",
+              "updatedAt": "2026-11-02T07:20:56Z"
+            },
+            {
+              "originalPosition": 341,
+              "body": "Suggest removing this section. PHA consistency is ensured by {{pha-eku-ordering}}, and the generation rules for Exported Authenticators are in {{eku-ea}}. References to it at lines 1160, 1308 and 1616 can be dropped or point to {{eku-ea}}.",
+              "createdAt": "2026-11-02T06:58:34Z",
+              "updatedAt": "2026-11-02T07:20:56Z"
+            },
+            {
+              "originalPosition": 444,
+              "body": "The generation N defined in {{exporter}} identifies the generation and is the same at both endpoints. Suggest: \u201cIt MUST identify the same exporter generation at both endpoints, using the generation N defined in {{exporter}}.\u201d",
+              "createdAt": "2026-11-02T07:01:41Z",
+              "updatedAt": "2026-11-02T07:20:56Z"
+            },
+            {
+              "originalPosition": 467,
+              "body": "Use \u201cgeneration-aware\u201d instead of \u201cepoch-aware\u201d, consistent with {{exporter}}. The record epoch MUST NOT determine the generation, as this section states.",
+              "createdAt": "2026-11-02T07:03:05Z",
+              "updatedAt": "2026-11-02T07:20:56Z"
+            },
+            {
+              "originalPosition": 600,
+              "body": "This repeats {{eku-ea}}. Unlike PHA, Exported Authenticators are not serialized with EKU, and that is the only point needed here.\n\nsuggestion:\n\nExported Authenticator operations are not serialized with EKU. They use the\ngeneration selected as specified in {{eku-ea}}.",
+              "createdAt": "2026-11-02T07:08:23Z",
+              "updatedAt": "2026-11-02T07:20:56Z"
+            },
+            {
+              "originalPosition": 445,
+              "body": "Should a common encoding of the generation in certificate_request_context be defined, to avoid each application defining its own ?",
+              "createdAt": "2026-11-02T07:09:24Z",
+              "updatedAt": "2026-11-02T07:20:56Z"
+            },
+            {
+              "originalPosition": 511,
+              "body": "I propose removing this section.\n\nThe responder uses its new send keys only after receiving Fin. Any record received from it under the new epoch therefore acknowledges Fin. If Step 7 accepts any such record, the CertificateRequest completes EKU, and PHA proceeds normally. The same rule also handles a new EKU request and an Exported Authenticator arriving before the ACK.\n\nProposed Step 7:\n\n1. On receipt of an ACK of `ExtendedKeyUpdate(key_update_finish)`, or of\n   any other record protected with the responder's updated send keys, the\n   initiator MUST update its send keys and sending epoch, stop\n   retransmitting `ExtendedKeyUpdate(key_update_finish)`, and consider the\n   EKU exchange locally complete. The responder uses these keys only after\n   receiving `ExtendedKeyUpdate(key_update_finish)`.\n\n\nIf the explicit ACK is kept, this section is still redundant with {{dtls-transition-acks}} and the PHA section. Only the EKU-completion exception is needed, in the PHA rules:\n\nIn DTLS, a `CertificateRequest` received under the new epoch while the\ninitiator awaits the ACK of `ExtendedKeyUpdate(key_update_finish)` is\nprocessed after that ACK, and does not prevent completion of the EKU exchange.",
+              "createdAt": "2026-11-02T07:17:29Z",
+              "updatedAt": "2026-11-02T07:20:56Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM8AAAABViu5GQ",
+          "commit": {
+            "abbreviatedOid": "65f231a"
+          },
+          "author": "ilaril",
+          "authorAssociation": "NONE",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2026-11-02T17:34:39Z",
+          "updatedAt": "2026-11-02T17:34:40Z",
+          "comments": [
+            {
+              "originalPosition": 78,
+              "body": "> c) An Exported Authenticator for the new generation in application data. It cannot be validated until the ACK arrives, although the initiator derived exporter_secret_N+1 at Step 3.\r\n\r\nThis can never happen, unless either endpoint is very buggy. EA (like all epoch-aware exporters) should use sender generation, which is never ahead of what receiver can verify. Exporter giving \"epoch too new\" is sign of **serious**  bug.\r\n\r\n(Sender generation is bumped on _receiving_ `key_update_response` or `key_update_finish`, whereas what receiver can verify is bumped on _sending_ those messages.)",
+              "createdAt": "2026-11-02T17:34:40Z",
+              "updatedAt": "2026-11-02T17:34:40Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM8AAAABVi2ybw",
+          "commit": {
+            "abbreviatedOid": "65f231a"
+          },
+          "author": "ilaril",
+          "authorAssociation": "NONE",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2026-11-02T17:45:19Z",
+          "updatedAt": "2026-11-02T17:45:20Z",
+          "comments": [
+            {
+              "originalPosition": 311,
+              "body": "Unfortunately, retaining the old exporters is not just processing packets that arrive out of order. It is also handling retransmissions of reliable application data.",
+              "createdAt": "2026-11-02T17:45:20Z",
+              "updatedAt": "2026-11-02T17:45:20Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM8AAAABVi7sbw",
+          "commit": {
+            "abbreviatedOid": "65f231a"
+          },
+          "author": "ilaril",
+          "authorAssociation": "NONE",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2026-11-02T17:51:17Z",
+          "updatedAt": "2026-11-02T17:51:17Z",
+          "comments": [
+            {
+              "originalPosition": 454,
+              "body": "The \"not yet available\" case can not happen, since sender is never ahead of receiver.",
+              "createdAt": "2026-11-02T17:51:17Z",
+              "updatedAt": "2026-11-02T17:51:17Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM8AAAABVjAQbg",
+          "commit": {
+            "abbreviatedOid": "65f231a"
+          },
+          "author": "ilaril",
+          "authorAssociation": "NONE",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2026-11-02T17:57:23Z",
+          "updatedAt": "2026-11-02T17:57:24Z",
+          "comments": [
+            {
+              "originalPosition": 511,
+              "body": "Yeah, I think this should be removed. Any such CR has to belong to the new epoch, regardless of its record epoch.",
+              "createdAt": "2026-11-02T17:57:23Z",
+              "updatedAt": "2026-11-02T17:57:24Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM8AAAABVpadng",
+          "commit": {
+            "abbreviatedOid": "65f231a"
+          },
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2026-11-03T05:38:22Z",
+          "updatedAt": "2026-11-03T05:38:22Z",
+          "comments": [
+            {
+              "originalPosition": 78,
+              "body": "The proposed change fixes it: the responder sends a generation N+1 authenticator only after receiving Fin, so it arrives in a new-epoch record. That record acknowledges Fin, the initiator completes EKU, and it validates the authenticator immediately. The same rule also covers (a) and (b).",
+              "createdAt": "2026-11-03T05:38:22Z",
+              "updatedAt": "2026-11-03T05:38:22Z"
             }
           ]
         }
