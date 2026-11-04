@@ -1,0 +1,2254 @@
+
+
+
+
+Transport Layer Security                                   H. Tschofenig
+Internet-Draft                                                   Siemens
+Updates: 9261, 9846 (if approved)                               T. Reddy
+Intended status: Standards Track                                   Nokia
+Expires: 8 May 2027                                             M. Tüxen
+                                       Münster Univ. of Applied Sciences
+                                                                S. Fries
+                                                                 Siemens
+                                                            Y. Rosomakho
+                                                                 Zscaler
+                                                         4 November 2026
+
+
+       Extended Key Update for Transport Layer Security (TLS) 1.3
+               draft-ietf-tls-extended-key-update-latest
+
+Abstract
+
+   TLS 1.3 ensures forward secrecy by performing an ephemeral Diffie-
+   Hellman key exchange during the initial handshake, protecting past
+   communications even if a party's long-term keys (typically a private
+   key with a corresponding certificate) are later compromised.
+
+   While the built-in KeyUpdate mechanism allows application traffic
+   keys to be refreshed during a session, it does not incorporate fresh
+   entropy from a new key exchange and therefore does not provide post-
+   compromise security.  This limitation can pose a security risk in
+   long-lived sessions, such as those found in industrial IoT or
+   telecommunications environments.
+
+   To address this, this specification defines an extended key update
+   mechanism that performs a fresh execution of the key exchange
+   negotiated during the initial handshake within an active session to
+   support post-compromise security.
+
+   By forcing attackers to exfiltrate new key material repeatedly, this
+   approach mitigates the risks associated with static key compromise.
+   Regular renewal of session keys helps contain the impact of such
+   compromises.  The extension is applicable to both TLS 1.3 and DTLS
+   1.3.
+
+Discussion Venues
+
+   This note is to be removed before publishing as an RFC.
+
+   Discussion of this document takes place on the Transport Layer
+   Security Working Group mailing list (tls@ietf.org), which is archived
+   at https://mailarchive.ietf.org/arch/browse/tls/.
+
+   Source for this draft and an issue tracker can be found at
+   https://github.com/hannestschofenig/tls-key-update.
+
+Status of This Memo
+
+   This Internet-Draft is submitted in full conformance with the
+   provisions of BCP 78 and BCP 79.
+
+   Internet-Drafts are working documents of the Internet Engineering
+   Task Force (IETF).  Note that other groups may also distribute
+   working documents as Internet-Drafts.  The list of current Internet-
+   Drafts is at https://datatracker.ietf.org/drafts/current/.
+
+   Internet-Drafts are draft documents valid for a maximum of six months
+   and may be updated, replaced, or obsoleted by other documents at any
+   time.  It is inappropriate to use Internet-Drafts as reference
+   material or to cite them other than as "work in progress."
+
+   This Internet-Draft will expire on 8 May 2027.
+
+Copyright Notice
+
+   Copyright (c) 2026 IETF Trust and the persons identified as the
+   document authors.  All rights reserved.
+
+   This document is subject to BCP 78 and the IETF Trust's Legal
+   Provisions Relating to IETF Documents (https://trustee.ietf.org/
+   license-info) in effect on the date of publication of this document.
+   Please review these documents carefully, as they describe your rights
+   and restrictions with respect to this document.  Code Components
+   extracted from this document must include Revised BSD License text as
+   described in Section 4.e of the Trust Legal Provisions and are
+   provided without warranty as described in the Revised BSD License.
+
+Table of Contents
+
+   1.  Introduction
+   2.  Terminology and Requirements Language
+   3.  Negotiating the Extended Key Update
+   4.  Extended Key Update Messages
+   5.  TLS 1.3 Extended Key Update Procedure
+     5.1.  TLS 1.3 Extended Key Update Example
+   6.  DTLS 1.3 Extended Key Update Procedure
+     6.1.  Handshake Ordering Across an EKU
+     6.2.  Records Received During the Epoch Transition
+     6.3.  Handshake Message Format
+     6.4.  DTLS 1.3 Extended Key Update Example
+   7.  Updating Traffic Keys
+   8.  Resumption
+   9.  Post-Quantum Cryptography Considerations
+   10. SSLKEYLOGFILE Update
+   11. Exporter
+     11.1.  Post-Compromise Security for the Initial Exporter Secret
+     11.2.  Exporter Usage After Extended Key Update
+   12. Interaction with Post-Handshake Operations
+     12.1.  Binding Operations to a Key Generation
+     12.2.  Post-Handshake Certificate-Based Client Authentication
+     12.3.  Exported Authenticators
+     12.4.  Ordering of Authentication and Extended Key Update
+       12.4.1.  Post-Handshake Certificate-Based Client Authentication
+       12.4.2.  Exported Authenticators
+   13. Deployment Considerations
+   14. Security Considerations
+     14.1.  Threat Model
+     14.2.  Post-Compromise Security
+     14.3.  Denial-of-Service (DoS)
+     14.4.  Operational Guidance
+   15. IANA Considerations
+     15.1.  TLS Flags
+     15.2.  TLS HandshakeType
+     15.3.  ExtendedKeyUpdate Message Subtypes Registry
+     15.4.  SSLKEYLOGFILE labels
+   16. References
+     16.1.  Normative References
+     16.2.  Informative References
+   Appendix A.  Acknowledgments
+   Appendix B.  State Machines
+     B.1.  TLS 1.3 State Machines
+       B.1.1.  Initiator State Machine
+       B.1.2.  Responder State Machine
+     B.2.  DTLS 1.3 State Machines
+       B.2.1.  Terms and Abbreviations
+       B.2.2.  State Machine (Initiator)
+       B.2.3.  State Machine (Responder)
+   Appendix C.  Overview of Security Goals
+     C.1.  Post-Compromise Security (PCS)
+     C.2.  Key Freshness and Cryptographic Independence
+     C.3.  Elimination of Standard KeyUpdate
+     C.4.  Detecting Divergent Key State
+   Authors' Addresses
+
+1.  Introduction
+
+   The Transport Layer Security (TLS) 1.3 protocol [TLS] provides
+   forward secrecy by using fresh ephemeral key exchange during the
+   initial handshake.  In the base protocol, this key exchange is
+   performed with (EC)DHE.  By registering new NamedGroup codepoints,
+   TLS specifications also define hybrid and post-quantum key exchange
+   mechanisms for the same purpose.  This ensures that encrypted
+   communication remains confidential even if an attacker later obtains
+   a party's long-term private key, protecting against passive
+   adversaries who record encrypted traffic for later decryption.
+
+   TLS 1.3 also includes a KeyUpdate mechanism that allows traffic keys
+   to be refreshed during an established session.  However, this
+   mechanism does not provide post-compromise security, as it applies
+   only a key derivation function to the previous application traffic
+   secret as input.  While this design is generally sufficient for
+   short-lived connections, it may present security limitations in
+   scenarios where sessions persist for extended periods, such as in
+   industrial IoT or telecommunications systems, where continuous
+   availability is critical and session renegotiation or resumption is
+   impractical.
+
+   Earlier versions of TLS supported session renegotiation, which
+   allowed peers to negotiate fresh keying material, including
+   performing new Diffie-Hellman exchanges during the session lifetime.
+   Due to protocol complexity and known vulnerabilities, renegotiation
+   was first restricted by [TLS-RENEGOTIATION] and ultimately removed in
+   TLS 1.3.  While the KeyUpdate message was introduced to offer limited
+   rekeying functionality, it does not fulfill the same cryptographic
+   role as renegotiation and cannot refresh the TLS main secret and
+   consequently cannot derive new secrets from fresh key exchange input.
+   This limitation applies regardless of whether the session was
+   established with traditional (EC)DHE, a post-quantum/traditional (PQ/
+   T) hybrid exchange, or a post-quantum KEM exchange.
+
+   Security guidance from national agencies, such as ANSSI (France
+   [ANSSI]), recommends the periodic renewal of cryptographic keys
+   during long-lived sessions to limit the impact of key compromise.
+   This approach encourages designs that force an attacker to perform
+   dynamic key exfiltration, as defined in [CONFIDENTIALITY].  Dynamic
+   key exfiltration refers to attack scenarios where an adversary must
+   repeatedly extract fresh keying material to maintain access to
+   protected data, increasing operational cost and risk for the
+   attacker.  In contrast, static key exfiltration, where the TLS main
+   secret is extracted once and reused, poses a greater long-term
+   threat, especially when session keys are not refreshed with fresh key
+   exchange input rather than key derivation.
+
+   This specification defines a TLS extension that introduces an
+   extended key update mechanism for sessions established with
+   traditional (EC)DHE, hybrid PQ/T hybrid key exchange, or post-quantum
+   KEM exchange.  Unlike the standard key update, this mechanism allows
+   peers to inject fresh key exchange input from the negotiated
+   mechanism into an active session.  By periodically rerunning the
+   negotiated key exchange, this extension enables the derivation of new
+   traffic keys.  Compromise of prior traffic keys does not suffice to
+   derive the new traffic keys.  As noted in Appendix F of [TLS], this
+   approach mitigates the risk of static key exfiltration and shifts the
+   attacker burden toward dynamic key exfiltration.
+
+   The proposed extension is applicable to both TLS 1.3 [TLS] and DTLS
+   1.3 [DTLS].  For clarity, the term "TLS" is used throughout this
+   document to refer to both protocols unless otherwise specified.
+
+2.  Terminology and Requirements Language
+
+   The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT",
+   "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and
+   "OPTIONAL" in this document are to be interpreted as described in
+   BCP 14 [RFC2119] [RFC8174] when, and only when, they appear in all
+   capitals, as shown here.
+
+   In this document, "standard key update" refers to the KeyUpdate
+   procedure defined in Section 4.7.3 of [TLS], with traffic secret
+   derivation as specified in Section 7.2 of [TLS].  "Extended key
+   update" refers to the procedure specified in this document.
+
+   For terminology regarding traditional and PQ/T hybrid algorithms
+   please see [RFC9794].
+
+   In this document, we use the term post-compromise security, as
+   defined in [CCG16].  The threat model in Section 14.1 describes the
+   assumed compromise of connection state and the conditions for
+   recovery.
+
+   Unless otherwise specified, all references to traffic keys in this
+   document refer to application traffic keys and because the Extended
+   Key Update procedure occurs after the handshake phase has completed,
+   no handshake traffic keys are involved.
+
+   In this document, send key refers to the [sender]_write_key, and
+   receive key refers to the [receiver]_write_key.  These keys are
+   derived from the active client_application_traffic_secret_N and
+   server_application_traffic_secret_N, as defined in (D)TLS 1.3 [TLS],
+   and are replaced with new ones after each successful Extended Key
+   Update.
+
+   Generation N refers to client_/server_application_traffic_secret_N,
+   exporter_secret_N, and transcript_hash_N.  Generation 0 is
+   established by the initial handshake, and each Extended Key Update
+   establishes the next generation, following Section 7.2 of [TLS].
+
+3.  Negotiating the Extended Key Update
+
+   Client and servers use the TLS flags extension [TLS-FLAGS] to
+   indicate support for the functionality defined in this document.  We
+   call this flag "Extended_Key_Update" flag.
+
+   The "Extended_Key_Update" flag proposed by the client in the
+   ClientHello (CH) MUST be acknowledged in the EncryptedExtensions
+   (EE), if the server also supports the functionality defined in this
+   document and is configured to use it.
+
+   If the "Extended_Key_Update" flag is not set, servers ignore any of
+   the functionality specified in this document and applications that
+   require post-compromise security will have to initiate a full
+   handshake.
+
+4.  Extended Key Update Messages
+
+   If the client and server agree to use the extended key update
+   mechanism, the standard key update MUST NOT be used.  In this case,
+   the extended key update fully replaces the standard key update
+   functionality.
+
+   Implementations that receive a standard KeyUpdate message after
+   successfully negotiating the Extended Key Update functionality MUST
+   terminate the connection with an "unexpected_message" alert.
+
+   The extended key update messages are signaled in a new handshake
+   message named ExtendedKeyUpdate (EKU), with an internal uint8 message
+   subtype indicating its role.  This specification defines three
+   ExtendedKeyUpdate message subtypes:
+
+   *  key_update_request (0)
+
+   *  key_update_response (1)
+
+   *  key_update_finish (2)
+
+   New ExtendedKeyUpdate message subtypes are assigned by IANA as
+   described in Section 15.3.
+
+   A TLS peer which receives a ExtendedKeyUpdate with an unexpected
+   message subtype MUST abort the connection with an
+   "unexpected_message" alert.
+
+   The extended key update process can be initiated by either peer after
+   it has sent a Finished message.  Implementations that receive an
+   ExtendedKeyUpdate message prior to the sender having sent Finished
+   MUST terminate the connection with an "unexpected_message" alert.
+
+   The KeyShareEntry carried in a key_update_request and in a
+   key_update_response MUST use the group that was negotiated by the
+   client and server during the initial handshake.  An implementation
+   that receives an algorithm other than previously negotiated MUST
+   terminate the connection with an "illegal_parameter" alert.
+
+   Figure 1 shows the interaction graphically.  First, support for the
+   functionality in this specification is negotiated in the ClientHello
+   and the EncryptedExtensions messages.  Then, the ExtendedKeyUpdate
+   exchange is sent to update the application traffic secrets.
+
+   The extended key update exchange is performed between the initiator
+   and the responder; either the TLS client or the TLS server may act as
+   initiator.
+
+        Client                                           Server
+
+ Key  ^ ClientHello
+ Exch | + key_share
+      | + signature_algorithms
+      v + extended_key_update   -------->
+                                                   ServerHello  ^ Key
+                                                   + key_share  | Exch
+                                                                v
+                                         {EncryptedExtensions   ^ Server
+                                        + extended_key_update}  | Params
+                                          {CertificateRequest}  v
+                                                 {Certificate}  ^
+                                           {CertificateVerify}  | Auth
+                                                    {Finished}  v
+                                <--------
+      ^ {Certificate}
+ Auth | {CertificateVerify}
+      v {Finished}              -------->
+        [Application Data]N     <------->  [Application Data]N
+                                   ...
+   [EKU(key_update_request)]N   -------->
+                                <--------  [EKU(key_update_response)]N
+    [EKU(key_update_finish)]N   -------->
+                                   ...
+        [Application Data]N+1   <------->  [Application Data]N+1
+
+ Legend:
+
+     +   Indicates noteworthy extensions sent in the
+     previously noted message.
+
+     -   Indicates optional or situation-dependent
+     messages/extensions that are not always sent.
+
+     () Indicates messages protected using keys
+     derived from a client_early_traffic_secret.
+
+     {} Indicates messages protected using keys
+     derived from a [sender]_handshake_traffic_secret.
+
+     []N Indicates messages protected using keys
+     derived from [sender]_application_traffic_secret_N.
+
+       Figure 1: Extended Key Update Message Exchange in TLS 1.3.
+
+   The ExtendedKeyUpdate wire format is:
+
+   enum {
+      key_update_request(0),
+      key_update_response(1),
+      key_update_finish(2),
+      (255)
+   } ExtendedKeyUpdateType;
+
+   struct {
+      ExtendedKeyUpdateType eku_type;
+      select (eku_type) {
+         case key_update_request: {
+             KeyShareEntry key_share;
+         }
+         case key_update_response: {
+             KeyShareEntry key_share;
+         }
+         case key_update_finish: {
+             /* empty */
+         }
+      };
+   } ExtendedKeyUpdate;
+
+   Fields:
+
+   *  eku_type: the subtype of the ExtendedKeyUpdate message.
+
+   *  key_share: key share information.  The contents of this field is
+      determined by the specified group and its corresponding definition
+      (see Section 4.2.8 of [TLS]).
+
+5.  TLS 1.3 Extended Key Update Procedure
+
+   The following steps are taken by a TLS 1.3 implementation; the steps
+   executed with DTLS 1.3 differ slightly.
+
+   1.  The initiator sends ExtendedKeyUpdate(key_update_request)
+       carrying a KeyShareEntry.  While an extended key update is in
+       progress, the initiator MUST NOT initiate another key update.
+
+   2.  Upon receipt, the responder sends its own KeyShareEntry in a
+       ExtendedKeyUpdate(key_update_response) message.  After receiving
+       an ExtendedKeyUpdate(key_update_request), the responder MUST NOT
+       send an ExtendedKeyUpdate(key_update_request) until it has
+       received ExtendedKeyUpdate(key_update_finish).  The responder MAY
+       defer sending a response if system load or resource constraints
+       prevent immediate processing.  In such cases, the response MUST
+       be sent once sufficient resources become available.
+
+   3.  After the responder sends the
+       ExtendedKeyUpdate(key_update_response) it MUST update its send
+       keys.
+
+   4.  Upon receipt of an ExtendedKeyUpdate(key_update_response) the
+       initiator derives the new secrets from the exchanged key shares.
+       The initiator then updates its receive keys and sends an empty
+       ExtendedKeyUpdate(key_update_finish) message to complete the
+       process.  The initiator MUST NOT defer derivation of the secrets
+       and sending the ExtendedKeyUpdate(key_update_finish) message as
+       it would stall the communication.
+
+   5.  After sending ExtendedKeyUpdate(key_update_finish), the initiator
+       MUST update its send keys.
+
+   6.  Upon receiving the initiator’s
+       ExtendedKeyUpdate(key_update_finish), the responder MUST update
+       its receive keys.
+
+   Both initiator and responder MUST encrypt their ExtendedKeyUpdate
+   messages using the old keys.  The Responder MUST ensure that it has
+   received ExtendedKeyUpdate(key_update_finish), encrypted with the old
+   key, before accepting any messages encrypted with the new keys.
+
+   If TLS peers independently initiate the extended key update and the
+   requests cross in flight, the ExtendedKeyUpdate(key_update_request)
+   with the lower lexicographic order of the key_exchange value in
+   KeyShareEntry MUST be ignored.  It MUST NOT be included in the
+   transcript hash.  This prevents each side from advancing keys by two
+   generations.  If the tie-break comparison yields equality (an event
+   that should be impossible for genuine asymmetric key pairs), the
+   endpoint MUST treat this as a protocol violation, send an
+   "unexpected_message" alert, and close the connection.
+
+   The handshake framing uses a single HandshakeType for this message
+   (see Figure 2).
+
+         struct {
+             HandshakeType msg_type;    /* handshake type */
+             uint24 length;             /* bytes in message */
+             select (Handshake.msg_type) {
+                 case client_hello:          ClientHello;
+                 case server_hello:          ServerHello;
+                 case end_of_early_data:     EndOfEarlyData;
+                 case encrypted_extensions:  EncryptedExtensions;
+                 case certificate_request:   CertificateRequest;
+                 case certificate:           Certificate;
+                 case certificate_verify:    CertificateVerify;
+                 case finished:              Finished;
+                 case new_session_ticket:    NewSessionTicket;
+                 case key_update:            KeyUpdate;
+                 case extended_key_update:   ExtendedKeyUpdate;
+             };
+         } Handshake;
+
+                   Figure 2: TLS 1.3 Handshake Structure.
+
+5.1.  TLS 1.3 Extended Key Update Example
+
+   Figure 1 shows the high-level interaction between a TLS 1.3 client
+   and server, while Figure 3 illustrates an example message exchange
+   including the updated keys.  Similar to the key_update message, the
+   extended_key_update message can be sent by either peer after sending
+   its Finished message.
+
+        Client                                           Server
+
+ Key  ^ ClientHello
+ Exch | + key_share
+      | + signature_algorithms
+      v + extended_key_update
+                              -------->
+                                                   ServerHello  ^ Key
+                                                   + key_share  | Exch
+                                                                v
+                                         {EncryptedExtensions   ^ Server
+                                        + extended_key_update}  | Params
+                                          {CertificateRequest}  v
+                                                 {Certificate}  ^
+                                           {CertificateVerify}  | Auth
+                                                    {Finished}  v
+                                <--------
+      ^ {Certificate}
+ Auth | {CertificateVerify}
+      v {Finished}              -------->
+                                   ...
+                               some time later
+                                   ...
+  [EKU(key_update_request       -------->
+        (with key_share))]
+                                <-------- [EKU(key_update_response
+                                            (with key_share))]
+                                         # Server derives new secrets
+                                         # and updates SEND keys here
+ # Client derives new secrets
+ # and updates RECEIVE keys here
+      [EKU(key_update_finish)]  -------->
+ # Client updates SEND keys here
+                                     # Server updates RECEIVE keys here
+
+                 Figure 3: Extended Key Update Example.
+
+6.  DTLS 1.3 Extended Key Update Procedure
+
+   Unlike TLS 1.3, DTLS 1.3 implementations must take into account that
+   handshake messages are not transmitted over a reliable transport
+   protocol.  The responder updates its send keys only after receiving
+   ExtendedKeyUpdate(key_update_finish), which confirms that the
+   initiator has derived the new keys.  The initiator updates its send
+   keys and sending epoch only after it has received a record protected
+   under the responder's new sending epoch.  Because the responder sends
+   such records only after receiving
+   ExtendedKeyUpdate(key_update_finish), any record that the initiator
+   successfully deprotects with its new receive keys confirms that the
+   finish message was received.  The explicit ACK of the finish message
+   is the usual such record, but any other record under the new epoch
+   serves the same purpose.  A record sent by the initiator under the
+   new keys in turn confirms to the responder that the initiator has
+   completed the update, allowing the responder to stop retaining the
+   old receive keys for EKU retransmissions.
+
+   EKU messages MUST be transmitted reliably, like other DTLS handshake
+   messages.  If necessary, EKU messages MAY be fragmented as described
+   in Section 5.5 of [DTLS].  Due to the possibility of EKU messages or
+   their acknowledgments being lost, receivers MUST retain the pre-
+   update keying material until receipt and successful decryption of a
+   message using the new keys.
+
+   Due to packet loss and/or reordering, DTLS 1.3 peers MAY receive
+   records from an earlier epoch.  If the necessary keys are available,
+   implementations SHOULD attempt to process such records; however, they
+   MAY choose to discard them.
+
+   The exchange has the following steps:
+
+   1.  The initiator sends an ExtendedKeyUpdate(key_update_request)
+       message, which contains a key share.  While an extended key
+       update is in progress, the initiator MUST NOT initiate further
+       key updates.  This message is subject to DTLS handshake
+       retransmission, but delivery is only confirmed when the initiator
+       either receives the corresponding
+       ExtendedKeyUpdate(key_update_response) or an ACK.
+
+   2.  Upon receipt, the responder sends its own KeyShareEntry in a
+       ExtendedKeyUpdate(key_update_response) message.  After receiving
+       an ExtendedKeyUpdate(key_update_request), the responder MUST NOT
+       send an ExtendedKeyUpdate(key_update_request) until it has
+       received ExtendedKeyUpdate(key_update_finish).  The responder MAY
+       defer sending a response if system load or resource constraints
+       prevent immediate processing.  In such cases, the responder MUST
+       acknowledge receipt of the key_update_request with an ACK and,
+       once sufficient resources become available and the ordering
+       requirements below are satisfied, send the key_update_response
+       and retransmit it until acknowledged by the initiator.  The
+       responder MUST also defer the response while earlier independent
+       handshake transmissions remain unacknowledged, as specified in
+       Section 6.1, and MUST acknowledge the request while waiting.  A
+       late ACK for the request does not change the EKU state after the
+       corresponding response has been processed.  Other records covered
+       by that ACK MUST still be handled according to the DTLS
+       acknowledgment procedures.
+
+   3.  On receipt of ExtendedKeyUpdate(key_update_response) the
+       initiator derives a secret key based on the exchanged key shares.
+       This message also serves as an implicit acknowledgment of the
+       initiator's ExtendedKeyUpdate(key_update_request), so no separate
+       ACK is required.  The initiator MUST update its receive keys and
+       epoch value.  The initiator MUST NOT defer derivation of the
+       secrets.
+
+   4.  The initiator transmits an ExtendedKeyUpdate(key_update_finish)
+       message using its pre-update send keys and epoch.  This message
+       is subject to DTLS retransmission until acknowledged.  All
+       retransmissions MUST use the same epoch and keying material as
+       the original transmission, as specified in Section 4.2.1 of
+       [DTLS].
+
+   5.  Upon receiving the initiator's
+       ExtendedKeyUpdate(key_update_finish), the responder MUST update
+       its send and receive keys and their epoch values.  This message
+       implicitly acknowledges the corresponding
+       ExtendedKeyUpdate(key_update_response).
+
+   6.  The responder MUST acknowledge the received message by sending an
+       ACK protected with its updated send keys and epoch, as required
+       by Section 7 of [DTLS].  While retaining the pre-update receive
+       keys, the responder MUST process and acknowledge retransmissions
+       of ExtendedKeyUpdate(key_update_finish).  The responder MAY send
+       other records under its new sending epoch, including application
+       data and, subject to Section 6.1, new handshake messages, without
+       waiting for a record from the initiator under the new epoch.
+
+   7.  On receipt of any record that it successfully deprotects with the
+       new receive keys, the initiator MUST treat
+       ExtendedKeyUpdate(key_update_finish) as acknowledged, update its
+       send keys and sending epoch, and stop retransmitting
+       ExtendedKeyUpdate(key_update_finish).  The EKU exchange is then
+       locally complete.  This record is typically the ACK sent in Step
+       6, but an ACK record, a handshake message, or application data
+       protected under the new epoch all have this effect, because the
+       responder sends under the new epoch only after receiving the
+       finish message.  This implicit acknowledgment is specific to this
+       exchange and supplements the acknowledgment rules of Section 7 of
+       [DTLS]; it does not relieve the responder of sending the ACK
+       required by Step 6.  A record that cannot be deprotected MUST NOT
+       have this effect.  After updating its sending epoch, the
+       initiator processes the record according to its content type; a
+       handshake message is acknowledged, explicitly or implicitly,
+       under the new sending epoch as specified in Sections 7 and 7.1 of
+       [DTLS].  Until such a record is received, the initiator MUST NOT
+       send any records using the new keys or sending epoch, including
+       ACK records, and MUST continue the DTLS retransmission procedure
+       for ExtendedKeyUpdate(key_update_finish).
+
+   The ordering and acknowledgment requirements in Section 6.1 and
+   Section 6.2 apply throughout this exchange.
+
+6.1.  Handshake Ordering Across an EKU
+
+   Before sending ExtendedKeyUpdate(key_update_request), the initiator
+   MUST wait until its earlier independent handshake transmissions have
+   been acknowledged, explicitly or by the response defined for their
+   respective exchange.  The responder MUST satisfy the same requirement
+   before sending ExtendedKeyUpdate(key_update_response).  If this
+   delays the response, the responder acknowledges the request as
+   specified in Step 2 of Section 6.  This requirement concerns
+   acknowledgment of transmitted handshake messages, not completion of
+   every operation they might request.  In particular, an acknowledged
+   RequestConnectionId need not already have been fulfilled by the
+   delivery of new CIDs.
+
+   A responder waiting for those earlier acknowledgments MUST also defer
+   new independent handshake transmissions, subject to the PHA exception
+   below.  It continues retransmitting already outstanding messages.
+
+   From sending its request until completing Step 7, the initiator MUST
+   defer new independent handshake transmissions.  From sending its
+   response until receiving ExtendedKeyUpdate(key_update_finish) and
+   updating its sending epoch, the responder MUST do likewise.  The
+   exception for completing a PHA exchange whose request crosses an EKU
+   request is specified in Section 12.4.  Any handshake transmissions
+   made for that exception MUST be acknowledged before the initiator
+   sends EKU finish or the responder sends EKU response, respectively.
+   Processing a crossed EKU request follows the EKU collision rules and
+   is not blocked by these restrictions.
+
+   ExtendedKeyUpdate(key_update_finish) is the initiator's last new
+   handshake message in its pre-update sending epoch.
+   ExtendedKeyUpdate(key_update_response) is the responder's last new
+   handshake message in its pre-update sending epoch.  An endpoint that
+   receives a new handshake message in that epoch with a message_seq
+   greater than the corresponding closing message MUST terminate the
+   connection with an unexpected_message alert.  Retransmissions and
+   reordered earlier messages are distinguished using the DTLS handshake
+   sequencing procedures and MUST NOT be treated as violations of this
+   rule merely because they arrive later.  EKU does not reset the
+   handshake message_seq counter.
+
+   These restrictions do not prohibit retransmissions, ACK records, or
+   application data.  Retransmissions MUST use the original epoch and
+   keying material.  An endpoint MUST continue processing ACKs and
+   retransmissions needed to complete outstanding transmissions while
+   waiting to send an EKU message.  Explicit ACKs acknowledge only the
+   records they identify.  An ACK received under the pre-update epoch
+   does not complete EKU, regardless of which records it covers.
+   Completion of the exchange at the initiator follows from the epoch of
+   the received record, as specified in Step 7.
+
+6.2.  Records Received During the Epoch Transition
+
+   Between Step 3 and Step 7, the initiator holds the new receive keys
+   but still sends under its pre-update epoch.  Any record from the
+   responder that the initiator successfully deprotects with the new
+   receive keys completes the exchange as specified in Step 7 before the
+   record itself is processed.  Consequently, no record received under
+   the new epoch needs to be buffered or left unacknowledged on account
+   of the EKU exchange.  Handshake messages received under the new epoch
+   are processed and acknowledged according to Sections 7 and 7.1 of
+   [DTLS], with the ACK protected under the new sending epoch.
+   Application data received under the new epoch is delivered as usual.
+   Reception of a record under the new epoch while the exchange is in
+   progress MUST NOT be treated as an unexpected_message error; other
+   message validity and ordering requirements remain in effect.
+
+   ACKs for EKU messages are sent after the handshake and are therefore
+   protected, because Section 7 of [DTLS] requires the highest available
+   sending epoch.  An ACK record received in epoch 0 MUST NOT be treated
+   as acknowledging an EKU message and MUST be silently discarded.
+
+   Records protected under the pre-update epoch can still arrive after
+   the initiator has completed the exchange, for example a reordered
+   record that the responder sent before processing
+   ExtendedKeyUpdate(key_update_finish).  Such records are handled as
+   described at the beginning of Section 6.
+
+   Connection-ID processing is independent of the traffic-key
+   transition.  When a NewConnectionId with cid_immediate is processed,
+   the new CID MUST be used as required by Section 9 of [DTLS],
+   including for subsequent EKU retransmissions that still use the old
+   epoch and keys.  Such records are newly protected with the
+   appropriate header and record number.  A NewConnectionId received
+   under the pre-update epoch does not indicate that
+   ExtendedKeyUpdate(key_update_finish) was received; only a record
+   protected under the new epoch does, as specified in Step 7.  CID
+   lookup and retention of the old receive keys MUST allow the required
+   EKU retransmissions to reach the appropriate connection state.
+
+   The initiator MUST continue retransmitting
+   ExtendedKeyUpdate(key_update_finish) under the old keys and epoch
+   until Step 7 completes, and the responder MUST continue processing
+   and acknowledging those retransmissions while retaining the old
+   receive keys.
+
+6.3.  Handshake Message Format
+
+   If DTLS peers independently initiate the extended key update and the
+   requests cross in flight, they are resolved as specified in
+   Section 5.
+
+   The handshake framing uses a single HandshakeType for this message
+   (see Figure 4).
+
+          enum {
+              client_hello(1),
+              server_hello(2),
+              new_session_ticket(4),
+              end_of_early_data(5),
+              encrypted_extensions(8),
+              request_connection_id(9),
+              new_connection_id(10),
+              certificate(11),
+              certificate_request(13),
+              certificate_verify(15),
+              finished(20),
+              key_update(24),
+              extended_key_update(TBD),  /* new */
+              message_hash(254),
+              (255)
+          } HandshakeType;
+
+          struct {
+              HandshakeType msg_type;    /* handshake type */
+              uint24 length;             /* bytes in message */
+              uint16 message_seq;        /* DTLS-required field */
+              uint24 fragment_offset;    /* DTLS-required field */
+              uint24 fragment_length;    /* DTLS-required field */
+              select (msg_type) {
+                  case client_hello:          ClientHello;
+                  case server_hello:          ServerHello;
+                  case end_of_early_data:     EndOfEarlyData;
+                  case encrypted_extensions:  EncryptedExtensions;
+                  case certificate_request:   CertificateRequest;
+                  case certificate:           Certificate;
+                  case certificate_verify:    CertificateVerify;
+                  case finished:              Finished;
+                  case new_session_ticket:    NewSessionTicket;
+                  case key_update:            KeyUpdate;
+                  case extended_key_update:   ExtendedKeyUpdate;
+                  case request_connection_id: RequestConnectionId;
+                  case new_connection_id:     NewConnectionId;
+              } body;
+          } DTLSHandshake;
+
+                  Figure 4: DTLS 1.3 Handshake Structure.
+
+6.4.  DTLS 1.3 Extended Key Update Example
+
+   The following example illustrates a successful extended key update,
+   including how the epochs change during the exchange.
+
+   Client                            Server
+   (Initiator)                       (Responder)
+
+     /---------------------------------------\
+    |           Initial Handshake             |
+     \---------------------------------------/
+
+   [C: tx=3, rx=3]                   [S: tx=3, rx=3]
+   [Application Data]               -------->
+   [C: tx=3, rx=3]                   [S: tx=3, rx=3]
+
+   [C: tx=3, rx=3]                   [S: tx=3, rx=3]
+                                     <--------   [Application Data]
+   [C: tx=3, rx=3]                   [S: tx=3, rx=3]
+
+     /---------------------------------------\
+    |           Some time later ...           |
+     \---------------------------------------/
+
+   [C: tx=3, rx=3]                   [S: tx=3, rx=3]
+   [EKU(key_update_request)]  -------->
+                                     # no epoch change yet
+
+                              <-------- [EKU(key_update_response)]
+   # Sent under OLD epoch. Server does NOT bump yet.
+
+   # Step 3: initiator bumps RECEIVE epoch on
+   # receiving key update response-in:
+   # (rx:=rx+1; tx still old)
+   [C: tx=3, rx=4]                   [S: tx=3, rx=3]
+
+   [EKU(key_update_finish)]   -------->
+   # Sender's Fin is tagged with OLD tx (3).
+   # Initiator retains OLD tx until it receives a
+   # record under the NEW epoch.
+   [C: tx=3, rx=4]                   [S: tx=3, rx=3]
+
+   # Step 5: responder bumps BOTH tx and rx on Fin-in:
+   [C: tx=3, rx=4]                   [S: tx=4, rx=4]
+
+                              <-------- [ACK] (tag=new)
+
+   # Step 7: first record under the NEW epoch (here the ACK)
+   # stops Fin retransmission and bumps SEND epoch.
+   [C: tx=4, rx=4]                   [S: tx=4, rx=4]
+
+   [Application Data]         -------->
+   [C: tx=4, rx=4]                   [S: tx=4, rx=4]
+
+                              <--------   [Application Data]
+   [C: tx=4, rx=4]                   [S: tx=4, rx=4]
+
+     Figure 5: Example DTLS 1.3 Extended Key Update: Message Exchange.
+
+   Figure 6 shows the steps, the message in flight, and the epoch
+   changes on both sides.  The A/B -> X/Y notation indicates the change
+   of epoch values for tx/rx before and after the message transmission.
+
+   +--------------------+----------------+--------------+
+   | Message            | Client tx/rx   | Server tx/rx |
+   +--------------------+----------------+--------------+
+   | APP ------------>  | 3/3 -> 3/3     | 3/3 -> 3/3   |
+   | <------------ APP  | 3/3 -> 3/3     | 3/3 -> 3/3   |
+   | req -------------> | 3/3 -> 3/3     | 3/3 -> 3/3   |
+   | <------------ resp | 3/3 -> 3/4     | 3/3 -> 3/3   | <- step 3
+   | Fin  ------------> | 3/4 -> 3/4     | 3/3 -> 4/4   | <- step 5
+   | <------------- ACK | 3/4 -> 4/4     | 4/4 -> 4/4   | <- step 7
+   | APP -------------> | 4/4 -> 4/4     | 4/4 -> 4/4   |
+   | <------------- APP | 4/4 -> 4/4     | 4/4 -> 4/4   |
+   +--------------------+----------------+--------------+
+
+       Figure 6: Example DTLS 1.3 Extended Key Update: Epoch Changes.
+
+   Figure 7 shows the exchange when the ACK of
+   ExtendedKeyUpdate(key_update_finish) is lost.  The responder has
+   already updated its epochs and continues sending.  The first record
+   that the initiator deprotects under the new epoch, here application
+   data, completes the exchange and ends the retransmission of the
+   finish message.  The responder's retention of the old receive keys
+   ends when the first record from the initiator arrives under the new
+   epoch.
+
+   Client                            Server
+   (Initiator)                       (Responder)
+
+   [C: tx=3, rx=4]                   [S: tx=3, rx=3]
+   [EKU(key_update_finish)]   -------->   (epoch 3)
+   # Step 5: responder bumps BOTH tx and rx on Fin-in:
+   [C: tx=3, rx=4]                   [S: tx=4, rx=4]
+
+                         X    <-------- [ACK] (epoch 4, lost)
+
+                              <-------- [Application Data] (epoch 4)
+   # Step 7: record deprotected with the NEW receive keys.
+   # Fin is treated as acknowledged; tx := 4;
+   # Fin retransmission stops.
+   [C: tx=4, rx=4]                   [S: tx=4, rx=4]
+
+   [Application Data]         -------->   (epoch 4)
+   # Responder stops retaining the epoch-3 receive keys.
+   [C: tx=4, rx=4]                   [S: tx=4, rx=4]
+
+         Figure 7: Example DTLS 1.3 Extended Key Update: Lost ACK.
+
+7.  Updating Traffic Keys
+
+   When the extended key update message exchange is completed both peers
+   have successfully updated their application traffic keys.  The key
+   derivation function described in this document is used to perform
+   this update.
+
+   The design of the key derivation function for computing the next
+   generation of application_traffic_secret is motivated by the desire
+   to include
+
+   *  a secret derived from the negotiated key exchange, whether
+      (EC)DHE, post-quantum KEM, or a PQ/T hybrid mechanism,
+
+   *  a secret that allows the new key exchange to be cryptographically
+      bound to the previously established secret,
+
+   *  a transcript hash that is updated after each Extended Key Update
+      exchange by hashing the previous transcript hash together with the
+      current ExtendedKeyUpdate(key_update_request) and
+      ExtendedKeyUpdate(key_update_response) messages.  This binds any
+      encapsulation ciphertext and public key used in PQ/T hybrid or
+      post-quantum key exchanges to the input keying material (IKM) and
+      cryptographically binds the newly derived secrets to the original
+      handshake transcript, all prior EKU exchanges, the current EKU
+      exchange, and the corresponding KEM public key and encapsulation
+      ciphertext, and
+
+   *  new label strings to distinguish it from the key derivation used
+      in TLS 1.3.
+
+   The transcript_hash_N denotes the transcript hash value associated
+   with generation N. transcript_hash_0 is Transcript-
+   Hash(ClientHello..client Finished) of the initial handshake.  During
+   each Extended Key Update exchange, transcript_hash_N+1 is computed
+   over the concatenation of transcript_hash_N, the
+   ExtendedKeyUpdate(key_update_request) handshake message, and the
+   ExtendedKeyUpdate(key_update_response) handshake message, with
+   handshake messages encoded as specified in Section 4.1 of [TLS] for
+   TLS and Section 5.2 of [DTLS] for DTLS:
+
+    transcript_hash_N+1 = Transcript-Hash(transcript_hash_N ||
+                                          EKU(key_update_request) ||
+                                          EKU(key_update_response))
+
+   Once transcript_hash_N+1 has been computed, transcript_hash_N can be
+   deleted.  No prior transcript hash values need to be retained for
+   future EKU exchanges.
+
+   main_secret_N denotes the Main Secret (see Section 7.1 of [TLS])
+   associated with generation N.
+
+   Figure 8 shows the key derivation hierarchy.
+
+          main_secret_N
+                |
+                v
+          Derive-Secret(., "derived", "")
+                |
+   Shared       v
+   Secret -> HKDF-Extract = main_secret_N+1
+                |
+                +-----> Derive-Secret(., "c ap traffic",
+                |                     transcript_hash_N+1)
+                |                = client_application_traffic_secret_N+1
+                |
+                +-----> Derive-Secret(., "s ap traffic",
+                |                     transcript_hash_N+1)
+                |                = server_application_traffic_secret_N+1
+                |
+                +-----> Derive-Secret(., "exp master",
+                |                     transcript_hash_N+1)
+                |                = exporter_secret_N+1
+
+                    Figure 8: Key Derivation Hierarchy.
+
+   During the initial handshake, the Main Secret is generated (see
+   Section 7.1 of [TLS]).  Since the main_secret is discarded during the
+   key derivation procedure, a derived value is stored.  This stored
+   value then serves as the input salt to the first key update procedure
+   that incorporates the shared secret as IKM to produce
+   main_secret_N+1.  The derived value from this new main secret serves
+   as input salt to the subsequent key update procedure, which also
+   incorporates a fresh shared secret as IKM.  This process is repeated
+   for each additional key update procedure.
+
+   The shared secret is determined by the negotiated key exchange
+   mechanism.  In the base protocol, this mechanism is (EC)DHE (see
+   Section 7.4 of [TLS]).  Post-quantum and hybrid key exchange
+   mechanisms derive the shared secret as specified by their respective
+   definitions.  See also Section 9.
+
+   The traffic keys are re-derived from
+   client_application_traffic_secret_N+1 and
+   server_application_traffic_secret_N+1, as described in Section 7.3 of
+   [TLS].
+
+   Once client_/server_application_traffic_secret_N+1 and its associated
+   traffic keys have been computed, implementations SHOULD delete
+   client_/server_application_traffic_secret_N and its associated
+   traffic keys as soon as possible.  Note: The client_/
+   server_application_traffic_secret_N and its associated traffic keys
+   can only be deleted by the responder after receiving the
+   ExtendedKeyUpdate(key_update_finish) message.
+
+   Once client_/server_application_traffic_secret_N+1 and the
+   corresponding traffic keys are in use, all subsequent records,
+   including alerts and post-handshake messages MUST be protected using
+   those keys.
+
+8.  Resumption
+
+   EKU provides post-compromise recovery for the TLS connection in which
+   it is performed.  The recovery guarantees depend on the threat model
+   in Section 14.1.  In typical deployment environments, PSKs
+   established via the NewSessionTicket mechanism are generated and
+   reside in endpoint memory.  Although such PSKs may subsequently be
+   stored in secure storage, they are exposed during this initial
+   processing window, and compromise of endpoint memory during this
+   period is sufficient to reveal them.  Consequently, later protection
+   using secure storage does not prevent their prior compromise.  These
+   PSKs are sufficient to establish new authenticated TLS connections.
+   Even if an implementation invalidates previously issued PSKs upon
+   completion of the EKU exchange, an attacker that has already obtained
+   such a PSK may initiate and complete a resumed session prior to that
+   invalidation.  In such environments, EKU does not prevent the use of
+   previously issued PSKs.
+
+   Accordingly, endpoints that enable EKU MUST disable resumption using
+   PSKs established via the NewSessionTicket mechanism.
+   resumption_main_secret_N+1 is not derived for this reason in
+   Figure 8.
+
+   When this extension has been successfully negotiated, the server MUST
+   NOT send NewSessionTicket messages on the connection.  The client
+   MUST silently ignore otherwise valid NewSessionTicket messages
+   received on that connection and MUST NOT retain or use the tickets
+   for session resumption.  Receipt of such a message MUST NOT, by
+   itself, cause the client to terminate the connection.  Other
+   applicable requirements for message validity and ordering remain in
+   effect.
+
+   For DTLS, ignoring a NewSessionTicket does not exempt it from
+   handshake sequencing, reassembly, or acknowledgment, including for
+   fragments and retransmissions.  A ticket record received under the
+   new epoch while the client awaits acknowledgment of
+   ExtendedKeyUpdate(key_update_finish) completes the EKU exchange as
+   specified in Step 7 of Section 6 and is then acknowledged under the
+   new sending epoch.  Ignoring a ticket MUST NOT prevent processing of
+   subsequent handshake messages.
+
+9.  Post-Quantum Cryptography Considerations
+
+   The shared secret used by the Extended Key Update mechanism is
+   derived according to the negotiated key exchange method.  As a
+   result, this specification supports the same classes of key
+   establishment mechanisms as TLS itself, including traditional Diffie-
+   Hellman-based key exchanges, post-quantum key encapsulation
+   mechanisms (KEMs), and hybrid combinations thereof.
+
+   In the base TLS protocol, the shared secret is typically established
+   using (EC)DHE (see Section 7.4 of [TLS]).  Recent extensions have
+   introduced support for post-quantum and hybrid key establishment
+   mechanisms to facilitate the transition to post-quantum cryptography.
+   The rationale for this transition and the associated terminology are
+   discussed in [RFC9958] and [RFC9794], respectively.
+
+   For hybrid mechanisms such as SecP256r1MLKEM768, defined in
+   [I-D.ietf-tls-ecdhe-mlkem], the shared secret is derived by combining
+   the outputs of the constituent algorithms; specifically, it is the
+   concatenation of the ECDHE and ML-KEM shared secrets.  For ML-KEM-
+   only key exchange, as defined in [I-D.ietf-tls-mlkem], the ML-KEM
+   shared secret is provided directly to the TLS key schedule in place
+   of the (EC)DHE shared secret.
+
+   The Extended Key Update protocol reuses the key exchange
+   representation defined by the negotiated mechanism.  Consequently,
+   the exchange of fresh key shares during an Extended Key Update
+   follows the same encoding and shared-secret derivation rules as the
+   corresponding TLS handshake.  For KEMs, the initiator generates the
+   encapsulation key and the responder performs encapsulation against
+   it, regardless of which peer acted as the TLS client or server during
+   the initial handshake.
+
+10.  SSLKEYLOGFILE Update
+
+   As a successful extended key update exchange invalidates previous
+   secrets, SSLKEYLOGFILE [TLS-KEYLOGFILE] needs to be populated with
+   new entries.  As a result, three additional secret labels are
+   utilized in the SSLKEYLOGFILE:
+
+   1.  CLIENT_TRAFFIC_SECRET_N+1: identifies the
+       client_application_traffic_secret_N+1 in the key schedule
+
+   2.  SERVER_TRAFFIC_SECRET_N+1: identifies the
+       server_application_traffic_secret_N+1 in the key schedule
+
+   3.  EXPORTER_SECRET_N+1: identifies the exporter_secret_N+1 in the
+       key schedule
+
+   Similar to other entries in the SSLKEYLOGFILE, the label is followed
+   by the 32-byte value of the Random field from the ClientHello message
+   that established the TLS connection, and the corresponding secret
+   encoded in hexadecimal.
+
+   SSLKEYLOGFILE entries for the extended key update MUST NOT be
+   produced if SSLKEYLOGFILE was not used for other secrets in the
+   handshake.
+
+   Note that each successful Extended Key Update invalidates all
+   previous SSLKEYLOGFILE secrets including past iterations of
+   CLIENT_TRAFFIC_SECRET_, SERVER_TRAFFIC_SECRET_ and EXPORTER_SECRET_.
+
+11.  Exporter
+
+11.1.  Post-Compromise Security for the Initial Exporter Secret
+
+   The TLS 1.3 Key Schedule, see Figure 5 of [TLS], derives the
+   exporter_secret from the main secret.  This exporter_secret is static
+   for the lifetime of the connection and is not updated by a standard
+   key update.
+
+   A core design goal of this specification is not met if the
+   exporter_secret does not change.  Therefore, this document defines an
+   exporter interface that derives a fresh exporter secret whenever new
+   application traffic keys are updated through the EKU.  Prior to the
+   first Extended Key Update, this interface uses an initial exporter
+   secret, denoted exporter_secret_0.
+
+   If exporter_secret_0 were identical to exporter_secret, which is
+   retained for the lifetime of the connection, a later compromise of
+   exporter_secret would reveal all keying material exported under
+   exporter_secret_0, even after exporter_secret_0 is discarded.
+
+   Therefore, exporter_secret_0 MUST be distinct from the
+   exporter_secret.  This separation ensures that compromise of the TLS
+   exporter interface does not compromise outputs derived from the
+   exporter interface defined in this document.
+
+   exporter_secret_0 is derived from the Main Secret and the handshake
+   transcript.  It uses the label "exporter eku" rather than "exp
+   master", because "exp master" with the Main Secret yields the TLS
+   exporter_secret. exporter_secret_N+1 uses "exp master" with
+   main_secret_N+1 (see Figure 8). exporter_secret_0 is computed as
+   follows:
+
+   exporter_secret_0 =
+   Derive-Secret(Main Secret,
+   "exporter eku",
+   Transcript-Hash(ClientHello..server Finished))
+
+   Applications that require post-compromise security MUST use the
+   exporter interface defined in this document.  This exporter interface
+   is independent of the TLS exporter defined in Section 7.5 of [TLS],
+   which continues to use a static exporter_secret for the lifetime of
+   the connection for compatiblity with "legacy" applications.
+
+11.2.  Exporter Usage After Extended Key Update
+
+   Protocols such as DTLS-SRTP and DTLS-over-SCTP rely on TLS or DTLS
+   for key establishment, but reuse portions of the derived keying
+   material for their own specific purposes.  These protocols use the
+   TLS exporter defined in Section 7.5 of [TLS].  Exporters are also
+   used for deriving authentication related values such as nonces, as
+   described in [RFC9729].
+
+   Once the Extended Key Update mechanism is complete, such protocols
+   would need to use the newly derived exporter secret to generate
+   Exported Keying Material (EKM) to protect packets.  The
+   exporter_secret_N+1 derived in Section 7 will be used as the "Secret"
+   in the exporter function, defined in Section 7.5 of [TLS], to
+   generate EKM, ensuring that the exported keying material is aligned
+   with the updated security context.  Compromise of a previous exporter
+   secret does not suffice to derive exporter_secret_N+1.
+
+   When a new exporter secret becomes active following a successful
+   Extended Key Update, the TLS or DTLS implementation would have to
+   provide an asynchronous notification to the application indicating
+   that:
+
+   *  A new generation has become active, and the (D)TLS implementation
+      MUST include the corresponding generation N, where
+      exporter_secret_N is the exporter secret of that generation.
+      Generation 0 corresponds to exporter_secret_0, and each successful
+      Extended Key Update increments N by one, so both peers associate
+      the same generation with the same exporter secret.  Applications
+      use the generation to request keying material through a
+      generation-aware exporter interface, so a subsequent Extended Key
+      Update does not change the result.
+
+   Applications are notified that a new exporter generation is active
+   when EKU completes locally.  This notification reports local
+   availability.  It does not establish that the peer has already
+   completed EKU or that an earlier application operation has completed.
+
+   *  In TLS, the initiator triggers notification after Step 5 in
+      Section 5, and the responder triggers notification after Step 6 in
+      Section 5.
+
+   *  In DTLS, the initiator triggers notification to the application
+      after Step 7 in Section 6, and the responder triggers notification
+      after Step 6 in Section 6.
+
+   The corresponding EKM is obtained by the application through the
+   generation-aware exporter interface using the generation and its
+   chosen label and context values as defined in Section 7.5 of [TLS].
+   The application conveys the generation it used to the peer, for
+   example with the protected data, so that the peer derives the same
+   EKM.
+
+   The retention policy for exporter secrets and derived application
+   contexts is application-specific and MUST satisfy Section 12.1.  An
+   operation using an older exporter generation can remain outstanding
+   after newer-generation data has been processed.  Neither that event
+   nor retirement of old DTLS record keys alone determines when the
+   operation's exporter context may be discarded.  Applications MUST
+   bound retention and define how expired operations fail.  For example,
+   a DTLS-SRTP application might retain an older packet-protection
+   context while its replay window still accepts packets protected with
+   that context, as described in Section 3.3.2 of [RFC3711].
+
+12.  Interaction with Post-Handshake Operations
+
+   EKU changes traffic secrets, exporter secrets, and the transcript
+   context used by subsequent authentication.  Operations that depend on
+   that state need both consistent context selection and suitable
+   ordering across the change.  This section defines common requirements
+   and illustrates them with Post-Handshake Certificate-Based Client
+   Authentication (PHA), carried by the handshake protocol, and Exported
+   Authenticators, carried by an application protocol.  The additional
+   DTLS transmission and acknowledgment rules are specified in
+   Section 6.1 and Section 6.2.
+
+   EKU provides fresh traffic secrets, but after compromise of the
+   connection state described in Section 14.1, EKU alone does not
+   authenticate the exchange.  An attacker that retains this state,
+   including the value used to derive main_secret_N+1, can act as a
+   person-in-the-middle during the exchange, cause the peers to derive
+   divergent traffic secrets, and learn the new keys.  TLS 1.3 provides
+   two mechanisms that can detect such divergence, each with a different
+   scope.  Post-Handshake Certificate-Based Client Authentication
+   (Section 4.3.6 of [TLS]) only authenticates the client to the server,
+   and therefore allows only the server to detect divergence.  Exported
+   Authenticators [RFC9261] authenticate the endpoint that produces the
+   authenticator, so detection at both endpoints requires an
+   authenticator in each direction.
+
+12.1.  Binding Operations to a Key Generation
+
+   Post-handshake operations that use changing key material or
+   transcript state MUST have an unambiguous association with the
+   generation and context used to create and verify their authentication
+   values.  Advancing EKU MUST NOT silently change the context of an
+   outstanding operation.  Generation selection is separate from the
+   epoch of the records carrying the operation: an authentication object
+   can be created before an EKU and transmitted or verified after it.
+
+   Here, a generation identifies the relevant secrets and transcript
+   context of the initial connection or of a particular EKU exchange.
+   Generation identifiers are scoped to their connection and MUST NOT be
+   used to select a context belonging to another connection.
+
+   This requirement can be satisfied by ordering the operation and EKU
+   so that the context remains fixed, or by explicitly selecting a
+   generation and retaining the corresponding context.  PHA uses the
+   ordering rules in Section 12.4 to keep its transcript and Finished
+   key consistent.  The epoch-aware Exported Authenticator interface in
+   Section 12.3 instead selects an exporter generation for each
+   operation, allowing the operation to overlap an EKU without changing
+   that selection.
+
+   The protocol using an explicitly selected generation MUST specify how
+   both endpoints associate the operation with the same generation, how
+   that association is authenticated, and which generations are
+   acceptable for its purpose.  A local epoch counter alone is not
+   sufficient unless the protocol defines how the peer interprets it.  A
+   valid authentication value from an older generation MUST NOT be
+   treated as proof of authentication under the updated context.
+   Applications that use authentication to check the result of a
+   particular EKU MUST require the generation resulting from that EKU.
+
+   An implementation MUST either retain the keying material or derived
+   context needed by an outstanding operation for its permitted
+   lifetime, or explicitly fail that operation if the context becomes
+   unavailable.  It MUST NOT substitute a different generation.
+   Applications MUST define bounded lifetimes for such operations.
+   Selection, buffering, or expiration of an application operation MUST
+   NOT prevent the underlying EKU exchange from progressing.  These
+   requirements do not require indefinite retention of old exporter
+   secrets.
+
+12.2.  Post-Handshake Certificate-Based Client Authentication
+
+   When Post-Handshake Certificate-Based Client Authentication
+   (Section 4.7.2 of [TLS]) is performed after an Extended Key Update
+   (EKU) is complete, the Handshake Context used for the transcript hash
+   is updated.  It consists of transcript_hash_N+1 concatenated with the
+   CertificateRequest message.  Both endpoints use the Handshake Context
+   in effect when the CertificateRequest is sent.  The Finished message
+   is computed using a MAC key derived from the Base Key of the new
+   generation (client_application_traffic_secret_N+1).  Because the
+   CertificateVerify message is signed with the private key
+   corresponding to the client's end-entity certificate over this
+   Handshake Context, the server can detect divergent key state.  Post-
+   Handshake Certificate-Based Client Authentication does not
+   reauthenticate the server, so the client gains no equivalent
+   assurance.  A client that requires such assurance can request an
+   Exported Authenticator from the server.
+
+12.3.  Exported Authenticators
+
+   This document extends Section 5.1 of [RFC9261] with an epoch-aware
+   Exported Authenticator interface.  For this interface, the Handshake
+   Context and Finished MAC Key MUST be derived from exporter_secret_G
+   for the explicitly selected exporter generation G.  The same
+   generation MUST be used for creation and validation of an
+   authenticator, even if another EKU completes between those
+   operations.  The derivation labels and authenticator construction
+   otherwise follow [RFC9261].
+
+   Implementations supporting this interface MUST allow the application
+   to select the generation for both creation and validation.  For a
+   requested authenticator, the requesting application MUST select the
+   generation when constructing the request, and the responding
+   application MUST use that generation.  For an unsolicited server
+   authenticator, the generating application selects it.  In both cases,
+   the application protocol MUST unambiguously identify the generation
+   to the verifier and bind it to the authenticated operation as
+   required by Section 12.1.
+
+   The certificate_request_context can carry this identification as part
+   of an application-defined encoding.  That encoding MUST preserve the
+   context's length limits, uniqueness requirements, and request-
+   response association from [RFC9261].  It MUST identify the same
+   exporter generation at both endpoints; a bare local counter that the
+   peer cannot interpret is insufficient.  This specification does not
+   define a common wire encoding for application protocols.
+
+   If the selected generation is unknown, unavailable, expired, or
+   disallowed by application policy, creation or validation MUST fail
+   explicitly rather than use the current exporter or retry with a
+   different generation.  An application MUST NOT select a generation
+   before the (D)TLS implementation has reported it as active, as
+   described in Section 11.  Each endpoint reports a generation only
+   once its part of the EKU exchange is complete.  In TLS, the peer has
+   therefore already derived that generation when an authenticator or
+   request selecting it arrives.  In DTLS, a record carrying such a
+   request or authenticator is protected under the new epoch and
+   completes the peer's exchange on receipt, as specified in Step 7 of
+   Section 6.  No deferral of the operation is therefore required.
+   These failures are application-operation failures and do not, by
+   themselves, require termination of the (D)TLS connection.
+
+   An application checking for key divergence after an EKU MUST select
+   the generation resulting from that EKU.  If interference has caused
+   the peers to derive different exporter secrets for that generation,
+   the authenticator cannot be successfully validated as specified in
+   Section 5.2.4 of [RFC9261].  Accepting an older-generation
+   authenticator would not establish agreement on the newly derived
+   secrets.
+
+   The existing interfaces in [RFC9261] retain their use of the static
+   TLS exporter defined in Section 7.5 of [TLS].  They MUST NOT silently
+   switch to the epoch-aware interface.  As discussed in Section 7 of
+   [RFC9261], the epoch-aware interface can also be implemented at the
+   application layer using the corresponding exporter interface.
+
+   Authenticator requests and authenticators are carried by an
+   application protocol, not as TLS or DTLS handshake messages.
+   Carrying them in DTLS application data does not create a DTLS
+   handshake acknowledgment obligation.  Application-level delivery and
+   acknowledgment requirements are defined by the application protocol.
+   The record epoch carrying an authenticator MUST NOT, by itself,
+   determine the exporter generation used to validate it.
+
+12.4.  Ordering of Authentication and Extended Key Update
+
+   EKU and Post-Handshake Authentication may both occur during the
+   lifetime of a (D)TLS connection.  Post-Handshake Certificate-Based
+   Client Authentication (PHA) is bound to the handshake transcript and
+   computes its Finished message as specified in Section 4.5.3 of [TLS],
+   using a key derived from the application traffic secret that is
+   active at the time the CertificateRequest is sent.  Therefore,
+   specific ordering constraints are required to preserve cryptographic
+   consistency.
+
+12.4.1.  Post-Handshake Certificate-Based Client Authentication
+
+   An endpoint MUST NOT complete an EKU exchange in a manner that
+   transitions to new application traffic secrets while a PHA exchange
+   is in progress.
+
+   The following constraints apply to both TLS 1.3 and DTLS 1.3:
+
+   *  An endpoint MUST NOT initiate PHA while an EKU exchange is locally
+      in progress.
+
+   *  An endpoint MUST NOT initiate an EKU exchange while a PHA exchange
+      is outstanding.
+
+   *  In a cross-flight condition, if a (D)TLS client sends an EKU
+      request and, before receiving a response, receives a
+      CertificateRequest from the (D)TLS server, the endpoints MUST
+      defer completion of the EKU exchange and proceed with the Post-
+      Handshake Authentication exchange.  The endpoints MUST NOT
+      transition to new application traffic secrets until the
+      authentication exchange has completed.
+
+   In DTLS, deferred EKU request is acknowledged as specified in
+   Section 6.
+
+12.4.1.1.  DTLS CertificateRequest Sent After the Server Completes EKU
+
+   When the DTLS client initiates EKU, the server completes its part of
+   the exchange by receiving ExtendedKeyUpdate(key_update_finish),
+   updating its keys, and sending the ACK.  The server can then initiate
+   PHA by sending a CertificateRequest under the new epoch.  If the ACK
+   is lost or reordered, this request can be the first record the client
+   receives under the new epoch.  As specified in Step 7 of Section 6,
+   deprotecting it completes the EKU exchange at the client.  The client
+   updates its send keys and sending epoch, stops retransmitting
+   ExtendedKeyUpdate(key_update_finish), and then processes the
+   CertificateRequest as a request received after EKU completion.  The
+   PHA response records use the new epoch.  The PHA Handshake Context
+   MUST use the transcript updated by this EKU, and the PHA Finished MAC
+   key MUST be derived from the corresponding new
+   client_application_traffic_secret_N+1, as described above.  Neither
+   endpoint may initiate another EKU until this PHA exchange has
+   completed, as required by the preceding constraints.
+
+   The server MUST continue to process and acknowledge retransmissions
+   of ExtendedKeyUpdate(key_update_finish) that were sent before the
+   client received the CertificateRequest, as specified in Section 6.
+
+   This rule does not change the preceding rule for a CertificateRequest
+   from the pre-update epoch that crosses an EKU request before receipt
+   of the EKU response.
+
+   The following example shows the exchange when the EKU ACK is lost:
+
+   Client (EKU initiator)                  Server (EKU responder)
+
+            <---------------------------- EKU(response) [N]
+   rx := N+1; tx remains N
+   EKU(finish) [N] --------------------->
+                                          rx := N+1; tx := N+1
+            X---------------------------- ACK of EKU(finish) [N+1]
+                                          (ACK lost)
+            <---------------------------- CertificateRequest [N+1]
+   Record deprotected under N+1:
+   EKU(finish) treated as acknowledged
+   tx := N+1; stop EKU retransmissions
+   Process CertificateRequest
+   Certificate [N+1] ------------------->
+   CertificateVerify* [N+1] ------------>
+   Finished [N+1] ---------------------->
+            <---------------------------- ACK of PHA response [N+1]
+
+   Figure 9: DTLS PHA Request Completing the EKU Exchange at the Client.
+
+12.4.2.  Exported Authenticators
+
+   An Exported Authenticator operation using the epoch-aware interface
+   may overlap EKU only with the fixed generation association and
+   context handling specified in Section 12.1 and Section 12.3.  An
+   epoch-aware API alone does not ensure that the peer selects the same
+   generation.  The application protocol's generation agreement is
+   required as well.
+
+   No additional serialization between EKU and such an operation is
+   required when those conditions are satisfied.  An operation bound to
+   an older generation can complete after EKU, but does not authenticate
+   the new generation.  Because a generation is selectable only after it
+   has been reported as active, an operation does not select a
+   generation that is unavailable at the peer, as explained in
+   Section 12.3.
+
+13.  Deployment Considerations
+
+   Extended Key Update is enabled by explicit configuration, either by
+   an operator for all applications on a device or by an application
+   that needs it.  The configuration includes a policy for when to
+   initiate an Extended Key Update, for example at a fixed interval or
+   after a certain amount of data has been exchanged.  When enabled by
+   an operator, the application may not be aware of Extended Key Update.
+   Enabling it has the following effects:
+
+   *  Resumption using PSKs established via the NewSessionTicket
+      mechanism is disabled (Section 8).
+
+   *  Applications that use exported keying material and require post-
+      compromise security use the exporter interface defined in
+      Section 11.
+
+   *  Post-Handshake Certificate-Based Client Authentication and
+      Exported Authenticators performed after an Extended Key Update are
+      bound to the updated keys (Section 12).
+
+   Implementations can warn when the exporter defined in Section 7.5 of
+   [TLS] is used on a connection where Extended Key Update was
+   negotiated.
+
+14.  Security Considerations
+
+   This section discusses additional security and operational aspects
+   introduced by the Extended Key Update mechanism.  All security
+   considerations of TLS 1.3 [TLS] and DTLS 1.3 [DTLS] continue to
+   apply.
+
+14.1.  Threat Model
+
+   The specification assumes that the adversary has the following
+   capabilities:
+
+   *  Network attacker: The adversary has full control over the network
+      between the endpoints.  It can read, modify, inject, drop, delay,
+      and reorder messages, including EKU messages.  This is the same
+      attacker model assumed by TLS 1.3 (see Appendix F of [TLS]).
+
+   *  Transient endpoint compromise: For a limited period of time, the
+      adversary can read the memory of one or both endpoints.  During
+      this period it obtains all keying material held by that endpoint
+      for the connection, including the current application traffic
+      secrets and keys, the exporter secrets, the value retained for
+      deriving main_secret_N+1, transcript_hash_N, and any ephemeral key
+      exchange material in use.  After the compromise ends, the
+      adversary retains all keying material obtained but has no access
+      to ephemeral key exchange material generated afterwards.
+
+   The security guarantees of Extended Key Update depend on the time of
+   compromise and the adversary's subsequent actions:
+
+   1.  If compromise ends before an Extended Key Update starts, and the
+       adversary does not interfere with the exchange, then the
+       adversary cannot derive the traffic keys and exporter secrets
+       established by that Extended Key Update.
+
+   2.  If the adversary uses keying material obtained during the
+       compromise to act as a person-in-the-middle attacker during an
+       Extended Key Update, then security cannot be restored.  Such
+       interference is detected by the endpoint that validates the
+       peer's authentication using a mechanism described in Section 12.
+
+   The following are out of scope:
+
+   *  An adversary with ongoing access to keying material on an
+      endpoint, also called a persistent adversary.
+
+   *  Compromise of a long-term private key.  An adversary holding it
+      can impersonate that endpoint in future TLS connections.  The
+      detection guarantees in Section 12 rely on the corresponding
+      private key remaining secure.
+
+   If a compromise occurs before the handshake completes, the ephemeral
+   key exchange, client_handshake_traffic_secret,
+   server_handshake_traffic_secret, and the initial client_/
+   server_application_traffic_secret could be exposed.  Recovery then
+   depends on the conditions stated above.
+
+14.2.  Post-Compromise Security
+
+   Under the threat model described in Section 14.1, Extended Key Update
+   provides post-compromise security for long-lived TLS sessions.  To
+   ensure post-compromise security guarantees each update MUST use
+   freshly generated ephemeral key exchange material.  Implementations
+   MUST NOT reuse ephemeral key exchange material across updates or
+   across TLS sessions.
+
+14.3.  Denial-of-Service (DoS)
+
+   The Extended Key Update mechanism increases computational and state-
+   management overhead.  A malicious peer could attempt to exhaust CPU
+   or memory resources by initiating excessive update requests.
+
+   Implementations SHOULD apply the following mitigations:
+
+   *  Limit the frequency of accepted Extended Key Update requests per
+      session.
+
+   *  A peer that has sent an Extended Key Update MUST NOT initiate
+      another until the previous update completes.  If a peer violates
+      this rule, the receiving peer MUST treat it as a protocol
+      violation, send an "unexpected_message" alert, and terminate the
+      connection.
+
+14.4.  Operational Guidance
+
+   Deployments SHOULD evaluate Extended Key Update performance under
+   load and fault conditions, such as high-frequency or concurrent
+   updates.  TLS policies SHOULD define explicit rate limits that
+   balance post-compromise security benefits against potential DoS
+   exposure.
+
+15.  IANA Considerations
+
+15.1.  TLS Flags
+
+   IANA is requested to add the following entry to the "TLS Flags"
+   extension registry [TLS-Ext-Registry]:
+
+   *  Value: TBD1
+
+   *  Flag Name: extended_key_update
+
+   *  Messages: CH, EE
+
+   *  Recommended: Y
+
+   *  Reference: This document
+
+15.2.  TLS HandshakeType
+
+   IANA is requested to add the following entry to the "TLS
+   HandshakeType" registry [TLS-Param-Registry]:
+
+   *  Value: TBD2
+
+   *  Description: extended_key_update
+
+   *  DTLS-OK: Y
+
+   *  Reference: This document
+
+15.3.  ExtendedKeyUpdate Message Subtypes Registry
+
+   IANA is requested to create a new registry "TLS ExtendedKeyUpdate
+   Message Subtypes", within the existing "Transport Layer Security
+   (TLS) Parameters" registry group [TLS-Param-Registry].  This new
+   registry reserves types used for Extended Key Update entries.  The
+   initial contents of this registry are as follows.
+
+         +=======+=====================+=========+===============+
+         | Value | Description         | DTLS-OK | Reference     |
+         +=======+=====================+=========+===============+
+         | 0     | key_update_request  | Y       | This document |
+         +-------+---------------------+---------+---------------+
+         | 1     | key_update_response | Y       | This document |
+         +-------+---------------------+---------+---------------+
+         | 2     | key_update_finish   | Y       | This document |
+         +-------+---------------------+---------+---------------+
+         | 3-255 | Unassigned          |         |               |
+         +-------+---------------------+---------+---------------+
+
+                                  Table 1
+
+   New assignments in the "TLS ExtendedKeyUpdate Message Subtypes"
+   registry will be administered by IANA through Specification Required
+   procedure [RFC8126].  The role of the designated expert is described
+   in Section 17 of [RFC8447].  The designated expert [RFC8126] ensures
+   that the specification is publicly available.  It is sufficient to
+   have an Internet-Draft (that is posted and never published as an RFC)
+   or to cite a document from another standards body, industry
+   consortium, or any other location.  An expert may provide more in-
+   depth reviews, but their approval should not be taken as an
+   endorsement of the ExtendedKeyUpdate Message Subtype.
+
+15.4.  SSLKEYLOGFILE labels
+
+   IANA is requested to add the following entries to the "TLS
+   SSLKEYLOGFILE Labels" extension registry [TLS-Ext-Registry]:
+
+   +===========================+=============+===========+============+
+   | Value                     | Description | Reference | Comment    |
+   +===========================+=============+===========+============+
+   | CLIENT_TRAFFIC_SECRET_N+1 | Secret      | This      | N          |
+   |                           | protecting  | document  | represents |
+   |                           | client      |           | iteration  |
+   |                           | records     |           | of         |
+   |                           | after       |           | Extended   |
+   |                           | Extended    |           | Key Update |
+   |                           | Key Update  |           |            |
+   +---------------------------+-------------+-----------+------------+
+   | SERVER_TRAFFIC_SECRET_N+1 | Secret      | This      | N          |
+   |                           | protecting  | document  | represents |
+   |                           | server      |           | iteration  |
+   |                           | records     |           | of         |
+   |                           | after       |           | Extended   |
+   |                           | Extended    |           | Key Update |
+   |                           | Key Update  |           |            |
+   +---------------------------+-------------+-----------+------------+
+   | EXPORTER_SECRET_N+1       | Exporter    | This      | N          |
+   |                           | secret      | document  | represents |
+   |                           | after       |           | iteration  |
+   |                           | Extended    |           | of         |
+   |                           | Key Update  |           | Extended   |
+   |                           |             |           | Key Update |
+   +---------------------------+-------------+-----------+------------+
+
+                                 Table 2
+
+16.  References
+
+16.1.  Normative References
+
+   [DTLS]     Rescorla, E., Tschofenig, H., and N. Modadugu, "The
+              Datagram Transport Layer Security (DTLS) Protocol Version
+              1.3", RFC 9147, DOI 10.17487/RFC9147, April 2022,
+              <https://www.rfc-editor.org/rfc/rfc9147>.
+
+   [RFC2119]  Bradner, S., "Key words for use in RFCs to Indicate
+              Requirement Levels", BCP 14, RFC 2119,
+              DOI 10.17487/RFC2119, March 1997,
+              <https://www.rfc-editor.org/rfc/rfc2119>.
+
+   [RFC3711]  Baugher, M., McGrew, D., Naslund, M., Carrara, E., and K.
+              Norrman, "The Secure Real-time Transport Protocol (SRTP)",
+              RFC 3711, DOI 10.17487/RFC3711, March 2004,
+              <https://www.rfc-editor.org/rfc/rfc3711>.
+
+   [RFC8174]  Leiba, B., "Ambiguity of Uppercase vs Lowercase in RFC
+              2119 Key Words", BCP 14, RFC 8174, DOI 10.17487/RFC8174,
+              May 2017, <https://www.rfc-editor.org/rfc/rfc8174>.
+
+   [RFC9261]  Sullivan, N., "Exported Authenticators in TLS", RFC 9261,
+              DOI 10.17487/RFC9261, July 2022,
+              <https://www.rfc-editor.org/rfc/rfc9261>.
+
+   [RFC9729]  Schinazi, D., Oliver, D., and J. Hoyland, "The Concealed
+              HTTP Authentication Scheme", RFC 9729,
+              DOI 10.17487/RFC9729, February 2025,
+              <https://www.rfc-editor.org/rfc/rfc9729>.
+
+   [TLS]      Rescorla, E., "The Transport Layer Security (TLS) Protocol
+              Version 1.3", RFC 9846, DOI 10.17487/RFC9846, July 2026,
+              <https://www.rfc-editor.org/rfc/rfc9846>.
+
+   [TLS-FLAGS]
+              Nir, Y., "A Flags Extension for TLS 1.3", Work in
+              Progress, Internet-Draft, draft-ietf-tls-tlsflags-18, 10
+              September 2026, <https://datatracker.ietf.org/doc/html/
+              draft-ietf-tls-tlsflags-18>.
+
+16.2.  Informative References
+
+   [ANSSI]    ANSSI, "Recommendations for securing networks with IPsec,
+              Technical Report", August 2015,
+              <https://cyber.gouv.fr/sites/default/files/2012/09/
+              NT_IPsec_EN.pdf>.
+
+   [CCG16]    IEEE, "On Post-compromise Security", August 2016,
+              <https://doi.org/10.1109/csf.2016.19>.
+
+   [CONFIDENTIALITY]
+              Barnes, R., Schneier, B., Jennings, C., Hardie, T.,
+              Trammell, B., Huitema, C., and D. Borkmann,
+              "Confidentiality in the Face of Pervasive Surveillance: A
+              Threat Model and Problem Statement", RFC 7624,
+              DOI 10.17487/RFC7624, August 2015,
+              <https://www.rfc-editor.org/rfc/rfc7624>.
+
+   [I-D.ietf-tls-ecdhe-mlkem]
+              Kwiatkowski, K., Kampanakis, P., Westerbaan, B., and D.
+              Stebila, "Post-quantum hybrid ECDHE-MLKEM Key Agreement
+              for TLSv1.3", Work in Progress, Internet-Draft, draft-
+              ietf-tls-ecdhe-mlkem-05, 26 May 2026,
+              <https://datatracker.ietf.org/doc/html/draft-ietf-tls-
+              ecdhe-mlkem-05>.
+
+   [I-D.ietf-tls-mlkem]
+              Connolly, D., "ML-KEM Post-Quantum Key Agreement for TLS
+              1.3", Work in Progress, Internet-Draft, draft-ietf-tls-
+              mlkem-11, 16 September 2026,
+              <https://datatracker.ietf.org/doc/html/draft-ietf-tls-
+              mlkem-11>.
+
+   [RFC8126]  Cotton, M., Leiba, B., and T. Narten, "Guidelines for
+              Writing an IANA Considerations Section in RFCs", BCP 26,
+              RFC 8126, DOI 10.17487/RFC8126, June 2017,
+              <https://www.rfc-editor.org/rfc/rfc8126>.
+
+   [RFC8447]  Salowey, J. and S. Turner, "IANA Registry Updates for TLS
+              and DTLS", RFC 8447, DOI 10.17487/RFC8447, August 2018,
+              <https://www.rfc-editor.org/rfc/rfc8447>.
+
+   [RFC9794]  Driscoll, F., Parsons, M., and B. Hale, "Terminology for
+              Post-Quantum Traditional Hybrid Schemes", RFC 9794,
+              DOI 10.17487/RFC9794, June 2025,
+              <https://www.rfc-editor.org/rfc/rfc9794>.
+
+   [RFC9958]  Banerjee, A., Reddy.K, T., Schoinianakis, D., Hollebeek,
+              T., and M. Ounsworth, "Post-Quantum Cryptography for
+              Engineers", RFC 9958, DOI 10.17487/RFC9958, June 2026,
+              <https://www.rfc-editor.org/rfc/rfc9958>.
+
+   [TLS-Ext-Registry]
+              IANA, "Transport Layer Security (TLS) Extensions",
+              November 2023, <https://www.iana.org/assignments/tls-
+              extensiontype-values>.
+
+   [TLS-KEYLOGFILE]
+              Thomson, M., Rosomakho, Y., and H. Tschofenig, "The
+              SSLKEYLOGFILE Format for TLS", Work in Progress, Internet-
+              Draft, draft-ietf-tls-keylogfile-05, 9 June 2025,
+              <https://datatracker.ietf.org/doc/html/draft-ietf-tls-
+              keylogfile-05>.
+
+   [TLS-Param-Registry]
+              IANA, "Transport Layer Security (TLS) Parameters",
+              November 2023,
+              <https://www.iana.org/assignments/tls-parameters>.
+
+   [TLS-RENEGOTIATION]
+              Rescorla, E., Ray, M., Dispensa, S., and N. Oskov,
+              "Transport Layer Security (TLS) Renegotiation Indication
+              Extension", RFC 5746, DOI 10.17487/RFC5746, February 2010,
+              <https://www.rfc-editor.org/rfc/rfc5746>.
+
+Appendix A.  Acknowledgments
+
+   We would like to thank the members of the "TSVWG DTLS for SCTP
+   Requirements Design Team" for their discussion.  The members, in no
+   particular order, were: Marcelo Ricardo Leitner, Xin Long, John
+   Mattsson, Claudio Porfiri, Bertrand Rault, K Tirumaleswar Reddy,
+   Zaheduzzaman Sarker, Hannes Tschofenig, Michael Tüxen, and Magnus
+   Westerlund.
+
+   Additionally, we would like to thank the chairs of the Transport and
+   Services Working Group (tsvwg) Gorry Fairhurst and Marten Seemann as
+   well as the responsible area director Martin Duke.
+
+   Finally, we would like to thank David Benjamin, Joe Birr-Pixton,
+   Matthijs van Duin, Scott Fluhrer, Dennis Jackson, Benjamin Kaduk,
+   Ilari Liusvaara, Eric Rescorla, Rifaat Shekh-Yusef, Martin Thomson,
+   Nik Stuckenbrock, Mathy Vanhoef, and Thom Wiggers for their review
+   comments and contributions.
+
+Appendix B.  State Machines
+
+   The sections below describe the state machines for the extended key
+   update operation for TLS 1.3 and DTLS 1.3.
+
+   The state machine diagrams in the Appendix are provided for
+   illustrative purposes only to aid understanding of the protocol flow.
+   They are not normative.  In case of any discrepancy between the
+   Appendix diagrams and the protocol behavior specified in the main
+   body of this document, the text in the draft takes precedence.
+
+   For editorial reasons we abbreviate the protocol message types:
+
+   *  Req - ExtendedKeyUpdate(request)
+
+   *  Resp - ExtendedKeyUpdate(response)
+
+   *  Fin - ExtendedKeyUpdate(key_update_finish)
+
+   *  ACK - Acknowledgement message from Section 7 of [DTLS]
+
+   *  APP - application data payloads
+
+   In the (D)TLS 1.3 state machines discussed below, the terms SEND and
+   RECEIVE keys refer to the send and receive key variables defined in
+   Section 2.
+
+   The TLS state machine diagrams use the following notation:
+
+   *  Numbered labels (1), (2), … denote normal protocol transitions in
+      the order they occur.
+
+   *  Lettered labels (A), (B), … denote exceptional or conditional
+      transitions.
+
+   *  Self-loops indicate that the state does not change as a result of
+      the event.
+
+B.1.  TLS 1.3 State Machines
+
+   This section describes the initiator and responder state machines.
+
+B.1.1.  Initiator State Machine
+
+   +----------------------+
+   | START                |
+   | send_key=current,    |
+   | receive_key=current  |
+   | updating=0           |
+   +----------------------+
+         |
+   (1) send Req with local KeyShareEntry
+       set updating=1
+         v
+   +----------------------+
+   | WAIT_RESP            |
+   | updating=1           |
+   +----------------------+
+   |  \
+   |   \ (A) recv peer Req (crossed updates):
+   |    \  compare peer.key_exchange to local.key_exchange
+   |     \  - if peer < local: IGNORE peer Req (send nothing)
+   |      \ - if peer == local: ABORT "unexpected_message"
+   |       \ - if peer > local: ABANDON local update:
+   |          * set updating=0
+   |          * act as RESPONDER: send Resp with KeyShareEntry,
+   |            derive new secrets, then proceed as in responder flow
+   |
+   |  (2) recv Resp with key_share:
+   |      derive new secrets
+   |      send Fin (encrypted under old keys)
+   |      update SEND key (send_key := new)
+   |      update RECEIVE key (receive_key := new)
+   |      set updating=0
+          v
+   +----------------------+
+   | FINISHED             |
+   +----------------------+
+
+   Notes:
+
+   *  Fin message is sent under old keys.
+
+   *  If a standard KeyUpdate arrives (EKU negotiated), ABORT
+      "unexpected_message".
+
+   *  Crossed-requests: ignore the request with LOWER lexicographic
+      key_exchange; if equal, abort.
+
+B.1.2.  Responder State Machine
+
+   +----------------------+
+   | START                |
+   | send_key=current,    |
+   | receive_key=current  |
+   | updating=0           |
+   +----------------------+
+         |
+   (1) recv Req
+       set updating=1
+         v
+   +----------------------+
+   | RESPOND              |
+   +----------------------+
+   |  send Resp with KeyShareEntry
+   |  (may defer sending if under load;
+   |   must send once resources free)
+   |  derive new secrets
+   |  update SEND keys (send_key := new)
+   |  --> WAIT_I_FIN
+         v
+   +----------------------+
+   | WAIT_I_FIN           |
+   | updating=1           |
+   +----------------------+
+         |
+   (2) recv Fin (encrypted under old keys)
+       update RECEIVE keys (receive_key := new)
+       set updating=0
+         v
+   +----------------------+
+   | FINISHED             |
+   +----------------------+
+
+   Notes:
+
+   *  Responder may defer Resp under load (no status reply), then must
+      send it once resources are free.
+
+   *  If a standard KeyUpdate arrives (EKU negotiated), ABORT
+      "unexpected_message".
+
+B.2.  DTLS 1.3 State Machines
+
+   This section describes the initiator and responder state machines.
+   The diagrams show the EKU message exchange.  Sending actions are
+   additionally subject to Section 6.1, including waiting for earlier
+   independent handshake transmissions to be acknowledged and deferring
+   new independent transmissions.  Incoming messages follow Section 6.2
+   and Section 12.1.  Those requirements apply even where a diagram does
+   not show a separate waiting state.
+
+B.2.1.  Terms and Abbreviations
+
+   The following variables and abbreviations are used in the state
+   machine diagrams.
+
+   *  rx - current, accepted receive epoch.
+
+   *  tx - current transmit epoch used for tagging outgoing messages.
+
+   *  E - initial epoch value.
+
+   *  updating - true while a key-update handshake is in progress.
+
+   *  old_rx - the previous receive epoch remembered during retention.
+
+   *  retain_old - when true, receiver accepts tags old_rx and rx.
+
+   *  tag=... - the TX-epoch value written on an outgoing message.
+
+   *  e==... - the epoch tag carried on an incoming message (what the
+      peer sent).
+
+   *  FINISHED / START / WAIT_RESP / WAIT_I_FIN / WAIT_R_FIN / ACTIVATE
+      RETENTION / RESPOND / WAIT_ACK - diagram states; FINISHED denotes
+      the steady state after success.
+
+   Crossed requests.  If both peers independently initiate the extended
+   key update and the key_update_request messages cross in flight,
+   compare the KeyShareEntry.key_exchange values.  The request with the
+   lower lexicographic value must be ignored.  If the values are equal,
+   the endpoint must abort with an "unexpected_message" alert.  If the
+   peer's value is higher than the local one, the endpoint abandons its
+   in-flight update and processes the peer's request as responder.
+
+B.2.2.  State Machine (Initiator)
+
+   The initiator starts in the START state with matching epochs (rx :=
+   E; tx := E).  Once its earlier independent handshake transmissions
+   have been acknowledged, it sends a Req and enters WAIT_RESP (updating
+   := 1).  New independent handshake transmissions are deferred until
+   local completion, subject to the PHA cross-flight exception in
+   Section 12.4.  While waiting, APP data may be sent at any time
+   (tagged with the current tx) and received according to the APP
+   acceptance rule below.
+
+   Once the responder returns Resp with a tag matching the current rx,
+   the initiator derives new key material.  The initiator activates
+   retention mode: the old epoch is remembered, the receive epoch is
+   incremented, and application data is accepted under both epochs for a
+   transition period.  It then sends Fin still tagged with the old tx
+   and enters WAIT_ACK without changing its transmit epoch.
+
+   If a peer key_update_request arrives while in WAIT_RESP (crossed
+   updates), apply the crossed-request rule above.  If the peer's
+   key_exchange is higher, abandon the local update (updating := 0) and
+   continue as responder: send key_update_response, derive new secrets,
+   then proceed with the responder flow.  If lower, ignore the peer's
+   request; if equal, abort with "unexpected_message".
+
+   Upon receiving any record that it deprotects under the updated
+   receive epoch, typically the responder's ACK of Fin, the initiator
+   treats Fin as acknowledged, updates its transmit epoch (tx := rx),
+   stops retransmitting Fin, disables retention, and clears the update
+   flag.  The record is then processed under the new epoch.  The state
+   machine returns to FINISHED.
+
+   A CertificateRequest, a peer key_update_request, a NewSessionTicket,
+   or application data received under the new epoch in WAIT_ACK
+   therefore completes the update first and is then processed in
+   FINISHED, as specified in Section 6.2 and Section 12.4.1.1.  Records
+   under the old epoch, including a CID change, do not change tx.
+
+   Throughout the process:
+
+   *  Duplicate messages are tolerated (for retransmission handling).
+
+   *  Temporary epoch mismatches are permitted while an update is in
+      progress.
+
+   *  Application data flows continuously, subject to epoch acceptance
+      rules.
+
+   +---------------------------------+
+   | START                           |
+   | rx := E; tx := E, updating := 0 |
+   +---------------------------------+
+         |
+   (1) send Req [tag=tx]
+       set updating := 1
+         v
+   +------------------------------+
+   | WAIT_RESP                    |
+   +------------------------------+
+    ^    ^    ^           ^
+    |    |    |           |
+    |    |    |           |
+    |    |    |           +-- (A) recv peer Req (crossed):
+    |    |    |                if peer < local  -> IGNORE (Self-Loop)
+    |    |    |                if peer == local -> ABORT  (Error)
+    |    |    |                if peer > local  -> ABANDON update;
+    |    |    |                                    updating := 0;
+    |    |    |                                    act as RESPONDER
+    |    |    |
+    |    |    +-- APP send (anytime)           (Self-Loop)
+    |    |
+    |    +-- APP recv: retain_old && e == old_rx   (Self-Loop)
+    |
+    +-- APP recv: e == rx                           (Self-Loop)
+
+             | recv Resp [e == rx]
+             | derive secrets
+             v
+   +---------------------+
+   | ACTIVATE RETENTION  |
+   | old_rx=rx;          |
+   | retain_old=1; rx++  |
+   +---------------------+
+             |
+   (2) send Fin [tag=old tx]
+             v
+   +------------------------------+
+   | WAIT_ACK (updating = 1)      |
+   +------------------------------+
+         |
+         |  APP send allowed (send with old tx)
+         |  APP recv: retain_old && e == old_rx  (Self-Loop)
+         |  Timeout: retransmit Fin [tag=old tx]
+         |
+   (3) recv any record [e==rx]
+       (ACK of Fin, handshake message, or APP)
+       Fin acknowledged; tx=rx; retain_old=0;
+       updating := 0; then process the record
+         v
+   +------------------------------------------+
+   | FINISHED                                 |
+   +------------------------------------------+
+
+B.2.3.  State Machine (Responder)
+
+   The responder starts in the START state with synchronized transmit
+   and receive epochs (rx := E; tx := E) and no update in progress.
+   Application data can be transmitted at any time using the sender's
+   current transmit epoch.  A receiver must accept application data if
+   the epoch tag on the DTLS record equals the receiver's current
+   receive epoch.  If the receiver has retention active (retain_old ==
+   true), the receiver must also accept DTLS records whose epoch tag
+   equals the remembered previous epoch.
+
+   Upon receiving an ExtendedKeyUpdate(key_update_request) (Req), the
+   responder transitions to RESPOND.  It waits for acknowledgment of
+   earlier independent handshake transmissions before sending
+   ExtendedKeyUpdate(key_update_response) and may also defer the
+   response under load.  While deferring, it acknowledges the request.
+   When sent, the response is tagged with the current tx and is
+   retransmitted until acknowledged explicitly or implicitly by Fin. It
+   is the last new handshake message in that sending epoch.  New
+   independent handshake transmissions wait until Fin is received and
+   the sending epoch is updated, as specified in Section 6.1.
+
+   After an ExtendedKeyUpdate(key_update_finish) (Fin) is received with
+   the correct epoch, the responder:
+
+   1.  activates retention (old_rx := rx; retain_old := 1),
+
+   2.  increments both epochs (rx++, tx++),
+
+   3.  sends ACK tagged with the new tx (which now equals the new rx),
+
+   4.  clears updating and enters FINISHED.
+
+   In FINISHED, while retaining the old receive keys, the responder
+   accepts retransmissions of Fin under the old epoch and sends a new
+   ACK under its current tx.  The responder may send APP data and,
+   subject to Section 6.1, new handshake messages under the new tx
+   without waiting for a record from the initiator under the new epoch.
+
+   Retention at the responder ends automatically on the first APP
+   received under the new rx (then retain_old := 0).  APP traffic is
+   otherwise permitted at any time; reordering is tolerated by the
+   acceptance rule.
+
+   APP acceptance rule (receiver): accept if e == rx or (retain_old && e
+   == old_rx).  If retain_old is set and an APP with the new rx arrives,
+   clear retain_old.
+
+   +---------------------------------+
+   | START                           |
+   | rx := E; tx := E, updating := 0 |
+   +---------------------------------+
+         |
+   (1) recv Req [e==rx]
+       set updating := 1
+         v
+   +----------------------+
+   | RESPOND              |
+   +----------------------+
+         |
+         | send Resp [tag=tx]
+         | (may defer; if deferred, ACK Req and later retransmit Resp
+         |  until acknowledged by the initiator)
+         v
+   +---------------+
+   | WAIT_I_FIN    |
+   | (updating=1)  |
+   +-------+-------+
+         |
+   (2) recv Fin [e==rx]      (assert accepted)
+         |
+   +---------------------+
+   | ACTIVATE RETENTION  |
+   | old_rx=rx;          |
+   | retain_old=1;       |
+   | rx=rx+1; tx=tx+1    |
+   +----------+----------+
+         |
+   (3) send ACK [tag=tx]
+       set updating := 0; assert tx==rx
+         v
+   +------------------------------------------+
+   | FINISHED                                 |
+   | (retain_old=0 after first APP at new rx) |
+   +------------------------------------------+
+
+Appendix C.  Overview of Security Goals
+
+   A complete security analysis of the EKU is outside the scope of this
+   document.  This appendix provides an informal description of the
+   primary security goals that EKU is designed to achieve.
+
+C.1.  Post-Compromise Security (PCS)
+
+   Extended Key Update provides post-compromise security under the
+   conditions and with the guarantees stated in Section 14.1.  This
+   property follows from the use of fresh ephemeral key exchange
+   material during each Extended Key Update.
+
+C.2.  Key Freshness and Cryptographic Independence
+
+   Each Extended Key Update derives new traffic keys from ephemeral key
+   exchange material.  This ensures strong separation between successive
+   traffic keys:
+
+   *  Compromise of prior traffic keys does not suffice to derive the
+      new traffic keys established by an Extended Key Update.
+
+   *  Compromise of one of traffic keys does not allow recovery of any
+      earlier or later traffic keys.
+
+   *  Application data protected under one of the traffic keys cannot be
+      decrypted using keys from another.
+
+C.3.  Elimination of Standard KeyUpdate
+
+   Once Extended Key Update has been negotiated for a session, peers
+   rely exclusively on EKU rather than the standard TLS 1.3 KeyUpdate
+   mechanism.  Relying solely on Extended Key Update helps maintain PCS
+   properties throughout the lifetime of the TLS session.
+
+C.4.  Detecting Divergent Key State
+
+   As described in Section 12, Post-Handshake Certificate-Based Client
+   Authentication and Exported Authenticators can be used after an
+   Extended Key Update to detect that the endpoints derived different
+   keys.  Detection relies on the CertificateVerify message, which is
+   signed with a private key the attacker does not hold, so validation
+   fails and the interference is revealed.
+
+   If validation of a Post-Handshake Certificate-Based Client
+   Authentication CertificateVerify or Finished message fails, the
+   server terminates the connection with a "decrypt_error" alert (see
+   Section 4.5.2 of [TLS] and Section 4.5.3 of [TLS]).  The client is
+   not guaranteed to receive this alert, since a person-in-the-middle
+   attacker can drop it.
+
+   For Exported Authenticators, the validation result is returned to the
+   application (see Section 7.4 of [RFC9261]), which decides how to
+   react.  Detection at both endpoints requires an authenticator from
+   each endpoint, as described in Section 12.
+
+Authors' Addresses
+
+   Hannes Tschofenig
+   Siemens
+   Email: hannes.tschofenig@gmx.net
+
+
+   Tirumaleswar Reddy
+   Nokia
+   Email: kondtir@gmail.com
+
+
+   Michael Tüxen
+   Münster Univ. of Applied Sciences
+   Email: tuexen@fh-muenster.de
+
+
+   Steffen Fries
+   Siemens
+   Email: steffen.fries@siemens.com
+
+
+   Yaroslav Rosomakho
+   Zscaler
+   Email: yrosomakho@zscaler.com
