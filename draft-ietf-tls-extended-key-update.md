@@ -460,10 +460,16 @@ Unlike TLS 1.3, DTLS 1.3 implementations must take into account that handshake
 messages are not transmitted over a reliable transport protocol. The responder
 updates its send keys only after receiving `ExtendedKeyUpdate(key_update_finish)`,
 which confirms that the initiator has derived the new keys. The initiator updates
-its send keys and sending epoch only after receiving an ACK that acknowledges
-`ExtendedKeyUpdate(key_update_finish)`. This ensures that a record sent by the
-initiator under the new keys also confirms receipt of that ACK, allowing the
-responder to stop retaining the old receive keys for EKU retransmissions.
+its send keys and sending epoch only after it has received a record protected
+under the responder's new sending epoch. Because the responder sends such
+records only after receiving `ExtendedKeyUpdate(key_update_finish)`, any
+record that the initiator successfully deprotects with its new receive keys
+confirms that the finish message was received. The explicit ACK of the finish
+message is the usual such record, but any other record under the new epoch
+serves the same purpose. A record sent by the initiator under the new keys in
+turn confirms to the responder that the initiator has completed the update,
+allowing the responder to stop retaining the old receive keys for EKU
+retransmissions.
 
 EKU messages MUST be transmitted reliably, like other DTLS handshake messages.
 If necessary, EKU messages MAY be fragmented as described in {{Section 5.5 of DTLS}}.
@@ -517,21 +523,32 @@ The exchange has the following steps:
    `ExtendedKeyUpdate(key_update_response)`.
 
 1. The responder MUST acknowledge the received message by sending an ACK
-   protected with its updated send keys and epoch. While retaining the
-   pre-update receive keys, the responder MUST process and acknowledge
-   retransmissions of `ExtendedKeyUpdate(key_update_finish)`, including when
-   it has already initiated a subsequent PHA exchange.
+   protected with its updated send keys and epoch, as required by
+   {{Section 7 of DTLS}}. While retaining the pre-update receive keys, the
+   responder MUST process and acknowledge retransmissions of
+   `ExtendedKeyUpdate(key_update_finish)`. The responder MAY send other
+   records under its new sending epoch, including application data and, subject
+   to {{dtls-handshake-ordering}}, new handshake messages, without waiting for
+   a record from the initiator under the new epoch.
 
-1. On receipt of an ACK protected with the responder's updated send keys that
-   acknowledges `ExtendedKeyUpdate(key_update_finish)`, the initiator MUST
-   update its send keys and sending epoch. Acknowledgment is determined from
-   the ACK's record numbers as specified in {{Section 7.2 of DTLS}}; the epoch
-   of the ACK alone is not sufficient. The initiator stops retransmitting
-   `ExtendedKeyUpdate(key_update_finish)` and the EKU exchange is locally
-   complete. Until this acknowledgment is received, the initiator MUST NOT
-   send any records using the new keys or sending epoch, including ACK
-   records, and MUST continue the DTLS retransmission procedure for
-   `ExtendedKeyUpdate(key_update_finish)`.
+1. On receipt of any record that it successfully deprotects with the new
+   receive keys, the initiator MUST treat `ExtendedKeyUpdate(key_update_finish)`
+   as acknowledged, update its send keys and sending epoch, and stop
+   retransmitting `ExtendedKeyUpdate(key_update_finish)`. The EKU exchange is
+   then locally complete. This record is typically the ACK sent in Step 6, but
+   an ACK record, a handshake message, or application data protected under the
+   new epoch all have this effect, because the responder sends under the new
+   epoch only after receiving the finish message. This implicit acknowledgment
+   is specific to this exchange and supplements the acknowledgment rules of
+   {{Section 7 of DTLS}}; it does not relieve the responder of sending the ACK
+   required by Step 6. A record that cannot be deprotected MUST NOT have this
+   effect. After updating its sending epoch, the initiator processes the record
+   according to its content type; a handshake message is acknowledged,
+   explicitly or implicitly, under the new sending epoch as specified in
+   {{Sections 7 and 7.1 of DTLS}}. Until such a record is received, the
+   initiator MUST NOT send any records using the new keys or sending epoch,
+   including ACK records, and MUST continue the DTLS retransmission procedure
+   for `ExtendedKeyUpdate(key_update_finish)`.
 
 The ordering and acknowledgment requirements in {{dtls-handshake-ordering}}
 and {{dtls-transition-acks}} apply throughout this exchange.
@@ -578,65 +595,51 @@ These restrictions do not prohibit retransmissions, ACK records, or
 application data. Retransmissions MUST use the original epoch and keying
 material. An endpoint MUST continue processing ACKs and retransmissions
 needed to complete outstanding transmissions while waiting to send an EKU
-message. Explicit ACKs acknowledge only the records they identify; an ACK
-for an independent handshake message does not complete EKU unless it also
-acknowledges EKU finish as required by Step 7.
+message. Explicit ACKs acknowledge only the records they identify. An ACK
+received under the pre-update epoch does not complete EKU, regardless of
+which records it covers. Completion of the exchange at the initiator follows
+from the epoch of the received record, as specified in Step 7.
 
-## Acknowledgments During the Epoch Transition {#dtls-transition-acks}
+## Records Received During the Epoch Transition {#dtls-transition-acks}
 
-The new sending epoch at the initiator is not available for sending records
-until Step 7, even though the secrets have already been derived. The initiator
-can receive records under the new receive keys while waiting for this ACK.
+Between Step 3 and Step 7, the initiator holds the new receive keys but
+still sends under its pre-update epoch. Any record from the responder that
+the initiator successfully deprotects with the new receive keys completes
+the exchange as specified in Step 7 before the record itself is processed.
+Consequently, no record received under the new epoch needs to be buffered
+or left unacknowledged on account of the EKU exchange. Handshake messages
+received under the new epoch are processed and acknowledged according to
+{{Sections 7 and 7.1 of DTLS}}, with the ACK protected under the new sending
+epoch. Application data received under the new epoch is delivered as usual.
+Reception of a record under the new epoch while the exchange is in progress
+MUST NOT be treated as an `unexpected_message` error; other message validity
+and ordering requirements remain in effect.
 
-The initiator MUST defer explicit acknowledgment of handshake records
-received in the new epoch until it has processed the ACK for EKU finish and
-activated its new sending epoch. It MUST NOT acknowledge those records
-under the old sending epoch or activate the new sending epoch early to
-acknowledge them. This is a specific deferral of the ACK behavior described
-in {{Sections 7 and 7.1 of DTLS}}. Once Step 7 completes, outstanding
-acknowledgments are generated according to the DTLS procedures, including
-any applicable implicit acknowledgment by a responding flight. ACKs for EKU
-messages are sent after the handshake and are therefore protected, because
-{{Section 7 of DTLS}} requires the highest available sending epoch. An ACK
-record received in epoch 0 MUST NOT be treated as acknowledging an EKU
-message and MUST be silently discarded.
+ACKs for EKU messages are sent after the handshake and are therefore
+protected, because {{Section 7 of DTLS}} requires the highest available
+sending epoch. An ACK record received in epoch 0 MUST NOT be treated as
+acknowledging an EKU message and MUST be silently discarded.
 
-Deferring acknowledgment does not necessarily defer message processing.
-Implementations MUST maintain the normal DTLS reassembly and handshake
-sequencing procedures. They MAY accept and sequence a message while
-buffering the operation it requests, provided they retain its contents and
-the context needed for subsequent processing. Operation-specific rules
-determine whether further processing must wait. For example, the client
-defers PHA processing of a new-epoch `CertificateRequest` as specified in
-{{dtls-pha-wait-ack}}. Application-layer operations, such as Exported
-Authenticators, instead follow the context-selection rules in
-{{post-handshake-context}} and do not generate DTLS handshake ACKs when
-carried in application data.
+Records protected under the pre-update epoch can still arrive after the
+initiator has completed the exchange, for example a reordered record that
+the responder sent before processing `ExtendedKeyUpdate(key_update_finish)`.
+Such records are handled as described at the beginning of {{DTLSC}}.
 
 Connection-ID processing is independent of the traffic-key transition.
 When a `NewConnectionId` with `cid_immediate` is processed, the new CID
 MUST be used as required by {{Section 9 of DTLS}}, including for subsequent
 EKU retransmissions that still use the old epoch and keys. Such records
-are newly protected with the appropriate header and record number. A CID
-change MUST NOT be treated as evidence that EKU finish has been acknowledged.
-CID lookup and retention of the old receive keys MUST allow the required
-EKU retransmissions to reach the appropriate connection state.
+are newly protected with the appropriate header and record number. A
+`NewConnectionId` received under the pre-update epoch does not indicate
+that `ExtendedKeyUpdate(key_update_finish)` was received; only a record
+protected under the new epoch does, as specified in Step 7. CID lookup
+and retention of the old receive keys MUST allow the required EKU
+retransmissions to reach the appropriate connection state.
 
-Implementations MAY impose limits on buffering during the transition. If
-a message or fragment cannot be processed or retained, its record MAY be
-discarded without acknowledgment, allowing retransmission to recover it.
-Records whose handshake contents have been neither processed nor buffered
-MUST NOT be acknowledged. Reception during this transition alone MUST NOT
-be treated as an `unexpected_message` error; other message validity and
-ordering requirements remain in effect.
-
-Neither deferred processing nor deferred acknowledgments may suspend the
-EKU retransmission procedure or prevent processing of the ACK for EKU
-finish. The initiator MUST continue retransmitting finish under the old
-keys and epoch, and the responder MUST continue processing and acknowledging
-those retransmissions while retaining the old receive keys. Receipt of
-another new-epoch message MUST NOT be treated as an implicit acknowledgment
-of EKU finish.
+The initiator MUST continue retransmitting `ExtendedKeyUpdate(key_update_finish)`
+under the old keys and epoch until Step 7 completes, and the responder MUST
+continue processing and acknowledging those retransmissions while retaining
+the old receive keys.
 
 ## Handshake Message Format
 
@@ -729,7 +732,8 @@ Client                            Server
 
 [EKU(key_update_finish)]   -------->
 # Sender's Fin is tagged with OLD tx (3).
-# Initiator retains OLD tx until Fin is acknowledged.
+# Initiator retains OLD tx until it receives a
+# record under the NEW epoch.
 [C: tx=3, rx=4]                   [S: tx=3, rx=3]
 
 # Step 5: responder bumps BOTH tx and rx on Fin-in:
@@ -737,7 +741,8 @@ Client                            Server
 
                            <-------- [ACK] (tag=new)
 
-# Step 7: ACK of Fin stops retransmission and bumps SEND epoch.
+# Step 7: first record under the NEW epoch (here the ACK)
+# stops Fin retransmission and bumps SEND epoch.
 [C: tx=4, rx=4]                   [S: tx=4, rx=4]
 
 [Application Data]         -------->
@@ -767,6 +772,37 @@ the message transmission.
 +--------------------+----------------+--------------+
 ~~~
 {: #dtls-table title="Example DTLS 1.3 Extended Key Update: Epoch Changes."}
+
+{{dtls-implicit-ack}} shows the exchange when the ACK of
+`ExtendedKeyUpdate(key_update_finish)` is lost. The responder has already
+updated its epochs and continues sending. The first record that the
+initiator deprotects under the new epoch, here application data, completes
+the exchange and ends the retransmission of the finish message. The
+responder's retention of the old receive keys ends when the first record
+from the initiator arrives under the new epoch.
+
+~~~
+Client                            Server
+(Initiator)                       (Responder)
+
+[C: tx=3, rx=4]                   [S: tx=3, rx=3]
+[EKU(key_update_finish)]   -------->   (epoch 3)
+# Step 5: responder bumps BOTH tx and rx on Fin-in:
+[C: tx=3, rx=4]                   [S: tx=4, rx=4]
+
+                      X    <-------- [ACK] (epoch 4, lost)
+
+                           <-------- [Application Data] (epoch 4)
+# Step 7: record deprotected with the NEW receive keys.
+# Fin is treated as acknowledged; tx := 4;
+# Fin retransmission stops.
+[C: tx=4, rx=4]                   [S: tx=4, rx=4]
+
+[Application Data]         -------->   (epoch 4)
+# Responder stops retaining the epoch-3 receive keys.
+[C: tx=4, rx=4]                   [S: tx=4, rx=4]
+~~~
+{: #dtls-implicit-ack title="Example DTLS 1.3 Extended Key Update: Lost ACK."}
 
 
 # Updating Traffic Keys {#key_update}
@@ -903,9 +939,10 @@ remain in effect.
 
 For DTLS, ignoring a `NewSessionTicket` does not exempt it from handshake
 sequencing, reassembly, or acknowledgment, including for fragments and
-retransmissions. The client MUST follow {{dtls-transition-acks}}, including
-deferring acknowledgment of new-epoch ticket records while awaiting the
-ACK for `ExtendedKeyUpdate(key_update_finish)`. Ignoring a ticket MUST NOT
+retransmissions. A ticket record received under the new epoch while the
+client awaits acknowledgment of `ExtendedKeyUpdate(key_update_finish)`
+completes the EKU exchange as specified in Step 7 of {{DTLSC}} and is then
+acknowledged under the new sending epoch. Ignoring a ticket MUST NOT
 prevent processing of subsequent handshake messages.
 
 # Post-Quantum Cryptography Considerations {#pqc-cons}
@@ -1169,11 +1206,15 @@ for application protocols.
 
 If the selected generation is unknown, unavailable, expired, or disallowed
 by application policy, creation or validation MUST fail explicitly rather
-than use the current exporter or retry with a different generation. As an
-exception, if the generation is not yet locally available because EKU is
-still in progress, the implementation MAY defer the operation within its
-permitted lifetime instead of immediately failing it. Such deferral MUST
-NOT block processing of EKU messages or acknowledgments.
+than use the current exporter or retry with a different generation. An
+application MUST NOT select a generation before the (D)TLS implementation
+has reported it as active, as described in {{exporter}}. Each endpoint
+reports a generation only once its part of the EKU exchange is complete.
+In TLS, the peer has therefore already derived that generation when an
+authenticator or request selecting it arrives. In DTLS, a record carrying
+such a request or authenticator is protected under the new epoch and
+completes the peer's exchange on receipt, as specified in Step 7 of
+{{DTLSC}}. No deferral of the operation is therefore required.
 These failures are application-operation failures and do not, by
 themselves, require termination of the (D)TLS connection.
 
@@ -1210,10 +1251,8 @@ are required to preserve cryptographic consistency.
 
 ### Post-Handshake Certificate-Based Client Authentication
 
-Except for the deferred processing of a new-epoch `CertificateRequest`
-specified in {{dtls-pha-wait-ack}}, an endpoint MUST NOT complete an EKU
-exchange in a manner that transitions to new application traffic secrets
-while a PHA exchange is in progress.
+An endpoint MUST NOT complete an EKU exchange in a manner that transitions
+to new application traffic secrets while a PHA exchange is in progress.
 
 The following constraints apply to both TLS 1.3 and DTLS 1.3:
 
@@ -1231,53 +1270,33 @@ The following constraints apply to both TLS 1.3 and DTLS 1.3:
 
 In DTLS, deferred EKU request is acknowledged as specified in {{DTLSC}}.
 
-#### DTLS CertificateRequest Received Before the EKU ACK {#dtls-pha-wait-ack}
+#### DTLS CertificateRequest Sent After the Server Completes EKU {#dtls-pha-wait-ack}
 
-When the DTLS client initiates EKU, the server can complete its part of the
+When the DTLS client initiates EKU, the server completes its part of the
 exchange by receiving `ExtendedKeyUpdate(key_update_finish)`, updating its
 keys, and sending the ACK. The server can then initiate PHA by sending a
-`CertificateRequest` under the new epoch. Loss or reordering of the ACK can
-cause this request to reach the client while the client is still waiting
-for acknowledgment of `ExtendedKeyUpdate(key_update_finish)`.
+`CertificateRequest` under the new epoch. If the ACK is lost or reordered,
+this request can be the first record the client receives under the new
+epoch. As specified in Step 7 of {{DTLSC}}, deprotecting it completes the
+EKU exchange at the client. The client updates its send keys and sending
+epoch, stops retransmitting `ExtendedKeyUpdate(key_update_finish)`, and
+then processes the `CertificateRequest` as a request received after EKU
+completion. The PHA response records use the new epoch. The PHA Handshake
+Context MUST use the transcript updated by this EKU, and the PHA `Finished`
+MAC key MUST be derived from the corresponding new
+`client_application_traffic_secret_N+1`, as described above. Neither
+endpoint may initiate another EKU until this PHA exchange has completed, as
+required by the preceding constraints.
 
-Subject to the buffering limits in {{dtls-transition-acks}}, the client
-MUST buffer the successfully decrypted
-`CertificateRequest` and defer its PHA processing until the ACK acknowledging
-`ExtendedKeyUpdate(key_update_finish)` has been processed. This also applies
-to retransmissions and fragments of the `CertificateRequest`. Receipt of
-this request MUST NOT be treated as an `unexpected_message` error or as an
-implicit acknowledgment of `ExtendedKeyUpdate(key_update_finish)`.
+The server MUST continue to process and acknowledge retransmissions of
+`ExtendedKeyUpdate(key_update_finish)` that were sent before the client
+received the `CertificateRequest`, as specified in {{DTLSC}}.
 
-The general acknowledgment deferral in {{dtls-transition-acks}} applies
-to records carrying this `CertificateRequest`, including its fragments and
-retransmissions. Once EKU completes locally, the request is
-acknowledged explicitly or implicitly by the PHA response according to
-{{Sections 7 and 7.1 of DTLS}}.
+This rule does not change the preceding rule for a `CertificateRequest`
+from the pre-update epoch that crosses an EKU request before receipt of the
+EKU response.
 
-Buffering the request MUST NOT suspend EKU retransmissions or prevent
-processing of the EKU ACK. The client MUST continue retransmitting
-`ExtendedKeyUpdate(key_update_finish)` under the pre-update keys and epoch
-according to the DTLS retransmission procedure. The server MUST continue
-processing and acknowledging those retransmissions as specified in
-{{DTLSC}}, even while awaiting the PHA response.
-
-For the ordering constraints in this section, this deferred request does
-not prevent the client from completing the EKU exchange. Once the client
-has processed the ACK acknowledging `ExtendedKeyUpdate(key_update_finish)`,
-it MUST update its send keys and sending epoch before processing the
-buffered request. The client MUST use the resulting new epoch for its PHA
-response records. The PHA Handshake Context MUST use the transcript updated
-by this EKU, and the PHA `Finished` MAC key MUST be derived from the
-corresponding new `client_application_traffic_secret_N+1`, as described
-above. Neither endpoint may initiate another EKU until this PHA exchange
-has completed, as required by the preceding constraints.
-
-These rules apply to a new-epoch `CertificateRequest` received while the
-client awaits the EKU ACK. They do not change the preceding rule for a
-`CertificateRequest` from the pre-update epoch that crosses an EKU request
-before receipt of the EKU response.
-
-The following example shows recovery when the first EKU ACK is lost:
+The following example shows the exchange when the EKU ACK is lost:
 
 ~~~
 Client (EKU initiator)                  Server (EKU responder)
@@ -1289,17 +1308,16 @@ EKU(finish) [N] --------------------->
          X---------------------------- ACK of EKU(finish) [N+1]
                                        (ACK lost)
          <---------------------------- CertificateRequest [N+1]
-Buffer request; defer PHA and its ACK
-EKU(finish) [N] --------------------->  (retransmission)
-         <---------------------------- ACK of EKU(finish) [N+1]
+Record deprotected under N+1:
+EKU(finish) treated as acknowledged
 tx := N+1; stop EKU retransmissions
-Process buffered CertificateRequest
+Process CertificateRequest
 Certificate [N+1] ------------------->
 CertificateVerify* [N+1] ------------>
 Finished [N+1] ---------------------->
          <---------------------------- ACK of PHA response [N+1]
 ~~~
-{: #dtls-pha-after-ack title="DTLS PHA Deferred Until the EKU ACK Is Received."}
+{: #dtls-pha-after-ack title="DTLS PHA Request Completing the EKU Exchange at the Client."}
 
 ### Exported Authenticators
 
@@ -1312,8 +1330,9 @@ application protocol's generation agreement is required as well.
 No additional serialization between EKU and such an operation is required
 when those conditions are satisfied. An operation bound to an older
 generation can complete after EKU, but does not authenticate the new
-generation. If the operation selects the new generation before it becomes
-available at the peer, its processing may need to wait while EKU proceeds.
+generation. Because a generation is selectable only after it has been
+reported as active, an operation does not select a generation that is
+unavailable at the peer, as explained in {{eku-ea}}.
 
 # Deployment Considerations {#deployment}
 
@@ -1612,7 +1631,7 @@ This section describes the initiator and responder state machines.
 The diagrams show the EKU message exchange. Sending actions are additionally
 subject to {{dtls-handshake-ordering}}, including waiting for earlier
 independent handshake transmissions to be acknowledged and deferring new
-independent transmissions. Incoming messages and deferred operations follow
+independent transmissions. Incoming messages follow
 {{dtls-transition-acks}} and {{post-handshake-context}}. Those requirements
 apply even where a diagram does not show a separate waiting state.
 
@@ -1646,18 +1665,17 @@ Once the responder returns Resp with a tag matching the current rx, the initiato
 
 If a peer key_update_request arrives while in WAIT_RESP (crossed updates), apply the crossed-request rule above. If the peer's key_exchange is higher, abandon the local update (updating := 0) and continue as responder: send key_update_response, derive new secrets, then proceed with the responder flow. If lower, ignore the peer's request; if equal, abort with "unexpected_message".
 
-Upon receiving the responder's ACK under the updated epoch that acknowledges Fin, the initiator updates its transmit epoch (tx := rx), stops retransmitting Fin, disables retention, and clears the update flag. Matching the ACK's epoch alone does not acknowledge Fin. The state machine returns to FINISHED.
+Upon receiving any record that it deprotects under the updated receive
+epoch, typically the responder's ACK of Fin, the initiator treats Fin as
+acknowledged, updates its transmit epoch (tx := rx), stops retransmitting
+Fin, disables retention, and clears the update flag. The record is then
+processed under the new epoch. The state machine returns to FINISHED.
 
-If the initiator is the DTLS client and receives a CertificateRequest under the
-new epoch in WAIT_ACK, it buffers the request and defers both PHA processing
-and acknowledgment of that request. Fin retransmissions under the old tx
-continue. After processing the ACK of Fin, the client processes the buffered
-request using the new epoch and the updated PHA context, as specified in
-{{dtls-pha-wait-ack}}. It does not initiate another EKU while that PHA is pending.
-
-Other new-epoch handshake records are acknowledged only after the ACK of
-Fin has been processed. Their processing follows {{dtls-transition-acks}};
-in particular, a CID change does not change tx or acknowledge Fin.
+A CertificateRequest, a peer key_update_request, a NewSessionTicket, or
+application data received under the new epoch in WAIT_ACK therefore
+completes the update first and is then processed in FINISHED, as specified
+in {{dtls-transition-acks}} and {{dtls-pha-wait-ack}}. Records under the
+old epoch, including a CID change, do not change tx.
 
 Throughout the process:
 
@@ -1708,13 +1726,14 @@ Throughout the process:
 | WAIT_ACK (updating = 1)      |
 +------------------------------+
       |
-      |  APP send/recv allowed (send with old tx)
-      |  Client: buffer CertificateRequest [e==rx];
-      |          defer PHA and its ACK
+      |  APP send allowed (send with old tx)
+      |  APP recv: retain_old && e == old_rx  (Self-Loop)
       |  Timeout: retransmit Fin [tag=old tx]
       |
-(3) recv ACK of Fin [e==rx]
-    tx=rx; retain_old=0; updating := 0
+(3) recv any record [e==rx]
+    (ACK of Fin, handshake message, or APP)
+    Fin acknowledged; tx=rx; retain_old=0;
+    updating := 0; then process the record
       v
 +------------------------------------------+
 | FINISHED                                 |
@@ -1744,8 +1763,9 @@ After an `ExtendedKeyUpdate(key_update_finish)` (Fin) is received with the corre
 
 In FINISHED, while retaining the old receive keys, the responder accepts
 retransmissions of Fin under the old epoch and sends a new ACK under its
-current tx. This also applies when the responder is the DTLS server and has
-already sent a CertificateRequest for a subsequent PHA exchange.
+current tx. The responder may send APP data and, subject to
+{{dtls-handshake-ordering}}, new handshake messages under the new tx
+without waiting for a record from the initiator under the new epoch.
 
 Retention at the responder ends automatically on the first APP received under the new rx (then retain_old := 0). APP traffic is otherwise permitted at any time; reordering is tolerated by the acceptance rule.
 
