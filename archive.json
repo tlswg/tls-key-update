@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2026-11-03T05:53:20.727422+00:00",
+  "timestamp": "2026-11-05T05:49:17.986077+00:00",
   "repo": "tlswg/tls-key-update",
   "labels": [
     {
@@ -11175,21 +11175,21 @@
       "id": "PR_kwDOMJPqLM8AAAABGOgqTg",
       "title": "Address issue 127 and other pending issues",
       "url": "https://github.com/tlswg/tls-key-update/pull/134",
-      "state": "OPEN",
+      "state": "CLOSED",
       "author": "tireddy2",
       "authorAssociation": "COLLABORATOR",
       "assignees": [],
       "labels": [],
       "body": "https://github.com/tlswg/tls-key-update/issues/127",
       "createdAt": "2026-10-02T04:54:59Z",
-      "updatedAt": "2026-10-14T07:20:49Z",
+      "updatedAt": "2026-11-04T10:55:02Z",
       "baseRepository": "tlswg/tls-key-update",
       "baseRefName": "main",
       "baseRefOid": "40a7d75f198c5d8a60ff33e09172eed9096e6b05",
       "headRepository": "tlswg/tls-key-update",
       "headRefName": "tireddy2-patch-20",
       "headRefOid": "55988a4d059e4c042043a9c0a443cb8c1faf610d",
-      "closedAt": null,
+      "closedAt": "2026-11-04T10:55:01Z",
       "mergedAt": null,
       "mergedBy": null,
       "mergeCommit": null,
@@ -11200,6 +11200,13 @@
           "body": "Hannes thinks the proposed fix solves the problem with PHA but creates other issues, I will keep it open for further discussion. ",
           "createdAt": "2026-10-14T07:20:49Z",
           "updatedAt": "2026-10-14T07:20:49Z"
+        },
+        {
+          "author": "hannestschofenig",
+          "authorAssociation": "COLLABORATOR",
+          "body": "#134 closed because it is superseded by #137 ",
+          "createdAt": "2026-11-04T10:55:01Z",
+          "updatedAt": "2026-11-04T10:55:01Z"
         }
       ],
       "reviews": []
@@ -11406,25 +11413,33 @@
       "id": "PR_kwDOMJPqLM8AAAABMGptQA",
       "title": "Clarify DTLS EKU ordering and post-handshake interactions",
       "url": "https://github.com/tlswg/tls-key-update/pull/136",
-      "state": "OPEN",
+      "state": "CLOSED",
       "author": "hannestschofenig",
       "authorAssociation": "COLLABORATOR",
       "assignees": [],
       "labels": [],
       "body": "This PR was created in response to the work done by Tiru in PR https://github.com/tlswg/tls-key-update/pull/134\n\nThe text aims to take the interaction with the post-handshake messages in a more generic manner into account than we did before.",
       "createdAt": "2026-11-01T12:18:58Z",
-      "updatedAt": "2026-11-03T05:38:22Z",
+      "updatedAt": "2026-11-04T10:55:43Z",
       "baseRepository": "tlswg/tls-key-update",
       "baseRefName": "main",
       "baseRefOid": "a5455f3709e4185f8c058b7c99c1235c6b49696f",
       "headRepository": "tlswg/tls-key-update",
       "headRefName": "clarify-dtls-eku-pha-after-ack",
       "headRefOid": "65f231a2168b7e94538b24c736960cb7865ff184",
-      "closedAt": null,
+      "closedAt": "2026-11-04T10:55:43Z",
       "mergedAt": null,
       "mergedBy": null,
       "mergeCommit": null,
-      "comments": [],
+      "comments": [
+        {
+          "author": "hannestschofenig",
+          "authorAssociation": "COLLABORATOR",
+          "body": "Closed because it is replaced by #137",
+          "createdAt": "2026-11-04T10:55:43Z",
+          "updatedAt": "2026-11-04T10:55:43Z"
+        }
+      ],
       "reviews": [
         {
           "id": "PRR_kwDOMJPqLM8AAAABVbCWog",
@@ -11591,6 +11606,210 @@
               "body": "The proposed change fixes it: the responder sends a generation N+1 authenticator only after receiving Fin, so it arrives in a new-epoch record. That record acknowledges Fin, the initiator completes EKU, and it validates the authenticator immediately. The same rule also covers (a) and (b).",
               "createdAt": "2026-11-03T05:38:22Z",
               "updatedAt": "2026-11-03T05:38:22Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM8AAAABVpisVw",
+          "commit": {
+            "abbreviatedOid": "65f231a"
+          },
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2026-11-03T05:57:52Z",
+          "updatedAt": "2026-11-03T05:57:53Z",
+          "comments": [
+            {
+              "originalPosition": 311,
+              "body": "Agreed. Proposed text:\r\n\r\nTo prevent desynchronization, the (D)TLS implementation retains the\r\nprevious exporter secret for a short period, similar to the retention of\r\nkeys for prior epochs in {{Section 4.2.1 of DTLS}}. An application that\r\nneeds keying material from an older generation for longer, for example to\r\nprocess retransmitted application data, derives it before the exporter\r\nsecret is discarded and retains it according to its own policy.",
+              "createdAt": "2026-11-03T05:57:52Z",
+              "updatedAt": "2026-11-03T05:57:53Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM8AAAABVp5gfQ",
+          "commit": {
+            "abbreviatedOid": "65f231a"
+          },
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2026-11-03T06:48:31Z",
+          "updatedAt": "2026-11-03T06:48:31Z",
+          "comments": [
+            {
+              "originalPosition": 454,
+              "body": "Agreed. The case arises only because the DTLS initiator is notified at Step 7. With the proposed change to Step 7, the record carrying the authenticator acknowledges Fin, so the generation is available on arrival.",
+              "createdAt": "2026-11-03T06:48:31Z",
+              "updatedAt": "2026-11-03T06:48:31Z"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "number": 137,
+      "id": "PR_kwDOMJPqLM8AAAABMyOGMg",
+      "title": "DTLS EKU Design by Tiru",
+      "url": "https://github.com/tlswg/tls-key-update/pull/137",
+      "state": "OPEN",
+      "author": "hannestschofenig",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [],
+      "body": "This PR describe an alternative design from Tiru to PR https://github.com/tlswg/tls-key-update/pull/136\n\nHere is the improvement: In DTLS, any record the initiator successfully deprotects under the new epoch now completes the EKU exchange, because the responder only sends under that epoch after receiving key_update_finish. This removes the deferred-ACK section, the CertificateRequest buffering, the Exported Authenticator deferral exception, and the special case for a new EKU request before the ACK, and gives the initiator state machine a single exit from WAIT_ACK.",
+      "createdAt": "2026-11-04T10:45:02Z",
+      "updatedAt": "2026-11-04T14:01:49Z",
+      "baseRepository": "tlswg/tls-key-update",
+      "baseRefName": "main",
+      "baseRefOid": "a5455f3709e4185f8c058b7c99c1235c6b49696f",
+      "headRepository": "tlswg/tls-key-update",
+      "headRefName": "tiru-design-dtls-eku",
+      "headRefOid": "2206e44186edccc0f821f088b677cf2428d37800",
+      "closedAt": null,
+      "mergedAt": null,
+      "mergedBy": null,
+      "mergeCommit": null,
+      "comments": [
+        {
+          "author": "hannestschofenig",
+          "authorAssociation": "COLLABORATOR",
+          "body": "I favor this design because of the stated benefits.\r\n\r\nNote that I missed up the model files. I need to search for the missing file :-(",
+          "createdAt": "2026-11-04T10:47:11Z",
+          "updatedAt": "2026-11-04T10:47:11Z"
+        },
+        {
+          "author": "hannestschofenig",
+          "authorAssociation": "COLLABORATOR",
+          "body": "I favor this design because of the stated benefits.\r\n\r\nNote that I missed up the model files. I need to search for the missing file :-(",
+          "createdAt": "2026-11-04T10:47:24Z",
+          "updatedAt": "2026-11-04T10:47:24Z"
+        }
+      ],
+      "reviews": [
+        {
+          "id": "PRR_kwDOMJPqLM8AAAABV8jFsQ",
+          "commit": {
+            "abbreviatedOid": "2206e44"
+          },
+          "author": "stfries",
+          "authorAssociation": "COLLABORATOR",
+          "state": "APPROVED",
+          "body": "I reviewed the final version and it looks good from my understanding. I did not look at the difference to the original approach proposed by Hannes and rather on the latest proposal. I had only one question mark in the text, but that clarified itself later in the description, so I left it in just to mark were I stumbled. I don't think it is necessary to include an additional explanation as it follows a little more down the line. ",
+          "createdAt": "2026-11-04T11:52:09Z",
+          "updatedAt": "2026-11-04T13:16:16Z",
+          "comments": [
+            {
+              "originalPosition": 47,
+              "body": "The responder would then use the new epoch keys for the ACK in this case? \nJust trying to see if the changes let to some different interpretation when to use which key. \n....\nJumping back from the text below, which makes it clear, so any message protected with the new epoch key serves that purpose acknowledging, that the new epoch key has been received.",
+              "createdAt": "2026-11-04T11:52:09Z",
+              "updatedAt": "2026-11-04T13:09:27Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM8AAAABV91LKw",
+          "commit": {
+            "abbreviatedOid": "2206e44"
+          },
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "Thanks Hannes for driving this critical update. ",
+          "createdAt": "2026-11-04T13:25:29Z",
+          "updatedAt": "2026-11-04T13:54:17Z",
+          "comments": [
+            {
+              "originalPosition": 385,
+              "body": "This section is not needed. PHA consistency is ensured by {{pha-eku-ordering}}, and the generation rules for Exported Authenticators are in {{eku-ea}}. The remaining text places requirements on application protocols that TLS cannot enforce. Its references at lines 1197, 1326 and 1635 can be dropped or point to {{eku-ea}}.",
+              "createdAt": "2026-11-04T13:25:29Z",
+              "updatedAt": "2026-11-04T13:54:17Z"
+            },
+            {
+              "originalPosition": 365,
+              "body": " Retention of derived keying material is an application matter. Only retention of the exporter secret itself belongs to the (D)TLS implementation, and it should be short, since a retained secret stays exposed to a later compromise. \n\nI propose following text: \n\nThe (D)TLS implementation retains the previous exporter secret only for a\nshort period, similar to the retention of keys for prior epochs in\n{{Section 4.2.1 of DTLS}}. Retention of keying material derived from older\ngenerations is application-specific.\n\n",
+              "createdAt": "2026-11-04T13:31:45Z",
+              "updatedAt": "2026-11-04T13:54:17Z"
+            },
+            {
+              "originalPosition": 488,
+              "body": "```suggestion\nendpoints, using the generation N defined in {{exporter}}.\n```",
+              "createdAt": "2026-11-04T13:34:28Z",
+              "updatedAt": "2026-11-04T13:54:17Z"
+            },
+            {
+              "originalPosition": 467,
+              "body": "```suggestion\nThis document extends Section 5.1 of {{!RFC9261}} with a generation-aware\n```",
+              "createdAt": "2026-11-04T13:35:44Z",
+              "updatedAt": "2026-11-04T14:01:01Z"
+            },
+            {
+              "originalPosition": 515,
+              "body": "```suggestion\nthe generation-aware interface. As discussed in {{Section 7 of RFC9261}}, the\n```",
+              "createdAt": "2026-11-04T13:36:08Z",
+              "updatedAt": "2026-11-04T13:54:17Z"
+            },
+            {
+              "originalPosition": 626,
+              "body": "This repeats {{eku-ea}}. The only point needed here is that, unlike PHA, Exported Authenticator operations may overlap an EKU exchange. \n\nSuggest:\n\nUnlike PHA, Exported Authenticator operations may overlap an EKU exchange. They use the generation selected as specified in {{eku-ea}}.\n\n",
+              "createdAt": "2026-11-04T13:39:09Z",
+              "updatedAt": "2026-11-04T13:54:17Z"
+            },
+            {
+              "originalPosition": 120,
+              "body": "Suggest rewording to say directly what the responder waits for: acknowledgment of its own earlier handshake messages before it sends the EKU response.\n\nThe PHA exception is not needed for the responder. When the server\u2019s CertificateRequest and the client\u2019s EKU request are in flight at the same time, the server is the responder, and it completes PHA by sending only an ACK, which is not a handshake message.\n\nWhile waiting for its earlier handshake messages to be acknowledged before sending `ExtendedKeyUpdate(key_update_response)`, the responder MUST NOT send new handshake messages. It continues retransmitting its outstanding messages.",
+              "createdAt": "2026-11-04T13:47:26Z",
+              "updatedAt": "2026-11-04T13:54:17Z"
+            },
+            {
+              "originalPosition": 721,
+              "body": "The first record from the initiator under the new epoch can be APP or a handshake message, for example the client\u2019s Certificate in the PHA flow.",
+              "createdAt": "2026-11-04T13:53:56Z",
+              "updatedAt": "2026-11-04T13:54:17Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM8AAAABV-THbA",
+          "commit": {
+            "abbreviatedOid": "2206e44"
+          },
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2026-11-04T14:00:10Z",
+          "updatedAt": "2026-11-04T14:00:10Z",
+          "comments": [
+            {
+              "originalPosition": 489,
+              "body": "```suggestion\n This specification does not define a common wire encoding\n```",
+              "createdAt": "2026-11-04T14:00:10Z",
+              "updatedAt": "2026-11-04T14:00:10Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM8AAAABV-UayA",
+          "commit": {
+            "abbreviatedOid": "2206e44"
+          },
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2026-11-04T14:01:35Z",
+          "updatedAt": "2026-11-04T14:01:49Z",
+          "comments": [
+            {
+              "originalPosition": 516,
+              "body": "```suggestion\ngeneration-aware interface can also be implemented at the application layer\n```",
+              "createdAt": "2026-11-04T14:01:36Z",
+              "updatedAt": "2026-11-04T14:01:49Z"
             }
           ]
         }
