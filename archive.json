@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2026-11-05T05:49:17.986077+00:00",
+  "timestamp": "2026-11-08T05:12:48.662702+00:00",
   "repo": "tlswg/tls-key-update",
   "labels": [
     {
@@ -11812,6 +11812,46 @@
               "updatedAt": "2026-11-04T14:01:49Z"
             }
           ]
+        }
+      ]
+    },
+    {
+      "number": 138,
+      "id": "PR_kwDOMJPqLM8AAAABNA_Srg",
+      "title": "Update reference to RFC 9846",
+      "url": "https://github.com/tlswg/tls-key-update/pull/138",
+      "state": "OPEN",
+      "author": "nikstuckenbrock",
+      "authorAssociation": "CONTRIBUTOR",
+      "assignees": [],
+      "labels": [],
+      "body": "Hi everyone, I just noticed a missing reference update and thought a PR couldn't hurt.",
+      "createdAt": "2026-11-05T08:22:15Z",
+      "updatedAt": "2026-11-05T13:16:10Z",
+      "baseRepository": "tlswg/tls-key-update",
+      "baseRefName": "main",
+      "baseRefOid": "a5455f3709e4185f8c058b7c99c1235c6b49696f",
+      "headRepository": "nikstuckenbrock/tls-key-update",
+      "headRefName": "main",
+      "headRefOid": "82ed33c55be4381037fcafa9df608470f24dfb5e",
+      "closedAt": null,
+      "mergedAt": null,
+      "mergedBy": null,
+      "mergeCommit": null,
+      "comments": [],
+      "reviews": [
+        {
+          "id": "PRR_kwDOMJPqLM8AAAABWNfSjw",
+          "commit": {
+            "abbreviatedOid": "82ed33c"
+          },
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "state": "APPROVED",
+          "body": "",
+          "createdAt": "2026-11-05T13:16:10Z",
+          "updatedAt": "2026-11-05T13:16:10Z",
+          "comments": []
         }
       ]
     }
