@@ -84,15 +84,15 @@ def verify(name, mode, defines, claims, directory, pan_args=(), spin_args=(),
                     passed &= "spin: _spin_nvr.tmp:" in replay_text
                 if claim in mutations:
                     passed &= "acceptance cycle" in output or "assertion violated" in output
-                if name == "mutant-any-ack":
-                    passed &= all(item in replay_text for item in (
-                        "peer[0].done = 1", "peer[0].finish_ack_received = 0", "wrong_ack_seen = 1"))
+                if name == "mutant-old-epoch-record":
+                    # The initiator completes although the responder never saw Fin.
+                    passed &= "peer[0].done = 1" in replay_text and "peer[1].done = 1" not in replay_text
                 if name in ("mutant-early-pha", "mutant-pha-transcript"):
                     passed &= "pha_context_ok = 0" in replay_text
                 if name == "mutant-current-exporter":
                     passed &= "ea_context_ok = 0" in replay_text
                 if name == "mutant-global-pha":
-                    passed &= "finish_ack_lost = 1" in replay_text and "peer[0].pha_buffered = 1" in replay_text
+                    passed &= "finish_ack_lost = 1" in replay_text and "peer[1].pha_waiting = 1" in replay_text
         else:
             passed = errors == 0 and code == 0 and "Search not completed" not in output
         entry = {"claim": claim, "expected_counterexample": expect_error,
@@ -111,20 +111,30 @@ def suite_profiles():
     safety = [("protocol_safety", False)]
     progress = safety + [("successful_completion", False)]
     single = ["INITIATE_A=1", "INITIATE_B=0"]
+    server = ["INITIATE_A=0", "INITIATE_B=1"]
     round_loss = single + ["ROUND_TIMEOUTS=1", "DROPS=1", "DROP_FIRST_FIN_ACK=1"]
     pha = round_loss + ["ENABLE_PHA=1", "PHA_TIMING=2"]
-    ack = round_loss + ["EXTRA_REQUEST_ACK=1"]
+    pha_two_losses = single + ["ROUND_TIMEOUTS=1", "DROPS=2", "DROP_FIRST_FIN_ACK=1", "ENABLE_PHA=1", "PHA_TIMING=2"]
+    other_ack = round_loss + ["EXTRA_REQUEST_ACK=1"]
+    cid_before = round_loss + ["ENABLE_CID=1", "CID_TIMING=1"]
     ea = single + ["DROPS=0", "ENABLE_EA=1", "EA_DELAY_UNTIL_EKU=1", "EA_SPONT_TRIGGER_B=0"]
+    pha_completes = ("witness_pha_completes_eku", True)
+    cid_completes = ("witness_cid_completes_eku", True)
     return [
         ("dtls-base", "dtls", ["DROPS=1"], safety),
         ("dtls-pha-loss-safety", "dtls", single + ["DROPS=1", "ENABLE_PHA=1", "PHA_TIMING=2"], safety),
-        ("dtls-pha-loss", "dtls", pha, progress + [("witness_pha_ack_loss", True)]),
-        ("dtls-pha-fragments", "dtls", pha + ["FRAGMENT_PHA=1"], progress + [("witness_pha_ack_loss", True)]),
-        ("dtls-pha-cid-fragments", "dtls", pha + ["FRAGMENT_PHA=1", "ENABLE_CID=1"], progress + [("witness_pha_ack_loss", True), ("witness_cid_old_epoch", True)]),
+        ("dtls-pha-loss", "dtls", pha, progress + [pha_completes]),
+        ("dtls-pha-two-losses", "dtls", pha_two_losses, progress + [pha_completes]),
+        ("dtls-pha-fragments", "dtls", pha + ["FRAGMENT_PHA=1"], progress + [pha_completes]),
+        ("dtls-pha-cid-fragments", "dtls", pha + ["FRAGMENT_PHA=1", "ENABLE_CID=1"], progress + [pha_completes, cid_completes]),
         ("dtls-epoch-three", "dtls", pha + ["INIT_RX_I=3", "INIT_TX_I=3", "INIT_RX_R=3", "INIT_TX_R=3"], progress),
         ("dtls-pha-cross-flight", "dtls", single + ["DROPS=0", "ENABLE_PHA=1", "PHA_TIMING=1", "ROUND_TIMEOUTS=1"], progress),
-        ("dtls-ack-association", "dtls", ack, progress + [("witness_wrong_ack", True)]),
-        ("dtls-cid-immediate", "dtls", round_loss + ["ENABLE_CID=1"], progress + [("witness_cid_old_epoch", True)]),
+        ("dtls-pha-cross-flight-loss", "dtls", single + ["DROPS=1", "ENABLE_PHA=1", "PHA_TIMING=1", "ROUND_TIMEOUTS=1"], progress),
+        ("dtls-server-initiates-pha", "dtls", server + ["DROPS=1", "ENABLE_PHA=1", "PHA_TIMING=0", "ROUND_TIMEOUTS=1"], progress),
+        ("dtls-other-ack", "dtls", other_ack, progress + [("witness_other_ack_completes_eku", True)]),
+        ("dtls-app-data", "dtls", round_loss + ["APP_QUOTA=1"], progress + [("witness_app_completes_eku", True)]),
+        ("dtls-cid-immediate", "dtls", round_loss + ["ENABLE_CID=1"], progress + [cid_completes]),
+        ("dtls-cid-before-eku", "dtls", cid_before, progress + [("witness_cid_old_epoch", True)]),
         ("dtls-cid-request", "dtls", single + ["DROPS=0", "ROUND_TIMEOUTS=1", "ENABLE_CID=1", "ENABLE_CID_REQUEST=1"], progress),
         ("dtls-cid-spare", "dtls", round_loss + ["ENABLE_CID=1", "CID_IMMEDIATE=0"], progress),
         ("dtls-prior-handshake", "dtls", ["DROPS=1", "ROUND_TIMEOUTS=1", "ENABLE_PRIOR_HS=1"], progress),
@@ -134,20 +144,21 @@ def suite_profiles():
         ("dtls-ea-spontaneous", "dtls", single + ["DROPS=0", "ROUND_TIMEOUTS=1", "ENABLE_EA=1"], progress),
         ("crossed-loss", "crossed", ["DROPS=1", "ROUND_TIMEOUTS=1"], progress),
         ("crossed-server-initiates-pha", "crossed", ["DROPS=0", "ROUND_TIMEOUTS=1", "ENABLE_PHA=1", "PHA_TIMING=2"], progress),
-        ("crossed-client-wins-pha", "crossed", ["KX_A=20", "KX_B=10", "DROPS=1", "DROP_FIRST_FIN_ACK=1", "ROUND_TIMEOUTS=1", "ENABLE_PHA=1", "PHA_TIMING=2"], progress + [("witness_pha_ack_loss", True)]),
+        ("crossed-client-wins-pha", "crossed", ["KX_A=20", "KX_B=10", "DROPS=1", "DROP_FIRST_FIN_ACK=1", "ROUND_TIMEOUTS=1", "ENABLE_PHA=1", "PHA_TIMING=2"], progress + [pha_completes]),
         ("tls-crossed", "tls", [], progress),
         ("tls-app", "tls", ["APP_QUOTA=1"], progress),
         ("tls-pha", "tls", single + ["ENABLE_PHA=1"], progress),
+        ("tls-server-initiates-pha", "tls", server + ["ENABLE_PHA=1"], progress),
         ("tls-ea", "tls", ea, progress + [("witness_old_ea", True)]),
         ("negative-message", "dtls", ["DROPS=0", "INJECT_ERRORS=1"], [("no_unexpected", True)]),
         ("negative-ack-epoch", "dtls", ["DROPS=0", "INJECT_ERRORS=2"], [("no_illegal_parameter", True)]),
         ("negative-group", "dtls", ["DROPS=0", "INJECT_ERRORS=3"], [("no_illegal_parameter", True)]),
-        ("mutant-any-ack", "dtls", ack + ["FAULT_ANY_ACK=1"], [("protocol_safety", True)]),
-        ("mutant-global-pha", "dtls", pha + ["FAULT_GLOBAL_PHA=1"], [("successful_completion", True)]),
+        ("mutant-old-epoch-record", "dtls", single + ["DROPS=0", "DEFER_RESP=1", "FAULT_OLD_EPOCH_COMPLETES=1"], [("protocol_safety", True)]),
+        ("mutant-global-pha", "dtls", pha_two_losses + ["FAULT_GLOBAL_PHA=1"], [("successful_completion", True)]),
         ("mutant-early-pha", "dtls", pha + ["FAULT_EARLY_PHA=1"], [("authentication_context", True)]),
         ("mutant-pha-transcript", "dtls", pha + ["FAULT_PHA_TRANSCRIPT=1"], [("authentication_context", True)]),
         ("mutant-current-exporter", "dtls", ea + ["ROUND_TIMEOUTS=1", "FAULT_EA_CURRENT=1"], [("authentication_context", True)]),
-        ("mutant-cid-retention", "dtls", round_loss + ["ENABLE_CID=1", "FAULT_CID_RETENTION=1"], [("successful_completion", True)]),
+        ("mutant-cid-retention", "dtls", cid_before + ["FAULT_CID_RETENTION=1"], [("successful_completion", True)]),
     ]
 
 

@@ -36,9 +36,11 @@ include the shared protocol model in
 
 - `model/tls13_extended_key_update.pml`
   - TLS 1.3 EKU state machine (lower state-space, no DTLS ACK/retention path).
-  - Primary checks: `no_unexpected`, `no_illegal_parameter`, `key_sync`.
+  - Primary checks: `no_unexpected`, `no_illegal_parameter`, `epoch_consistency`.
   - Assumes all directional generation counters start at the same numeric
-    generation `E`; `key_sync` compares sender and receiver per direction.
+    generation `E`; `epoch_consistency` compares sender and receiver per
+    direction. It is also the key synchronization property; the former
+    `key_sync` claim was identical and has been removed.
 - `model/extended_key_update.pml`
   - DTLS EKU model with one initiator and one responder (no crossed requests).
   - Primary checks: `no_unexpected`, `no_illegal_parameter`, `epoch_consistency`.
@@ -59,9 +61,12 @@ The Python runner checks SPIN's `errors:` summary and rejects incomplete searche
 or exhausted memory/depth limits; a zero process exit status alone is not treated
 as a successful verification. No external Python packages are required.
 
-Detailed model/spec mapping, assumptions, and recorded verification results are
-available in [model/SPEC-MAPPING.md](model/SPEC-MAPPING.md) and
-[model/VERIFICATION.md](model/VERIFICATION.md).
+The model/spec mapping, abstractions, and assumptions are described in
+[model/SPEC-MAPPING.md](model/SPEC-MAPPING.md).
+[model/VERIFICATION.md](model/VERIFICATION.md) is only the results log of the
+last recorded run: profiles, parameters, stored states, tool versions, and
+source hashes. It is not needed to run the checks, and it has to be regenerated
+whenever the models or the runner change.
 
 Running the model checks requires Python 3, SPIN, and GCC. On Debian/Ubuntu, they
 can be installed with:
@@ -139,7 +144,7 @@ work=$(mktemp -d /tmp/eku-spin.XXXXXX)
 
 (cd "$work" && spin -search -ltl no_unexpected "$repo/model/tls13_extended_key_update.pml")
 (cd "$work" && spin -search -ltl no_illegal_parameter "$repo/model/tls13_extended_key_update.pml")
-(cd "$work" && spin -search -ltl key_sync "$repo/model/tls13_extended_key_update.pml")
+(cd "$work" && spin -search -ltl epoch_consistency "$repo/model/tls13_extended_key_update.pml")
 (cd "$work" && spin -search -ltl no_unexpected "$repo/model/extended_key_update.pml")
 (cd "$work" && spin -search -ltl no_illegal_parameter "$repo/model/extended_key_update.pml")
 (cd "$work" && spin -search -ltl epoch_consistency "$repo/model/extended_key_update.pml")

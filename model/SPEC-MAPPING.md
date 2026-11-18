@@ -5,9 +5,11 @@ The entry points model the EKU exchange and the post-handshake interactions in
 `eku_protocol.pml`, so that ACK handling and authentication rules do not diverge
 between the single-initiator, crossed-request, and TLS variants.
 
-This mapping describes the updated models. Historical results for the former
-models remain historical results; their state counts cannot be compared directly
-with the refactored model. `pha-gap.md` preserves the original diagnosis.
+The DTLS entry points follow Step 7 of the DTLS procedure: any record that the
+initiator deprotects under its new receive epoch completes the exchange. Earlier
+model versions waited for the explicit ACK of the finish message and buffered
+new-epoch handshake messages until then; their results and state counts cannot
+be compared with this model.
 
 ## Entry points and roles
 
@@ -52,7 +54,7 @@ security proof.
 | Initiator receives response | Implicitly acknowledge Req, derive immediately, advance RX, enter `NEED_FINISH` |
 | DTLS initiator sends finish | Keep old TX; enter `WAIT_ACK` |
 | DTLS responder receives finish | Implicitly acknowledge Resp, advance both epochs, send a record-specific ACK |
-| DTLS initiator receives finish ACK | Require an actual sent Fin record reference; advance TX and complete locally |
+| DTLS initiator deprotects any record under the new receive epoch (Step 7) | Treat Fin as acknowledged, advance TX and complete locally, then process the record |
 | TLS responder sends response | Advance TX after sending under the old keys |
 | TLS initiator sends finish | Advance TX immediately after sending under the old keys |
 | TLS responder receives finish | Advance RX and complete locally |
@@ -77,8 +79,14 @@ Each emitted record receives a fresh opaque handle. The handle names a distinct
 kind are recorded at the sender. An ACK identifies one such record and its epoch;
 its payload's observer label is not used to decide what it acknowledges.
 Retransmission uses a new record handle with the original handshake sequence,
-epoch, and payload. An ACK for any transmission of Fin acknowledges that finish.
-An unrelated ACK, including a late ACK for Req under the new epoch, cannot do so.
+epoch, and payload. An ACK still acknowledges only the record it names.
+
+Completion at the initiator does not depend on which record an ACK names. Under
+Step 7 the epoch of the received record decides, because the responder sends
+under the new epoch only after it has processed Fin. The ACK of Fin is the usual
+completing record. A late ACK for Req under the new epoch, a handshake message,
+or application data completes the exchange in the same way. A record under the
+pre-update epoch never does.
 
 This is a bounded abstraction of record-number equality, not a wire-format model.
 ACK lists contain one record in this model; arbitrary list packing and concrete
@@ -86,19 +94,32 @@ ACK lists contain one record in this model; arbitrary list packing and concrete
 endpoint. Bounds are asserted, never silently wrapped or reused.
 
 An ACK referring to a higher epoch than its own record raises
-`illegal_parameter`. Pending ACKs for new-epoch records remain local until the
-sending epoch is activated. They do not prevent Fin retransmission or processing
-of its ACK. Old receive keys remain available until a successfully processed
+`illegal_parameter`. Step 7 activates the new sending epoch before a new-epoch
+record is processed, so no ACK is deferred; `acknowledge_incoming` asserts that
+the acknowledged record's epoch does not exceed the sending epoch. The initiator
+retransmits Fin under the old epoch until Step 7 completes and not afterwards.
+Old receive keys remain available until a successfully processed
 record in the new RX epoch permits retirement. Invalid old-epoch DTLS records
 are discarded; TLS delivery is ordered and must match the current receive keys.
 
 ## PHA, fragments, and context association
 
 Only B generates PHA requests. Its `pha_waiting` state has no immediate effect
-on A. A learns about PHA only through received messages. A new-epoch request in
-`WAIT_ACK` is sequenced but its PHA operation is buffered. Its ACKs are deferred.
-After the Fin ACK, A processes it using the new context and sends its response.
-B continues re-ACKing old Fin retransmissions while waiting for that response.
+on A. A learns about PHA only through received messages. A new-epoch request
+received in `WAIT_ACK` first completes the exchange at A (Step 7). A then
+processes it using the new context and responds under the new epoch. Nothing is
+buffered, and Fin is not retransmitted afterwards. B still re-ACKs Fin
+retransmissions that A sent earlier.
+
+The ordering rules for PHA and EKU are guards on the model actions. B creates a
+request only in `IDLE` or after local completion. Neither endpoint initiates EKU
+while a PHA exchange is outstanding locally. For a request that crosses an EKU
+request, B withholds Resp while its request is outstanding, and A withholds Fin
+until its response has been sent and acknowledged. Two assertions check the
+result: B never processes Fin while its request is outstanding, and A's
+generation matches the request when A responds. Profiles place the request
+before EKU, crossing the EKU request, and after EKU, with either the client or
+the server as EKU initiator.
 
 PHA records carry separate MAC-generation and transcript-generation labels.
 Creation checks the client's selected context; verification checks both labels
@@ -110,7 +131,9 @@ because it arrived or because both traffic epochs eventually match.
 Each fragment has a distinct record handle, the same handshake sequence and
 unchanged context. Reassembly accepts either order and retransmitted fragments.
 An explicit ACK for one fragment does not acknowledge the other fragment;
-receipt of PHAFin implicitly acknowledges the complete request. This covers a
+receipt of PHAFin implicitly acknowledges the complete request. A single
+new-epoch fragment is a deprotected record and completes the exchange like any
+other record. This covers a
 bounded two-fragment abstraction, not arbitrary lengths, overlapping ranges,
 PMTU changes, or the complete DTLS reassembly implementation.
 
@@ -135,8 +158,11 @@ Already captured reply contexts remain available for the modeled operation.
 ## Connection IDs and ignored tickets
 
 CID selection is separate from TX/RX epochs. B registers CID 1 before advertising
-it; A uses it for subsequent records when `CID_IMMEDIATE=1`, including an old-epoch
-Fin retransmission. The advertisement's ACK can remain deferred meanwhile.
+it; A uses it for subsequent records when `CID_IMMEDIATE=1`. `CID_TIMING=1` makes
+B advertise the CID before it handles EKU. A's Fin and its retransmissions then
+use the new CID under the old epoch and keys. With the default `CID_TIMING=2`
+the advertisement is sent under the new epoch. If the Fin ACK was lost, it
+completes the exchange at A and is acknowledged under the new sending epoch.
 The model retains routing for CID 0 and the issued CID; it does not specify or
 verify a CID-retirement protocol, address migration, or a pool of arbitrary CIDs.
 
@@ -153,23 +179,31 @@ not an example of an enabled post-handshake feature or a resumption model.
 
 - `protocol_safety`: no protocol error in benign runs, correct authentication
   contexts, no premature DTLS TX transition, and final directional epoch agreement.
-- `ack_controls_send`: an initiator's completion requires the Fin ACK, and its TX
-  remains unchanged while in DTLS `WAIT_ACK`.
+- `new_epoch_confirms_finish`: a DTLS initiator completes only after the responder
+  has processed Fin, and its TX remains unchanged while in `WAIT_ACK`.
 - `authentication_context`: PHA transcript/MAC and EA exporter associations hold.
-- `epoch_consistency` / `key_sync`: matching directional epochs after both finish.
+- `epoch_consistency`: matching directional epochs after both finish. This is
+  also the key synchronization property. The former `key_sync` claim had the
+  same formula and was removed.
 - `no_deadlock`: eventual local EKU success **or bounded-retry abort**, not
   necessarily successful authentication or completion of every operation.
 - `successful_completion`: both EKUs and all enabled operations complete, with
-  all handshake transmissions and deferred ACKs resolved. Explicit EA context
+  all handshake transmissions resolved. Explicit EA context
   expiration counts as an operation failure handled by policy, not authentication
   success. Other profiles cannot use that exception unless expiration is enabled.
 
 The `witness_*` claims intentionally assert that a target sequence never happens.
 They must fail, and their replayed counterexamples establish that the target is
 reachable **and subsequently completes**. They are not reported as safety bugs.
-Mutations reintroduce wrong ACK acceptance, the global PHA gate, premature PHA,
-wrong transcript/exporter selection, or CID-based premature key retirement. These
-must fail their specified safety or completion claim for the intended reason.
+The `witness_*_completes_eku` claims show that, after loss of the Fin ACK, a
+CertificateRequest, a NewConnectionId, application data, or an ACK naming
+another record each complete the exchange at the initiator.
+
+Mutations let a pre-update record complete the exchange, gate retransmissions on
+the peer's PHA state, answer a new-epoch PHA request before completing the
+exchange, select the wrong transcript or exporter, or retire old receive keys on
+a CID change. These must fail their specified safety or completion claim for the
+intended reason.
 
 There are two timeout abstractions:
 

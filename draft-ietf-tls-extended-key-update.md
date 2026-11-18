@@ -526,7 +526,9 @@ The exchange has the following steps:
    protected with its updated send keys and epoch, as required by
    {{Section 7 of DTLS}}. While retaining the pre-update receive keys, the
    responder MUST process and acknowledge retransmissions of
-   `ExtendedKeyUpdate(key_update_finish)`. The responder MAY send other
+   `ExtendedKeyUpdate(key_update_finish)`. These ACKs are also protected with
+   the updated send keys and epoch, although the retransmissions themselves
+   arrive under the pre-update epoch. The responder MAY send other
    records under its new sending epoch, including application data and, subject
    to {{dtls-handshake-ordering}}, new handshake messages, without waiting for
    a record from the initiator under the new epoch.
@@ -1087,16 +1089,20 @@ values as defined in {{Section 7.5 of TLS}}. The application conveys the
 generation it used to the peer, for example with the protected data, so that
 the peer derives the same EKM.
 
-The retention policy for exporter secrets and derived application contexts
-is application-specific and MUST satisfy {{post-handshake-context}}.
-An operation using an older exporter generation can remain outstanding
-after newer-generation data has been processed. Neither that event nor
-retirement of old DTLS record keys alone determines when the operation's
-exporter context may be discarded. Applications MUST bound retention and
-define how expired operations fail. For example, a DTLS-SRTP application
-might retain an older packet-protection context while its replay window
-still accepts packets protected with that context, as described in
-{{Section 3.3.2 of !RFC3711}}.
+The (D)TLS implementation retains the exporter secret of an earlier
+generation only for a short period, comparable to the retention of keys for
+prior epochs in {{Section 4.2.1 of DTLS}}, so that operations which selected
+that generation can complete. A retained secret remains exposed to a later
+compromise. Once the secret has been discarded, a request for that
+generation through the generation-aware exporter interface MUST fail rather
+than use the secret of another generation. Retention of keying material
+derived from older generations is application-specific. For example, a
+DTLS-SRTP application might retain an older packet-protection context while
+its replay window still accepts packets protected with that context, as
+described in {{Section 3.3.2 of !RFC3711}}.
+
+Selection, buffering, or expiration of an application operation MUST NOT
+prevent an EKU exchange from progressing.
 
 
 # Interaction with Post-Handshake Operations {#exported}
@@ -1104,10 +1110,9 @@ still accepts packets protected with that context, as described in
 EKU changes traffic secrets, exporter secrets, and the transcript context
 used by subsequent authentication. Operations that depend on that state
 need both consistent context selection and suitable ordering across the
-change. This section defines common requirements and illustrates them with
-Post-Handshake Certificate-Based Client Authentication (PHA), carried by
-the handshake protocol, and Exported Authenticators, carried by an
-application protocol. The additional DTLS transmission and acknowledgment
+change. This section specifies both for Post-Handshake Certificate-Based
+Client Authentication (PHA), carried by the handshake protocol, and for
+Exported Authenticators, carried by an application protocol. The additional DTLS transmission and acknowledgment
 rules are specified in {{dtls-handshake-ordering}} and
 {{dtls-transition-acks}}.
 
@@ -1121,47 +1126,6 @@ Post-Handshake Certificate-Based Client Authentication ({{Section 4.3.6 of TLS}}
 and therefore allows only the server to detect divergence. Exported Authenticators {{!RFC9261}}
 authenticate the endpoint that produces the authenticator, so detection at both endpoints
 requires an authenticator in each direction.
-
-## Binding Operations to a Key Generation {#post-handshake-context}
-
-Post-handshake operations that use changing key material or transcript
-state MUST have an unambiguous association with the generation and context
-used to create and verify their authentication values. Advancing EKU MUST
-NOT silently change the context of an outstanding operation. Generation
-selection is separate from the epoch of the records carrying the operation:
-an authentication object can be created before an EKU and transmitted or
-verified after it.
-
-Here, a generation identifies the relevant secrets and transcript context
-of the initial connection or of a particular EKU exchange. Generation
-identifiers are scoped to their connection and MUST NOT be used to select
-a context belonging to another connection.
-
-This requirement can be satisfied by ordering the operation and EKU so
-that the context remains fixed, or by explicitly selecting a generation
-and retaining the corresponding context. PHA uses the ordering rules in
-{{pha-eku-ordering}} to keep its transcript and Finished key consistent.
-The epoch-aware Exported Authenticator interface in {{eku-ea}} instead
-selects an exporter generation for each operation, allowing the operation
-to overlap an EKU without changing that selection.
-
-The protocol using an explicitly selected generation MUST specify how
-both endpoints associate the operation with the same generation, how that
-association is authenticated, and which generations are acceptable for its
-purpose. A local epoch counter alone is not sufficient unless the protocol
-defines how the peer interprets it. A valid authentication value from an
-older generation MUST NOT be treated as proof of authentication under the
-updated context. Applications that use authentication to check the result
-of a particular EKU MUST require the generation resulting from that EKU.
-
-An implementation MUST either retain the keying material or derived
-context needed by an outstanding operation for its permitted lifetime, or
-explicitly fail that operation if the context becomes unavailable. It
-MUST NOT substitute a different generation. Applications MUST define
-bounded lifetimes for such operations. Selection, buffering, or expiration
-of an application operation MUST NOT prevent the underlying EKU exchange
-from progressing. These requirements do not require indefinite retention
-of old exporter secrets.
 
 ## Post-Handshake Certificate-Based Client Authentication
 
@@ -1179,7 +1143,7 @@ Authenticator from the server.
 
 ## Exported Authenticators {#eku-ea}
 
-This document extends Section 5.1 of {{!RFC9261}} with an epoch-aware
+This document extends Section 5.1 of {{!RFC9261}} with a generation-aware
 Exported Authenticator interface. For this interface, the Handshake Context
 and Finished MAC Key MUST be derived from `exporter_secret_G` for the
 explicitly selected exporter generation G. The same generation MUST be
@@ -1194,7 +1158,7 @@ constructing the request, and the responding application MUST use that
 generation. For an unsolicited server authenticator, the generating
 application selects it. In both cases, the application protocol MUST
 unambiguously identify the generation to the verifier and bind it to the
-authenticated operation as required by {{post-handshake-context}}.
+authenticated operation.
 
 The `certificate_request_context` can carry this identification as part of
 an application-defined encoding. That encoding MUST preserve the context's
@@ -1227,8 +1191,8 @@ on the newly derived secrets.
 
 The existing interfaces in {{RFC9261}} retain their use of the static TLS
 exporter defined in {{Section 7.5 of TLS}}. They MUST NOT silently switch to
-the epoch-aware interface. As discussed in {{Section 7 of RFC9261}}, the
-epoch-aware interface can also be implemented at the application layer
+the generation-aware interface. As discussed in {{Section 7 of RFC9261}}, the
+generation-aware interface can also be implemented at the application layer
 using the corresponding exporter interface.
 
 Authenticator requests and authenticators are carried by an application
@@ -1252,14 +1216,22 @@ are required to preserve cryptographic consistency.
 ### Post-Handshake Certificate-Based Client Authentication
 
 An endpoint MUST NOT complete an EKU exchange in a manner that transitions
-to new application traffic secrets while a PHA exchange is in progress.
+to new application traffic secrets while a PHA exchange is outstanding.
 
 The following constraints apply to both TLS 1.3 and DTLS 1.3:
 
 * An endpoint MUST NOT initiate PHA while an EKU exchange is locally in progress.
+  An EKU exchange is locally in progress from the time the endpoint sends or
+  receives `ExtendedKeyUpdate(key_update_request)` until it has updated both
+  its send keys and its receive keys.
 
 * An endpoint MUST NOT initiate an EKU exchange while a PHA exchange is
-  outstanding.
+  outstanding. A PHA exchange is outstanding at the server from the time it
+  sends `CertificateRequest` until it receives the client's `Finished`, and
+  at the client from the time it receives `CertificateRequest` until it has
+  sent its `Finished`. In DTLS, the client's response additionally has to be
+  acknowledged before the client sends an EKU request, as required by
+  {{dtls-handshake-ordering}}.
 
 * In a cross-flight condition, if a (D)TLS client sends an EKU request and,
   before receiving a response, receives a `CertificateRequest` from the
@@ -1321,18 +1293,14 @@ Finished [N+1] ---------------------->
 
 ### Exported Authenticators
 
-An Exported Authenticator operation using the epoch-aware interface may
-overlap EKU only with the fixed generation association and context handling
-specified in {{post-handshake-context}} and {{eku-ea}}. An epoch-aware API
-alone does not ensure that the peer selects the same generation. The
-application protocol's generation agreement is required as well.
-
-No additional serialization between EKU and such an operation is required
-when those conditions are satisfied. An operation bound to an older
-generation can complete after EKU, but does not authenticate the new
-generation. Because a generation is selectable only after it has been
-reported as active, an operation does not select a generation that is
-unavailable at the peer, as explained in {{eku-ea}}.
+No ordering constraints between EKU and Exported Authenticators are needed.
+PHA implicitly uses the transcript and traffic secret that are current when
+the `CertificateRequest` is sent. An Exported Authenticator created with the
+generation-aware interface is instead bound to an explicitly selected exporter
+generation, as specified in {{eku-ea}}, so it can be requested, created, and
+validated before, during, or after an EKU exchange. Authenticators created
+with the existing interfaces of {{RFC9261}} use the static exporter secret
+and are not affected by EKU.
 
 # Deployment Considerations {#deployment}
 
@@ -1632,7 +1600,7 @@ The diagrams show the EKU message exchange. Sending actions are additionally
 subject to {{dtls-handshake-ordering}}, including waiting for earlier
 independent handshake transmissions to be acknowledged and deferring new
 independent transmissions. Incoming messages follow
-{{dtls-transition-acks}} and {{post-handshake-context}}. Those requirements
+{{dtls-transition-acks}}. Those requirements
 apply even where a diagram does not show a separate waiting state.
 
 ### Terms and Abbreviations
@@ -1767,9 +1735,9 @@ current tx. The responder may send APP data and, subject to
 {{dtls-handshake-ordering}}, new handshake messages under the new tx
 without waiting for a record from the initiator under the new epoch.
 
-Retention at the responder ends automatically on the first APP received under the new rx (then retain_old := 0). APP traffic is otherwise permitted at any time; reordering is tolerated by the acceptance rule.
+Retention at the responder ends on the first record received under the new rx (then retain_old := 0). This can be application data, a handshake message such as the client's Certificate in a PHA exchange, or an ACK. APP traffic is otherwise permitted at any time; reordering is tolerated by the acceptance rule.
 
-APP acceptance rule (receiver): accept if e == rx or (retain_old && e == old_rx). If retain_old is set and an APP with the new rx arrives, clear retain_old.
+APP acceptance rule (receiver): accept if e == rx or (retain_old && e == old_rx). If retain_old is set and any record with the new rx arrives, clear retain_old.
 
 ~~~ aasvg
 +---------------------------------+
@@ -1807,7 +1775,7 @@ APP acceptance rule (receiver): accept if e == rx or (retain_old && e == old_rx)
       v
 +------------------------------------------+
 | FINISHED                                 |
-| (retain_old=0 after first APP at new rx) |
+| (retain_old=0 on first record at new rx) |
 +------------------------------------------+
 ~~~
 
