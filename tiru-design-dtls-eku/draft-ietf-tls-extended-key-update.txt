@@ -106,12 +106,11 @@ Table of Contents
      11.1.  Post-Compromise Security for the Initial Exporter Secret
      11.2.  Exporter Usage After Extended Key Update
    12. Interaction with Post-Handshake Operations
-     12.1.  Binding Operations to a Key Generation
-     12.2.  Post-Handshake Certificate-Based Client Authentication
-     12.3.  Exported Authenticators
-     12.4.  Ordering of Authentication and Extended Key Update
-       12.4.1.  Post-Handshake Certificate-Based Client Authentication
-       12.4.2.  Exported Authenticators
+     12.1.  Post-Handshake Certificate-Based Client Authentication
+     12.2.  Exported Authenticators
+     12.3.  Ordering of Authentication and Extended Key Update
+       12.3.1.  Post-Handshake Certificate-Based Client Authentication
+       12.3.2.  Exported Authenticators
    13. Deployment Considerations
    14. Security Considerations
      14.1.  Threat Model
@@ -593,10 +592,13 @@ Table of Contents
        ACK protected with its updated send keys and epoch, as required
        by Section 7 of [DTLS].  While retaining the pre-update receive
        keys, the responder MUST process and acknowledge retransmissions
-       of ExtendedKeyUpdate(key_update_finish).  The responder MAY send
-       other records under its new sending epoch, including application
-       data and, subject to Section 6.1, new handshake messages, without
-       waiting for a record from the initiator under the new epoch.
+       of ExtendedKeyUpdate(key_update_finish).  These ACKs are also
+       protected with the updated send keys and epoch, although the
+       retransmissions themselves arrive under the pre-update epoch.
+       The responder MAY send other records under its new sending epoch,
+       including application data and, subject to Section 6.1, new
+       handshake messages, without waiting for a record from the
+       initiator under the new epoch.
 
    7.  On receipt of any record that it successfully deprotects with the
        new receive keys, the initiator MUST treat
@@ -646,7 +648,7 @@ Table of Contents
    response until receiving ExtendedKeyUpdate(key_update_finish) and
    updating its sending epoch, the responder MUST do likewise.  The
    exception for completing a PHA exchange whose request crosses an EKU
-   request is specified in Section 12.4.  Any handshake transmissions
+   request is specified in Section 12.3.  Any handshake transmissions
    made for that exception MUST be acknowledged before the initiator
    sends EKU finish or the responder sends EKU response, respectively.
    Processing a crossed EKU request follows the EKU collision rules and
@@ -1190,28 +1192,32 @@ Table of Contents
    example with the protected data, so that the peer derives the same
    EKM.
 
-   The retention policy for exporter secrets and derived application
-   contexts is application-specific and MUST satisfy Section 12.1.  An
-   operation using an older exporter generation can remain outstanding
-   after newer-generation data has been processed.  Neither that event
-   nor retirement of old DTLS record keys alone determines when the
-   operation's exporter context may be discarded.  Applications MUST
-   bound retention and define how expired operations fail.  For example,
-   a DTLS-SRTP application might retain an older packet-protection
-   context while its replay window still accepts packets protected with
-   that context, as described in Section 3.3.2 of [RFC3711].
+   The (D)TLS implementation retains the exporter secret of an earlier
+   generation only for a short period, comparable to the retention of
+   keys for prior epochs in Section 4.2.1 of [DTLS], so that operations
+   which selected that generation can complete.  A retained secret
+   remains exposed to a later compromise.  Once the secret has been
+   discarded, a request for that generation through the generation-aware
+   exporter interface MUST fail rather than use the secret of another
+   generation.  Retention of keying material derived from older
+   generations is application-specific.  For example, a DTLS-SRTP
+   application might retain an older packet-protection context while its
+   replay window still accepts packets protected with that context, as
+   described in Section 3.3.2 of [RFC3711].
+
+   Selection, buffering, or expiration of an application operation MUST
+   NOT prevent an EKU exchange from progressing.
 
 12.  Interaction with Post-Handshake Operations
 
    EKU changes traffic secrets, exporter secrets, and the transcript
    context used by subsequent authentication.  Operations that depend on
    that state need both consistent context selection and suitable
-   ordering across the change.  This section defines common requirements
-   and illustrates them with Post-Handshake Certificate-Based Client
-   Authentication (PHA), carried by the handshake protocol, and Exported
-   Authenticators, carried by an application protocol.  The additional
-   DTLS transmission and acknowledgment rules are specified in
-   Section 6.1 and Section 6.2.
+   ordering across the change.  This section specifies both for Post-
+   Handshake Certificate-Based Client Authentication (PHA), carried by
+   the handshake protocol, and for Exported Authenticators, carried by
+   an application protocol.  The additional DTLS transmission and
+   acknowledgment rules are specified in Section 6.1 and Section 6.2.
 
    EKU provides fresh traffic secrets, but after compromise of the
    connection state described in Section 14.1, EKU alone does not
@@ -1227,51 +1233,7 @@ Table of Contents
    authenticator, so detection at both endpoints requires an
    authenticator in each direction.
 
-12.1.  Binding Operations to a Key Generation
-
-   Post-handshake operations that use changing key material or
-   transcript state MUST have an unambiguous association with the
-   generation and context used to create and verify their authentication
-   values.  Advancing EKU MUST NOT silently change the context of an
-   outstanding operation.  Generation selection is separate from the
-   epoch of the records carrying the operation: an authentication object
-   can be created before an EKU and transmitted or verified after it.
-
-   Here, a generation identifies the relevant secrets and transcript
-   context of the initial connection or of a particular EKU exchange.
-   Generation identifiers are scoped to their connection and MUST NOT be
-   used to select a context belonging to another connection.
-
-   This requirement can be satisfied by ordering the operation and EKU
-   so that the context remains fixed, or by explicitly selecting a
-   generation and retaining the corresponding context.  PHA uses the
-   ordering rules in Section 12.4 to keep its transcript and Finished
-   key consistent.  The epoch-aware Exported Authenticator interface in
-   Section 12.3 instead selects an exporter generation for each
-   operation, allowing the operation to overlap an EKU without changing
-   that selection.
-
-   The protocol using an explicitly selected generation MUST specify how
-   both endpoints associate the operation with the same generation, how
-   that association is authenticated, and which generations are
-   acceptable for its purpose.  A local epoch counter alone is not
-   sufficient unless the protocol defines how the peer interprets it.  A
-   valid authentication value from an older generation MUST NOT be
-   treated as proof of authentication under the updated context.
-   Applications that use authentication to check the result of a
-   particular EKU MUST require the generation resulting from that EKU.
-
-   An implementation MUST either retain the keying material or derived
-   context needed by an outstanding operation for its permitted
-   lifetime, or explicitly fail that operation if the context becomes
-   unavailable.  It MUST NOT substitute a different generation.
-   Applications MUST define bounded lifetimes for such operations.
-   Selection, buffering, or expiration of an application operation MUST
-   NOT prevent the underlying EKU exchange from progressing.  These
-   requirements do not require indefinite retention of old exporter
-   secrets.
-
-12.2.  Post-Handshake Certificate-Based Client Authentication
+12.1.  Post-Handshake Certificate-Based Client Authentication
 
    When Post-Handshake Certificate-Based Client Authentication
    (Section 4.7.2 of [TLS]) is performed after an Extended Key Update
@@ -1289,7 +1251,7 @@ Table of Contents
    assurance.  A client that requires such assurance can request an
    Exported Authenticator from the server.
 
-12.3.  Exported Authenticators
+12.2.  Exported Authenticators
 
    This document extends Section 5.1 of [RFC9261] with a generation-
    aware Exported Authenticator interface.  For this interface, the
@@ -1307,8 +1269,7 @@ Table of Contents
    application MUST use that generation.  For an unsolicited server
    authenticator, the generating application selects it.  In both cases,
    the application protocol MUST unambiguously identify the generation
-   to the verifier and bind it to the authenticated operation as
-   required by Section 12.1.
+   to the verifier and bind it to the authenticated operation.
 
    The certificate_request_context can carry this identification as part
    of an application-defined encoding.  That encoding MUST preserve the
@@ -1355,7 +1316,7 @@ Table of Contents
    The record epoch carrying an authenticator MUST NOT, by itself,
    determine the exporter generation used to validate it.
 
-12.4.  Ordering of Authentication and Extended Key Update
+12.3.  Ordering of Authentication and Extended Key Update
 
    EKU and Post-Handshake Authentication may both occur during the
    lifetime of a (D)TLS connection.  Post-Handshake Certificate-Based
@@ -1366,19 +1327,27 @@ Table of Contents
    specific ordering constraints are required to preserve cryptographic
    consistency.
 
-12.4.1.  Post-Handshake Certificate-Based Client Authentication
+12.3.1.  Post-Handshake Certificate-Based Client Authentication
 
    An endpoint MUST NOT complete an EKU exchange in a manner that
    transitions to new application traffic secrets while a PHA exchange
-   is in progress.
+   is outstanding.
 
    The following constraints apply to both TLS 1.3 and DTLS 1.3:
 
    *  An endpoint MUST NOT initiate PHA while an EKU exchange is locally
-      in progress.
+      in progress.  An EKU exchange is locally in progress from the time
+      the endpoint sends or receives
+      ExtendedKeyUpdate(key_update_request) until it has updated both
+      its send keys and its receive keys.
 
    *  An endpoint MUST NOT initiate an EKU exchange while a PHA exchange
-      is outstanding.
+      is outstanding.  A PHA exchange is outstanding at the server from
+      the time it sends CertificateRequest until it receives the
+      client's Finished, and at the client from the time it receives
+      CertificateRequest until it has sent its Finished.  In DTLS, the
+      client's response additionally has to be acknowledged before the
+      client sends an EKU request, as required by Section 6.1.
 
    *  In a cross-flight condition, if a (D)TLS client sends an EKU
       request and, before receiving a response, receives a
@@ -1391,7 +1360,7 @@ Table of Contents
    In DTLS, deferred EKU request is acknowledged as specified in
    Section 6.
 
-12.4.1.1.  DTLS CertificateRequest Sent After the Server Completes EKU
+12.3.1.1.  DTLS CertificateRequest Sent After the Server Completes EKU
 
    When the DTLS client initiates EKU, the server completes its part of
    the exchange by receiving ExtendedKeyUpdate(key_update_finish),
@@ -1440,22 +1409,17 @@ Table of Contents
 
    Figure 9: DTLS PHA Request Completing the EKU Exchange at the Client.
 
-12.4.2.  Exported Authenticators
+12.3.2.  Exported Authenticators
 
-   An Exported Authenticator operation using the epoch-aware interface
-   may overlap EKU only with the fixed generation association and
-   context handling specified in Section 12.1 and Section 12.3.  An
-   epoch-aware API alone does not ensure that the peer selects the same
-   generation.  The application protocol's generation agreement is
-   required as well.
-
-   No additional serialization between EKU and such an operation is
-   required when those conditions are satisfied.  An operation bound to
-   an older generation can complete after EKU, but does not authenticate
-   the new generation.  Because a generation is selectable only after it
-   has been reported as active, an operation does not select a
-   generation that is unavailable at the peer, as explained in
-   Section 12.3.
+   No ordering constraints between EKU and Exported Authenticators are
+   needed.  PHA implicitly uses the transcript and traffic secret that
+   are current when the CertificateRequest is sent.  An Exported
+   Authenticator created with the generation-aware interface is instead
+   bound to an explicitly selected exporter generation, as specified in
+   Section 12.2, so it can be requested, created, and validated before,
+   during, or after an EKU exchange.  Authenticators created with the
+   existing interfaces of [RFC9261] use the static exporter secret and
+   are not affected by EKU.
 
 13.  Deployment Considerations
 
@@ -1944,9 +1908,9 @@ B.2.  DTLS 1.3 State Machines
    The diagrams show the EKU message exchange.  Sending actions are
    additionally subject to Section 6.1, including waiting for earlier
    independent handshake transmissions to be acknowledged and deferring
-   new independent transmissions.  Incoming messages follow Section 6.2
-   and Section 12.1.  Those requirements apply even where a diagram does
-   not show a separate waiting state.
+   new independent transmissions.  Incoming messages follow Section 6.2.
+   Those requirements apply even where a diagram does not show a
+   separate waiting state.
 
 B.2.1.  Terms and Abbreviations
 
@@ -1989,7 +1953,7 @@ B.2.2.  State Machine (Initiator)
    have been acknowledged, it sends a Req and enters WAIT_RESP (updating
    := 1).  New independent handshake transmissions are deferred until
    local completion, subject to the PHA cross-flight exception in
-   Section 12.4.  While waiting, APP data may be sent at any time
+   Section 12.3.  While waiting, APP data may be sent at any time
    (tagged with the current tx) and received according to the APP
    acceptance rule below.
 
@@ -2017,7 +1981,7 @@ B.2.2.  State Machine (Initiator)
    A CertificateRequest, a peer key_update_request, a NewSessionTicket,
    or application data received under the new epoch in WAIT_ACK
    therefore completes the update first and is then processed in
-   FINISHED, as specified in Section 6.2 and Section 12.4.1.1.  Records
+   FINISHED, as specified in Section 6.2 and Section 12.3.1.1.  Records
    under the old epoch, including a CID change, do not change tx.
 
    Throughout the process:
@@ -2124,14 +2088,15 @@ B.2.3.  State Machine (Responder)
    subject to Section 6.1, new handshake messages under the new tx
    without waiting for a record from the initiator under the new epoch.
 
-   Retention at the responder ends automatically on the first APP
-   received under the new rx (then retain_old := 0).  APP traffic is
-   otherwise permitted at any time; reordering is tolerated by the
-   acceptance rule.
+   Retention at the responder ends on the first record received under
+   the new rx (then retain_old := 0).  This can be application data, a
+   handshake message such as the client's Certificate in a PHA exchange,
+   or an ACK.  APP traffic is otherwise permitted at any time;
+   reordering is tolerated by the acceptance rule.
 
    APP acceptance rule (receiver): accept if e == rx or (retain_old && e
-   == old_rx).  If retain_old is set and an APP with the new rx arrives,
-   clear retain_old.
+   == old_rx).  If retain_old is set and any record with the new rx
+   arrives, clear retain_old.
 
    +---------------------------------+
    | START                           |
@@ -2168,7 +2133,7 @@ B.2.3.  State Machine (Responder)
          v
    +------------------------------------------+
    | FINISHED                                 |
-   | (retain_old=0 after first APP at new rx) |
+   | (retain_old=0 on first record at new rx) |
    +------------------------------------------+
 
 Appendix C.  Overview of Security Goals
