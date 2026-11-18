@@ -1200,7 +1200,7 @@ The `certificate_request_context` can carry this identification as part of
 an application-defined encoding. That encoding MUST preserve the context's
 length limits, uniqueness requirements, and request-response association
 from {{RFC9261}}. It MUST identify the same exporter generation at both
-endpoints; a bare local counter that the peer cannot interpret is
+endpoints, using the generation N defined in {{exporter}}.
 insufficient. This specification does not define a common wire encoding
 for application protocols.
 
