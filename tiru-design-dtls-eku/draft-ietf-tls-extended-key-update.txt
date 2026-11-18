@@ -1291,11 +1291,11 @@ Table of Contents
 
 12.3.  Exported Authenticators
 
-   This document extends Section 5.1 of [RFC9261] with an epoch-aware
-   Exported Authenticator interface.  For this interface, the Handshake
-   Context and Finished MAC Key MUST be derived from exporter_secret_G
-   for the explicitly selected exporter generation G.  The same
-   generation MUST be used for creation and validation of an
+   This document extends Section 5.1 of [RFC9261] with a generation-
+   aware Exported Authenticator interface.  For this interface, the
+   Handshake Context and Finished MAC Key MUST be derived from
+   exporter_secret_G for the explicitly selected exporter generation G.
+   The same generation MUST be used for creation and validation of an
    authenticator, even if another EKU completes between those
    operations.  The derivation labels and authenticator construction
    otherwise follow [RFC9261].
