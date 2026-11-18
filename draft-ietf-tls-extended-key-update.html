@@ -28,23 +28,23 @@ the risks associated with static key compromise. Regular renewal of session keys
 contain the impact of such compromises. The extension is applicable to both TLS 1.3
 and DTLS 1.3. 
     " name="description">
-<meta content="xml2rfc 3.34.1" name="generator">
+<meta content="xml2rfc 3.35.0" name="generator">
 <meta content="Internet-Draft" name="keyword">
 <meta content="draft-ietf-tls-extended-key-update-latest" name="ietf.draft">
 <!-- Generator version information:
-  xml2rfc 3.34.1
-    Python 3.14.8
-    ConfigArgParse 1.8.0
+  xml2rfc 3.35.0
+    Python 3.14.10
+    ConfigArgParse 1.10.1
     google-i18n-address 3.1.1
     intervaltree 3.2.1
     Jinja2 3.1.6
     lxml 6.1.1
     natsort 8.4.0
-    platformdirs 4.13.4
+    platformdirs 4.14.7
     pycountry 24.6.1
     PyYAML 6.0.3
     requests 2.33.1
-    wcwidth 0.9.2
+    wcwidth 0.9.4
 -->
 <link href="draft-ietf-tls-extended-key-update.xml" rel="alternate" type="application/rfc+xml">
 <link href="#copyright" rel="license">
@@ -1045,7 +1045,7 @@ svg {
   & :is([stroke="white"], [stroke^="#fff"]) {
     stroke: var(--background-color);
   }
-  & :is([fill="black"], [fill^="#000"], :not([fill])) {
+  & :is([fill="black"], [fill^="#000"], :not([fill], [fill] *)) {
     fill: var(--text-color);
   }
   & :is([fill="white"], [fill^="#fff"]) {
@@ -1060,11 +1060,11 @@ svg {
 <thead><tr>
 <td class="left">Internet-Draft</td>
 <td class="center">Extended Key Update for TLS</td>
-<td class="right">October 2026</td>
+<td class="right">November 2026</td>
 </tr></thead>
 <tfoot><tr>
 <td class="left">Tschofenig, et al.</td>
-<td class="center">Expires 4 May 2027</td>
+<td class="center">Expires 22 May 2027</td>
 <td class="right">[Page]</td>
 </tr></tfoot>
 </table>
@@ -1080,12 +1080,12 @@ svg {
 <a href="https://www.rfc-editor.org/rfc/rfc9261" class="eref">9261</a>, <a href="https://www.rfc-editor.org/rfc/rfc9846" class="eref">9846</a> (if approved)</dd>
 <dt class="label-published">Published:</dt>
 <dd class="published">
-<time datetime="2026-10-31" class="published">31 October 2026</time>
+<time datetime="2026-11-18" class="published">18 November 2026</time>
     </dd>
 <dt class="label-intended-status">Intended Status:</dt>
 <dd class="intended-status">Standards Track</dd>
 <dt class="label-expires">Expires:</dt>
-<dd class="expires"><time datetime="2027-05-04">4 May 2027</time></dd>
+<dd class="expires"><time datetime="2027-05-22">22 May 2027</time></dd>
 <dt class="label-authors">Authors:</dt>
 <dd class="authors">
 <div class="author">
@@ -1161,7 +1161,7 @@ and DTLS 1.3.<a href="#section-abstract-4" class="pilcrow">¶</a></p>
         time. It is inappropriate to use Internet-Drafts as reference
         material or to cite them other than as "work in progress."<a href="#section-boilerplate.1-3" class="pilcrow">¶</a></p>
 <p id="section-boilerplate.1-4">
-        This Internet-Draft will expire on 4 May 2027.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
+        This Internet-Draft will expire on 22 May 2027.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="copyright">
@@ -1214,7 +1214,16 @@ and DTLS 1.3.<a href="#section-abstract-4" class="pilcrow">¶</a></p>
             <p id="section-toc.1-1.6.1"><a href="#section-6" class="auto internal xref">6</a>.  <a href="#name-dtls-13-extended-key-update" class="internal xref">DTLS 1.3 Extended Key Update Procedure</a></p>
 <ul class="compact toc ulBare ulEmpty">
 <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.6.2.1">
-                <p id="section-toc.1-1.6.2.1.1"><a href="#section-6.1" class="auto internal xref">6.1</a>.  <a href="#name-dtls-13-extended-key-update-" class="internal xref">DTLS 1.3 Extended Key Update Example</a></p>
+                <p id="section-toc.1-1.6.2.1.1"><a href="#section-6.1" class="auto internal xref">6.1</a>.  <a href="#name-handshake-ordering-across-a" class="internal xref">Handshake Ordering Across an EKU</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.6.2.2">
+                <p id="section-toc.1-1.6.2.2.1"><a href="#section-6.2" class="auto internal xref">6.2</a>.  <a href="#name-records-received-during-the" class="internal xref">Records Received During the Epoch Transition</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.6.2.3">
+                <p id="section-toc.1-1.6.2.3.1"><a href="#section-6.3" class="auto internal xref">6.3</a>.  <a href="#name-handshake-message-format" class="internal xref">Handshake Message Format</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.6.2.4">
+                <p id="section-toc.1-1.6.2.4.1"><a href="#section-6.4" class="auto internal xref">6.4</a>.  <a href="#name-dtls-13-extended-key-update-" class="internal xref">DTLS 1.3 Extended Key Update Example</a></p>
 </li>
             </ul>
 </li>
@@ -1242,7 +1251,7 @@ and DTLS 1.3.<a href="#section-abstract-4" class="pilcrow">¶</a></p>
             </ul>
 </li>
           <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.12">
-            <p id="section-toc.1-1.12.1"><a href="#section-12" class="auto internal xref">12</a>. <a href="#name-use-of-post-handshake-authe" class="internal xref">Use of Post-Handshake Authentication and Exported Authenticators with Extended Key Update</a></p>
+            <p id="section-toc.1-1.12.1"><a href="#section-12" class="auto internal xref">12</a>. <a href="#name-interaction-with-post-hands" class="internal xref">Interaction with Post-Handshake Operations</a></p>
 <ul class="compact toc ulBare ulEmpty">
 <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.12.2.1">
                 <p id="section-toc.1-1.12.2.1.1"><a href="#section-12.1" class="auto internal xref">12.1</a>.  <a href="#name-post-handshake-certificate-" class="internal xref">Post-Handshake Certificate-Based Client Authentication</a></p>
@@ -1251,7 +1260,7 @@ and DTLS 1.3.<a href="#section-abstract-4" class="pilcrow">¶</a></p>
                 <p id="section-toc.1-1.12.2.2.1"><a href="#section-12.2" class="auto internal xref">12.2</a>.  <a href="#name-exported-authenticators" class="internal xref">Exported Authenticators</a></p>
 </li>
               <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.12.2.3">
-                <p id="section-toc.1-1.12.2.3.1"><a href="#section-12.3" class="auto internal xref">12.3</a>.  <a href="#name-interaction-of-extended-key" class="internal xref">Interaction of Extended Key Update and Post-Handshake Authentication</a></p>
+                <p id="section-toc.1-1.12.2.3.1"><a href="#section-12.3" class="auto internal xref">12.3</a>.  <a href="#name-ordering-of-authentication-" class="internal xref">Ordering of Authentication and Extended Key Update</a></p>
 <ul class="compact toc ulBare ulEmpty">
 <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.12.2.3.2.1">
                     <p id="section-toc.1-1.12.2.3.2.1.1"><a href="#section-12.3.1" class="auto internal xref">12.3.1</a>.  <a href="#name-post-handshake-certificate-b" class="internal xref">Post-Handshake Certificate-Based Client Authentication</a></p>
@@ -1761,12 +1770,23 @@ Auth | {CertificateVerify}
 <a href="#section-6" class="section-number selfRef">6. </a><a href="#name-dtls-13-extended-key-update" class="section-name selfRef">DTLS 1.3 Extended Key Update Procedure</a>
       </h2>
 <p id="section-6-1">Unlike TLS 1.3, DTLS 1.3 implementations must take into account that handshake
-messages are not transmitted over a reliable transport protocol.<a href="#section-6-1" class="pilcrow">¶</a></p>
+messages are not transmitted over a reliable transport protocol. The responder
+updates its send keys only after receiving <code>ExtendedKeyUpdate(key_update_finish)</code>,
+which confirms that the initiator has derived the new keys. The initiator updates
+its send keys and sending epoch only after it has received a record protected
+under the responder's new sending epoch. Because the responder sends such
+records only after receiving <code>ExtendedKeyUpdate(key_update_finish)</code>, any
+record that the initiator successfully deprotects with its new receive keys
+confirms that the finish message was received. The explicit ACK of the finish
+message is the usual such record, but any other record under the new epoch
+serves the same purpose. A record sent by the initiator under the new keys in
+turn confirms to the responder that the initiator has completed the update,
+allowing the responder to stop retaining the old receive keys for EKU
+retransmissions.<a href="#section-6-1" class="pilcrow">¶</a></p>
 <p id="section-6-2">EKU messages <span class="bcp14">MUST</span> be transmitted reliably, like other DTLS handshake messages.
 If necessary, EKU messages <span class="bcp14">MAY</span> be fragmented as described in <span><a href="https://rfc-editor.org/rfc/rfc9147#section-5.5" class="relref">Section 5.5</a> of [<a href="#DTLS" class="cite xref">DTLS</a>]</span>.
-Due to the possibility of an <code>ExtendedKeyUpdate</code> messages being
-lost and thereby preventing the sender of that message from updating its keying
-material, receivers <span class="bcp14">MUST</span> retain the pre-update keying material until receipt
+Due to the possibility of EKU messages or their acknowledgments being lost,
+receivers <span class="bcp14">MUST</span> retain the pre-update keying material until receipt
 and successful decryption of a message using the new keys.<a href="#section-6-2" class="pilcrow">¶</a></p>
 <p id="section-6-3">Due to packet loss and/or reordering, DTLS 1.3 peers <span class="bcp14">MAY</span> receive records from an
 earlier epoch. If the necessary keys are available, implementations <span class="bcp14">SHOULD</span> attempt
@@ -1788,8 +1808,15 @@ corresponding <code>ExtendedKeyUpdate(key_update_response)</code> or an ACK.<a h
 <code>ExtendedKeyUpdate(key_update_finish)</code>. The responder <span class="bcp14">MAY</span> defer
 sending a response if system load or resource constraints prevent immediate processing.
 In such cases, the responder <span class="bcp14">MUST</span> acknowledge receipt of the key_update_request with an ACK and, once
-sufficient resources become available, retransmit the key_update_response until it is acknowledged by the
-initiator. key_update_response and ACK message <span class="bcp14">MAY</span> be received out of order; a late ACK <span class="bcp14">MUST</span> be ignored and <span class="bcp14">MUST NOT</span> affect the extended key update state machine.<a href="#section-6-5.2.1" class="pilcrow">¶</a></p>
+sufficient resources become available and the ordering requirements below
+are satisfied, send the key_update_response and
+retransmit it until acknowledged by the initiator. The responder <span class="bcp14">MUST</span> also
+defer the response while earlier independent handshake transmissions remain
+unacknowledged, as specified in <a href="#dtls-handshake-ordering" class="auto internal xref">Section 6.1</a>, and <span class="bcp14">MUST</span>
+acknowledge the request while waiting. A late ACK for the request does not
+change the EKU state after the corresponding response has been processed.
+Other records covered by that ACK <span class="bcp14">MUST</span> still be handled according to the
+DTLS acknowledgment procedures.<a href="#section-6-5.2.1" class="pilcrow">¶</a></p>
 </li>
         <li id="section-6-5.3">
           <p id="section-6-5.3.1">On receipt of <code>ExtendedKeyUpdate(key_update_response)</code> the initiator derives a secret key based on the
@@ -1798,31 +1825,152 @@ initiator's <code>ExtendedKeyUpdate(key_update_request)</code>, so no separate A
 update its receive keys and epoch value. The initiator <span class="bcp14">MUST NOT</span> defer derivation of the secrets.<a href="#section-6-5.3.1" class="pilcrow">¶</a></p>
 </li>
         <li id="section-6-5.4">
-          <p id="section-6-5.4.1">The initiator transmits an <code>ExtendedKeyUpdate(key_update_finish)</code> message. This message is subject to DTLS
-retransmission until acknowledged.<a href="#section-6-5.4.1" class="pilcrow">¶</a></p>
+          <p id="section-6-5.4.1">The initiator transmits an <code>ExtendedKeyUpdate(key_update_finish)</code> message
+using its pre-update send keys and epoch. This message is subject to DTLS
+retransmission until acknowledged. All retransmissions <span class="bcp14">MUST</span> use the same
+epoch and keying material as the original transmission, as specified in
+<span><a href="https://rfc-editor.org/rfc/rfc9147#section-4.2.1" class="relref">Section 4.2.1</a> of [<a href="#DTLS" class="cite xref">DTLS</a>]</span>.<a href="#section-6-5.4.1" class="pilcrow">¶</a></p>
 </li>
         <li id="section-6-5.5">
-          <p id="section-6-5.5.1">The responder <span class="bcp14">MUST</span> acknowledge the received message by sending an ACK message.<a href="#section-6-5.5.1" class="pilcrow">¶</a></p>
+          <p id="section-6-5.5.1">Upon receiving the initiator's <code>ExtendedKeyUpdate(key_update_finish)</code>,
+the responder <span class="bcp14">MUST</span> update its send and receive keys and their epoch values.
+This message implicitly acknowledges the corresponding
+<code>ExtendedKeyUpdate(key_update_response)</code>.<a href="#section-6-5.5.1" class="pilcrow">¶</a></p>
 </li>
         <li id="section-6-5.6">
-          <p id="section-6-5.6.1">After the responder receives the initiator's <code>ExtendedKeyUpdate(key_update_finish)</code>,
-the responder <span class="bcp14">MUST</span> update its send key and epoch value. With the receipt of
-that message, the responder <span class="bcp14">MUST</span> also update its receive keys.<a href="#section-6-5.6.1" class="pilcrow">¶</a></p>
+          <p id="section-6-5.6.1">The responder <span class="bcp14">MUST</span> acknowledge the received message by sending an ACK
+protected with its updated send keys and epoch, as required by
+<span><a href="https://rfc-editor.org/rfc/rfc9147#section-7" class="relref">Section 7</a> of [<a href="#DTLS" class="cite xref">DTLS</a>]</span>. While retaining the pre-update receive keys, the
+responder <span class="bcp14">MUST</span> process and acknowledge retransmissions of
+<code>ExtendedKeyUpdate(key_update_finish)</code>. These ACKs are also protected with
+the updated send keys and epoch, although the retransmissions themselves
+arrive under the pre-update epoch. The responder <span class="bcp14">MAY</span> send other
+records under its new sending epoch, including application data and, subject
+to <a href="#dtls-handshake-ordering" class="auto internal xref">Section 6.1</a>, new handshake messages, without waiting for
+a record from the initiator under the new epoch.<a href="#section-6-5.6.1" class="pilcrow">¶</a></p>
 </li>
         <li id="section-6-5.7">
-          <p id="section-6-5.7.1">On receipt of the ACK message, the initiator updates its send key and epoch
-value. If this ACK is not received, the initiator re-transmits its
-<code>ExtendedKeyUpdate(key_update_finish)</code> until ACK is received. The key update is
-complete once this ACK is processed by the initiator.<a href="#section-6-5.7.1" class="pilcrow">¶</a></p>
+          <p id="section-6-5.7.1">On receipt of any record that it successfully deprotects with the new
+receive keys, the initiator <span class="bcp14">MUST</span> treat <code>ExtendedKeyUpdate(key_update_finish)</code>
+as acknowledged, update its send keys and sending epoch, and stop
+retransmitting <code>ExtendedKeyUpdate(key_update_finish)</code>. The EKU exchange is
+then locally complete. This record is typically the ACK sent in Step 6, but
+an ACK record, a handshake message, or application data protected under the
+new epoch all have this effect, because the responder sends under the new
+epoch only after receiving the finish message. This implicit acknowledgment
+is specific to this exchange and supplements the acknowledgment rules of
+<span><a href="https://rfc-editor.org/rfc/rfc9147#section-7" class="relref">Section 7</a> of [<a href="#DTLS" class="cite xref">DTLS</a>]</span>; it does not relieve the responder of sending the ACK
+required by Step 6. A record that cannot be deprotected <span class="bcp14">MUST NOT</span> have this
+effect. After updating its sending epoch, the initiator processes the record
+according to its content type; a handshake message is acknowledged,
+explicitly or implicitly, under the new sending epoch as specified in
+Sections <a href="https://rfc-editor.org/rfc/rfc9147#section-7" class="relref">7</a> and <a href="https://rfc-editor.org/rfc/rfc9147#section-7.1" class="relref">7.1</a> of <span>[<a href="#DTLS" class="cite xref">DTLS</a>]</span>. Until such a record is received, the
+initiator <span class="bcp14">MUST NOT</span> send any records using the new keys or sending epoch,
+including ACK records, and <span class="bcp14">MUST</span> continue the DTLS retransmission procedure
+for <code>ExtendedKeyUpdate(key_update_finish)</code>.<a href="#section-6-5.7.1" class="pilcrow">¶</a></p>
 </li>
       </ol>
-<p id="section-6-6">If DTLS peers independently initiate the extended key update and the
-requests cross in flight, they are resolved as specified in <a href="#TLSC" class="auto internal xref">Section 5</a>.<a href="#section-6-6" class="pilcrow">¶</a></p>
-<p id="section-6-7">The handshake framing uses a single <code>HandshakeType</code> for this message
-(see <a href="#fig-dtls-handshake" class="auto internal xref">Figure 4</a>).<a href="#section-6-7" class="pilcrow">¶</a></p>
+<p id="section-6-6">The ordering and acknowledgment requirements in <a href="#dtls-handshake-ordering" class="auto internal xref">Section 6.1</a>
+and <a href="#dtls-transition-acks" class="auto internal xref">Section 6.2</a> apply throughout this exchange.<a href="#section-6-6" class="pilcrow">¶</a></p>
+<div id="dtls-handshake-ordering">
+<section id="section-6.1">
+        <h3 id="name-handshake-ordering-across-a">
+<a href="#section-6.1" class="section-number selfRef">6.1. </a><a href="#name-handshake-ordering-across-a" class="section-name selfRef">Handshake Ordering Across an EKU</a>
+        </h3>
+<p id="section-6.1-1">Before sending <code>ExtendedKeyUpdate(key_update_request)</code>, the initiator <span class="bcp14">MUST</span>
+wait until its earlier independent handshake transmissions have been
+acknowledged, explicitly or by the response defined for their respective
+exchange. The responder <span class="bcp14">MUST</span> satisfy the same requirement before sending
+<code>ExtendedKeyUpdate(key_update_response)</code>. If this delays the response, the
+responder acknowledges the request as specified in Step 2 of <a href="#DTLSC" class="auto internal xref">Section 6</a>.
+This requirement concerns acknowledgment of transmitted handshake messages,
+not completion of every operation they might request. In particular, an
+acknowledged <code>RequestConnectionId</code> need not already have been fulfilled by
+the delivery of new CIDs.<a href="#section-6.1-1" class="pilcrow">¶</a></p>
+<p id="section-6.1-2">A responder waiting for those earlier acknowledgments <span class="bcp14">MUST</span> also defer
+new independent handshake transmissions, subject to the PHA exception
+below. It continues retransmitting already outstanding messages.<a href="#section-6.1-2" class="pilcrow">¶</a></p>
+<p id="section-6.1-3">From sending its request until completing Step 7, the initiator <span class="bcp14">MUST</span> defer
+new independent handshake transmissions. From sending its response until
+receiving <code>ExtendedKeyUpdate(key_update_finish)</code> and updating its sending
+epoch, the responder <span class="bcp14">MUST</span> do likewise. The exception for completing a PHA
+exchange whose request crosses an EKU request is specified in
+<a href="#pha-eku-ordering" class="auto internal xref">Section 12.3</a>. Any handshake transmissions made for that exception
+<span class="bcp14">MUST</span> be acknowledged before the initiator sends EKU finish or the responder
+sends EKU response, respectively. Processing a crossed EKU request follows
+the EKU collision rules and is not blocked by these restrictions.<a href="#section-6.1-3" class="pilcrow">¶</a></p>
+<p id="section-6.1-4"><code>ExtendedKeyUpdate(key_update_finish)</code> is the initiator's last new
+handshake message in its pre-update sending epoch.
+<code>ExtendedKeyUpdate(key_update_response)</code> is the responder's last new
+handshake message in its pre-update sending epoch. An endpoint that receives
+a new handshake message in that epoch with a <code>message_seq</code> greater than
+the corresponding closing message <span class="bcp14">MUST</span> terminate the connection with an
+<code>unexpected_message</code> alert. Retransmissions and reordered earlier messages
+are distinguished using the DTLS handshake sequencing procedures and <span class="bcp14">MUST NOT</span> be treated as violations of this rule merely because they arrive later.
+EKU does not reset the handshake <code>message_seq</code> counter.<a href="#section-6.1-4" class="pilcrow">¶</a></p>
+<p id="section-6.1-5">These restrictions do not prohibit retransmissions, ACK records, or
+application data. Retransmissions <span class="bcp14">MUST</span> use the original epoch and keying
+material. An endpoint <span class="bcp14">MUST</span> continue processing ACKs and retransmissions
+needed to complete outstanding transmissions while waiting to send an EKU
+message. Explicit ACKs acknowledge only the records they identify. An ACK
+received under the pre-update epoch does not complete EKU, regardless of
+which records it covers. Completion of the exchange at the initiator follows
+from the epoch of the received record, as specified in Step 7.<a href="#section-6.1-5" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="dtls-transition-acks">
+<section id="section-6.2">
+        <h3 id="name-records-received-during-the">
+<a href="#section-6.2" class="section-number selfRef">6.2. </a><a href="#name-records-received-during-the" class="section-name selfRef">Records Received During the Epoch Transition</a>
+        </h3>
+<p id="section-6.2-1">Between Step 3 and Step 7, the initiator holds the new receive keys but
+still sends under its pre-update epoch. Any record from the responder that
+the initiator successfully deprotects with the new receive keys completes
+the exchange as specified in Step 7 before the record itself is processed.
+Consequently, no record received under the new epoch needs to be buffered
+or left unacknowledged on account of the EKU exchange. Handshake messages
+received under the new epoch are processed and acknowledged according to
+Sections <a href="https://rfc-editor.org/rfc/rfc9147#section-7" class="relref">7</a> and <a href="https://rfc-editor.org/rfc/rfc9147#section-7.1" class="relref">7.1</a> of <span>[<a href="#DTLS" class="cite xref">DTLS</a>]</span>, with the ACK protected under the new sending
+epoch. Application data received under the new epoch is delivered as usual.
+Reception of a record under the new epoch while the exchange is in progress
+<span class="bcp14">MUST NOT</span> be treated as an <code>unexpected_message</code> error; other message validity
+and ordering requirements remain in effect.<a href="#section-6.2-1" class="pilcrow">¶</a></p>
+<p id="section-6.2-2">ACKs for EKU messages are sent after the handshake and are therefore
+protected, because <span><a href="https://rfc-editor.org/rfc/rfc9147#section-7" class="relref">Section 7</a> of [<a href="#DTLS" class="cite xref">DTLS</a>]</span> requires the highest available
+sending epoch. An ACK record received in epoch 0 <span class="bcp14">MUST NOT</span> be treated as
+acknowledging an EKU message and <span class="bcp14">MUST</span> be silently discarded.<a href="#section-6.2-2" class="pilcrow">¶</a></p>
+<p id="section-6.2-3">Records protected under the pre-update epoch can still arrive after the
+initiator has completed the exchange, for example a reordered record that
+the responder sent before processing <code>ExtendedKeyUpdate(key_update_finish)</code>.
+Such records are handled as described at the beginning of <a href="#DTLSC" class="auto internal xref">Section 6</a>.<a href="#section-6.2-3" class="pilcrow">¶</a></p>
+<p id="section-6.2-4">Connection-ID processing is independent of the traffic-key transition.
+When a <code>NewConnectionId</code> with <code>cid_immediate</code> is processed, the new CID
+<span class="bcp14">MUST</span> be used as required by <span><a href="https://rfc-editor.org/rfc/rfc9147#section-9" class="relref">Section 9</a> of [<a href="#DTLS" class="cite xref">DTLS</a>]</span>, including for subsequent
+EKU retransmissions that still use the old epoch and keys. Such records
+are newly protected with the appropriate header and record number. A
+<code>NewConnectionId</code> received under the pre-update epoch does not indicate
+that <code>ExtendedKeyUpdate(key_update_finish)</code> was received; only a record
+protected under the new epoch does, as specified in Step 7. CID lookup
+and retention of the old receive keys <span class="bcp14">MUST</span> allow the required EKU
+retransmissions to reach the appropriate connection state.<a href="#section-6.2-4" class="pilcrow">¶</a></p>
+<p id="section-6.2-5">The initiator <span class="bcp14">MUST</span> continue retransmitting <code>ExtendedKeyUpdate(key_update_finish)</code>
+under the old keys and epoch until Step 7 completes, and the responder <span class="bcp14">MUST</span>
+continue processing and acknowledging those retransmissions while retaining
+the old receive keys.<a href="#section-6.2-5" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="handshake-message-format">
+<section id="section-6.3">
+        <h3 id="name-handshake-message-format">
+<a href="#section-6.3" class="section-number selfRef">6.3. </a><a href="#name-handshake-message-format" class="section-name selfRef">Handshake Message Format</a>
+        </h3>
+<p id="section-6.3-1">If DTLS peers independently initiate the extended key update and the
+requests cross in flight, they are resolved as specified in <a href="#TLSC" class="auto internal xref">Section 5</a>.<a href="#section-6.3-1" class="pilcrow">¶</a></p>
+<p id="section-6.3-2">The handshake framing uses a single <code>HandshakeType</code> for this message
+(see <a href="#fig-dtls-handshake" class="auto internal xref">Figure 4</a>).<a href="#section-6.3-2" class="pilcrow">¶</a></p>
 <span id="name-dtls-13-handshake-structure"></span><div id="fig-dtls-handshake">
 <figure id="figure-4">
-        <div class="alignLeft art-text artwork" id="section-6-8.1">
+          <div class="alignLeft art-text artwork" id="section-6.3-3.1">
 <pre>
        enum {
            client_hello(1),
@@ -1868,18 +2016,20 @@ requests cross in flight, they are resolved as specified in <a href="#TLSC" clas
 </div>
 <figcaption><a href="#figure-4" class="selfRef">Figure 4</a>:
 <a href="#name-dtls-13-handshake-structure" class="selfRef">DTLS 1.3 Handshake Structure.</a>
-        </figcaption></figure>
+          </figcaption></figure>
+</div>
+</section>
 </div>
 <div id="dtls-13-extended-key-update-example">
-<section id="section-6.1">
+<section id="section-6.4">
         <h3 id="name-dtls-13-extended-key-update-">
-<a href="#section-6.1" class="section-number selfRef">6.1. </a><a href="#name-dtls-13-extended-key-update-" class="section-name selfRef">DTLS 1.3 Extended Key Update Example</a>
+<a href="#section-6.4" class="section-number selfRef">6.4. </a><a href="#name-dtls-13-extended-key-update-" class="section-name selfRef">DTLS 1.3 Extended Key Update Example</a>
         </h3>
-<p id="section-6.1-1">The following example illustrates a successful extended key update,
-including how the epochs change during the exchange.<a href="#section-6.1-1" class="pilcrow">¶</a></p>
+<p id="section-6.4-1">The following example illustrates a successful extended key update,
+including how the epochs change during the exchange.<a href="#section-6.4-1" class="pilcrow">¶</a></p>
 <span id="name-example-dtls-13-extended-ke"></span><div id="dtls-key-update">
 <figure id="figure-5">
-          <div class="alignLeft art-text artwork" id="section-6.1-2.1">
+          <div class="alignLeft art-text artwork" id="section-6.4-2.1">
 <pre>
 Client                            Server
 (Initiator)                       (Responder)
@@ -1914,14 +2064,17 @@ Client                            Server
 
 [EKU(key_update_finish)]   --------&gt;
 # Sender's Fin is tagged with OLD tx (3).
+# Initiator retains OLD tx until it receives a
+# record under the NEW epoch.
+[C: tx=3, rx=4]                   [S: tx=3, rx=3]
 
-# Epoch switch point:
-# Step 6: responder bumps BOTH tx and rx on Fin-in:
+# Step 5: responder bumps BOTH tx and rx on Fin-in:
 [C: tx=3, rx=4]                   [S: tx=4, rx=4]
 
                            &lt;-------- [ACK] (tag=new)
 
-# Step 7: initiator bumps SEND epoch on ACK-in:
+# Step 7: first record under the NEW epoch (here the ACK)
+# stops Fin retransmission and bumps SEND epoch.
 [C: tx=4, rx=4]                   [S: tx=4, rx=4]
 
 [Application Data]         --------&gt;
@@ -1935,12 +2088,12 @@ Client                            Server
 <a href="#name-example-dtls-13-extended-ke" class="selfRef">Example DTLS 1.3 Extended Key Update: Message Exchange.</a>
           </figcaption></figure>
 </div>
-<p id="section-6.1-3"><a href="#dtls-table" class="auto internal xref">Figure 6</a> shows the steps, the message in flight, and the epoch changes on both sides.
+<p id="section-6.4-3"><a href="#dtls-table" class="auto internal xref">Figure 6</a> shows the steps, the message in flight, and the epoch changes on both sides.
 The A/B -&gt; X/Y notation indicates the change of epoch values for tx/rx before and after
-the message transmission.<a href="#section-6.1-3" class="pilcrow">¶</a></p>
+the message transmission.<a href="#section-6.4-3" class="pilcrow">¶</a></p>
 <span id="name-example-dtls-13-extended-key"></span><div id="dtls-table">
 <figure id="figure-6">
-          <div class="alignLeft art-text artwork" id="section-6.1-4.1">
+          <div class="alignLeft art-text artwork" id="section-6.4-4.1">
 <pre>
 +--------------------+----------------+--------------+
 | Message            | Client tx/rx   | Server tx/rx |
@@ -1949,7 +2102,7 @@ the message transmission.<a href="#section-6.1-3" class="pilcrow">¶</a></p>
 | &lt;------------ APP  | 3/3 -&gt; 3/3     | 3/3 -&gt; 3/3   |
 | req -------------&gt; | 3/3 -&gt; 3/3     | 3/3 -&gt; 3/3   |
 | &lt;------------ resp | 3/3 -&gt; 3/4     | 3/3 -&gt; 3/3   | &lt;- step 3
-| Fin  ------------&gt; | 3/4 -&gt; 3/4     | 3/3 -&gt; 4/4   | &lt;- step 6
+| Fin  ------------&gt; | 3/4 -&gt; 3/4     | 3/3 -&gt; 4/4   | &lt;- step 5
 | &lt;------------- ACK | 3/4 -&gt; 4/4     | 4/4 -&gt; 4/4   | &lt;- step 7
 | APP -------------&gt; | 4/4 -&gt; 4/4     | 4/4 -&gt; 4/4   |
 | &lt;------------- APP | 4/4 -&gt; 4/4     | 4/4 -&gt; 4/4   |
@@ -1958,6 +2111,42 @@ the message transmission.<a href="#section-6.1-3" class="pilcrow">¶</a></p>
 </div>
 <figcaption><a href="#figure-6" class="selfRef">Figure 6</a>:
 <a href="#name-example-dtls-13-extended-key" class="selfRef">Example DTLS 1.3 Extended Key Update: Epoch Changes.</a>
+          </figcaption></figure>
+</div>
+<p id="section-6.4-5"><a href="#dtls-implicit-ack" class="auto internal xref">Figure 7</a> shows the exchange when the ACK of
+<code>ExtendedKeyUpdate(key_update_finish)</code> is lost. The responder has already
+updated its epochs and continues sending. The first record that the
+initiator deprotects under the new epoch, here application data, completes
+the exchange and ends the retransmission of the finish message. The
+responder's retention of the old receive keys ends when the first record
+from the initiator arrives under the new epoch.<a href="#section-6.4-5" class="pilcrow">¶</a></p>
+<span id="name-example-dtls-13-extended-key-"></span><div id="dtls-implicit-ack">
+<figure id="figure-7">
+          <div class="alignLeft art-text artwork" id="section-6.4-6.1">
+<pre>
+Client                            Server
+(Initiator)                       (Responder)
+
+[C: tx=3, rx=4]                   [S: tx=3, rx=3]
+[EKU(key_update_finish)]   --------&gt;   (epoch 3)
+# Step 5: responder bumps BOTH tx and rx on Fin-in:
+[C: tx=3, rx=4]                   [S: tx=4, rx=4]
+
+                      X    &lt;-------- [ACK] (epoch 4, lost)
+
+                           &lt;-------- [Application Data] (epoch 4)
+# Step 7: record deprotected with the NEW receive keys.
+# Fin is treated as acknowledged; tx := 4;
+# Fin retransmission stops.
+[C: tx=4, rx=4]                   [S: tx=4, rx=4]
+
+[Application Data]         --------&gt;   (epoch 4)
+# Responder stops retaining the epoch-3 receive keys.
+[C: tx=4, rx=4]                   [S: tx=4, rx=4]
+</pre>
+</div>
+<figcaption><a href="#figure-7" class="selfRef">Figure 7</a>:
+<a href="#name-example-dtls-13-extended-key-" class="selfRef">Example DTLS 1.3 Extended Key Update: Lost ACK.</a>
           </figcaption></figure>
 </div>
 </section>
@@ -2018,9 +2207,9 @@ for TLS and <span><a href="https://rfc-editor.org/rfc/rfc9147#section-5.2" class
 No prior transcript hash values need to be retained for future EKU exchanges.<a href="#section-7-6" class="pilcrow">¶</a></p>
 <p id="section-7-7"><code>main_secret_N</code> denotes the Main Secret (see <span><a href="https://rfc-editor.org/rfc/rfc9846#section-7.1" class="relref">Section 7.1</a> of [<a href="#TLS" class="cite xref">TLS</a>]</span>)
 associated with generation N.<a href="#section-7-7" class="pilcrow">¶</a></p>
-<p id="section-7-8"><a href="#key-hierarchy" class="auto internal xref">Figure 7</a> shows the key derivation hierarchy.<a href="#section-7-8" class="pilcrow">¶</a></p>
+<p id="section-7-8"><a href="#key-hierarchy" class="auto internal xref">Figure 8</a> shows the key derivation hierarchy.<a href="#section-7-8" class="pilcrow">¶</a></p>
 <span id="name-key-derivation-hierarchy"></span><div id="key-hierarchy">
-<figure id="figure-7">
+<figure id="figure-8">
         <div class="alignLeft art-text artwork" id="section-7-9.1">
 <pre>
        main_secret_N
@@ -2044,7 +2233,7 @@ Secret -&gt; HKDF-Extract = main_secret_N+1
              |                = exporter_secret_N+1
 </pre>
 </div>
-<figcaption><a href="#figure-7" class="selfRef">Figure 7</a>:
+<figcaption><a href="#figure-8" class="selfRef">Figure 8</a>:
 <a href="#name-key-derivation-hierarchy" class="selfRef">Key Derivation Hierarchy.</a>
         </figcaption></figure>
 </div>
@@ -2096,7 +2285,21 @@ complete a resumed session prior to that invalidation. In such environments, EKU
 not prevent the use of previously issued PSKs.<a href="#section-8-1" class="pilcrow">¶</a></p>
 <p id="section-8-2">Accordingly, endpoints that enable EKU <span class="bcp14">MUST</span> disable resumption using PSKs established
 via the NewSessionTicket mechanism. <code>resumption_main_secret_N+1</code> is not
-derived for this reason in <a href="#key-hierarchy" class="auto internal xref">Figure 7</a>.<a href="#section-8-2" class="pilcrow">¶</a></p>
+derived for this reason in <a href="#key-hierarchy" class="auto internal xref">Figure 8</a>.<a href="#section-8-2" class="pilcrow">¶</a></p>
+<p id="section-8-3">When this extension has been successfully negotiated, the server <span class="bcp14">MUST NOT</span>
+send <code>NewSessionTicket</code> messages on the connection. The client <span class="bcp14">MUST</span> silently
+ignore otherwise valid <code>NewSessionTicket</code> messages received on that connection
+and <span class="bcp14">MUST NOT</span> retain or use the tickets for session resumption. Receipt of
+such a message <span class="bcp14">MUST NOT</span>, by itself, cause the client to terminate the
+connection. Other applicable requirements for message validity and ordering
+remain in effect.<a href="#section-8-3" class="pilcrow">¶</a></p>
+<p id="section-8-4">For DTLS, ignoring a <code>NewSessionTicket</code> does not exempt it from handshake
+sequencing, reassembly, or acknowledgment, including for fragments and
+retransmissions. A ticket record received under the new epoch while the
+client awaits acknowledgment of <code>ExtendedKeyUpdate(key_update_finish)</code>
+completes the EKU exchange as specified in Step 7 of <a href="#DTLSC" class="auto internal xref">Section 6</a> and is then
+acknowledged under the new sending epoch. Ignoring a ticket <span class="bcp14">MUST NOT</span>
+prevent processing of subsequent handshake messages.<a href="#section-8-4" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="pqc-cons">
@@ -2176,20 +2379,20 @@ SSLKEYLOGFILE secrets including past iterations of <code>CLIENT_TRAFFIC_SECRET_<
 exporter_secret is static for the lifetime of the connection and is not updated by a standard key update.<a href="#section-11.1-1" class="pilcrow">¶</a></p>
 <p id="section-11.1-2">A core design goal of this specification is not met if the exporter_secret does not change.
 Therefore, this document defines an exporter interface that derives a fresh exporter secret
-whenever new application traffic keys are updated through the EKU.<a href="#section-11.1-2" class="pilcrow">¶</a></p>
-<p id="section-11.1-3">If the initial exporter secret for this new interface were identical to exporter_secret,
-then compromising exporter_secret at any point during the lifetime of the connection
-would enable an attacker to recompute all exporter outputs derived from it.
-This would break post-compromise security for exported keying material.<a href="#section-11.1-3" class="pilcrow">¶</a></p>
-<p id="section-11.1-4">Therefore, the initial exporter secret used by the exporter interface defined in
-this document, i.e., the exporter output available prior to the first Extended
-Key Update, <span class="bcp14">MUST</span> be distinct from the exporter_secret. This separation
+whenever new application traffic keys are updated through the EKU. Prior to the first
+Extended Key Update, this interface uses an initial exporter secret, denoted
+exporter_secret_0.<a href="#section-11.1-2" class="pilcrow">¶</a></p>
+<p id="section-11.1-3">If exporter_secret_0 were identical to exporter_secret, which is retained
+for the lifetime of the connection, a later compromise of exporter_secret
+would reveal all keying material exported under exporter_secret_0, even
+after exporter_secret_0 is discarded.<a href="#section-11.1-3" class="pilcrow">¶</a></p>
+<p id="section-11.1-4">Therefore, exporter_secret_0 <span class="bcp14">MUST</span> be distinct from the exporter_secret. This separation
 ensures that compromise of the TLS exporter interface does not compromise outputs
 derived from the exporter interface defined in this document.<a href="#section-11.1-4" class="pilcrow">¶</a></p>
-<p id="section-11.1-5">Prior to the first Extended Key Update, the exporter interface provides an
-initial exporter secret, denoted exporter_secret_0. This secret is derived
-from the TLS main secret and the handshake transcript, but is cryptographically
-independent of the TLS exporter_secret. It is computed as follows:<a href="#section-11.1-5" class="pilcrow">¶</a></p>
+<p id="section-11.1-5">exporter_secret_0 is derived from the Main Secret and the handshake transcript. It uses
+the label "exporter eku" rather than "exp master", because "exp master" with the Main
+Secret yields the TLS exporter_secret. exporter_secret_N+1 uses "exp master" with
+main_secret_N+1 (see <a href="#key-hierarchy" class="auto internal xref">Figure 8</a>). exporter_secret_0 is computed as follows:<a href="#section-11.1-5" class="pilcrow">¶</a></p>
 <div class="alignLeft art-text artwork" id="section-11.1-6">
 <pre>
 exporter_secret_0 =
@@ -2237,8 +2440,10 @@ interface, so a subsequent Extended Key Update does not change the
 result.<a href="#section-11.2-4.1.1" class="pilcrow">¶</a></p>
 </li>
         </ul>
-<p id="section-11.2-5">Applications are notified that a new generation is active only after the endpoint
-has completed the Extended Key Update exchange and switched to the new traffic keys.<a href="#section-11.2-5" class="pilcrow">¶</a></p>
+<p id="section-11.2-5">Applications are notified that a new exporter generation is active when
+EKU completes locally. This notification reports local availability. It
+does not establish that the peer has already completed EKU or that an
+earlier application operation has completed.<a href="#section-11.2-5" class="pilcrow">¶</a></p>
 <ul class="normal">
 <li class="normal" id="section-11.2-6.1">
             <p id="section-11.2-6.1.1">In TLS, the initiator triggers notification after Step 5 in <a href="#TLSC" class="auto internal xref">Section 5</a>,
@@ -2255,27 +2460,37 @@ exporter interface using the generation and its chosen label and context
 values as defined in <span><a href="https://rfc-editor.org/rfc/rfc9846#section-7.5" class="relref">Section 7.5</a> of [<a href="#TLS" class="cite xref">TLS</a>]</span>. The application conveys the
 generation it used to the peer, for example with the protected data, so that
 the peer derives the same EKM.<a href="#section-11.2-7" class="pilcrow">¶</a></p>
-<p id="section-11.2-8">To prevent desynchronization, the application will have to retain both the
-previous and the newly derived exporter secrets for a short period. For TLS,
-the previous exporter secret would be discarded once data derived from the
-new exporter has been successfully processed, and no records protected with
-the old exporter secret are expected to arrive. For DTLS, the previous exporter
-secret needs to be retained until the retention timer expires for the prior epoch,
-to allow for processing of packets that may arrive out of order.  The retention policy
-for exporter secrets is application-specific. For example, in DTLS-SRTP,
-the application might retain the previous exporter secret until its
-replay window no longer accepts packets protected with keys derived from that
-secret, as described in Section 3.3.2 of <span>[<a href="#RFC3711" class="cite xref">RFC3711</a>]</span>.<a href="#section-11.2-8" class="pilcrow">¶</a></p>
+<p id="section-11.2-8">The (D)TLS implementation retains the exporter secret of an earlier
+generation only for a short period, comparable to the retention of keys for
+prior epochs in <span><a href="https://rfc-editor.org/rfc/rfc9147#section-4.2.1" class="relref">Section 4.2.1</a> of [<a href="#DTLS" class="cite xref">DTLS</a>]</span>, so that operations which selected
+that generation can complete. A retained secret remains exposed to a later
+compromise. Once the secret has been discarded, a request for that
+generation through the generation-aware exporter interface <span class="bcp14">MUST</span> fail rather
+than use the secret of another generation. Retention of keying material
+derived from older generations is application-specific. For example, a
+DTLS-SRTP application might retain an older packet-protection context while
+its replay window still accepts packets protected with that context, as
+described in <span><a href="https://rfc-editor.org/rfc/rfc3711#section-3.3.2" class="relref">Section 3.3.2</a> of [<a href="#RFC3711" class="cite xref">RFC3711</a>]</span>.<a href="#section-11.2-8" class="pilcrow">¶</a></p>
+<p id="section-11.2-9">Selection, buffering, or expiration of an application operation <span class="bcp14">MUST NOT</span>
+prevent an EKU exchange from progressing.<a href="#section-11.2-9" class="pilcrow">¶</a></p>
 </section>
 </div>
 </section>
 </div>
 <div id="exported">
 <section id="section-12">
-      <h2 id="name-use-of-post-handshake-authe">
-<a href="#section-12" class="section-number selfRef">12. </a><a href="#name-use-of-post-handshake-authe" class="section-name selfRef">Use of Post-Handshake Authentication and Exported Authenticators with Extended Key Update</a>
+      <h2 id="name-interaction-with-post-hands">
+<a href="#section-12" class="section-number selfRef">12. </a><a href="#name-interaction-with-post-hands" class="section-name selfRef">Interaction with Post-Handshake Operations</a>
       </h2>
-<p id="section-12-1">EKU provides fresh traffic secrets, but after compromise of the connection state
+<p id="section-12-1">EKU changes traffic secrets, exporter secrets, and the transcript context
+used by subsequent authentication. Operations that depend on that state
+need both consistent context selection and suitable ordering across the
+change. This section specifies both for Post-Handshake Certificate-Based
+Client Authentication (PHA), carried by the handshake protocol, and for
+Exported Authenticators, carried by an application protocol. The additional DTLS transmission and acknowledgment
+rules are specified in <a href="#dtls-handshake-ordering" class="auto internal xref">Section 6.1</a> and
+<a href="#dtls-transition-acks" class="auto internal xref">Section 6.2</a>.<a href="#section-12-1" class="pilcrow">¶</a></p>
+<p id="section-12-2">EKU provides fresh traffic secrets, but after compromise of the connection state
 described in <a href="#threat-model" class="auto internal xref">Section 14.1</a>, EKU alone does not authenticate the exchange.
 An attacker that retains this state, including the value used to derive
 main_secret_N+1, can act as a person-in-the-middle during the exchange,
@@ -2284,7 +2499,7 @@ TLS 1.3 provides two mechanisms that can detect such divergence, each with a dif
 Post-Handshake Certificate-Based Client Authentication (<span><a href="https://rfc-editor.org/rfc/rfc9846#section-4.3.6" class="relref">Section 4.3.6</a> of [<a href="#TLS" class="cite xref">TLS</a>]</span>) only authenticates the client to the server,
 and therefore allows only the server to detect divergence. Exported Authenticators <span>[<a href="#RFC9261" class="cite xref">RFC9261</a>]</span>
 authenticate the endpoint that produces the authenticator, so detection at both endpoints
-requires an authenticator in each direction.<a href="#section-12-1" class="pilcrow">¶</a></p>
+requires an authenticator in each direction.<a href="#section-12-2" class="pilcrow">¶</a></p>
 <div id="post-handshake-certificate-based-client-authentication">
 <section id="section-12.1">
         <h3 id="name-post-handshake-certificate-">
@@ -2303,43 +2518,68 @@ no equivalent assurance. A client that requires such assurance can request an Ex
 Authenticator from the server.<a href="#section-12.1-1" class="pilcrow">¶</a></p>
 </section>
 </div>
-<div id="exported-authenticators">
+<div id="eku-ea">
 <section id="section-12.2">
         <h3 id="name-exported-authenticators">
 <a href="#section-12.2" class="section-number selfRef">12.2. </a><a href="#name-exported-authenticators" class="section-name selfRef">Exported Authenticators</a>
         </h3>
-<p id="section-12.2-1">This document updates Section 5.1 of <span>[<a href="#RFC9261" class="cite xref">RFC9261</a>]</span> to specify that, after an
-Extended Key Update has completed, the Handshake Context and Finished MAC Key used for
-Exported Authenticators <span class="bcp14">MUST</span> be derived from the exporter secret of the current generation.
-Implementations that support the generation-aware Exported Authenticators interface <span class="bcp14">MUST</span> provide a means
-for applications to request the creation or validation of Exported Authenticators using
-the exporter secret of a specific generation.<a href="#section-12.2-1" class="pilcrow">¶</a></p>
-<p id="section-12.2-2">The Handshake Context and Finished MAC Key used in both the CertificateVerify message
-(Section 5.2.2 of <span>[<a href="#RFC9261" class="cite xref">RFC9261</a>]</span>) and the Finished message (Section 5.2.3 of <span>[<a href="#RFC9261" class="cite xref">RFC9261</a>]</span>)
-are derived from the exporter secret of the current generation.
-If a person-in-the-middle attacker interferes with the EKU exchange, the peers derive
-different exporter secrets. Validation as specified in Section 5.2.4 of <span>[<a href="#RFC9261" class="cite xref">RFC9261</a>]</span>
-then fails at the endpoint that receives the authenticator, since the CertificateVerify
-message is signed with a private key the attacker does not hold.<a href="#section-12.2-2" class="pilcrow">¶</a></p>
-<p id="section-12.2-3">A new optional API <span class="bcp14">SHOULD</span> be defined to permit applications to request or verify
-Exported Authenticators for a specific generation. As discussed in Section 7
-of <span>[<a href="#RFC9261" class="cite xref">RFC9261</a>]</span>, this can, as an exception, be implemented at the application
-layer when the generation-aware TLS exporter is available. The APIs defined in <span>[<a href="#RFC9261" class="cite xref">RFC9261</a>]</span>
-remain unchanged, so existing applications continue to operate without
-modification. The generation-aware API accepts a generation; when present,
-the (D)TLS implementation <span class="bcp14">MUST</span> derive the Handshake Context and Finished MAC Key
-from the exporter secret of that generation. When Exported Authenticators
-are generated using the generation-aware Exported Authenticators interface, the
-generation used for their derivation can be conveyed in the
-certificate_request_context field, allowing the peer, particularly in
-DTLS where records may be reordered, to determine the correct exporter
-secret for validation.<a href="#section-12.2-3" class="pilcrow">¶</a></p>
+<p id="section-12.2-1">This document extends Section 5.1 of <span>[<a href="#RFC9261" class="cite xref">RFC9261</a>]</span> with a generation-aware
+Exported Authenticator interface. For this interface, the Handshake Context
+and Finished MAC Key <span class="bcp14">MUST</span> be derived from <code>exporter_secret_G</code> for the
+explicitly selected exporter generation G. The same generation <span class="bcp14">MUST</span> be
+used for creation and validation of an authenticator, even if another EKU
+completes between those operations. The derivation labels and authenticator
+construction otherwise follow <span>[<a href="#RFC9261" class="cite xref">RFC9261</a>]</span>.<a href="#section-12.2-1" class="pilcrow">¶</a></p>
+<p id="section-12.2-2">Implementations supporting this interface <span class="bcp14">MUST</span> allow the application to
+select the generation for both creation and validation. For a requested
+authenticator, the requesting application <span class="bcp14">MUST</span> select the generation when
+constructing the request, and the responding application <span class="bcp14">MUST</span> use that
+generation. For an unsolicited server authenticator, the generating
+application selects it. In both cases, the application protocol <span class="bcp14">MUST</span>
+unambiguously identify the generation to the verifier and bind it to the
+authenticated operation.<a href="#section-12.2-2" class="pilcrow">¶</a></p>
+<p id="section-12.2-3">The <code>certificate_request_context</code> can carry this identification as part of
+an application-defined encoding. That encoding <span class="bcp14">MUST</span> preserve the context's
+length limits, uniqueness requirements, and request-response association
+from <span>[<a href="#RFC9261" class="cite xref">RFC9261</a>]</span>. It <span class="bcp14">MUST</span> identify the same exporter generation at both
+endpoints, using the generation N defined in <a href="#exporter" class="auto internal xref">Section 11</a>.
+ This specification does not define a common wire encoding
+for application protocols.<a href="#section-12.2-3" class="pilcrow">¶</a></p>
+<p id="section-12.2-4">If the selected generation is unknown, unavailable, expired, or disallowed
+by application policy, creation or validation <span class="bcp14">MUST</span> fail explicitly rather
+than use the current exporter or retry with a different generation. An
+application <span class="bcp14">MUST NOT</span> select a generation before the (D)TLS implementation
+has reported it as active, as described in <a href="#exporter" class="auto internal xref">Section 11</a>. Each endpoint
+reports a generation only once its part of the EKU exchange is complete.
+In TLS, the peer has therefore already derived that generation when an
+authenticator or request selecting it arrives. In DTLS, a record carrying
+such a request or authenticator is protected under the new epoch and
+completes the peer's exchange on receipt, as specified in Step 7 of
+<a href="#DTLSC" class="auto internal xref">Section 6</a>. No deferral of the operation is therefore required.
+These failures are application-operation failures and do not, by
+themselves, require termination of the (D)TLS connection.<a href="#section-12.2-4" class="pilcrow">¶</a></p>
+<p id="section-12.2-5">An application checking for key divergence after an EKU <span class="bcp14">MUST</span> select the
+generation resulting from that EKU. If interference has caused the peers
+to derive different exporter secrets for that generation, the authenticator
+cannot be successfully validated as specified in <span><a href="https://rfc-editor.org/rfc/rfc9261#section-5.2.4" class="relref">Section 5.2.4</a> of [<a href="#RFC9261" class="cite xref">RFC9261</a>]</span>.
+Accepting an older-generation authenticator would not establish agreement
+on the newly derived secrets.<a href="#section-12.2-5" class="pilcrow">¶</a></p>
+<p id="section-12.2-6">The existing interfaces in <span>[<a href="#RFC9261" class="cite xref">RFC9261</a>]</span> retain their use of the static TLS
+exporter defined in <span><a href="https://rfc-editor.org/rfc/rfc9846#section-7.5" class="relref">Section 7.5</a> of [<a href="#TLS" class="cite xref">TLS</a>]</span>. They <span class="bcp14">MUST NOT</span> silently switch to
+the generation-aware interface. As discussed in <span><a href="https://rfc-editor.org/rfc/rfc9261#section-7" class="relref">Section 7</a> of [<a href="#RFC9261" class="cite xref">RFC9261</a>]</span>, the
+generation-aware interface can also be implemented at the application layer
+using the corresponding exporter interface.<a href="#section-12.2-6" class="pilcrow">¶</a></p>
+<p id="section-12.2-7">Authenticator requests and authenticators are carried by an application
+protocol, not as TLS or DTLS handshake messages. Carrying them in DTLS
+application data does not create a DTLS handshake acknowledgment obligation.
+Application-level delivery and acknowledgment requirements are defined by
+the application protocol. The record epoch carrying an authenticator <span class="bcp14">MUST NOT</span>, by itself, determine the exporter generation used to validate it.<a href="#section-12.2-7" class="pilcrow">¶</a></p>
 </section>
 </div>
-<div id="interaction-of-extended-key-update-and-post-handshake-authentication">
+<div id="pha-eku-ordering">
 <section id="section-12.3">
-        <h3 id="name-interaction-of-extended-key">
-<a href="#section-12.3" class="section-number selfRef">12.3. </a><a href="#name-interaction-of-extended-key" class="section-name selfRef">Interaction of Extended Key Update and Post-Handshake Authentication</a>
+        <h3 id="name-ordering-of-authentication-">
+<a href="#section-12.3" class="section-number selfRef">12.3. </a><a href="#name-ordering-of-authentication-" class="section-name selfRef">Ordering of Authentication and Extended Key Update</a>
         </h3>
 <p id="section-12.3-1">EKU and Post-Handshake Authentication may both occur during the lifetime
 of a (D)TLS connection.  Post-Handshake Certificate-Based Client
@@ -2353,17 +2593,24 @@ are required to preserve cryptographic consistency.<a href="#section-12.3-1" cla
           <h4 id="name-post-handshake-certificate-b">
 <a href="#section-12.3.1" class="section-number selfRef">12.3.1. </a><a href="#name-post-handshake-certificate-b" class="section-name selfRef">Post-Handshake Certificate-Based Client Authentication</a>
           </h4>
-<p id="section-12.3.1-1">An endpoint <span class="bcp14">MUST NOT</span> complete an EKU exchange in a manner that
-transitions to new application traffic secrets while a PHA exchange
-is in progress.<a href="#section-12.3.1-1" class="pilcrow">¶</a></p>
+<p id="section-12.3.1-1">An endpoint <span class="bcp14">MUST NOT</span> complete an EKU exchange in a manner that transitions
+to new application traffic secrets while a PHA exchange is outstanding.<a href="#section-12.3.1-1" class="pilcrow">¶</a></p>
 <p id="section-12.3.1-2">The following constraints apply to both TLS 1.3 and DTLS 1.3:<a href="#section-12.3.1-2" class="pilcrow">¶</a></p>
 <ul class="normal">
 <li class="normal" id="section-12.3.1-3.1">
-              <p id="section-12.3.1-3.1.1">An endpoint <span class="bcp14">MUST NOT</span> initiate PHA while an EKU exchange is in progress.<a href="#section-12.3.1-3.1.1" class="pilcrow">¶</a></p>
+              <p id="section-12.3.1-3.1.1">An endpoint <span class="bcp14">MUST NOT</span> initiate PHA while an EKU exchange is locally in progress.
+An EKU exchange is locally in progress from the time the endpoint sends or
+receives <code>ExtendedKeyUpdate(key_update_request)</code> until it has updated both
+its send keys and its receive keys.<a href="#section-12.3.1-3.1.1" class="pilcrow">¶</a></p>
 </li>
             <li class="normal" id="section-12.3.1-3.2">
-              <p id="section-12.3.1-3.2.1">If PHA has been initiated and the corresponding authentication exchange
-has not yet completed, neither endpoint <span class="bcp14">MUST</span> initiate an EKU exchange.<a href="#section-12.3.1-3.2.1" class="pilcrow">¶</a></p>
+              <p id="section-12.3.1-3.2.1">An endpoint <span class="bcp14">MUST NOT</span> initiate an EKU exchange while a PHA exchange is
+outstanding. A PHA exchange is outstanding at the server from the time it
+sends <code>CertificateRequest</code> until it receives the client's <code>Finished</code>, and
+at the client from the time it receives <code>CertificateRequest</code> until it has
+sent its <code>Finished</code>. In DTLS, the client's response additionally has to be
+acknowledged before the client sends an EKU request, as required by
+<a href="#dtls-handshake-ordering" class="auto internal xref">Section 6.1</a>.<a href="#section-12.3.1-3.2.1" class="pilcrow">¶</a></p>
 </li>
             <li class="normal" id="section-12.3.1-3.3">
               <p id="section-12.3.1-3.3.1">In a cross-flight condition, if a (D)TLS client sends an EKU request and,
@@ -2375,20 +2622,77 @@ authentication exchange has completed.<a href="#section-12.3.1-3.3.1" class="pil
 </li>
           </ul>
 <p id="section-12.3.1-4">In DTLS, deferred EKU request is acknowledged as specified in <a href="#DTLSC" class="auto internal xref">Section 6</a>.<a href="#section-12.3.1-4" class="pilcrow">¶</a></p>
+<div id="dtls-pha-wait-ack">
+<section id="section-12.3.1.1">
+            <h5 id="name-dtls-certificaterequest-sen">
+<a href="#section-12.3.1.1" class="section-number selfRef">12.3.1.1. </a><a href="#name-dtls-certificaterequest-sen" class="section-name selfRef">DTLS CertificateRequest Sent After the Server Completes EKU</a>
+            </h5>
+<p id="section-12.3.1.1-1">When the DTLS client initiates EKU, the server completes its part of the
+exchange by receiving <code>ExtendedKeyUpdate(key_update_finish)</code>, updating its
+keys, and sending the ACK. The server can then initiate PHA by sending a
+<code>CertificateRequest</code> under the new epoch. If the ACK is lost or reordered,
+this request can be the first record the client receives under the new
+epoch. As specified in Step 7 of <a href="#DTLSC" class="auto internal xref">Section 6</a>, deprotecting it completes the
+EKU exchange at the client. The client updates its send keys and sending
+epoch, stops retransmitting <code>ExtendedKeyUpdate(key_update_finish)</code>, and
+then processes the <code>CertificateRequest</code> as a request received after EKU
+completion. The PHA response records use the new epoch. The PHA Handshake
+Context <span class="bcp14">MUST</span> use the transcript updated by this EKU, and the PHA <code>Finished</code>
+MAC key <span class="bcp14">MUST</span> be derived from the corresponding new
+<code>client_application_traffic_secret_N+1</code>, as described above. Neither
+endpoint may initiate another EKU until this PHA exchange has completed, as
+required by the preceding constraints.<a href="#section-12.3.1.1-1" class="pilcrow">¶</a></p>
+<p id="section-12.3.1.1-2">The server <span class="bcp14">MUST</span> continue to process and acknowledge retransmissions of
+<code>ExtendedKeyUpdate(key_update_finish)</code> that were sent before the client
+received the <code>CertificateRequest</code>, as specified in <a href="#DTLSC" class="auto internal xref">Section 6</a>.<a href="#section-12.3.1.1-2" class="pilcrow">¶</a></p>
+<p id="section-12.3.1.1-3">This rule does not change the preceding rule for a <code>CertificateRequest</code>
+from the pre-update epoch that crosses an EKU request before receipt of the
+EKU response.<a href="#section-12.3.1.1-3" class="pilcrow">¶</a></p>
+<p id="section-12.3.1.1-4">The following example shows the exchange when the EKU ACK is lost:<a href="#section-12.3.1.1-4" class="pilcrow">¶</a></p>
+<span id="name-dtls-pha-request-completing"></span><div id="dtls-pha-after-ack">
+<figure id="figure-9">
+              <div class="alignLeft art-text artwork" id="section-12.3.1.1-5.1">
+<pre>
+Client (EKU initiator)                  Server (EKU responder)
+
+         &lt;---------------------------- EKU(response) [N]
+rx := N+1; tx remains N
+EKU(finish) [N] ---------------------&gt;
+                                       rx := N+1; tx := N+1
+         X---------------------------- ACK of EKU(finish) [N+1]
+                                       (ACK lost)
+         &lt;---------------------------- CertificateRequest [N+1]
+Record deprotected under N+1:
+EKU(finish) treated as acknowledged
+tx := N+1; stop EKU retransmissions
+Process CertificateRequest
+Certificate [N+1] -------------------&gt;
+CertificateVerify* [N+1] ------------&gt;
+Finished [N+1] ----------------------&gt;
+         &lt;---------------------------- ACK of PHA response [N+1]
+</pre>
+</div>
+<figcaption><a href="#figure-9" class="selfRef">Figure 9</a>:
+<a href="#name-dtls-pha-request-completing" class="selfRef">DTLS PHA Request Completing the EKU Exchange at the Client.</a>
+              </figcaption></figure>
+</div>
 </section>
 </div>
-<div id="exported-authenticators-1">
+</section>
+</div>
+<div id="exported-authenticators">
 <section id="section-12.3.2">
           <h4 id="name-exported-authenticators-2">
 <a href="#section-12.3.2" class="section-number selfRef">12.3.2. </a><a href="#name-exported-authenticators-2" class="section-name selfRef">Exported Authenticators</a>
           </h4>
-<p id="section-12.3.2-1">Because the exporter interface defined in this document is generation-aware,
-the exporter secret used for an Exported Authenticator exchange is
-explicitly determined by the generation selected by the application.<a href="#section-12.3.2-1" class="pilcrow">¶</a></p>
-<p id="section-12.3.2-2">As a result, cross-flight exchanges of EKU and <code>AuthenticatorRequest</code>
-messages do not introduce cryptographic ambiguity. Therefore, no
-serialization requirement is imposed between EKU and Exported Authenticator
-exchanges.<a href="#section-12.3.2-2" class="pilcrow">¶</a></p>
+<p id="section-12.3.2-1">No ordering constraints between EKU and Exported Authenticators are needed.
+PHA implicitly uses the transcript and traffic secret that are current when
+the <code>CertificateRequest</code> is sent. An Exported Authenticator created with the
+generation-aware interface is instead bound to an explicitly selected exporter
+generation, as specified in <a href="#eku-ea" class="auto internal xref">Section 12.2</a>, so it can be requested, created, and
+validated before, during, or after an EKU exchange. Authenticators created
+with the existing interfaces of <span>[<a href="#RFC9261" class="cite xref">RFC9261</a>]</span> use the static exporter secret
+and are not affected by EKU.<a href="#section-12.3.2-1" class="pilcrow">¶</a></p>
 </section>
 </div>
 </section>
@@ -3110,7 +3414,13 @@ refer to the send and receive key variables defined in <a href="#term" class="au
         <h3 id="name-dtls-13-state-machines">
 <a href="#appendix-B.2" class="section-number selfRef">B.2. </a><a href="#name-dtls-13-state-machines" class="section-name selfRef">DTLS 1.3 State Machines</a>
         </h3>
-<p id="appendix-B.2-1">This section describes the initiator and responder state machines.<a href="#appendix-B.2-1" class="pilcrow">¶</a></p>
+<p id="appendix-B.2-1">This section describes the initiator and responder state machines.
+The diagrams show the EKU message exchange. Sending actions are additionally
+subject to <a href="#dtls-handshake-ordering" class="auto internal xref">Section 6.1</a>, including waiting for earlier
+independent handshake transmissions to be acknowledged and deferring new
+independent transmissions. Incoming messages follow
+<a href="#dtls-transition-acks" class="auto internal xref">Section 6.2</a>. Those requirements
+apply even where a diagram does not show a separate waiting state.<a href="#appendix-B.2-1" class="pilcrow">¶</a></p>
 <div id="terms-and-abbreviations">
 <section id="appendix-B.2.1">
           <h4 id="name-terms-and-abbreviations">
@@ -3154,33 +3464,48 @@ refer to the send and receive key variables defined in <a href="#term" class="au
           <h4 id="name-state-machine-initiator">
 <a href="#appendix-B.2.2" class="section-number selfRef">B.2.2. </a><a href="#name-state-machine-initiator" class="section-name selfRef">State Machine (Initiator)</a>
           </h4>
-<p id="appendix-B.2.2-1">The initiator starts in the START state with matching epochs (rx := E; tx := E). It sends a Req and enters WAIT_RESP (updating := 1). While waiting, APP data may be sent at any time (tagged with the current tx) and received according to the APP acceptance rule below.<a href="#appendix-B.2.2-1" class="pilcrow">¶</a></p>
-<p id="appendix-B.2.2-2">Once the responder returns Resp with a tag matching the current rx, the initiator derives new key material. It then sends Fin still tagged with the old tx. The initiator activates retention mode: the old epoch is remembered, the receive epoch is incremented, and application data is accepted under both epochs for a transition period. Initiator moves to WAIT_ACK.<a href="#appendix-B.2.2-2" class="pilcrow">¶</a></p>
+<p id="appendix-B.2.2-1">The initiator starts in the START state with matching epochs (rx := E; tx := E).
+Once its earlier independent handshake transmissions have been acknowledged,
+it sends a Req and enters WAIT_RESP (updating := 1). New independent
+handshake transmissions are deferred until local completion, subject to
+the PHA cross-flight exception in <a href="#pha-eku-ordering" class="auto internal xref">Section 12.3</a>. While waiting, APP
+data may be sent at any time (tagged with the current tx) and received
+according to the APP acceptance rule below.<a href="#appendix-B.2.2-1" class="pilcrow">¶</a></p>
+<p id="appendix-B.2.2-2">Once the responder returns Resp with a tag matching the current rx, the initiator derives new key material. The initiator activates retention mode: the old epoch is remembered, the receive epoch is incremented, and application data is accepted under both epochs for a transition period. It then sends Fin still tagged with the old tx and enters WAIT_ACK without changing its transmit epoch.<a href="#appendix-B.2.2-2" class="pilcrow">¶</a></p>
 <p id="appendix-B.2.2-3">If a peer key_update_request arrives while in WAIT_RESP (crossed updates), apply the crossed-request rule above. If the peer's key_exchange is higher, abandon the local update (updating := 0) and continue as responder: send key_update_response, derive new secrets, then proceed with the responder flow. If lower, ignore the peer's request; if equal, abort with "unexpected_message".<a href="#appendix-B.2.2-3" class="pilcrow">¶</a></p>
-<p id="appendix-B.2.2-4">Upon receiving the responder's ACK matching the updated epoch, the initiator completes the transition by synchronizing transmit and receive epochs (tx := rx), disabling retention, and clearing the update flag. The state machine returns to FINISHED, ready for subsequent updates.<a href="#appendix-B.2.2-4" class="pilcrow">¶</a></p>
-<p id="appendix-B.2.2-5">Throughout the process:<a href="#appendix-B.2.2-5" class="pilcrow">¶</a></p>
+<p id="appendix-B.2.2-4">Upon receiving any record that it deprotects under the updated receive
+epoch, typically the responder's ACK of Fin, the initiator treats Fin as
+acknowledged, updates its transmit epoch (tx := rx), stops retransmitting
+Fin, disables retention, and clears the update flag. The record is then
+processed under the new epoch. The state machine returns to FINISHED.<a href="#appendix-B.2.2-4" class="pilcrow">¶</a></p>
+<p id="appendix-B.2.2-5">A CertificateRequest, a peer key_update_request, a NewSessionTicket, or
+application data received under the new epoch in WAIT_ACK therefore
+completes the update first and is then processed in FINISHED, as specified
+in <a href="#dtls-transition-acks" class="auto internal xref">Section 6.2</a> and <a href="#dtls-pha-wait-ack" class="auto internal xref">Section 12.3.1.1</a>. Records under the
+old epoch, including a CID change, do not change tx.<a href="#appendix-B.2.2-5" class="pilcrow">¶</a></p>
+<p id="appendix-B.2.2-6">Throughout the process:<a href="#appendix-B.2.2-6" class="pilcrow">¶</a></p>
 <ul class="normal">
-<li class="normal" id="appendix-B.2.2-6.1">
-              <p id="appendix-B.2.2-6.1.1">Duplicate messages are tolerated (for retransmission handling).<a href="#appendix-B.2.2-6.1.1" class="pilcrow">¶</a></p>
+<li class="normal" id="appendix-B.2.2-7.1">
+              <p id="appendix-B.2.2-7.1.1">Duplicate messages are tolerated (for retransmission handling).<a href="#appendix-B.2.2-7.1.1" class="pilcrow">¶</a></p>
 </li>
-            <li class="normal" id="appendix-B.2.2-6.2">
-              <p id="appendix-B.2.2-6.2.1">Temporary epoch mismatches are permitted while an update is in progress.<a href="#appendix-B.2.2-6.2.1" class="pilcrow">¶</a></p>
+            <li class="normal" id="appendix-B.2.2-7.2">
+              <p id="appendix-B.2.2-7.2.1">Temporary epoch mismatches are permitted while an update is in progress.<a href="#appendix-B.2.2-7.2.1" class="pilcrow">¶</a></p>
 </li>
-            <li class="normal" id="appendix-B.2.2-6.3">
-              <p id="appendix-B.2.2-6.3.1">Application data flows continuously, subject to epoch acceptance rules.<a href="#appendix-B.2.2-6.3.1" class="pilcrow">¶</a></p>
+            <li class="normal" id="appendix-B.2.2-7.3">
+              <p id="appendix-B.2.2-7.3.1">Application data flows continuously, subject to epoch acceptance rules.<a href="#appendix-B.2.2-7.3.1" class="pilcrow">¶</a></p>
 </li>
           </ul>
-<div id="appendix-B.2.2-7">
-            <div class="alignLeft art-svg artwork" id="appendix-B.2.2-7.1">
-<svg xmlns="http://www.w3.org/2000/svg" version="1.1" height="832" width="536" viewBox="0 0 536 832" class="diagram" text-anchor="middle" font-family="monospace" font-size="13px" stroke-linecap="round">
+<div id="appendix-B.2.2-8">
+            <div class="alignLeft art-svg artwork" id="appendix-B.2.2-8.1">
+<svg xmlns="http://www.w3.org/2000/svg" version="1.1" height="896" width="536" viewBox="0 0 536 896" class="diagram" text-anchor="middle" font-family="monospace" font-size="13px" stroke-linecap="round">
                 <path d="M 8,32 L 8,80" fill="none" stroke="black"></path>
                 <path d="M 8,160 L 8,192" fill="none" stroke="black"></path>
                 <path d="M 8,512 L 8,576" fill="none" stroke="black"></path>
                 <path d="M 8,640 L 8,672" fill="none" stroke="black"></path>
-                <path d="M 8,784 L 8,816" fill="none" stroke="black"></path>
+                <path d="M 8,848 L 8,880" fill="none" stroke="black"></path>
                 <path d="M 16,200 L 16,432" fill="none" stroke="black"></path>
                 <path d="M 56,200 L 56,400" fill="none" stroke="black"></path>
-                <path d="M 56,680 L 56,720" fill="none" stroke="black"></path>
+                <path d="M 56,680 L 56,752" fill="none" stroke="black"></path>
                 <path d="M 88,464 L 88,504" fill="none" stroke="black"></path>
                 <path d="M 96,200 L 96,368" fill="none" stroke="black"></path>
                 <path d="M 184,512 L 184,576" fill="none" stroke="black"></path>
@@ -3188,7 +3513,7 @@ refer to the send and receive key variables defined in <a href="#term" class="au
                 <path d="M 256,160 L 256,192" fill="none" stroke="black"></path>
                 <path d="M 256,640 L 256,672" fill="none" stroke="black"></path>
                 <path d="M 280,32 L 280,80" fill="none" stroke="black"></path>
-                <path d="M 352,784 L 352,816" fill="none" stroke="black"></path>
+                <path d="M 352,848 L 352,880" fill="none" stroke="black"></path>
                 <path d="M 8,32 L 280,32" fill="none" stroke="black"></path>
                 <path d="M 8,80 L 280,80" fill="none" stroke="black"></path>
                 <path d="M 8,160 L 256,160" fill="none" stroke="black"></path>
@@ -3201,8 +3526,8 @@ refer to the send and receive key variables defined in <a href="#term" class="au
                 <path d="M 8,576 L 184,576" fill="none" stroke="black"></path>
                 <path d="M 8,640 L 256,640" fill="none" stroke="black"></path>
                 <path d="M 8,672 L 256,672" fill="none" stroke="black"></path>
-                <path d="M 8,784 L 352,784" fill="none" stroke="black"></path>
-                <path d="M 8,816 L 352,816" fill="none" stroke="black"></path>
+                <path d="M 8,848 L 352,848" fill="none" stroke="black"></path>
+                <path d="M 8,880 L 352,880" fill="none" stroke="black"></path>
                 <polygon class="arrowhead" points="200,200 188,194.4 188,205.6" fill="black" transform="rotate(270,192,200)"></polygon>
                 <polygon class="arrowhead" points="104,200 92,194.4 92,205.6" fill="black" transform="rotate(270,96,200)"></polygon>
                 <polygon class="arrowhead" points="96,504 84,498.4 84,509.6" fill="black" transform="rotate(90,88,504)"></polygon>
@@ -3304,21 +3629,52 @@ refer to the send and receive key variables defined in <a href="#term" class="au
                   <text x="176" y="660">=</text>
                   <text x="196" y="660">1)</text>
                   <text x="88" y="708">APP</text>
-                  <text x="144" y="708">send/recv</text>
-                  <text x="216" y="708">allowed</text>
-                  <text x="16" y="740">(3)</text>
-                  <text x="52" y="740">recv</text>
-                  <text x="88" y="740">ACK</text>
-                  <text x="136" y="740">[e==rx]</text>
-                  <text x="60" y="756">tx=rx;</text>
-                  <text x="144" y="756">retain_old=0;</text>
-                  <text x="236" y="756">updating</text>
-                  <text x="284" y="756">:=</text>
-                  <text x="304" y="756">0</text>
-                  <text x="56" y="772">v</text>
-                  <text x="52" y="804">FINISHED</text>
+                  <text x="124" y="708">send</text>
+                  <text x="176" y="708">allowed</text>
+                  <text x="232" y="708">(send</text>
+                  <text x="276" y="708">with</text>
+                  <text x="312" y="708">old</text>
+                  <text x="344" y="708">tx)</text>
+                  <text x="88" y="724">APP</text>
+                  <text x="128" y="724">recv:</text>
+                  <text x="196" y="724">retain_old</text>
+                  <text x="252" y="724">&amp;&amp;</text>
+                  <text x="272" y="724">e</text>
+                  <text x="292" y="724">==</text>
+                  <text x="332" y="724">old_rx</text>
+                  <text x="416" y="724">(Self-Loop)</text>
+                  <text x="108" y="740">Timeout:</text>
+                  <text x="188" y="740">retransmit</text>
+                  <text x="248" y="740">Fin</text>
+                  <text x="300" y="740">[tag=old</text>
+                  <text x="352" y="740">tx]</text>
+                  <text x="16" y="772">(3)</text>
+                  <text x="52" y="772">recv</text>
+                  <text x="88" y="772">any</text>
+                  <text x="132" y="772">record</text>
+                  <text x="192" y="772">[e==rx]</text>
+                  <text x="52" y="788">(ACK</text>
+                  <text x="84" y="788">of</text>
+                  <text x="116" y="788">Fin,</text>
+                  <text x="176" y="788">handshake</text>
+                  <text x="252" y="788">message,</text>
+                  <text x="300" y="788">or</text>
+                  <text x="332" y="788">APP)</text>
+                  <text x="48" y="804">Fin</text>
+                  <text x="120" y="804">acknowledged;</text>
+                  <text x="204" y="804">tx=rx;</text>
+                  <text x="288" y="804">retain_old=0;</text>
+                  <text x="68" y="820">updating</text>
+                  <text x="116" y="820">:=</text>
+                  <text x="140" y="820">0;</text>
+                  <text x="172" y="820">then</text>
+                  <text x="224" y="820">process</text>
+                  <text x="272" y="820">the</text>
+                  <text x="316" y="820">record</text>
+                  <text x="56" y="836">v</text>
+                  <text x="52" y="868">FINISHED</text>
                 </g>
-              </svg><a href="#appendix-B.2.2-7.1" class="pilcrow">¶</a>
+              </svg><a href="#appendix-B.2.2-8.1" class="pilcrow">¶</a>
 </div>
 </div>
 </section>
@@ -3329,7 +3685,15 @@ refer to the send and receive key variables defined in <a href="#term" class="au
 <a href="#appendix-B.2.3" class="section-number selfRef">B.2.3. </a><a href="#name-state-machine-responder" class="section-name selfRef">State Machine (Responder)</a>
           </h4>
 <p id="appendix-B.2.3-1">The responder starts in the START state with synchronized transmit and receive epochs (rx := E; tx := E) and no update in progress. Application data can be transmitted at any time using the sender's current transmit epoch. A receiver must accept application data if the epoch tag on the DTLS record equals the receiver's current receive epoch. If the receiver has retention active (retain_old == true), the receiver must also accept DTLS records whose epoch tag equals the remembered previous epoch.<a href="#appendix-B.2.3-1" class="pilcrow">¶</a></p>
-<p id="appendix-B.2.3-2">Upon receiving an <code>ExtendedKeyUpdate(key_update_request)</code> (Req), the responder transitions to RESPOND. The responder may defer sending <code>ExtendedKeyUpdate(key_update_response)</code> under load; in that case it must acknowledge the request with an ACK and retransmit the response until it is acknowledged by the initiator, as specified in DTLS considerations. When sent, <code>ExtendedKeyUpdate(key_update_response)</code> is tagged with the current tx.<a href="#appendix-B.2.3-2" class="pilcrow">¶</a></p>
+<p id="appendix-B.2.3-2">Upon receiving an <code>ExtendedKeyUpdate(key_update_request)</code> (Req), the responder
+transitions to RESPOND. It waits for acknowledgment of earlier independent
+handshake transmissions before sending <code>ExtendedKeyUpdate(key_update_response)</code>
+and may also defer the response under load. While deferring, it acknowledges
+the request. When sent, the response is tagged with the current tx and is
+retransmitted until acknowledged explicitly or implicitly by Fin. It is
+the last new handshake message in that sending epoch. New independent
+handshake transmissions wait until Fin is received and the sending epoch
+is updated, as specified in <a href="#dtls-handshake-ordering" class="auto internal xref">Section 6.1</a>.<a href="#appendix-B.2.3-2" class="pilcrow">¶</a></p>
 <p id="appendix-B.2.3-3">After an <code>ExtendedKeyUpdate(key_update_finish)</code> (Fin) is received with the correct epoch, the responder:<a href="#appendix-B.2.3-3" class="pilcrow">¶</a></p>
 <ol start="1" type="1" class="normal type-1" id="appendix-B.2.3-4">
 <li id="appendix-B.2.3-4.1">
@@ -3345,10 +3709,15 @@ refer to the send and receive key variables defined in <a href="#term" class="au
               <p id="appendix-B.2.3-4.4.1">clears updating and enters FINISHED.<a href="#appendix-B.2.3-4.4.1" class="pilcrow">¶</a></p>
 </li>
           </ol>
-<p id="appendix-B.2.3-5">Retention at the responder ends automatically on the first APP received under the new rx (then retain_old := 0). APP traffic is otherwise permitted at any time; reordering is tolerated by the acceptance rule.<a href="#appendix-B.2.3-5" class="pilcrow">¶</a></p>
-<p id="appendix-B.2.3-6">APP acceptance rule (receiver): accept if e == rx or (retain_old &amp;&amp; e == old_rx). If retain_old is set and an APP with the new rx arrives, clear retain_old.<a href="#appendix-B.2.3-6" class="pilcrow">¶</a></p>
-<div id="appendix-B.2.3-7">
-            <div class="alignLeft art-svg artwork" id="appendix-B.2.3-7.1">
+<p id="appendix-B.2.3-5">In FINISHED, while retaining the old receive keys, the responder accepts
+retransmissions of Fin under the old epoch and sends a new ACK under its
+current tx. The responder may send APP data and, subject to
+<a href="#dtls-handshake-ordering" class="auto internal xref">Section 6.1</a>, new handshake messages under the new tx
+without waiting for a record from the initiator under the new epoch.<a href="#appendix-B.2.3-5" class="pilcrow">¶</a></p>
+<p id="appendix-B.2.3-6">Retention at the responder ends on the first record received under the new rx (then retain_old := 0). This can be application data, a handshake message such as the client's Certificate in a PHA exchange, or an ACK. APP traffic is otherwise permitted at any time; reordering is tolerated by the acceptance rule.<a href="#appendix-B.2.3-6" class="pilcrow">¶</a></p>
+<p id="appendix-B.2.3-7">APP acceptance rule (receiver): accept if e == rx or (retain_old &amp;&amp; e == old_rx). If retain_old is set and any record with the new rx arrives, clear retain_old.<a href="#appendix-B.2.3-7" class="pilcrow">¶</a></p>
+<div id="appendix-B.2.3-8">
+            <div class="alignLeft art-svg artwork" id="appendix-B.2.3-8.1">
 <svg xmlns="http://www.w3.org/2000/svg" version="1.1" height="624" width="536" viewBox="0 0 536 624" class="diagram" text-anchor="middle" font-family="monospace" font-size="13px" stroke-linecap="round">
                 <path d="M 8,32 L 8,80" fill="none" stroke="black"></path>
                 <path d="M 8,160 L 8,192" fill="none" stroke="black"></path>
@@ -3443,14 +3812,14 @@ refer to the send and receive key variables defined in <a href="#term" class="au
                   <text x="56" y="548">v</text>
                   <text x="52" y="580">FINISHED</text>
                   <text x="72" y="596">(retain_old=0</text>
-                  <text x="152" y="596">after</text>
-                  <text x="200" y="596">first</text>
-                  <text x="240" y="596">APP</text>
+                  <text x="140" y="596">on</text>
+                  <text x="176" y="596">first</text>
+                  <text x="228" y="596">record</text>
                   <text x="268" y="596">at</text>
                   <text x="296" y="596">new</text>
                   <text x="328" y="596">rx)</text>
                 </g>
-              </svg><a href="#appendix-B.2.3-7.1" class="pilcrow">¶</a>
+              </svg><a href="#appendix-B.2.3-8.1" class="pilcrow">¶</a>
 </div>
 </div>
 </section>
