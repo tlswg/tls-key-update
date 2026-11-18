@@ -335,7 +335,7 @@ Fields:
 * `eku_type`: the subtype of the `ExtendedKeyUpdate` message.
 * `key_share`: key share information. The contents of this field is
 determined by the specified group and its corresponding definition
-(see {{Section 4.2.8 of TLS}}).
+(see {{Section 4.3.8 of TLS}}).
 
 # TLS 1.3 Extended Key Update Procedure {#TLSC}
 
