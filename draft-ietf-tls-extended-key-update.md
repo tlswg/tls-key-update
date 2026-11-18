@@ -1179,7 +1179,7 @@ Authenticator from the server.
 
 ## Exported Authenticators {#eku-ea}
 
-This document extends Section 5.1 of {{!RFC9261}} with an epoch-aware
+This document extends Section 5.1 of {{!RFC9261}} with a generation-aware
 Exported Authenticator interface. For this interface, the Handshake Context
 and Finished MAC Key MUST be derived from `exporter_secret_G` for the
 explicitly selected exporter generation G. The same generation MUST be
