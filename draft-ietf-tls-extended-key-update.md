@@ -643,10 +643,10 @@ under the old keys and epoch until Step 7 completes, and the responder MUST
 continue processing and acknowledging those retransmissions while retaining
 the old receive keys.
 
-## Handshake Message Format
-
 If DTLS peers independently initiate the extended key update and the
 requests cross in flight, they are resolved as specified in {{TLSC}}.
+
+## Handshake Message Format
 
 The handshake framing uses a single `HandshakeType` for this message
 (see {{fig-dtls-handshake}}).
@@ -939,13 +939,8 @@ such a message MUST NOT, by itself, cause the client to terminate the
 connection. Other applicable requirements for message validity and ordering
 remain in effect.
 
-For DTLS, ignoring a `NewSessionTicket` does not exempt it from handshake
-sequencing, reassembly, or acknowledgment, including for fragments and
-retransmissions. A ticket record received under the new epoch while the
-client awaits acknowledgment of `ExtendedKeyUpdate(key_update_finish)`
-completes the EKU exchange as specified in Step 7 of {{DTLSC}} and is then
-acknowledged under the new sending epoch. Ignoring a ticket MUST NOT
-prevent processing of subsequent handshake messages.
+For DTLS, an ignored `NewSessionTicket` is still sequenced and acknowledged
+as specified in {{DTLS}}.
 
 # Post-Quantum Cryptography Considerations {#pqc-cons}
 
@@ -979,7 +974,7 @@ as the TLS client or server during the initial handshake.
 
 As a successful extended key update exchange invalidates previous secrets,
 SSLKEYLOGFILE {{?TLS-KEYLOGFILE=I-D.ietf-tls-keylogfile}} needs to be populated with new
-entries. As a result, three additional secret labels are utilized in the
+entries. As a result, four additional secret labels are utilized in the
 SSLKEYLOGFILE:
 
 1. `CLIENT_TRAFFIC_SECRET_N+1`: identifies the
@@ -990,6 +985,9 @@ server_application_traffic_secret_N+1 in the key schedule
 
 1. `EXPORTER_SECRET_N+1`: identifies the
 exporter_secret_N+1 in the key schedule
+
+1. `EXPORTER_SECRET_0`: identifies exporter_secret_0, the initial secret of
+the generation-aware exporter interface ({{exporter}})
 
 Similar to other entries in the SSLKEYLOGFILE, the label is followed by the
 32-byte value of the Random field from the ClientHello message that
@@ -1040,7 +1038,7 @@ Transcript-Hash(ClientHello..server Finished))
 Applications that require post-compromise security MUST use the exporter
 interface defined in this document. This exporter interface is independent of
 the TLS exporter defined in {{Section 7.5 of TLS}}, which continues to use a
-static `exporter_secret` for the lifetime of the connection for compatiblity with "legacy" applications.
+static `exporter_secret` for the lifetime of the connection for compatibility with "legacy" applications.
 
 ## Exporter Usage After Extended Key Update
 
@@ -1093,9 +1091,7 @@ The (D)TLS implementation retains the exporter secret of an earlier
 generation only for a short period, comparable to the retention of keys for
 prior epochs in {{Section 4.2.1 of DTLS}}, so that operations which selected
 that generation can complete. A retained secret remains exposed to a later
-compromise. Once the secret has been discarded, a request for that
-generation through the generation-aware exporter interface MUST fail rather
-than use the secret of another generation. Retention of keying material
+compromise. A request for a discarded generation MUST fail. Retention of keying material
 derived from older generations is application-specific. For example, a
 DTLS-SRTP application might retain an older packet-protection context while
 its replay window still accepts packets protected with that context, as
@@ -1165,7 +1161,7 @@ an application-defined encoding. That encoding MUST preserve the context's
 length limits, uniqueness requirements, and request-response association
 from {{RFC9261}}. It MUST identify the same exporter generation at both
 endpoints, using the generation N defined in {{exporter}}.
- This specification does not define a common wire encoding
+This specification does not define a common wire encoding
 for application protocols.
 
 If the selected generation is unknown, unavailable, expired, or disallowed
@@ -1452,6 +1448,7 @@ extension registry {{TLS-Ext-Registry}}:
 | CLIENT_TRAFFIC_SECRET_N+1 | Secret protecting client records after Extended Key Update | This document | N represents iteration of Extended Key Update |
 | SERVER_TRAFFIC_SECRET_N+1 | Secret protecting server records after Extended Key Update | This document | N represents iteration of Extended Key Update |
 | EXPORTER_SECRET_N+1 | Exporter secret after Extended Key Update | This document | N represents iteration of Extended Key Update |
+| EXPORTER_SECRET_0 | Initial secret of the generation-aware exporter interface | This document | |
 
 --- back
 
@@ -1471,8 +1468,10 @@ Marten Seemann as well as the responsible area director Martin Duke.
 Finally, we would like to thank David Benjamin, Joe Birr-Pixton,
 Matthijs van Duin, Scott Fluhrer, Dennis Jackson, Benjamin Kaduk,
 Ilari Liusvaara, Eric Rescorla, Rifaat Shekh-Yusef, Martin Thomson,
-Nik Stuckenbrock, Mathy Vanhoef, and Thom Wiggers for their review comments
-and contributions.
+Mathy Vanhoef, and Thom Wiggers for their review comments and contributions.
+
+We would also like to thank Nik Stuckenbrock, Felix Linker, and Cas Cremers
+for the formal analysis of the Extended Key Update mechanism.
 
 # State Machines
 
@@ -1810,6 +1809,8 @@ Authentication and Exported Authenticators can be used after an Extended Key Upd
 detect that the endpoints derived different keys. Detection relies on the
 CertificateVerify message, which is signed with a private key the attacker
 does not hold, so validation fails and the interference is revealed.
+A Certificate message with an empty certificate list carries no
+CertificateVerify and therefore cannot detect interference.
 
 If validation of a Post-Handshake Certificate-Based Client Authentication
 CertificateVerify or Finished message fails, the server terminates the connection
