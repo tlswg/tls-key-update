@@ -1315,8 +1315,8 @@ Table of Contents
    context's length limits, uniqueness requirements, and request-
    response association from [RFC9261].  It MUST identify the same
    exporter generation at both endpoints, using the generation N defined
-   in Section 11. insufficient.  This specification does not define a
-   common wire encoding for application protocols.
+   in Section 11.  This specification does not define a common wire
+   encoding for application protocols.
 
    If the selected generation is unknown, unavailable, expired, or
    disallowed by application policy, creation or validation MUST fail
