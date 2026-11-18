@@ -1227,7 +1227,7 @@ on the newly derived secrets.
 
 The existing interfaces in {{RFC9261}} retain their use of the static TLS
 exporter defined in {{Section 7.5 of TLS}}. They MUST NOT silently switch to
-the epoch-aware interface. As discussed in {{Section 7 of RFC9261}}, the
+the generation-aware interface. As discussed in {{Section 7 of RFC9261}}, the
 epoch-aware interface can also be implemented at the application layer
 using the corresponding exporter interface.
 
