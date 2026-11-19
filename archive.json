@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2026-11-08T05:12:48.662702+00:00",
+  "timestamp": "2026-11-19T06:37:08.020260+00:00",
   "repo": "tlswg/tls-key-update",
   "labels": [
     {
@@ -1621,16 +1621,24 @@
       "id": "I_kwDOMJPqLM8AAAABTf0kBg",
       "title": "DTLS initiator switches send keys only on ACK",
       "url": "https://github.com/tlswg/tls-key-update/issues/127",
-      "state": "OPEN",
+      "state": "CLOSED",
       "author": "tireddy2",
       "authorAssociation": "COLLABORATOR",
       "assignees": [],
       "labels": [],
       "body": "Problem\n\nStale keys. The initiator waits for the ACK before switching its send keys, although it knows the responder holds the new keys once the response arrives.\nPHA ambiguity. When the client initiates EKU, the server completes on receipt of key_update_finish, sends the ACK, and may send a CertificateRequest immediately afterwards. If the ACK is lost, the client receives the CertificateRequest while its EKU is still in progress and it is still sending under the old epoch. The draft does not define which epoch the client uses for its PHA response (see the sequence below).\nUnexplained difference. The draft does not explain the one real difference between TLS and DTLS: the responder waits for key_update_finish before switching its send keys.\n\nDiscussion\n\nMartin. The initiator can switch its send keys on receipt of the response. The ACK is needed only to stop retransmission, not to drive the key transition. The finish message informs the responder that the initiator has the new keys.\nIlari. The finish message ensures sequential consistency of the handshake protocol, which PHA relies on to latch the epoch of the CertificateRequest.\nMartin, in reply. Every DTLS record carries an epoch, so the only problem is a PHA sent after key_update_finish but before the ACK.",
       "createdAt": "2026-09-27T14:22:58Z",
-      "updatedAt": "2026-09-27T14:23:24Z",
-      "closedAt": null,
-      "comments": []
+      "updatedAt": "2026-11-18T14:04:52Z",
+      "closedAt": "2026-11-18T14:04:52Z",
+      "comments": [
+        {
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "body": "Addressed in https://github.com/tlswg/tls-key-update/pull/137",
+          "createdAt": "2026-11-18T14:04:52Z",
+          "updatedAt": "2026-11-18T14:04:52Z"
+        }
+      ]
     },
     {
       "number": 128,
@@ -11656,24 +11664,26 @@
       "id": "PR_kwDOMJPqLM8AAAABMyOGMg",
       "title": "DTLS EKU Design by Tiru",
       "url": "https://github.com/tlswg/tls-key-update/pull/137",
-      "state": "OPEN",
+      "state": "MERGED",
       "author": "hannestschofenig",
       "authorAssociation": "COLLABORATOR",
       "assignees": [],
       "labels": [],
       "body": "This PR describe an alternative design from Tiru to PR https://github.com/tlswg/tls-key-update/pull/136\n\nHere is the improvement: In DTLS, any record the initiator successfully deprotects under the new epoch now completes the EKU exchange, because the responder only sends under that epoch after receiving key_update_finish. This removes the deferred-ACK section, the CertificateRequest buffering, the Exported Authenticator deferral exception, and the special case for a new EKU request before the ACK, and gives the initiator state machine a single exit from WAIT_ACK.",
       "createdAt": "2026-11-04T10:45:02Z",
-      "updatedAt": "2026-11-04T14:01:49Z",
+      "updatedAt": "2026-11-18T14:03:57Z",
       "baseRepository": "tlswg/tls-key-update",
       "baseRefName": "main",
       "baseRefOid": "a5455f3709e4185f8c058b7c99c1235c6b49696f",
       "headRepository": "tlswg/tls-key-update",
       "headRefName": "tiru-design-dtls-eku",
-      "headRefOid": "2206e44186edccc0f821f088b677cf2428d37800",
-      "closedAt": null,
-      "mergedAt": null,
-      "mergedBy": null,
-      "mergeCommit": null,
+      "headRefOid": "e8b3263e7d9516229f4026cc77e48f5f44cc1481",
+      "closedAt": "2026-11-18T14:03:57Z",
+      "mergedAt": "2026-11-18T14:03:57Z",
+      "mergedBy": "tireddy2",
+      "mergeCommit": {
+        "oid": "6c2ce0bf61066c706ac97d736fd14dfa7d3baec6"
+      },
       "comments": [
         {
           "author": "hannestschofenig",
@@ -11812,6 +11822,119 @@
               "updatedAt": "2026-11-04T14:01:49Z"
             }
           ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM8AAAABYwOQ6Q",
+          "commit": {
+            "abbreviatedOid": "2206e44"
+          },
+          "author": "hannestschofenig",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2026-11-18T12:00:27Z",
+          "updatedAt": "2026-11-18T12:00:27Z",
+          "comments": [
+            {
+              "originalPosition": 47,
+              "body": "Yes. After Step 5 the responder has only one sending epoch, the new one.\r\nWhat it retains from before the update are the receive keys. So every ACK\r\nit sends from then on is protected with the new keys, including the ACK for\r\na retransmitted key_update_finish that arrives under the old epoch. That is\r\nalso what makes Step 7 work: any record the initiator can deprotect with\r\nthe new receive keys tells it that the responder has processed the finish\r\nmessage.\r\n\r\nYou are right that Step 6 only said this explicitly for the first ACK. I\r\nadded a sentence there so the reader does not have to jump ahead:\r\n\r\n>   These ACKs are also protected with the updated send keys and epoch,\r\n>   although the retransmissions themselves arrive under the pre-update epoch.",
+              "createdAt": "2026-11-18T12:00:27Z",
+              "updatedAt": "2026-11-18T12:00:27Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM8AAAABYw0yzA",
+          "commit": {
+            "abbreviatedOid": "2206e44"
+          },
+          "author": "hannestschofenig",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2026-11-18T12:45:39Z",
+          "updatedAt": "2026-11-18T12:45:39Z",
+          "comments": [
+            {
+              "originalPosition": 626,
+              "body": "Agreed that this repeated {{eku-ea}}. I replaced the whole subsection, not\r\nonly the mentioned paragraph, since the first paragraph duplicated {{eku-ea}}\r\nas well.\r\n\r\nI did not take your two sentences as you suggested for two reasons:\r\n\r\n- \"May overlap an EKU exchange\" does not say why this is fine for Exported Authenticators but not for PHA. \r\n- \"They use the generation selected as specified in {{eku-ea}}\" only holds for the epoch-aware interface.\r\n\r\nThe subsection now reads:\r\n\r\n>   No ordering constraints between EKU and Exported Authenticators are\r\n>   needed. PHA implicitly uses the transcript and traffic secret that are\r\n>   current when the CertificateRequest is sent. An Exported Authenticator\r\n>   created with the epoch-aware interface is instead bound to an explicitly\r\n>   selected exporter generation, as specified in {{eku-ea}}, so it can be\r\n>   requested, created, and validated before, during, or after an EKU\r\n>   exchange. Authenticators created with the existing interfaces of RFC 9261\r\n>   use the static exporter secret and are not affected by EKU.\r\n\r\nThe normative text is in {{eku-ea}}.\r\n",
+              "createdAt": "2026-11-18T12:45:39Z",
+              "updatedAt": "2026-11-18T12:45:40Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM8AAAABYxQbtg",
+          "commit": {
+            "abbreviatedOid": "2206e44"
+          },
+          "author": "hannestschofenig",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2026-11-18T13:11:19Z",
+          "updatedAt": "2026-11-18T13:11:19Z",
+          "comments": [
+            {
+              "originalPosition": 365,
+              "body": "Agreed on both points: the exporter secret is held by the (D)TLS\r\nimplementation and should be retained only briefly, while keying material\r\nderived from it is the application's business. The old sentence mixed the\r\ntwo.\r\n\r\nI took your text with three changes and the paragraph now reads:\r\n\r\n>   The (D)TLS implementation retains the exporter secret of an earlier\r\n>   generation only for a short period, comparable to the retention of keys\r\n>   for prior epochs in {{Section 4.2.1 of DTLS}}, so that operations which\r\n>   selected that generation can complete. A retained secret remains exposed\r\n>   to a later compromise. Once the secret has been discarded, a request for\r\n>   that generation through the generation-aware exporter interface MUST fail\r\n>   rather than use the secret of another generation. Retention of keying\r\n>   material derived from older generations is application-specific. For\r\n>   example, a DTLS-SRTP application might retain an older packet-protection\r\n>   context while its replay window still accepts packets protected with that\r\n>   context, as described in Section 3.3.2 of RFC 3711.\r\n",
+              "createdAt": "2026-11-18T13:11:19Z",
+              "updatedAt": "2026-11-18T13:11:19Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM8AAAABYxXPNQ",
+          "commit": {
+            "abbreviatedOid": "2206e44"
+          },
+          "author": "hannestschofenig",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2026-11-18T13:17:07Z",
+          "updatedAt": "2026-11-18T13:17:08Z",
+          "comments": [
+            {
+              "originalPosition": 721,
+              "body": "You are right. The main text already says that any record from the initiator\r\nunder the new keys lets the responder stop retaining the old receive keys,\r\nand the example in {{dtls-pha-wait-ack}} shows exactly your case: the\r\nclient's Certificate is its first record under the new epoch. The state\r\nmachine text was narrower than that.\r\n\r\nIt can also be an ACK, for example when the initiator acknowledges a\r\nNewConnectionId that completed the exchange on its side.\r\n\r\nI changed three places in the responder state machine:\r\n\r\n- The sentence now reads: \"Retention at the responder ends on the first\r\n  record received under the new rx (then retain_old := 0). This can be\r\n  application data, a handshake message such as the client's Certificate in\r\n  a PHA exchange, or an ACK.\"\r\n- The acceptance rule below it: \"If retain_old is set and any record with\r\n  the new rx arrives, clear retain_old.\"\r\n- The FINISHED box in the diagram: \"(retain_old=0 on first record at new\r\n  rx)\".\r\n",
+              "createdAt": "2026-11-18T13:17:08Z",
+              "updatedAt": "2026-11-18T13:17:08Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM8AAAABYxbqPg",
+          "commit": {
+            "abbreviatedOid": "2206e44"
+          },
+          "author": "hannestschofenig",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2026-11-18T13:21:01Z",
+          "updatedAt": "2026-11-18T13:21:01Z",
+          "comments": [
+            {
+              "originalPosition": 385,
+              "body": "Agreed, I removed the section. PHA consistency is covered by\r\n{{pha-eku-ordering}} and the generation rules for Exported Authenticators\r\nby {{eku-ea}}, so the section mostly duplicated their MUSTs.\r\n\r\nI also reworded the intro of \"Interaction with Post-Handshake Operations\",\r\nsince it announced \"common requirements\" that no longer exist.",
+              "createdAt": "2026-11-18T13:21:01Z",
+              "updatedAt": "2026-11-18T13:21:01Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM8AAAABYyI0WA",
+          "commit": {
+            "abbreviatedOid": "e8b3263"
+          },
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "state": "APPROVED",
+          "body": "",
+          "createdAt": "2026-11-18T14:03:38Z",
+          "updatedAt": "2026-11-18T14:03:38Z",
+          "comments": []
         }
       ]
     },
@@ -11820,24 +11943,26 @@
       "id": "PR_kwDOMJPqLM8AAAABNA_Srg",
       "title": "Update reference to RFC 9846",
       "url": "https://github.com/tlswg/tls-key-update/pull/138",
-      "state": "OPEN",
+      "state": "MERGED",
       "author": "nikstuckenbrock",
       "authorAssociation": "CONTRIBUTOR",
       "assignees": [],
       "labels": [],
       "body": "Hi everyone, I just noticed a missing reference update and thought a PR couldn't hurt.",
       "createdAt": "2026-11-05T08:22:15Z",
-      "updatedAt": "2026-11-05T13:16:10Z",
+      "updatedAt": "2026-11-18T14:05:13Z",
       "baseRepository": "tlswg/tls-key-update",
       "baseRefName": "main",
       "baseRefOid": "a5455f3709e4185f8c058b7c99c1235c6b49696f",
       "headRepository": "nikstuckenbrock/tls-key-update",
       "headRefName": "main",
       "headRefOid": "82ed33c55be4381037fcafa9df608470f24dfb5e",
-      "closedAt": null,
-      "mergedAt": null,
-      "mergedBy": null,
-      "mergeCommit": null,
+      "closedAt": "2026-11-18T14:05:13Z",
+      "mergedAt": "2026-11-18T14:05:13Z",
+      "mergedBy": "tireddy2",
+      "mergeCommit": {
+        "oid": "ec489a21f30cf49b3acacdc7d3728d3b23403333"
+      },
       "comments": [],
       "reviews": [
         {
@@ -11854,6 +11979,32 @@
           "comments": []
         }
       ]
+    },
+    {
+      "number": 139,
+      "id": "PR_kwDOMJPqLM8AAAABQIzapQ",
+      "title": "cleanup text",
+      "url": "https://github.com/tlswg/tls-key-update/pull/139",
+      "state": "OPEN",
+      "author": "tireddy2",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [],
+      "body": "",
+      "createdAt": "2026-11-18T14:32:31Z",
+      "updatedAt": "2026-11-18T14:32:41Z",
+      "baseRepository": "tlswg/tls-key-update",
+      "baseRefName": "main",
+      "baseRefOid": "ec489a21f30cf49b3acacdc7d3728d3b23403333",
+      "headRepository": "tlswg/tls-key-update",
+      "headRefName": "tireddy2-patch-21",
+      "headRefOid": "37a786136ae8c247027828e297d6883153dee080",
+      "closedAt": null,
+      "mergedAt": null,
+      "mergedBy": null,
+      "mergeCommit": null,
+      "comments": [],
+      "reviews": []
     }
   ]
 }
