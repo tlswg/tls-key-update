@@ -50,7 +50,7 @@ security proof.
 
 | Specification action | Model action |
 | --- | --- |
-| Wait for earlier independent transmissions | `OtherHS`, CID requests/advertisements and PHA response transmissions must be acknowledged before the relevant Req/Resp/Fin action |
+| Wait for earlier independent transmissions | `OtherHS`, CID requests/advertisements, PHA response transmissions and an abandoned crossed Req must be acknowledged before the relevant Req/Resp/Fin action |
 | Initiator receives response | Implicitly acknowledge Req, derive immediately, advance RX, enter `NEED_FINISH` |
 | DTLS initiator sends finish | Keep old TX; enter `WAIT_ACK` |
 | DTLS responder receives finish | Implicitly acknowledge Resp, advance both epochs, send a record-specific ACK |
@@ -67,10 +67,50 @@ abstract independent handshake transmission, not a new TLS message definition.
 Handshake sequence numbers increase on new messages and do not reset at EKU.
 Messages ahead of the next expected sequence are discarded without ACK; their
 senders retain responsibility for retransmission. Earlier messages are treated
-as duplicates and re-ACKed if still decryptable. A losing crossed EKU request
-abandons the operation but must still be delivered to close its handshake
-sequence-number gap. Fin also establishes that the peer received the preceding
-response and its earlier losing request in the same EKU stream.
+as duplicates and re-ACKed if still decryptable. Fin establishes that the peer
+received the preceding response.
+
+## Crossed requests
+
+Requests cross when both endpoints send Req before receiving the peer's Req.
+Two independent decisions apply to the Req that an endpoint then receives in
+`WAIT_RESPONSE`. The DTLS handshake layer checks the handshake sequence number
+and advances `next_receive_seq`. Only afterwards does the EKU tie-break compare
+the key shares. The tie-break decides what happens to the EKU operation. It
+does not change how the message is delivered or acknowledged.
+
+| Specification rule | Model action |
+| --- | --- |
+| The request with the lower `key_exchange` value is ignored | A Req whose share is lower than the local share changes no EKU state |
+| Equal values are a protocol violation | `unexpected` is raised |
+| The sender of the ignored request abandons its exchange and acts as the responder | `initiated` is cleared and the endpoint enters `NEED_RESPONSE` |
+| DTLS: the ignored request is sequenced and acknowledged, including its retransmissions | The sequence number is consumed before the tie-break; the winner calls `acknowledge_incoming`; duplicates are re-ACKed |
+| DTLS: the abandoned request is retransmitted until it is acknowledged | `outstanding[Req]` stays set at the endpoint that lost the tie-break |
+| DTLS: the response is not sent before the abandoned request is acknowledged | The `NEED_RESPONSE` action requires `!outstanding[Req]` |
+| DTLS: the peer's request is acknowledged while the response is held back | The losing endpoint ACKs the winning Req when it processes it with its own Req still outstanding |
+
+The abandoned request is therefore treated like any other earlier handshake
+transmission, as specified in "Handshake Ordering Across an EKU". An assertion
+at the receipt of Fin checks the consequence: no abandoned request is still
+outstanding when the responder completes. In TLS there are no outstanding
+transmissions, so the last four rows have no effect and the losing endpoint
+responds immediately.
+
+Model versions up to 18 November 2026 used a weaker rule. The losing endpoint
+could send Resp while its abandoned Req was unacknowledged, and Fin was taken
+as an implicit acknowledgment of that Req. That variant also passed the
+crossed-request profiles. The draft now specifies the stricter rule, and the
+model follows it. State counts of the crossed profiles are not comparable
+between the two variants.
+
+Abandoning the exchange must not end retransmission of the abandoned request.
+If the request is lost and not retransmitted, the peer never receives its
+handshake sequence number and cannot process the Resp that follows it.
+
+Key shares are a single constant byte per endpoint, used for the request and
+for the response. The model therefore does not represent the bytewise unsigned
+comparison of real `key_exchange` values, nor the requirement to discard the
+key share of the abandoned request and generate a fresh one for the response.
 
 ## Record-specific acknowledgments and retention
 
