@@ -939,8 +939,7 @@ such a message MUST NOT, by itself, cause the client to terminate the
 connection. Other applicable requirements for message validity and ordering
 remain in effect.
 
-For DTLS, an ignored `NewSessionTicket` is still sequenced and acknowledged
-as specified in {{DTLS}}.
+For DTLS, only the content of the `NewSessionTicket` is ignored> the client MUST still reassemble, sequence, and acknowledge the message as specified in {{Sections 5.2, 5.5 and 7 of DTLS}}, so that processing of subsequent handshake messages is not blocked. A ticket received under the new epoch while an EKU exchange is in progress is handled like any other handshake message, as specified in {{dtls-transition-acks}}.
 
 # Post-Quantum Cryptography Considerations {#pqc-cons}
 
