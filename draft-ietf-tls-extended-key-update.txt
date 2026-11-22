@@ -6,13 +6,13 @@ Transport Layer Security                                   H. Tschofenig
 Internet-Draft                                                   Siemens
 Updates: 9261, 9846 (if approved)                               T. Reddy
 Intended status: Standards Track                                   Nokia
-Expires: 22 May 2027                                            M. Tüxen
+Expires: 26 May 2027                                            M. Tüxen
                                        Münster Univ. of Applied Sciences
                                                                 S. Fries
                                                                  Siemens
                                                             Y. Rosomakho
                                                                  Zscaler
-                                                        18 November 2026
+                                                        22 November 2026
 
 
        Extended Key Update for Transport Layer Security (TLS) 1.3
@@ -69,7 +69,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 22 May 2027.
+   This Internet-Draft will expire on 26 May 2027.
 
 Copyright Notice
 
@@ -721,11 +721,11 @@ Table of Contents
    and acknowledging those retransmissions while retaining the old
    receive keys.
 
-6.3.  Handshake Message Format
-
    If DTLS peers independently initiate the extended key update and the
    requests cross in flight, they are resolved as specified in
    Section 5.
+
+6.3.  Handshake Message Format
 
    The handshake framing uses a single HandshakeType for this message
    (see Figure 4).
@@ -1024,14 +1024,12 @@ Table of Contents
    applicable requirements for message validity and ordering remain in
    effect.
 
-   For DTLS, ignoring a NewSessionTicket does not exempt it from
-   handshake sequencing, reassembly, or acknowledgment, including for
-   fragments and retransmissions.  A ticket record received under the
-   new epoch while the client awaits acknowledgment of
-   ExtendedKeyUpdate(key_update_finish) completes the EKU exchange as
-   specified in Step 7 of Section 6 and is then acknowledged under the
-   new sending epoch.  Ignoring a ticket MUST NOT prevent processing of
-   subsequent handshake messages.
+   For DTLS, only the content of the NewSessionTicket is ignored> the
+   client MUST still reassemble, sequence, and acknowledge the message
+   as specified in Sections 5.2, 5.5 and 7 of [DTLS], so that processing
+   of subsequent handshake messages is not blocked.  A ticket received
+   under the new epoch while an EKU exchange is in progress is handled
+   like any other handshake message, as specified in Section 6.2.
 
 9.  Post-Quantum Cryptography Considerations
 
@@ -1070,8 +1068,8 @@ Table of Contents
 
    As a successful extended key update exchange invalidates previous
    secrets, SSLKEYLOGFILE [TLS-KEYLOGFILE] needs to be populated with
-   new entries.  As a result, three additional secret labels are
-   utilized in the SSLKEYLOGFILE:
+   new entries.  As a result, four additional secret labels are utilized
+   in the SSLKEYLOGFILE:
 
    1.  CLIENT_TRAFFIC_SECRET_N+1: identifies the
        client_application_traffic_secret_N+1 in the key schedule
@@ -1081,6 +1079,9 @@ Table of Contents
 
    3.  EXPORTER_SECRET_N+1: identifies the exporter_secret_N+1 in the
        key schedule
+
+   4.  EXPORTER_SECRET_0: identifies exporter_secret_0, the initial
+       secret of the generation-aware exporter interface (Section 11)
 
    Similar to other entries in the SSLKEYLOGFILE, the label is followed
    by the 32-byte value of the Random field from the ClientHello message
@@ -1137,7 +1138,7 @@ Table of Contents
    exporter interface defined in this document.  This exporter interface
    is independent of the TLS exporter defined in Section 7.5 of [TLS],
    which continues to use a static exporter_secret for the lifetime of
-   the connection for compatiblity with "legacy" applications.
+   the connection for compatibility with "legacy" applications.
 
 11.2.  Exporter Usage After Extended Key Update
 
@@ -1196,11 +1197,9 @@ Table of Contents
    generation only for a short period, comparable to the retention of
    keys for prior epochs in Section 4.2.1 of [DTLS], so that operations
    which selected that generation can complete.  A retained secret
-   remains exposed to a later compromise.  Once the secret has been
-   discarded, a request for that generation through the generation-aware
-   exporter interface MUST fail rather than use the secret of another
-   generation.  Retention of keying material derived from older
-   generations is application-specific.  For example, a DTLS-SRTP
+   remains exposed to a later compromise.  A request for a discarded
+   generation MUST fail.  Retention of keying material derived from
+   older generations is application-specific.  For example, a DTLS-SRTP
    application might retain an older packet-protection context while its
    replay window still accepts packets protected with that context, as
    described in Section 3.3.2 of [RFC3711].
@@ -1605,34 +1604,35 @@ Table of Contents
    IANA is requested to add the following entries to the "TLS
    SSLKEYLOGFILE Labels" extension registry [TLS-Ext-Registry]:
 
-   +===========================+=============+===========+============+
-   | Value                     | Description | Reference | Comment    |
-   +===========================+=============+===========+============+
-   | CLIENT_TRAFFIC_SECRET_N+1 | Secret      | This      | N          |
-   |                           | protecting  | document  | represents |
-   |                           | client      |           | iteration  |
-   |                           | records     |           | of         |
-   |                           | after       |           | Extended   |
-   |                           | Extended    |           | Key Update |
-   |                           | Key Update  |           |            |
-   +---------------------------+-------------+-----------+------------+
-   | SERVER_TRAFFIC_SECRET_N+1 | Secret      | This      | N          |
-   |                           | protecting  | document  | represents |
-   |                           | server      |           | iteration  |
-   |                           | records     |           | of         |
-   |                           | after       |           | Extended   |
-   |                           | Extended    |           | Key Update |
-   |                           | Key Update  |           |            |
-   +---------------------------+-------------+-----------+------------+
-   | EXPORTER_SECRET_N+1       | Exporter    | This      | N          |
-   |                           | secret      | document  | represents |
-   |                           | after       |           | iteration  |
-   |                           | Extended    |           | of         |
-   |                           | Key Update  |           | Extended   |
-   |                           |             |           | Key Update |
-   +---------------------------+-------------+-----------+------------+
+   +===========================+=================+=========+===========+
+   | Value                     |Description      |Reference|Comment    |
+   +===========================+=================+=========+===========+
+   | CLIENT_TRAFFIC_SECRET_N+1 |Secret           |This     |N          |
+   |                           |protecting       |document |represents |
+   |                           |client records   |         |iteration  |
+   |                           |after Extended   |         |of Extended|
+   |                           |Key Update       |         |Key Update |
+   +---------------------------+-----------------+---------+-----------+
+   | SERVER_TRAFFIC_SECRET_N+1 |Secret           |This     |N          |
+   |                           |protecting       |document |represents |
+   |                           |server records   |         |iteration  |
+   |                           |after Extended   |         |of Extended|
+   |                           |Key Update       |         |Key Update |
+   +---------------------------+-----------------+---------+-----------+
+   | EXPORTER_SECRET_N+1       |Exporter secret  |This     |N          |
+   |                           |after Extended   |document |represents |
+   |                           |Key Update       |         |iteration  |
+   |                           |                 |         |of Extended|
+   |                           |                 |         |Key Update |
+   +---------------------------+-----------------+---------+-----------+
+   | EXPORTER_SECRET_0         |Initial secret   |This     |           |
+   |                           |of the           |document |           |
+   |                           |generation-aware |         |           |
+   |                           |exporter         |         |           |
+   |                           |interface        |         |           |
+   +---------------------------+-----------------+---------+-----------+
 
-                                 Table 2
+                                  Table 2
 
 16.  References
 
@@ -1767,8 +1767,11 @@ Appendix A.  Acknowledgments
    Finally, we would like to thank David Benjamin, Joe Birr-Pixton,
    Matthijs van Duin, Scott Fluhrer, Dennis Jackson, Benjamin Kaduk,
    Ilari Liusvaara, Eric Rescorla, Rifaat Shekh-Yusef, Martin Thomson,
-   Nik Stuckenbrock, Mathy Vanhoef, and Thom Wiggers for their review
-   comments and contributions.
+   Mathy Vanhoef, and Thom Wiggers for their review comments and
+   contributions.
+
+   We would also like to thank Nik Stuckenbrock, Felix Linker, and Cas
+   Cremers for the formal analysis of the Extended Key Update mechanism.
 
 Appendix B.  State Machines
 
@@ -2178,7 +2181,9 @@ C.4.  Detecting Divergent Key State
    Extended Key Update to detect that the endpoints derived different
    keys.  Detection relies on the CertificateVerify message, which is
    signed with a private key the attacker does not hold, so validation
-   fails and the interference is revealed.
+   fails and the interference is revealed.  A Certificate message with
+   an empty certificate list carries no CertificateVerify and therefore
+   cannot detect interference.
 
    If validation of a Post-Handshake Certificate-Based Client
    Authentication CertificateVerify or Finished message fails, the

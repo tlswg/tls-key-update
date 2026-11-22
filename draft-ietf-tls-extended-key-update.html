@@ -1064,7 +1064,7 @@ svg {
 </tr></thead>
 <tfoot><tr>
 <td class="left">Tschofenig, et al.</td>
-<td class="center">Expires 22 May 2027</td>
+<td class="center">Expires 26 May 2027</td>
 <td class="right">[Page]</td>
 </tr></tfoot>
 </table>
@@ -1080,12 +1080,12 @@ svg {
 <a href="https://www.rfc-editor.org/rfc/rfc9261" class="eref">9261</a>, <a href="https://www.rfc-editor.org/rfc/rfc9846" class="eref">9846</a> (if approved)</dd>
 <dt class="label-published">Published:</dt>
 <dd class="published">
-<time datetime="2026-11-18" class="published">18 November 2026</time>
+<time datetime="2026-11-22" class="published">22 November 2026</time>
     </dd>
 <dt class="label-intended-status">Intended Status:</dt>
 <dd class="intended-status">Standards Track</dd>
 <dt class="label-expires">Expires:</dt>
-<dd class="expires"><time datetime="2027-05-22">22 May 2027</time></dd>
+<dd class="expires"><time datetime="2027-05-26">26 May 2027</time></dd>
 <dt class="label-authors">Authors:</dt>
 <dd class="authors">
 <div class="author">
@@ -1161,7 +1161,7 @@ and DTLS 1.3.<a href="#section-abstract-4" class="pilcrow">¶</a></p>
         time. It is inappropriate to use Internet-Drafts as reference
         material or to cite them other than as "work in progress."<a href="#section-boilerplate.1-3" class="pilcrow">¶</a></p>
 <p id="section-boilerplate.1-4">
-        This Internet-Draft will expire on 22 May 2027.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
+        This Internet-Draft will expire on 26 May 2027.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="copyright">
@@ -1957,6 +1957,8 @@ retransmissions to reach the appropriate connection state.<a href="#section-6.2-
 under the old keys and epoch until Step 7 completes, and the responder <span class="bcp14">MUST</span>
 continue processing and acknowledging those retransmissions while retaining
 the old receive keys.<a href="#section-6.2-5" class="pilcrow">¶</a></p>
+<p id="section-6.2-6">If DTLS peers independently initiate the extended key update and the
+requests cross in flight, they are resolved as specified in <a href="#TLSC" class="auto internal xref">Section 5</a>.<a href="#section-6.2-6" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="handshake-message-format">
@@ -1964,13 +1966,11 @@ the old receive keys.<a href="#section-6.2-5" class="pilcrow">¶</a></p>
         <h3 id="name-handshake-message-format">
 <a href="#section-6.3" class="section-number selfRef">6.3. </a><a href="#name-handshake-message-format" class="section-name selfRef">Handshake Message Format</a>
         </h3>
-<p id="section-6.3-1">If DTLS peers independently initiate the extended key update and the
-requests cross in flight, they are resolved as specified in <a href="#TLSC" class="auto internal xref">Section 5</a>.<a href="#section-6.3-1" class="pilcrow">¶</a></p>
-<p id="section-6.3-2">The handshake framing uses a single <code>HandshakeType</code> for this message
-(see <a href="#fig-dtls-handshake" class="auto internal xref">Figure 4</a>).<a href="#section-6.3-2" class="pilcrow">¶</a></p>
+<p id="section-6.3-1">The handshake framing uses a single <code>HandshakeType</code> for this message
+(see <a href="#fig-dtls-handshake" class="auto internal xref">Figure 4</a>).<a href="#section-6.3-1" class="pilcrow">¶</a></p>
 <span id="name-dtls-13-handshake-structure"></span><div id="fig-dtls-handshake">
 <figure id="figure-4">
-          <div class="alignLeft art-text artwork" id="section-6.3-3.1">
+          <div class="alignLeft art-text artwork" id="section-6.3-2.1">
 <pre>
        enum {
            client_hello(1),
@@ -2293,13 +2293,7 @@ and <span class="bcp14">MUST NOT</span> retain or use the tickets for session re
 such a message <span class="bcp14">MUST NOT</span>, by itself, cause the client to terminate the
 connection. Other applicable requirements for message validity and ordering
 remain in effect.<a href="#section-8-3" class="pilcrow">¶</a></p>
-<p id="section-8-4">For DTLS, ignoring a <code>NewSessionTicket</code> does not exempt it from handshake
-sequencing, reassembly, or acknowledgment, including for fragments and
-retransmissions. A ticket record received under the new epoch while the
-client awaits acknowledgment of <code>ExtendedKeyUpdate(key_update_finish)</code>
-completes the EKU exchange as specified in Step 7 of <a href="#DTLSC" class="auto internal xref">Section 6</a> and is then
-acknowledged under the new sending epoch. Ignoring a ticket <span class="bcp14">MUST NOT</span>
-prevent processing of subsequent handshake messages.<a href="#section-8-4" class="pilcrow">¶</a></p>
+<p id="section-8-4">For DTLS, only the content of the <code>NewSessionTicket</code> is ignored&gt; the client <span class="bcp14">MUST</span> still reassemble, sequence, and acknowledge the message as specified in Sections <a href="https://rfc-editor.org/rfc/rfc9147#section-5.2" class="relref">5.2</a>, <a href="https://rfc-editor.org/rfc/rfc9147#section-5.5" class="relref">5.5</a> and <a href="https://rfc-editor.org/rfc/rfc9147#section-7" class="relref">7</a> of <span>[<a href="#DTLS" class="cite xref">DTLS</a>]</span>, so that processing of subsequent handshake messages is not blocked. A ticket received under the new epoch while an EKU exchange is in progress is handled like any other handshake message, as specified in <a href="#dtls-transition-acks" class="auto internal xref">Section 6.2</a>.<a href="#section-8-4" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="pqc-cons">
@@ -2338,7 +2332,7 @@ as the TLS client or server during the initial handshake.<a href="#section-9-4" 
       </h2>
 <p id="section-10-1">As a successful extended key update exchange invalidates previous secrets,
 SSLKEYLOGFILE <span>[<a href="#TLS-KEYLOGFILE" class="cite xref">TLS-KEYLOGFILE</a>]</span> needs to be populated with new
-entries. As a result, three additional secret labels are utilized in the
+entries. As a result, four additional secret labels are utilized in the
 SSLKEYLOGFILE:<a href="#section-10-1" class="pilcrow">¶</a></p>
 <ol start="1" type="1" class="normal type-1" id="section-10-2">
 <li id="section-10-2.1">
@@ -2352,6 +2346,10 @@ server_application_traffic_secret_N+1 in the key schedule<a href="#section-10-2.
         <li id="section-10-2.3">
           <p id="section-10-2.3.1"><code>EXPORTER_SECRET_N+1</code>: identifies the
 exporter_secret_N+1 in the key schedule<a href="#section-10-2.3.1" class="pilcrow">¶</a></p>
+</li>
+        <li id="section-10-2.4">
+          <p id="section-10-2.4.1"><code>EXPORTER_SECRET_0</code>: identifies exporter_secret_0, the initial secret of
+the generation-aware exporter interface (<a href="#exporter" class="auto internal xref">Section 11</a>)<a href="#section-10-2.4.1" class="pilcrow">¶</a></p>
 </li>
       </ol>
 <p id="section-10-3">Similar to other entries in the SSLKEYLOGFILE, the label is followed by the
@@ -2404,7 +2402,7 @@ Transcript-Hash(ClientHello..server Finished))
 <p id="section-11.1-7">Applications that require post-compromise security <span class="bcp14">MUST</span> use the exporter
 interface defined in this document. This exporter interface is independent of
 the TLS exporter defined in <span><a href="https://rfc-editor.org/rfc/rfc9846#section-7.5" class="relref">Section 7.5</a> of [<a href="#TLS" class="cite xref">TLS</a>]</span>, which continues to use a
-static <code>exporter_secret</code> for the lifetime of the connection for compatiblity with "legacy" applications.<a href="#section-11.1-7" class="pilcrow">¶</a></p>
+static <code>exporter_secret</code> for the lifetime of the connection for compatibility with "legacy" applications.<a href="#section-11.1-7" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="exporter-usage-after-extended-key-update">
@@ -2464,9 +2462,7 @@ the peer derives the same EKM.<a href="#section-11.2-7" class="pilcrow">¶</a></
 generation only for a short period, comparable to the retention of keys for
 prior epochs in <span><a href="https://rfc-editor.org/rfc/rfc9147#section-4.2.1" class="relref">Section 4.2.1</a> of [<a href="#DTLS" class="cite xref">DTLS</a>]</span>, so that operations which selected
 that generation can complete. A retained secret remains exposed to a later
-compromise. Once the secret has been discarded, a request for that
-generation through the generation-aware exporter interface <span class="bcp14">MUST</span> fail rather
-than use the secret of another generation. Retention of keying material
+compromise. A request for a discarded generation <span class="bcp14">MUST</span> fail. Retention of keying material
 derived from older generations is application-specific. For example, a
 DTLS-SRTP application might retain an older packet-protection context while
 its replay window still accepts packets protected with that context, as
@@ -2543,7 +2539,7 @@ an application-defined encoding. That encoding <span class="bcp14">MUST</span> p
 length limits, uniqueness requirements, and request-response association
 from <span>[<a href="#RFC9261" class="cite xref">RFC9261</a>]</span>. It <span class="bcp14">MUST</span> identify the same exporter generation at both
 endpoints, using the generation N defined in <a href="#exporter" class="auto internal xref">Section 11</a>.
- This specification does not define a common wire encoding
+This specification does not define a common wire encoding
 for application protocols.<a href="#section-12.2-3" class="pilcrow">¶</a></p>
 <p id="section-12.2-4">If the selected generation is unknown, unavailable, expired, or disallowed
 by application policy, creation or validation <span class="bcp14">MUST</span> fail explicitly rather
@@ -2980,6 +2976,12 @@ extension registry <span>[<a href="#TLS-Ext-Registry" class="cite xref">TLS-Ext-
               <td class="text-left" rowspan="1" colspan="1">This document</td>
               <td class="text-left" rowspan="1" colspan="1">N represents iteration of Extended Key Update</td>
             </tr>
+            <tr>
+              <td class="text-left" rowspan="1" colspan="1">EXPORTER_SECRET_0</td>
+              <td class="text-left" rowspan="1" colspan="1">Initial secret of the generation-aware exporter interface</td>
+              <td class="text-left" rowspan="1" colspan="1">This document</td>
+              <td class="text-left" rowspan="1" colspan="1"> </td>
+            </tr>
           </tbody>
         </table>
 </section>
@@ -3112,8 +3114,9 @@ Marten Seemann as well as the responsible area director Martin Duke.<a href="#ap
 <p id="appendix-A-3">Finally, we would like to thank David Benjamin, Joe Birr-Pixton,
 Matthijs van Duin, Scott Fluhrer, Dennis Jackson, Benjamin Kaduk,
 Ilari Liusvaara, Eric Rescorla, Rifaat Shekh-Yusef, Martin Thomson,
-Nik Stuckenbrock, Mathy Vanhoef, and Thom Wiggers for their review comments
-and contributions.<a href="#appendix-A-3" class="pilcrow">¶</a></p>
+Mathy Vanhoef, and Thom Wiggers for their review comments and contributions.<a href="#appendix-A-3" class="pilcrow">¶</a></p>
+<p id="appendix-A-4">We would also like to thank Nik Stuckenbrock, Felix Linker, and Cas Cremers
+for the formal analysis of the Extended Key Update mechanism.<a href="#appendix-A-4" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="state-machines">
@@ -3881,7 +3884,9 @@ Extended Key Update.<a href="#appendix-C.1-1" class="pilcrow">¶</a></p>
 Authentication and Exported Authenticators can be used after an Extended Key Update to
 detect that the endpoints derived different keys. Detection relies on the
 CertificateVerify message, which is signed with a private key the attacker
-does not hold, so validation fails and the interference is revealed.<a href="#appendix-C.4-1" class="pilcrow">¶</a></p>
+does not hold, so validation fails and the interference is revealed.
+A Certificate message with an empty certificate list carries no
+CertificateVerify and therefore cannot detect interference.<a href="#appendix-C.4-1" class="pilcrow">¶</a></p>
 <p id="appendix-C.4-2">If validation of a Post-Handshake Certificate-Based Client Authentication
 CertificateVerify or Finished message fails, the server terminates the connection
 with a "decrypt_error" alert (see <span><a href="https://rfc-editor.org/rfc/rfc9846#section-4.5.2" class="relref">Section 4.5.2</a> of [<a href="#TLS" class="cite xref">TLS</a>]</span> and
