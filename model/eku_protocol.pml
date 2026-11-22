@@ -423,7 +423,9 @@ inline handle_handshake() {
             :: incoming.payload > local_share ->
                 /* Abandon the operation, not delivery of the earlier
                    handshake sequence number. A lost losing request must
-                   still be retransmitted until acknowledged. */
+                   still be retransmitted until acknowledged. It is an
+                   earlier handshake transmission: Resp is not sent before
+                   that acknowledgment (see the NEED_RESPONSE action). */
                 peer[id].initiated = false;
                 peer[id].peer_share = incoming.payload;
                 peer[id].phase = NEED_RESPONSE
@@ -432,8 +434,12 @@ inline handle_handshake() {
             fi
         :: else -> skip
         fi;
+        /* The request is acknowledged while the response is held back.
+           The last disjunct is the endpoint that lost a crossed request
+           and waits for the acknowledgment of its abandoned Req. */
         if
-        :: DEFER_RESP || peer[id].pha_waiting || peer[id].outstanding[OtherHS] -> acknowledge_incoming()
+        :: DEFER_RESP || peer[id].pha_waiting || peer[id].outstanding[OtherHS] ||
+           (peer[id].phase == NEED_RESPONSE && peer[id].outstanding[Req]) -> acknowledge_incoming()
         :: else -> skip
         fi
     :: incoming.kind == Resp ->
@@ -451,7 +457,8 @@ inline handle_handshake() {
         :: peer[id].phase == WAIT_FINISH ->
             assert(!peer[id].pha_waiting);
             peer[id].outstanding[Resp] = false;
-            peer[id].outstanding[Req] = false; /* crossed losing request precedes Resp */
+            /* An abandoned crossed Req was acknowledged before Resp was sent. */
+            assert(!peer[id].outstanding[Req]);
             peer[id].old_rx = peer[id].rx;
             peer[id].retain_old = !TRANSPORT_TLS;
             peer[id].rx++;
@@ -572,7 +579,9 @@ proctype Peer(byte id) {
         send_handshake(Req, local_share)
     }
     :: atomic {
-        peer[id].phase == NEED_RESPONSE && !peer[id].outstanding[OtherHS] &&
+        /* outstanding[Req] is only set here for an abandoned crossed Req. */
+        peer[id].phase == NEED_RESPONSE && !peer[id].outstanding[Req] &&
+        !peer[id].outstanding[OtherHS] &&
         !peer[id].outstanding[RequestCID] && !peer[id].outstanding[NewCID] &&
         (!ENABLE_PRIOR_HS || peer[id].prior_sent) &&
         !peer[id].pha_waiting && !peer[id].pha_buffered && !peer[id].outstanding[PHAFin] && CAN_SEND ->

@@ -1,10 +1,10 @@
 # SPIN verification of EKU post-handshake interactions
 
-Verification date: 18 November 2026. Source checkout based on commit
-`2206e44186edccc0f821f088b677cf2428d37800`. The model, runner, and draft changes are working-tree
+Verification date: 21 November 2026. Source checkout based on commit
+`e55eb05a76c90e6d4263de16a746867fd96ba64f`. The model changes are working-tree
 changes; the hashes below identify the tested source independently of a future commit.
 
-Tools: `Spin Version 6.5.2 -- 6 December 2019`; `gcc (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0`.
+Tools: `Spin Version 6.5.2 -- 6 December 2019`; `gcc (Ubuntu 15.2.0-16ubuntu1) 15.2.0`.
 
 ## Result
 
@@ -15,8 +15,9 @@ The latter are reachability witnesses, deliberately invalid input profiles, or
 deliberately faulty model variants. They are not errors in the nominal model.
 
 The standard CLI also passed 6 checks across TLS, DTLS, and crossed requests.
-An additional DTLS/PHA run with two possible packet losses passed safety and
-strict completion under the stated timeout assumption. A deliberately inadequate
+Additional runs with two possible packet losses, one with DTLS/PHA and one
+with crossed requests, passed safety and strict completion under the stated
+timeout assumption. A deliberately inadequate
 depth limit was correctly rejected by the runner instead of being reported as a pass.
 
 These results verify the bounded operational model, not the complete protocol or
@@ -25,10 +26,27 @@ and abstraction boundaries.
 
 ## What changed and what is demonstrated
 
-This version replaces the results of 1 November 2026. That model completed the
+This version replaces the results of 18 November 2026. The model changed in
+one respect, the handling of crossed requests in DTLS:
+
+- The endpoint that loses the tie-break does not send Resp before its
+  abandoned Req has been acknowledged.
+- While it waits, it acknowledges the winning Req.
+- An assertion checks that no abandoned Req is still outstanding when the
+  responder receives Fin.
+
+This follows the rule that the draft now states in "Handshake Ordering Across
+an EKU": the abandoned request is an earlier handshake transmission. The
+previous model let the losing endpoint send Resp immediately and took Fin as
+an implicit acknowledgment of the abandoned Req. Both variants pass the
+crossed-request profiles; the draft specifies the stricter one. The state
+counts of the crossed profiles are not comparable with the previous results.
+Profiles without crossed requests are not affected by the change.
+
+The results of 1 November 2026 are older still. That model completed the
 DTLS exchange at the initiator only on the explicit ACK of Fin and buffered
-new-epoch handshake messages until then. The model now follows Step 7 of the
-DTLS procedure in the draft. State counts are not comparable between the two.
+new-epoch handshake messages until then. Since 18 November the model follows
+Step 7 of the DTLS procedure in the draft.
 
 - The three entry points share `eku_protocol.pml`. PHA state is local to each
   endpoint; a server-side request cannot instantly change the client state.
@@ -64,11 +82,13 @@ DTLS procedure in the draft. State counts are not comparable between the two.
 - `epoch_consistency` is also the key synchronization property. The former
   `key_sync` claim had the same formula and was removed.
 
-One important reliability detail is preserved for crossed requests: abandoning
-the losing EKU operation does not abandon delivery of its handshake sequence
-number. Otherwise a lost losing Req can leave a gap before that sender's Resp.
-The model continues the appropriate delivery/retransmission until acknowledgment;
-this should remain explicit when implementing the draft's collision rules.
+One reliability detail matters for crossed requests: abandoning the losing EKU
+operation does not abandon delivery of its handshake sequence number. A lost
+losing Req that is no longer retransmitted leaves a gap before that sender's
+Resp, and the peer can then never process the Resp. The model continues
+retransmission until acknowledgment, and the winning endpoint sequences and
+acknowledges the Req that it ignores. The draft now states both requirements.
+See the section on crossed requests in [SPEC-MAPPING.md](SPEC-MAPPING.md).
 
 The sequence represented by `witness_pha_completes_eku` is:
 
@@ -139,6 +159,9 @@ profile; that result is not called successful authentication.
   --define ENABLE_PHA=1 --define PHA_TIMING=2 \
   --claim protocol_safety --claim successful_completion \
   --output <dir>/final-two --seconds 600
+./scripts/spin-check.sh crossed --define DROPS=2 --define ROUND_TIMEOUTS=1 \
+  --claim protocol_safety --claim successful_completion \
+  --output <dir>/final-crossed-two --seconds 600
 ```
 
 Generation/compilation and verification use the equivalent of:
@@ -201,9 +224,9 @@ beginning with `negative-` or `mutant-` deliberately require a violation.
 | `dtls-ea-generations` | `protocol_safety`: 500; `successful_completion`: 378 | `witness_old_ea`: 32 |
 | `dtls-ea-expiration` | `protocol_safety`: 516; `successful_completion`: 379 | `witness_expired_ea`: 32 |
 | `dtls-ea-spontaneous` | `protocol_safety`: 2541; `successful_completion`: 1986 | — |
-| `crossed-loss` | `protocol_safety`: 1583; `successful_completion`: 886 | — |
-| `crossed-server-initiates-pha` | `protocol_safety`: 751; `successful_completion`: 533 | — |
-| `crossed-client-wins-pha` | `protocol_safety`: 1119; `successful_completion`: 821 | `witness_pha_completes_eku`: 36 |
+| `crossed-loss` | `protocol_safety`: 1255; `successful_completion`: 718 | — |
+| `crossed-server-initiates-pha` | `protocol_safety`: 498; `successful_completion`: 389 | — |
+| `crossed-client-wins-pha` | `protocol_safety`: 548; `successful_completion`: 435 | `witness_pha_completes_eku`: 36 |
 | `tls-crossed` | `protocol_safety`: 96; `successful_completion`: 75 | — |
 | `tls-app` | `protocol_safety`: 596; `successful_completion`: 442 | — |
 | `tls-pha` | `protocol_safety`: 107; `successful_completion`: 86 | — |
@@ -219,7 +242,8 @@ beginning with `negative-` or `mutant-` deliberately require a violation.
 | `mutant-current-exporter` | — | `authentication_context`: 31 |
 | `mutant-cid-retention` | — | `successful_completion`: 39 |
 
-The extra two-loss run stored 8244 states for safety and 4514 for strict completion, both with zero errors. The three default CLI modes
+The extra two-loss run stored 8244 states for safety and 4514 for strict completion, both with zero errors. A crossed-request run with
+two possible losses stored 4719 states for safety and 2446 for strict completion, also with zero errors. The three default CLI modes
 also passed `protocol_safety` and `no_deadlock` with zero errors.
 
 ## Exact profile definitions
@@ -272,13 +296,13 @@ model. The following are the complete additional `-D` definitions:
 
 | File | SHA-256 |
 | --- | --- |
-| `model/eku_protocol.pml` | `fc8ea15a231674f97ccfada97d8327e782ac51b1077d0ef596e8a767f4e8d815` |
+| `model/eku_protocol.pml` | `06d765f424f956f8169ec915745c869def6fb6aa804cc3d0fa034babd73857c5` |
 | `model/extended_key_update.pml` | `ddc1df05484f5de352ea48280011ad7ccc64bce1d3e5d6be288a02328a458e9b` |
 | `model/extended_key_update_crossed.pml` | `19ea373107cceded5784adedaa46bb0b96956ea91ad3b00e1400a658878af28b` |
 | `model/tls13_extended_key_update.pml` | `aafa12776203543eb1d9af23ec8b6db12dd8811b8e5f087e249f41f9a62820e7` |
 | `scripts/spin_verify.py` | `1ffe080da37bd4ff4d7724c99a0d846f748c2cea5469a874b874a9ce865a0a71` |
 | `scripts/spin-check.sh` | `84c133fa16ba861fe363b8650cc1ac21c20a7970c23feb7882763a8e8f122e39` |
-| `draft-ietf-tls-extended-key-update.md` | `220787d321ff96d44af470885995b53de9b7c62c87d91d00c122830d314b5e9e` |
+| `draft-ietf-tls-extended-key-update.md` | `bb70e6df34c9f15864b36e013af570670e1527118c48e4e474baa0b2cc67bca5` |
 
 Each run writes a `summary.json` with flags, hashes, tool versions and all
 results to its output directory. Each profile directory contains the entry

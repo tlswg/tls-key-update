@@ -377,9 +377,18 @@ encrypted with the old key, before accepting any messages encrypted with the new
 If TLS peers independently initiate the extended key update and the
 requests cross in flight, the `ExtendedKeyUpdate(key_update_request)` with the
 lower lexicographic order of the `key_exchange` value in
-`KeyShareEntry` MUST be ignored. It MUST NOT be included in the
-transcript hash. This prevents each
-side from advancing keys by two generations. If the tie-break comparison yields
+`KeyShareEntry` MUST be ignored. The comparison is performed bytewise on
+the contents of the `key_exchange` field, starting with the first byte and
+treating each byte as an unsigned integer. The ignored request MUST NOT be
+included in the transcript hash. This prevents each
+side from advancing keys by two generations. The endpoint that sent the
+ignored request MUST abandon the exchange it initiated and act as the
+responder for the peer's request, continuing with Step 2. It MUST discard
+the ephemeral key exchange material generated for the abandoned request
+and MUST generate a fresh key share for its
+`ExtendedKeyUpdate(key_update_response)`. The other
+endpoint remains the initiator and does not send a response to the ignored
+request. If the tie-break comparison yields
 equality (an event that should be impossible for genuine
 asymmetric key pairs), the endpoint MUST treat this as a protocol violation,
 send an "unexpected_message" alert, and close the connection.
@@ -580,7 +589,14 @@ exchange whose request crosses an EKU request is specified in
 {{pha-eku-ordering}}. Any handshake transmissions made for that exception
 MUST be acknowledged before the initiator sends EKU finish or the responder
 sends EKU response, respectively. Processing a crossed EKU request follows
-the EKU collision rules and is not blocked by these restrictions.
+the EKU collision rules and is not blocked by this deferral of new
+independent handshake transmissions. The acknowledgment requirement at the
+beginning of this section still applies. The abandoned request of the
+endpoint that becomes the responder is an earlier independent handshake
+transmission, so that endpoint MUST NOT send
+`ExtendedKeyUpdate(key_update_response)` until its abandoned request has
+been acknowledged. While waiting, it acknowledges the peer's request as
+specified in Step 2 of {{DTLSC}}.
 
 `ExtendedKeyUpdate(key_update_finish)` is the initiator's last new
 handshake message in its pre-update sending epoch.
@@ -645,6 +661,18 @@ the old receive keys.
 
 If DTLS peers independently initiate the extended key update and the
 requests cross in flight, they are resolved as specified in {{TLSC}}.
+The ignored request is still a DTLS handshake message. The endpoint that
+ignores it MUST reassemble and sequence it as specified in
+{{Sections 5.2 and 5.5 of DTLS}} and, because it sends no response, MUST
+acknowledge it and any retransmission of it with an ACK as specified in
+{{Section 7 of DTLS}}. The endpoint that sent the ignored request MUST
+continue the DTLS retransmission procedure for that request until it is
+acknowledged, even though it has abandoned the exchange. Otherwise, a lost
+request would leave a gap in the handshake message sequence and prevent the
+peer from processing subsequent handshake messages. As specified in
+{{dtls-handshake-ordering}}, that endpoint sends its
+`ExtendedKeyUpdate(key_update_response)` only after the abandoned request
+has been acknowledged.
 
 ## Handshake Message Format
 
@@ -780,7 +808,7 @@ the message transmission.
 updated its epochs and continues sending. The first record that the
 initiator deprotects under the new epoch, here application data, completes
 the exchange and ends the retransmission of the finish message. The
-responder's retention of the old receive keys ends when the first record
+responder can stop retaining the old receive keys once the first record
 from the initiator arrives under the new epoch.
 
 ~~~
@@ -801,7 +829,7 @@ Client                            Server
 [C: tx=4, rx=4]                   [S: tx=4, rx=4]
 
 [Application Data]         -------->   (epoch 4)
-# Responder stops retaining the epoch-3 receive keys.
+# Responder can stop retaining the epoch-3 receive keys.
 [C: tx=4, rx=4]                   [S: tx=4, rx=4]
 ~~~
 {: #dtls-implicit-ack title="Example DTLS 1.3 Extended Key Update: Lost ACK."}
@@ -1503,6 +1531,13 @@ The TLS state machine diagrams use the following notation:
 ## TLS 1.3 State Machines
 
 This section describes the initiator and responder state machines.
+The diagrams show the EKU message exchange. The ordering rules between EKU
+and Post-Handshake Certificate-Based Client Authentication (PHA) in
+{{pha-eku-ordering}} apply in addition: PHA is not initiated while an EKU
+exchange is in progress, an EKU exchange is not initiated while a PHA
+exchange is outstanding, and when a CertificateRequest crosses the client's
+Req, completion of the EKU exchange is deferred until the PHA exchange has
+completed. Only the last case is shown in the diagrams.
 
 ### Initiator State Machine
 
@@ -1528,14 +1563,19 @@ This section describes the initiator and responder state machines.
 |      \ - if peer == local: ABORT "unexpected_message"
 |       \ - if peer > local: ABANDON local update:
 |          * set updating=0
-|          * act as RESPONDER: send Resp with KeyShareEntry,
+|          * discard the key share of the abandoned Req
+|          * act as RESPONDER: send Resp with fresh KeyShareEntry,
 |            derive new secrets, then proceed as in responder flow
+|
+|  (B) recv CertificateRequest (client; crossed with Req):
+|      complete the PHA exchange first; no key update
+|      until it has completed (remain in WAIT_RESP)
 |
 |  (2) recv Resp with key_share:
 |      derive new secrets
+|      update RECEIVE key (receive_key := new)
 |      send Fin (encrypted under old keys)
 |      update SEND key (send_key := new)
-|      update RECEIVE key (receive_key := new)
 |      set updating=0
        v
 +----------------------+
@@ -1548,6 +1588,7 @@ Notes:
 - Fin message is sent under old keys.
 - If a standard KeyUpdate arrives (EKU negotiated), ABORT "unexpected_message".
 - Crossed-requests: ignore the request with LOWER lexicographic key_exchange; if equal, abort.
+- Crossed PHA (B): a client that receives a CertificateRequest before the Resp completes the PHA exchange under the current keys; the EKU exchange completes afterwards, as specified in {{pha-eku-ordering}}.
 
 ### Responder State Machine
 
@@ -1568,6 +1609,9 @@ Notes:
 |  send Resp with KeyShareEntry
 |  (may defer sending if under load;
 |   must send once resources free)
+|  (server: if its CertificateRequest crossed the Req,
+|   completion is deferred until the PHA exchange
+|   has completed)
 |  derive new secrets
 |  update SEND keys (send_key := new)
 |  --> WAIT_I_FIN
@@ -1589,6 +1633,7 @@ Notes:
 Notes:
 
 - Responder may defer Resp under load (no status reply), then must send it once resources are free.
+- Crossed PHA: a server whose CertificateRequest crossed the client's Req does not transition to new keys until the PHA exchange has completed, as specified in {{pha-eku-ordering}}.
 - If a standard KeyUpdate arrives (EKU negotiated), ABORT "unexpected_message".
 
 ## DTLS 1.3 State Machines
@@ -1610,32 +1655,39 @@ The following variables and abbreviations are used in the state machine diagrams
 - E - initial epoch value.
 - updating - true while a key-update handshake is in progress.
 - old_rx - the previous receive epoch remembered during retention.
-- retain_old - when true, receiver accepts tags old_rx and rx.
+- retain_old - when true, the receiver still holds the old receive keys and can process records tagged old_rx in addition to rx.
 - tag=... - the TX-epoch value written on an outgoing message.
 - e==... - the epoch tag carried on an incoming message (what the peer sent).
-- FINISHED / START / WAIT_RESP / WAIT_I_FIN / WAIT_R_FIN / ACTIVATE RETENTION / RESPOND / WAIT_ACK - diagram states; FINISHED denotes the steady state after success.
+- FINISHED / START / WAIT_RESP / WAIT_I_FIN / ACTIVATE RETENTION / RESPOND / WAIT_ACK - diagram states; FINISHED denotes the steady state after success.
 
-Crossed requests. If both peers independently initiate the extended key update and the key_update_request messages cross in flight, compare the KeyShareEntry.key_exchange values. The request with the lower lexicographic value must be ignored. If the values are equal, the endpoint must abort with an "unexpected_message" alert. If the peer's value is higher than the local one, the endpoint abandons its in-flight update and processes the peer's request as responder.
+Crossed requests. If both peers independently initiate the extended key update and the key_update_request messages cross in flight, compare the KeyShareEntry.key_exchange values bytewise, treating each byte as an unsigned integer. The request with the lower lexicographic value must be ignored. If the values are equal, the endpoint must abort with an "unexpected_message" alert. If the peer's value is higher than the local one, the endpoint abandons its in-flight update and processes the peer's request as responder. In DTLS, the ignored request is still sequenced and acknowledged with an ACK, and its sender continues to retransmit it until it is acknowledged and sends its response only after that acknowledgment, as specified in {{DTLSC}}.
 
 ### State Machine (Initiator)
 
 The initiator starts in the START state with matching epochs (rx := E; tx := E).
 Once its earlier independent handshake transmissions have been acknowledged,
-it sends a Req and enters WAIT_RESP (updating := 1). New independent
+it sends a Req and enters WAIT_RESP (updating := 1). The Req is
+retransmitted until the initiator receives the Resp or an ACK of the Req.
+The responder sends such an ACK when it defers its response. The ACK only
+ends the retransmission; the initiator remains in WAIT_RESP until the Resp
+arrives. New independent
 handshake transmissions are deferred until local completion, subject to
 the PHA cross-flight exception in {{pha-eku-ordering}}. While waiting, APP
 data may be sent at any time (tagged with the current tx) and received
 according to the APP acceptance rule below.
 
-Once the responder returns Resp with a tag matching the current rx, the initiator derives new key material. The initiator activates retention mode: the old epoch is remembered, the receive epoch is incremented, and application data is accepted under both epochs for a transition period. It then sends Fin still tagged with the old tx and enters WAIT_ACK without changing its transmit epoch.
+Once the responder returns Resp with a tag matching the current rx, the initiator derives new key material. The initiator activates retention mode: the old epoch is remembered, the receive epoch is incremented, and application data can be received under both epochs for a transition period. It then sends Fin still tagged with the old tx and enters WAIT_ACK without changing its transmit epoch.
 
-If a peer key_update_request arrives while in WAIT_RESP (crossed updates), apply the crossed-request rule above. If the peer's key_exchange is higher, abandon the local update (updating := 0) and continue as responder: send key_update_response, derive new secrets, then proceed with the responder flow. If lower, ignore the peer's request; if equal, abort with "unexpected_message".
+If a peer key_update_request arrives while in WAIT_RESP (crossed updates), apply the crossed-request rule above. If the peer's key_exchange is higher, abandon the local update (updating := 0) and continue as responder: discard the key share of the abandoned request, send key_update_response with a fresh key share, derive new secrets, then proceed with the responder flow. The abandoned Req is still retransmitted until it is acknowledged, and the key_update_response is sent only after that acknowledgment; the peer's request is acknowledged while waiting. If lower, ignore the peer's request but still sequence it and acknowledge it with an ACK; if equal, abort with "unexpected_message".
 
 Upon receiving any record that it deprotects under the updated receive
 epoch, typically the responder's ACK of Fin, the initiator treats Fin as
 acknowledged, updates its transmit epoch (tx := rx), stops retransmitting
-Fin, disables retention, and clears the update flag. The record is then
-processed under the new epoch. The state machine returns to FINISHED.
+Fin, and clears the update flag. The record is then processed under the new
+epoch. The state machine returns to FINISHED. From this point on the
+initiator is no longer required to retain the old receive keys and may
+clear retain_old. While it still holds those keys, late records under the
+old epoch are handled as described at the beginning of {{DTLSC}}.
 
 A CertificateRequest, a peer key_update_request, a NewSessionTicket, or
 application data received under the new epoch in WAIT_ACK therefore
@@ -1665,10 +1717,14 @@ Throughout the process:
  |    |    |           |
  |    |    |           |
  |    |    |           +-- (A) recv peer Req (crossed):
- |    |    |                if peer < local  -> IGNORE (Self-Loop)
+ |    |    |                if peer < local  -> IGNORE, send ACK
+ |    |    |                                    (Self-Loop)
  |    |    |                if peer == local -> ABORT  (Error)
  |    |    |                if peer > local  -> ABANDON update;
  |    |    |                                    updating := 0;
+ |    |    |                                    ACK peer Req;
+ |    |    |                                    retransmit Req
+ |    |    |                                    until ACKed; then
  |    |    |                                    act as RESPONDER
  |    |    |
  |    |    +-- APP send (anytime)           (Self-Loop)
@@ -1677,6 +1733,11 @@ Throughout the process:
  |
  +-- APP recv: e == rx                           (Self-Loop)
 
+          | Timeout: retransmit Req [tag=tx]
+          |   (until Resp or ACK of Req is received)
+          | recv ACK of Req: stop retransmitting Req,
+          |   remain in WAIT_RESP
+          |
           | recv Resp [e == rx]
           | derive secrets
           v
@@ -1698,17 +1759,18 @@ Throughout the process:
       |
 (3) recv any record [e==rx]
     (ACK of Fin, handshake message, or APP)
-    Fin acknowledged; tx=rx; retain_old=0;
+    Fin acknowledged; tx=rx;
     updating := 0; then process the record
       v
 +------------------------------------------+
 | FINISHED                                 |
+| (retain_old may now be cleared)          |
 +------------------------------------------+
 ~~~
 
 ### State Machine (Responder)
 
-The responder starts in the START state with synchronized transmit and receive epochs (rx := E; tx := E) and no update in progress. Application data can be transmitted at any time using the sender's current transmit epoch. A receiver must accept application data if the epoch tag on the DTLS record equals the receiver's current receive epoch. If the receiver has retention active (retain_old == true), the receiver must also accept DTLS records whose epoch tag equals the remembered previous epoch.
+The responder starts in the START state with synchronized transmit and receive epochs (rx := E; tx := E) and no update in progress. Application data can be transmitted at any time using the sender's current transmit epoch. A receiver accepts application data if the epoch tag on the DTLS record equals the receiver's current receive epoch. If the receiver has retention active (retain_old == true), it should also process DTLS records whose epoch tag equals the remembered previous epoch, but may discard them, as described at the beginning of {{DTLSC}}. Retransmissions of Fin are not discarded while the old receive keys are retained, as described below.
 
 Upon receiving an `ExtendedKeyUpdate(key_update_request)` (Req), the responder
 transitions to RESPOND. It waits for acknowledgment of earlier independent
@@ -1733,9 +1795,9 @@ current tx. The responder may send APP data and, subject to
 {{dtls-handshake-ordering}}, new handshake messages under the new tx
 without waiting for a record from the initiator under the new epoch.
 
-Retention at the responder ends on the first record received under the new rx (then retain_old := 0). This can be application data, a handshake message such as the client's Certificate in a PHA exchange, or an ACK. APP traffic is otherwise permitted at any time; reordering is tolerated by the acceptance rule.
+The responder retains the old receive keys at least until the first record is received under the new rx; after that it may clear retain_old. This record can be application data, a handshake message such as the client's Certificate in a PHA exchange, or an ACK. APP traffic is otherwise permitted at any time; reordering is tolerated by the acceptance rule.
 
-APP acceptance rule (receiver): accept if e == rx or (retain_old && e == old_rx). If retain_old is set and any record with the new rx arrives, clear retain_old.
+APP acceptance rule (receiver): accept if e == rx. If retain_old is set, records with e == old_rx should also be processed but may be discarded. Once a record with the new rx has arrived, retain_old may be cleared.
 
 ~~~ aasvg
 +---------------------------------+
@@ -1773,7 +1835,8 @@ APP acceptance rule (receiver): accept if e == rx or (retain_old && e == old_rx)
       v
 +------------------------------------------+
 | FINISHED                                 |
-| (retain_old=0 on first record at new rx) |
+| (retain_old may be cleared after the     |
+|  first record at new rx)                 |
 +------------------------------------------+
 ~~~
 
