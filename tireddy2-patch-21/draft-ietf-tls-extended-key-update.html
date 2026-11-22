@@ -1064,7 +1064,7 @@ svg {
 </tr></thead>
 <tfoot><tr>
 <td class="left">Tschofenig, et al.</td>
-<td class="center">Expires 22 May 2027</td>
+<td class="center">Expires 26 May 2027</td>
 <td class="right">[Page]</td>
 </tr></tfoot>
 </table>
@@ -1080,12 +1080,12 @@ svg {
 <a href="https://www.rfc-editor.org/rfc/rfc9261" class="eref">9261</a>, <a href="https://www.rfc-editor.org/rfc/rfc9846" class="eref">9846</a> (if approved)</dd>
 <dt class="label-published">Published:</dt>
 <dd class="published">
-<time datetime="2026-11-18" class="published">18 November 2026</time>
+<time datetime="2026-11-22" class="published">22 November 2026</time>
     </dd>
 <dt class="label-intended-status">Intended Status:</dt>
 <dd class="intended-status">Standards Track</dd>
 <dt class="label-expires">Expires:</dt>
-<dd class="expires"><time datetime="2027-05-22">22 May 2027</time></dd>
+<dd class="expires"><time datetime="2027-05-26">26 May 2027</time></dd>
 <dt class="label-authors">Authors:</dt>
 <dd class="authors">
 <div class="author">
@@ -1161,7 +1161,7 @@ and DTLS 1.3.<a href="#section-abstract-4" class="pilcrow">¶</a></p>
         time. It is inappropriate to use Internet-Drafts as reference
         material or to cite them other than as "work in progress."<a href="#section-boilerplate.1-3" class="pilcrow">¶</a></p>
 <p id="section-boilerplate.1-4">
-        This Internet-Draft will expire on 22 May 2027.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
+        This Internet-Draft will expire on 26 May 2027.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="copyright">
@@ -2293,8 +2293,7 @@ and <span class="bcp14">MUST NOT</span> retain or use the tickets for session re
 such a message <span class="bcp14">MUST NOT</span>, by itself, cause the client to terminate the
 connection. Other applicable requirements for message validity and ordering
 remain in effect.<a href="#section-8-3" class="pilcrow">¶</a></p>
-<p id="section-8-4">For DTLS, an ignored <code>NewSessionTicket</code> is still sequenced and acknowledged
-as specified in <span>[<a href="#DTLS" class="cite xref">DTLS</a>]</span>.<a href="#section-8-4" class="pilcrow">¶</a></p>
+<p id="section-8-4">For DTLS, only the content of the <code>NewSessionTicket</code> is ignored&gt; the client <span class="bcp14">MUST</span> still reassemble, sequence, and acknowledge the message as specified in Sections <a href="https://rfc-editor.org/rfc/rfc9147#section-5.2" class="relref">5.2</a>, <a href="https://rfc-editor.org/rfc/rfc9147#section-5.5" class="relref">5.5</a> and <a href="https://rfc-editor.org/rfc/rfc9147#section-7" class="relref">7</a> of <span>[<a href="#DTLS" class="cite xref">DTLS</a>]</span>, so that processing of subsequent handshake messages is not blocked. A ticket received under the new epoch while an EKU exchange is in progress is handled like any other handshake message, as specified in <a href="#dtls-transition-acks" class="auto internal xref">Section 6.2</a>.<a href="#section-8-4" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="pqc-cons">
