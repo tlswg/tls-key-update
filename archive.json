@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2026-11-19T06:37:08.020260+00:00",
+  "timestamp": "2026-11-22T05:48:44.347446+00:00",
   "repo": "tlswg/tls-key-update",
   "labels": [
     {
@@ -1605,16 +1605,24 @@
       "id": "I_kwDOMJPqLM8AAAABTfwDYA",
       "title": "Legacy exporter and initial exporter secret",
       "url": "https://github.com/tlswg/tls-key-update/issues/126",
-      "state": "OPEN",
+      "state": "CLOSED",
       "author": "tireddy2",
       "authorAssociation": "COLLABORATOR",
       "assignees": [],
       "labels": [],
       "body": "Problem\n\nOrder of introduction. \u00a710.1 uses the term \"initial exporter secret\" before introducing it, as though it were an established TLS concept.\nDifferent derivations. exporter_secret_0 uses the label \"exporter eku\" over ClientHello..server Finished, while exporter_secret_N+1 uses \"exp master\" over transcript_hash_N+1. The draft does not explain the difference.\nLegacy exporter. It stays available and static, so applications such as DTLS-SRTP can keep using secrets that EKU never refreshes, which conflicts with the design goal.\n\nDiscussion\n\nMartin. The initial exporter secret exists only because the legacy exporter secret is retained for the connection's lifetime. He proposes destroying the exporter secret at the first EKU and disabling the legacy exporter, which removes the special derivation and gives exported values post-compromise security.\nIlari. Disabling the legacy exporter breaks the existing exporter interface. A TLS library could then not enable EKU without application support.\nMartin, in reply. Breaking the legacy exporter is preferable, since otherwise applications keep using stale secrets in a way that is inconsistent with the design.\n\nOpen question: Should the legacy exporter remain available when EKU is negotiated ?",
       "createdAt": "2026-09-27T14:12:34Z",
-      "updatedAt": "2026-09-27T14:12:34Z",
-      "closedAt": null,
-      "comments": []
+      "updatedAt": "2026-11-22T05:41:51Z",
+      "closedAt": "2026-11-22T05:41:51Z",
+      "comments": [
+        {
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "body": "Draft is updated to continue to use legacy exporter for legacy applications. ",
+          "createdAt": "2026-11-22T05:41:51Z",
+          "updatedAt": "2026-11-22T05:41:51Z"
+        }
+      ]
     },
     {
       "number": 127,
@@ -11985,26 +11993,82 @@
       "id": "PR_kwDOMJPqLM8AAAABQIzapQ",
       "title": "cleanup text",
       "url": "https://github.com/tlswg/tls-key-update/pull/139",
-      "state": "OPEN",
+      "state": "MERGED",
       "author": "tireddy2",
       "authorAssociation": "COLLABORATOR",
       "assignees": [],
       "labels": [],
       "body": "",
       "createdAt": "2026-11-18T14:32:31Z",
-      "updatedAt": "2026-11-18T14:32:41Z",
+      "updatedAt": "2026-11-22T05:33:04Z",
       "baseRepository": "tlswg/tls-key-update",
       "baseRefName": "main",
       "baseRefOid": "ec489a21f30cf49b3acacdc7d3728d3b23403333",
       "headRepository": "tlswg/tls-key-update",
       "headRefName": "tireddy2-patch-21",
-      "headRefOid": "37a786136ae8c247027828e297d6883153dee080",
-      "closedAt": null,
-      "mergedAt": null,
-      "mergedBy": null,
-      "mergeCommit": null,
+      "headRefOid": "36ac0a0e11354840c24ae2446274f4789c9f3897",
+      "closedAt": "2026-11-22T05:33:03Z",
+      "mergedAt": "2026-11-22T05:33:03Z",
+      "mergedBy": "tireddy2",
+      "mergeCommit": {
+        "oid": "61683359ab6cf88b19e241e84fdd2ec9bf7525e0"
+      },
       "comments": [],
-      "reviews": []
+      "reviews": [
+        {
+          "id": "PRR_kwDOMJPqLM8AAAABZgAK9Q",
+          "commit": {
+            "abbreviatedOid": "37a7861"
+          },
+          "author": "hannestschofenig",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2026-11-21T15:18:22Z",
+          "updatedAt": "2026-11-21T15:18:22Z",
+          "comments": [
+            {
+              "originalPosition": 26,
+              "body": "```suggestion\nFor DTLS, only the content of the `NewSessionTicket` is ignored> the client MUST still reassemble, sequence, and acknowledge the message as specified in {{Sections 5.2, 5.5 and 7 of DTLS}}, so that processing of subsequent handshake messages is not blocked. A ticket received under the new epoch while an EKU exchange is in progress is handled like any other handshake message, as specified in {{dtls-transition-acks}}.\n```",
+              "createdAt": "2026-11-21T15:18:22Z",
+              "updatedAt": "2026-11-21T15:26:08Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM8AAAABZgB0xA",
+          "commit": {
+            "abbreviatedOid": "37a7861"
+          },
+          "author": "hannestschofenig",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2026-11-21T15:24:11Z",
+          "updatedAt": "2026-11-21T15:24:11Z",
+          "comments": [
+            {
+              "originalPosition": 26,
+              "body": "In general I am fine shortening this paragraph since it contains redundant text that is already found elsewhere in the document. However, replacing it with a single reference to the DTLS spec goes a bit too far IMHO.\n\nIn Section 7 we already say that any record under the new epoch completes the exchange. We had put this paragraph in there to point out that \"silently ignoring\" can easily interpreted as discarding a record. This would, however, mean that the next_receive_seq does not get increased and later handshake messages will then be stuck in queue and blocked. Tickets can also be fragemented. \"sequenced and acknowledged\" does not necessarily imply reassembly of the fragments. ",
+              "createdAt": "2026-11-21T15:24:11Z",
+              "updatedAt": "2026-11-21T15:24:11Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOMJPqLM8AAAABZgCedw",
+          "commit": {
+            "abbreviatedOid": "37a7861"
+          },
+          "author": "hannestschofenig",
+          "authorAssociation": "COLLABORATOR",
+          "state": "APPROVED",
+          "body": "I have made a text suggestion for one of the paragraphs. The rest is good for me. Thanks, Tiru, for the clean-up.",
+          "createdAt": "2026-11-21T15:26:43Z",
+          "updatedAt": "2026-11-21T15:26:43Z",
+          "comments": []
+        }
+      ]
     }
   ]
 }
