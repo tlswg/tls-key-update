@@ -54,7 +54,7 @@ author:
 normative:
 
 informative:
-  I-D.ietf-tls-ecdhe-mlkem:
+  RFC10024:
   I-D.ietf-tls-mlkem:
   RFC9958:
   ANSSI:
@@ -961,7 +961,7 @@ and hybrid key establishment mechanisms to facilitate the transition to post-qua
 cryptography. The rationale for this transition and the associated terminology are
 discussed in {{RFC9958}} and {{RFC9794}}, respectively.
 
-For hybrid mechanisms such as SecP256r1MLKEM768, defined in {{I-D.ietf-tls-ecdhe-mlkem}},
+For hybrid mechanisms such as SecP256r1MLKEM768, defined in {{RFC10024}},
 the shared secret is derived by combining the outputs of the constituent algorithms;
 specifically, it is the concatenation of the ECDHE and ML-KEM shared secrets. For
 ML-KEM-only key exchange, as defined in {{I-D.ietf-tls-mlkem}}, the ML-KEM shared
